@@ -1,0 +1,30 @@
+// Apply the java plugin to add support for Java
+apply plugin: 'java'
+
+// Apply the application plugin to add support for building an application
+apply plugin: 'application'
+
+// In this section you declare where to find the dependencies of your project
+repositories {
+    // Use jcenter for resolving your dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    jcenter()
+}
+
+allprojects {
+	repositories {
+		maven { url 'https://jitpack.io' }
+	}
+}
+
+dependencies {
+    implementation 'com.github.jjos2372:blocktalk:-SNAPSHOT'
+}
+
+// If we want to refresh our libraries (get a new snapshot)
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+// Define the main class for the application
+mainClassName = 'Exchange'
