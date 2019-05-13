@@ -13,10 +13,15 @@ public class Exchange extends Contract {
 	static final long STATE_FINISHED       = 0x0000000000000000;
 	static final long STATE_OPEN           = 0x0000000000000001;
 	static final long STATE_PAUSED         = 0x0000000000000002;
-	static final long STATE_WAITING_PAYMT  = 0x0000000000000003;
-	static final long STATE_PAYMT_REPORTED = 0x0000000000000003;
-	static final long STATE_CREATOR_DISPUTE= 0x0000000000000004;
-	static final long STATE_BUYER_DISPUTE  = 0x0000000000000005;
+
+	static final long STATE_TAKEN          = 0x0000000000000010;
+	static final long STATE_WAITING_PAYMT  = 0x0000000000000020;
+	static final long STATE_PAYMT_REPORTED = 0x0000000000000030;
+
+	static final long STATE_DISPUTE        = 0x0000000000000100;
+	static final long STATE_CREATOR_DISPUTE= 0x0000000000000200;
+	static final long STATE_BUYER_DISPUTE  = 0x0000000000000300;
+
 	static final long STATE_MOD            = 0x000000000000ffff;
 	
 	Address creator;
@@ -45,8 +50,8 @@ public class Exchange extends Contract {
 	 * @param offerType
 	 */
 	public void configureOffer(Address arbitrator, Address arbitrator2, long offerType) {
-		if(getCurrentTx().getSenderAddress()!=creator || state>STATE_PAUSED) {
-			// only creator can do this, and state should not be of an on-going transaction
+		if(getCurrentTx().getSenderAddress()!=creator || state>STATE_TAKEN) {
+			// only creator can do this, and state should not be taken
 			return;
 		}
 		
@@ -62,7 +67,7 @@ public class Exchange extends Contract {
 	 * Offer must not be currently being processed (taken).
 	 */
 	public void withdraw() {
-		if(getCurrentTx().getSenderAddress()!=creator || state>STATE_PAUSED) {
+		if(getCurrentTx().getSenderAddress()!=creator || state>STATE_TAKEN) {
 			// only creator can do this, and it should not be taken
 			return;
 		}
@@ -82,7 +87,7 @@ public class Exchange extends Contract {
 	 * @param collateral 
 	 */
 	public void setParameters(long rate, long pauseTimeout, long collateral) {
-		if(getCurrentTx().getSenderAddress()!=creator || state>STATE_PAUSED) {
+		if(getCurrentTx().getSenderAddress()!=creator || state>STATE_TAKEN) {
 			// only creator can do this, and it should not be taken
 			return;
 		}
@@ -168,7 +173,7 @@ public class Exchange extends Contract {
 	 */
 	public void closeDispute(long amountToCreator, long amountToBuyer) {
 		// TODO: improve the dispute mechanism
-		if(state>=STATE_CREATOR_DISPUTE &&
+		if(state>STATE_DISPUTE &&
 				(getCurrentTx().getSenderAddress()==arbitrator ||
 					getCurrentTx().getSenderAddress()==arbitrator2)) {
 			sendAmount(amountToCreator, creator);
