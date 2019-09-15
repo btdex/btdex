@@ -12,8 +12,7 @@ import bt.ui.EmulatorWindow;
  */
 public class Exchange extends Contract {
 
-	public static final long ACTIVATION_FEE = 30 * ONE_BURST;
-	public static final long MIN_AMOUNT = 3 * ONE_BURST;
+	public static final long ACTIVATION_FEE = 26 * ONE_BURST;
 
 	public static final long STATE_FINISHED = 0x0000000000000000;
 	public static final long STATE_OPEN = 0x0000000000000001;
@@ -86,16 +85,16 @@ public class Exchange extends Contract {
 				this.security = security;
 				if (security == 0) {
 					// withdraw, taking any security deposit balance
-					sendAmount(getCurrentBalance() - MIN_AMOUNT, getCreator());
+					sendBalance(getCreator());
 					return;
 				}
 				this.pauseTimeout = getCurrentTxTimestamp().addMinutes(pauseTimeout);
 				if (pauseTimeout > 0)
 					this.state = STATE_OPEN;
 
-				// Amount being sold is the current balance minus a security deposit.
+				// Amount being sold is the current balance.
 				// Seller can loose this deposit if not respecting the protocol
-				amount = getCurrentBalance() - security;
+				amount = getCurrentBalance();
 			}
 		} else {
 			// someone else trying to take the order
@@ -131,12 +130,9 @@ public class Exchange extends Contract {
 			sendAmount(fee, arbitrator2);
 
 			// Send to the buyer the amount, plus his security deposit, minus fee
-			sendAmount(amount + security - fee, taker);
-
-			// Send back to creator his security deposit, minus fees
 			state = STATE_FINISHED;
-			taker = null;
-			sendBalance(getCreator());
+			sendBalance(taker);
+			taker = null; // actually executed only when reactivated (got some more balance)
 		}
 	}
 
@@ -166,15 +162,14 @@ public class Exchange extends Contract {
 			sendAmount(amountToTaker, taker);
 			state = STATE_FINISHED;
 			// dispute fee is sent to the arbitrator
-			sendAmount(getCurrentBalance() - MIN_AMOUNT,
-				getCurrentTxSender()
-				);
+			sendBalance(getCurrentTxSender());
 		}
 	}
 
 	@Override
 	public void txReceived() {
-		// We ignore any messages other than the above functions
+		// We ignore any messages other than the above functions, refund
+		sendAmount(getCurrentTxAmount(), getCurrentTxSender());
 	}
 
 	public static void main(String[] args) {

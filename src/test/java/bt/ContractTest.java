@@ -34,7 +34,7 @@ public class ContractTest extends BT {
         long state = Exchange.STATE_FINISHED;
 
         long rate = 70;
-        long pauseTimeout = 1000;
+        long pauseTimeout = 100;
         long security = 100 * Contract.ONE_BURST;
 
         long data[] = {
@@ -65,7 +65,7 @@ public class ContractTest extends BT {
 
         // Initialize the offer
         BT.callMethod(BT.PASSPHRASE, contract.getId(), compiled.getMethod("updateOrTake"),
-            BurstValue.fromPlanck(amount + security + Exchange.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
+            BurstValue.fromPlanck(amount + Exchange.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
             rate, security, pauseTimeout).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
@@ -74,16 +74,16 @@ public class ContractTest extends BT {
         state = Exchange.STATE_OPEN;
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
         long rate_chain = BT.getContractFieldValue(contract, compiled.getField("rate").getAddress());
-        long pauseTimeout_chain = BT.getContractFieldValue(contract, compiled.getField("pauseTimeout").getAddress());
         long amount_chain = BT.getContractFieldValue(contract, compiled.getField("amount").getAddress());
         long security_chain = BT.getContractFieldValue(contract, compiled.getField("security").getAddress());
 
+        assertEquals(state, state_chain);
         assertEquals(rate, rate_chain);
         //assertEquals(pauseTimeout, pauseTimeout_chain);
         assertTrue(amount_chain > amount);
         assertEquals(security, security_chain);
 
         long balance = BT.getContractBalance(contract).longValue();
-        assertTrue("not enough balance", balance > (amount + security));
+        assertTrue("not enough balance", balance > amount);
     }
 }

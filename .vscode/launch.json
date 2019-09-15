@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CodeLens (Launch) - Exchange",
+            "request": "launch",
+            "mainClass": "dex.Exchange",
+            "projectName": "ex-change"
+        },
+        {
+            "type": "java",
             "name": "CodeLens (Launch) - ContractTest",
             "request": "launch",
             "mainClass": "bt.ContractTest",
