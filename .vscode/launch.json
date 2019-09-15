@@ -1,0 +1,32 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - ContractTest",
+            "request": "launch",
+            "mainClass": "bt.ContractTest",
+            "projectName": "ex-change"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - CompilerTest",
+            "request": "launch",
+            "mainClass": "CompilerTest",
+            "projectName": "blocktalk-ex-change"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Exchange",
+            "request": "launch",
+            "mainClass": "Exchange",
+            "projectName": "blocktalk-ex-change"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - TestEmu",
+            "request": "launch",
+            "mainClass": "TestEmu",
+            "projectName": "blocktalk-ex-change"
+        }
+    ]
+}

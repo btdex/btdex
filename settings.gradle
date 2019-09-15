@@ -15,4 +15,4 @@ include 'api'
 include 'services:webservice'
 */
 
-rootProject.name = 'blocktalk-ex-change'
+rootProject.name = 'ex-change'
