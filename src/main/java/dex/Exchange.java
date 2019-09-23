@@ -70,6 +70,7 @@ public class Exchange extends Contract {
 				this.security = security;
 				if (security == 0) {
 					// withdraw, taking any security deposit balance
+					amount = 0;
 					sendBalance(getCreator());
 					return;
 				}

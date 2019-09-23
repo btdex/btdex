@@ -165,5 +165,21 @@ public class ContractTest extends BT {
         assertEquals(rate, rate_chain);
         assertTrue(amount_chain > amount);
         assertEquals(security, security_chain);
+
+        // Cancel and withdraw the offer
+        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("updateOrTake"),
+                BurstValue.fromPlanck(Exchange.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
+                rate, 0, pauseTimeout).blockingGet();
+        BT.forgeBlock();
+        BT.forgeBlock();
+
+        state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
+        rate_chain = BT.getContractFieldValue(contract, compiled.getField("rate").getAddress());
+        amount_chain = BT.getContractFieldValue(contract, compiled.getField("amount").getAddress());
+        security_chain = BT.getContractFieldValue(contract, compiled.getField("security").getAddress());
+
+        assertEquals(Exchange.STATE_PAUSED, state_chain);
+        assertEquals(0, amount_chain);
+        assertEquals(0, BT.getContractBalance(contract).longValue());
     }
 }
