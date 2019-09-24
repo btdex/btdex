@@ -71,7 +71,7 @@ public class ContractTest extends BT {
         assertEquals(state, state_chain);
 
         // Initialize the offer
-        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("updateOrTake"),
+        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
                 BurstValue.fromPlanck(amount + security + Exchange.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
                 rate, security, pauseTimeout).blockingGet();
         BT.forgeBlock();
@@ -101,8 +101,8 @@ public class ContractTest extends BT {
         BT.forgeBlock();
 
         // Invalid take, not enough security
-        BT.callMethod(takerPass, contract.getId(), compiled.getMethod("updateOrTake"),
-                BurstValue.fromPlanck(Exchange.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100, rate, security, 0)
+        BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
+                BurstValue.fromPlanck(Exchange.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100, rate, security)
                 .blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
@@ -115,9 +115,9 @@ public class ContractTest extends BT {
         assertEquals(0, taker_chain);
 
         // Take the offer
-        BT.callMethod(takerPass, contract.getId(), compiled.getMethod("updateOrTake"),
-                BurstValue.fromPlanck(security + Exchange.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100, rate,
-                security, 0).blockingGet();
+        BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
+                BurstValue.fromPlanck(security + Exchange.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
+                rate, security).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 
@@ -148,7 +148,7 @@ public class ContractTest extends BT {
         assertTrue("taker have not received", taker_balance > amount);
 
         // Reopen the offer
-        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("updateOrTake"),
+        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
                 BurstValue.fromPlanck(amount + security + Exchange.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
                 rate, security, pauseTimeout).blockingGet();
         BT.forgeBlock();
@@ -167,7 +167,7 @@ public class ContractTest extends BT {
         assertEquals(security, security_chain);
 
         // Cancel and withdraw the offer
-        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("updateOrTake"),
+        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
                 BurstValue.fromPlanck(Exchange.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
                 rate, 0, pauseTimeout).blockingGet();
         BT.forgeBlock();
