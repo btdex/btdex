@@ -1,4 +1,4 @@
-package dex;
+package btdex.sm;
 
 import bt.Contract;
 import bt.Address;
@@ -6,18 +6,18 @@ import bt.Timestamp;
 import bt.ui.EmulatorWindow;
 
 /**
- * An on-chain decentralized exchange smart contract.
+ * The BlockTalk on-chain decentralized exchange smart contract for selling BURST.
  * 
  * Someone willing to sell BURST should create a contract instance and configure
  * it accordingly. There is a 0.1% fee for those selling BURST and 0.3% fee for
- * the buyer. Smart contract activation fees as well as transaction network fees
- * also apply.
+ * the buyer (taker). Smart contract activation fees as well as transaction
+ * network (mining) fees also apply.
  * 
  * Eventual trade disputes are handled by an arbitrator system.
  * 
  * @author jjos
  */
-public class Exchange extends Contract {
+public class SellContract extends Contract {
 
 	public static final long ACTIVATION_FEE = 28 * ONE_BURST;
 
@@ -83,7 +83,13 @@ public class Exchange extends Contract {
 	}
 
 	/**
-	 * Take an open offer.
+	 * Take an open offer by sending more than the expected security deposit.
+	 * 
+	 * The order is actually taken only the given rate and security values match
+	 * those currently valid for this contract. Besides, the amount along with
+	 * this transaction should be higher or equal the security deposit required.
+	 * If any of these conditions is not met, the order is not taken and the
+	 * amount sent is refunded (minus the activation fee).
 	 * 
 	 * @param rate         the exchange rate per BURST
 	 * @param security     the security deposit of this offer (in planck)
@@ -114,21 +120,18 @@ public class Exchange extends Contract {
 	 */
 	public void reportComplete() {
 		if (getCurrentTxSender() == getCreator() && state >= STATE_WAITING_PAYMT) {
-			// Transfer the funds and finish this contract
+			// Only creator can report the process is complete
 
-			// fee of 0.1 % from creator
 			fee = amount / 1000;
-			// creator gets his security minus the fee
+			// creator gets his security minus 0.1 % fee
 			sendAmount(security - fee, getCreator());
 
-			// 0.2 % for one arbitrator
 			fee += fee;
-			// fees go to the arbitrators
+			// 0.2 % for one arbitrator
 			sendAmount(fee, arbitrator1);
 
-			// fee of 0.3 % for taker
 			fee += fee;
-			// taker gets the amount plus his security minus the fee
+			// taker gets the amount plus his security minus the 0.3% fee
 			sendAmount(amount + security - fee, taker);
 			taker = null;
 			state = STATE_FINISHED;
@@ -164,6 +167,7 @@ public class Exchange extends Contract {
 		if (state >= STATE_DISPUTE && (getCurrentTxSender() == arbitrator1 || getCurrentTxSender() == arbitrator2)) {
 			sendAmount(amountToCreator, getCreator());
 			sendAmount(amountToTaker, taker);
+			taker = null;
 			state = STATE_FINISHED;
 
 			// dispute fee is sent to the arbitrators
@@ -181,6 +185,6 @@ public class Exchange extends Contract {
 	}
 
 	public static void main(String[] args) {
-		new EmulatorWindow(Exchange.class);
+		new EmulatorWindow(SellContract.class);
 	}
 }
