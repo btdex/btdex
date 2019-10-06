@@ -33,6 +33,11 @@ public class ContractState {
 		NF.setMaximumFractionDigits(4);
 	}
 	
+	public static String format(long valueNQT) {
+		double dvalue = (double)valueNQT / Contract.ONE_BURST;
+		return NF.format(dvalue);
+	}
+	
 	public long getMarket() {
 		return offerType & Globals.MARKET_MASK;
 	}
@@ -125,7 +130,11 @@ public class ContractState {
 		}
 	}
 	
-	public void updateState(AT at) {
+	public void update() {
+		updateState(at);
+	}
+	
+	void updateState(AT at) {
 		if(at == null)
 			at = Globals.NS.getAt(address).blockingGet();
 		

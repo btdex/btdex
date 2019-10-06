@@ -36,6 +36,14 @@ public class Globals {
 			e.printStackTrace();
 		}
 	}
+	
+	public static boolean isArbitratorAccepted(long arb) {
+		for (BurstID arbi : ARBITRATORS) {
+			if(arbi.getSignedLongId() == arb)
+				return true;
+		}
+		return false;
+	}
 
 	public static long MARKET_BTC            = 0x000000001;
 	public static long MARKET_LTC            = 0x000000002;

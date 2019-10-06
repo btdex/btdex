@@ -85,7 +85,7 @@ public class SellContract extends Contract {
 	/**
 	 * Take an open offer by sending the expected security deposit.
 	 * 
-	 * The order is actually taken only the given rate and security values match
+	 * The order is actually taken only if the given rate and security values match
 	 * those currently valid for this contract. Besides, the amount along with
 	 * this transaction should be higher or equal the security deposit required.
 	 * If any of these conditions is not met, the order is not taken and the
