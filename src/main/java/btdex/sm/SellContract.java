@@ -83,7 +83,7 @@ public class SellContract extends Contract {
 	}
 
 	/**
-	 * Take an open offer by sending more than the expected security deposit.
+	 * Take an open offer by sending the expected security deposit.
 	 * 
 	 * The order is actually taken only the given rate and security values match
 	 * those currently valid for this contract. Besides, the amount along with
@@ -100,7 +100,7 @@ public class SellContract extends Contract {
 			state = STATE_PAUSED;
 		}
 		if (state != STATE_OPEN || this.rate != rate || this.security != security
-				|| getCurrentTxAmount() < security) {
+				|| getCurrentTxAmount() + ACTIVATION_FEE < security) {
 			// if it is not open or values do no match, refund
 			sendAmount(getCurrentTxAmount(), getCurrentTxSender());
 			return;
@@ -115,7 +115,7 @@ public class SellContract extends Contract {
 	/**
 	 * Report that the payment was received and then send the BURST amount to taker.
 	 * 
-	 * This method also return the respective secutiry deposits as well as pays the
+	 * This method also return the respective security deposits as well as pays the
 	 * arbitration fees.
 	 */
 	public void reportComplete() {

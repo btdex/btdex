@@ -4,7 +4,7 @@ import bt.BT;
 
 public class Config {
 	
-	String node = BT.NODE_LOCAL_TESTNET;
+	public String node = BT.NODE_LOCAL_TESTNET;
 	
-	String encryptedPassPhrase = BT.PASSPHRASE;
+	public String encryptedPassPhrase = BT.PASSPHRASE;
 }

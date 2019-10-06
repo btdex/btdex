@@ -1,9 +1,12 @@
 package btdex.core;
 
+import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Locale;
 
 import bt.BT;
+import bt.Contract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;
@@ -24,12 +27,22 @@ public class ContractState {
 	long amount;
 	long security;
 	
+	private static final NumberFormat NF = NumberFormat.getInstance(Locale.ENGLISH);
+	static {
+		NF.setMinimumFractionDigits(4);
+		NF.setMaximumFractionDigits(4);
+	}
+	
 	public long getMarket() {
 		return offerType & Globals.MARKET_MASK;
 	}
 	
 	public BurstAddress getAddress() {
 		return address;
+	}
+	
+	public BurstAddress getCreator() {
+		return at.getCreator();
 	}
 
 	public BurstValue getBalance() {
@@ -60,12 +73,22 @@ public class ContractState {
 		return pauseTimeout;
 	}
 
-	public long getAmount() {
+	public long getAmountNQT() {
 		return amount;
 	}
+	
+	public String getAmount() {
+		double dvalue = (double)amount / Contract.ONE_BURST;
+		return NF.format(dvalue);
+	}
 
-	public long getSecurity() {
+	public long getSecurityNQT() {
 		return security;
+	}
+	
+	public String getSecurity() {
+		double dvalue = (double)security / Contract.ONE_BURST;
+		return NF.format(dvalue);
 	}
 
 	/**

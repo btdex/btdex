@@ -23,12 +23,11 @@ public class Globals {
 	public static final BurstID[] ARBITRATORS = {
 			BC.rsDecode("GFP4-TVNR-S7TY-E5KAY"),
 			// TODO: add other arbitrators here
+			
 			ARBITRATOR_BAKCUP,
 	};
 
 	static {
-		
-		
 		try {
 			contract = new Compiler(SellContract.class);
 			contract.compile();

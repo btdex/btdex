@@ -1,99 +1,112 @@
 package btdex.ui;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.Font;
 
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.table.AbstractTableModel;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.LookAndFeel;
+import javax.swing.UIManager;
 
-import btdex.core.ContractState;
+import btdex.core.Config;
+import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.markets.MarketBTC;
+import btdex.markets.MarketETH;
+import btdex.markets.MarketLTC;
 import burst.kit.entity.BurstAddress;
+import burst.kit.entity.response.Account;
+import jiconfont.icons.font_awesome.FontAwesome;
+import jiconfont.swing.IconFontSwing;
 
 public class Main extends JFrame {
-	
+
 	private static final long serialVersionUID = 1L;
+
+	OrderBook orderBook;
 	
-	JTable table;
-	HashMap<BurstAddress, ContractState> map = new HashMap<>();
-	ArrayList<ContractState> marketContracts = new ArrayList<>();
+	Config config = new Config();
 	
-	Market selectedMarket = new MarketBTC();
+	BurstAddress address = Globals.BC.getBurstAddressFromPassphrase(config.encryptedPassPhrase);
 	
-	class MyTableModel extends AbstractTableModel {
-		private static final long serialVersionUID = 1L;
-		
-		String[] columnNames = {"ASK",
-                "SIZE (BURST)",
-                "TOTAL",
-                "CONTRACT",
-                // "TIMEOUT (MINS)",
-                "ACTION"};
-
-        public int getColumnCount() {
-            return columnNames.length;
-        }
-
-        public int getRowCount() {
-            return marketContracts.size();
-        }
-
-        public String getColumnName(int col) {
-        	String colName = columnNames[col];
-        	if(col == 0 || col == 2)
-        		colName += " (" + selectedMarket.toString() + ")";
-        	return colName;
-        }
-
-        public Object getValueAt(int row, int col) {
-        	ContractState s = marketContracts.get(row);
-        	switch (col) {
-			case 0:
-				return s.getRate();
-			case 1:
-				return s.getAmount();
-			case 2:
-				return s.getRate()*s.getAmount();
-			case 3:
-				return s.getAddress().toString();
-			default:
-				break;
-			}
-            return "";
-        }
-
-        public boolean isCellEditable(int row, int col) {
-            return false;
-        }
-    }
-	
+	JTabbedPane tabbedPane = new JTabbedPane();
 
 	public Main() {
 		super("BTDEX");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		table = new JTable(new MyTableModel());
+		IconFontSwing.register(FontAwesome.getIconFont());
 		
-		JScrollPane scrollPane = new JScrollPane(table);
-		table.setFillsViewportHeight(true);
-		
-		add(scrollPane);
-		
-		ContractState.addContracts(map);
-		marketContracts.clear();
-		for(ContractState s : map.values()) {
-			if(s.getMarket() == selectedMarket.getID())
-				marketContracts.add(s);
+		try {
+			Class<?> lafc = null;
+			try {
+				lafc = Class.forName("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+			} catch (Exception e) {
+				lafc = Class.forName("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+			}
+			LookAndFeel laf = (LookAndFeel) lafc.getConstructor().newInstance();
+			UIManager.setLookAndFeel(laf);
+		} catch (Exception e) {
 		}
+
+		orderBook = new OrderBook();
 		
+		JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		
+		getContentPane().add(top, BorderLayout.PAGE_START);
+		
+		JComboBox<Market> marketComboBox = new JComboBox<>();
+		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, 18);
+		marketComboBox.setFont(largeFont);
+		
+		marketComboBox.addItem(new MarketBTC());
+		marketComboBox.addItem(new MarketETH());
+		marketComboBox.addItem(new MarketLTC());
+		
+		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 18);
+		JButton copyAddButton = new JButton(address.getFullAddress(), copyIcon);
+		copyAddButton.setFont(largeFont);
+		
+		Icon settinsIcon = IconFontSwing.buildIcon(FontAwesome.COG, 18);
+		JButton settingsButton = new JButton("Settings", settinsIcon);
+		settingsButton.setFont(largeFont);
+
+		getContentPane().add(tabbedPane, BorderLayout.CENTER);
+		tabbedPane.setFont(largeFont);
+		
+		Icon orderIcon = IconFontSwing.buildIcon(FontAwesome.BOOK, 18);
+		tabbedPane.addTab("ORDER BOOK", orderIcon, orderBook);
+		
+		Icon ongoinIcon = IconFontSwing.buildIcon(FontAwesome.HANDSHAKE_O, 18);
+		tabbedPane.addTab("ONGOING TRADES", ongoinIcon, new JLabel());
+		
+		Icon tradeIcon = IconFontSwing.buildIcon(FontAwesome.LINE_CHART, 18);
+		tabbedPane.addTab("TRADE HISTORY", tradeIcon, new JLabel());
+		
+		Account ac = Globals.NS.getAccount(address).blockingGet();
+		JLabel balanceLabel = new JLabel(ac.getBalance().toFormattedString());
+		balanceLabel.setFont(largeFont);
+
+//		JLabel marketLabel = new JLabel("Market: ");
+//		marketLabel.setFont(largeFont);
+//		top.add(marketLabel);
+		top.add(marketComboBox);
+		
+		top.add(copyAddButton);
+		top.add(balanceLabel);
+		top.add(settingsButton);
+
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
 	}
-	
+
 	public static void main(String[] args) {
 		new Main();
 	}
