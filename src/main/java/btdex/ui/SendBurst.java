@@ -6,9 +6,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -22,7 +20,6 @@ import javax.swing.event.ChangeListener;
 
 import btdex.core.ContractState;
 import btdex.core.Globals;
-import btdex.core.Market;
 import burst.kit.entity.response.FeeSuggestion;
 
 public class SendBurst extends JDialog implements ActionListener {
@@ -57,7 +54,7 @@ public class SendBurst extends JDialog implements ActionListener {
 		pin = new JPasswordField(12);
 		
 		amount = new JTextField();
-		fee = new JSlider(1, 1020);
+		fee = new JSlider(1, N_SLOTS);
 
 		topPanel.add(new Desc("Recipient", recipient));
 		topPanel.add(new Desc("Message", message));
@@ -101,7 +98,7 @@ public class SendBurst extends JDialog implements ActionListener {
 
 		try {
 			FeeSuggestion suggested = Globals.NS.suggestFee().blockingGet();
-			int feeInt = (int)suggested.getStandardFee().longValue()/FEE_QUANT;
+			int feeInt = (int)suggested.getPriorityFee().longValue()/FEE_QUANT;
 			fee.getModel().setValue(feeInt);
 		}
 		catch (Exception e) {
