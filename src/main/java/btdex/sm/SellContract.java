@@ -36,6 +36,8 @@ public class SellContract extends Contract {
 	Address arbitrator1;
 	Address arbitrator2;
 	long offerType;
+	long accountHash;
+	long nonce;
 
 	long state;
 	long rate;
@@ -64,6 +66,7 @@ public class SellContract extends Contract {
 			this.state = STATE_PAUSED;
 			this.rate = rate;
 			this.security = security;
+			nonce++;
 			if (security == 0) {
 				// withdraw, taking any security deposit balance
 				amount = 0;

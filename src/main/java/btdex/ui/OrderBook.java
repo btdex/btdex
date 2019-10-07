@@ -76,7 +76,8 @@ public class OrderBook extends JPanel {
 		}
 	}
 
-	public static class ButtonCellRenderer extends DefaultTableCellRenderer	{
+	ButtonCellRenderer RENDERER = new ButtonCellRenderer();
+	public class ButtonCellRenderer extends DefaultTableCellRenderer	{
 		private static final long serialVersionUID = 1L;
 
 		public Component getTableCellRendererComponent(JTable table,
@@ -86,6 +87,7 @@ public class OrderBook extends JPanel {
 		}
 	}
 
+	ButtonCellEditor EDITOR = new ButtonCellEditor();
 	class ButtonCellEditor extends AbstractCellEditor implements TableCellEditor {
 		private static final long serialVersionUID = 1L;
 
@@ -110,8 +112,12 @@ public class OrderBook extends JPanel {
 	public void setMarket(Market m) {
 		this.selectedMarket = m;
 
-		model.fireTableStructureChanged();
-
+		// update the column headers
+		for (int c = 0; c < columnNames.length; c++) {
+			table.getColumnModel().getColumn(c).setHeaderValue(model.getColumnName(c));
+		}
+		model.fireTableDataChanged();
+		
 		update();
 	}
 
@@ -137,13 +143,15 @@ public class OrderBook extends JPanel {
 		DefaultTableCellRenderer rend = (DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer();
 		rend.setHorizontalAlignment(JLabel.CENTER);
 		jtableHeader.setDefaultRenderer(rend);
+		
+		table.setAutoCreateColumnsFromModel(false);
 
-		table.getColumnModel().getColumn(COL_ACTION).setCellRenderer(new ButtonCellRenderer());
-		table.getColumnModel().getColumn(COL_ACTION).setCellEditor(new ButtonCellEditor());
-		table.getColumnModel().getColumn(COL_CONTRACT).setCellRenderer(new ButtonCellRenderer());
-		table.getColumnModel().getColumn(COL_CONTRACT).setCellEditor(new ButtonCellEditor());
+		table.getColumnModel().getColumn(COL_ACTION).setCellRenderer(RENDERER);
+		table.getColumnModel().getColumn(COL_ACTION).setCellEditor(EDITOR);
+		table.getColumnModel().getColumn(COL_CONTRACT).setCellRenderer(RENDERER);
+		table.getColumnModel().getColumn(COL_CONTRACT).setCellEditor(EDITOR);
 
-		table.getColumnModel().getColumn(COL_CONTRACT).setPreferredWidth(120);
+		table.getColumnModel().getColumn(COL_CONTRACT).setPreferredWidth(200);
 
 		add(scrollPane, BorderLayout.CENTER);
 	}

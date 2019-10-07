@@ -26,15 +26,17 @@ public class PopulateMarket extends BT {
 		BurstID arbitrator1 = Globals.ARBITRATORS[0];
 		BurstID arbitrator2 = Globals.ARBITRATOR_BAKCUP;
 		long offerType = Globals.MARKET_BTC;
+		long accountHash = 1234;
 
-		long data[] = { arbitrator1.getSignedLongId(), arbitrator2.getSignedLongId(), offerType };
+		long data[] = { arbitrator1.getSignedLongId(), arbitrator2.getSignedLongId(),
+				offerType, accountHash };
 
 		bt.compiler.Compiler compiled = BT.compileContract(SellContract.class);
 
 		for (int i = 0; i < 4; i++) {
 			String name = SellContract.class.getSimpleName() + System.currentTimeMillis();
 
-			BT.registerContract(BT.PASSPHRASE2, compiled.getCode(), name, name, data,
+			BT.registerContract(BT.PASSPHRASE2, compiled.getCode(), compiled.getCodeNPages(), name, name, data,
 					BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BT.getMinRegisteringFee(compiled), 1000).blockingGet();
 			BT.forgeBlock();
 

@@ -14,6 +14,8 @@ public class Globals {
 	public static BurstNodeService NS = BurstNodeService.getInstance(BT.NODE_LOCAL_TESTNET);
 	public static BurstCrypto BC = BurstCrypto.getInstance();
 	
+	public static boolean IS_TESTNET = true;
+
 	public static Compiler contract;
 
 	/** Back-up arbitrator */
@@ -35,6 +37,13 @@ public class Globals {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void setNode(String node) {
+		if(node.contains("6876"))
+			IS_TESTNET = true;
+		
+		NS = BurstNodeService.getInstance(node);
 	}
 	
 	public static boolean isArbitratorAccepted(long arb) {

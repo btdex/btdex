@@ -52,7 +52,7 @@ public class ContractTest extends BT {
 
         bt.compiler.Compiler compiled = BT.compileContract(SellContract.class);
         String name = SellContract.class.getSimpleName() + System.currentTimeMillis();
-        BT.registerContract(makerPass, compiled.getCode(), name, name, data,
+        BT.registerContract(makerPass, compiled.getCode(), compiled.getCodeNPages(), name, name, data,
                 BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BT.getMinRegisteringFee(compiled), 1000).blockingGet();
         BT.forgeBlock();
 

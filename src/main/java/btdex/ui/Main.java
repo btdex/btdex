@@ -1,6 +1,7 @@
 package btdex.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -19,6 +20,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
+import com.bulenkov.darcula.DarculaLaf;
 
 import btdex.core.Config;
 import btdex.core.ContractState;
@@ -32,7 +37,7 @@ import burst.kit.entity.response.Account;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
 
-public class Main extends JFrame {
+public class Main extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 
@@ -42,43 +47,35 @@ public class Main extends JFrame {
 
 	BurstAddress address = Globals.BC.getBurstAddressFromPassphrase(config.encryptedPassPhrase);
 
-	JTabbedPane tabbedPane = new JTabbedPane();
+	JTabbedPane tabbedPane;
 
 	JLabel nodeStatus;
-
-	class Desc extends JPanel {
-		private static final long serialVersionUID = 1L;
-
-		public Desc(String desc, Component child) {
-			super(new BorderLayout());
-
-			add(child, BorderLayout.CENTER);
-			add(new JLabel(desc), BorderLayout.PAGE_START);
-		}
-	}
 
 	private JLabel balanceLabel;
 	private JLabel lockedBalanceLabel;
 
+	private JButton createOfferButton;
+
+	private JComboBox<Market> marketComboBox;
+
+	private JButton sendButton;
+
 	public Main() {
-		super("BTDEX");
+		super("BTDEX" + (Globals.IS_TESTNET ? " - TESTNET" : ""));
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-//		try {
-//			Class<?> lafc = null;
-//			try {
-//				lafc = Class.forName("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
-//			} catch (Exception e) {
-//				lafc = Class.forName("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-//			}
-//			LookAndFeel laf = (LookAndFeel) lafc.getConstructor().newInstance();
-//			UIManager.setLookAndFeel(laf);
-//		} catch (Exception e) {
-//		}
-		System.setProperty("awt.useSystemAAFontSettings","on");
-		System.setProperty("swing.aatext", "true");
+		try {
+			DarculaLaf laf = new DarculaLaf();
+			UIManager.setLookAndFeel(laf);
+		} catch (UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}
 
 		IconFontSwing.register(FontAwesome.getIconFont());
+		setBackground(Color.BLACK);
+
+		tabbedPane = new JTabbedPane();
+		tabbedPane.setOpaque(true);
 
 		JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JPanel bottom = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -86,24 +83,20 @@ public class Main extends JFrame {
 		getContentPane().add(top, BorderLayout.PAGE_START);
 		getContentPane().add(bottom, BorderLayout.PAGE_END);
 
-		JComboBox<Market> marketComboBox = new JComboBox<>();
+		marketComboBox = new JComboBox<Market>();
 		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, 18);
+		Color COLOR = marketComboBox.getForeground();
+		marketComboBox.setToolTipText("Select market");
 		marketComboBox.setFont(largeFont);
 
 		marketComboBox.addItem(new MarketBTC());
 		marketComboBox.addItem(new MarketETH());
 		marketComboBox.addItem(new MarketLTC());
-		
-		marketComboBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Market m = (Market) marketComboBox.getSelectedItem();
-				orderBook.setMarket(m);
-			}
-		});
+
+		marketComboBox.addActionListener(this);
 		orderBook = new OrderBook((Market) marketComboBox.getSelectedItem());
 
-		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 18);
+		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 18, COLOR);
 		JButton copyAddButton = new JButton(address.getRawAddress(), copyIcon);
 		copyAddButton.addActionListener(new ActionListener() {
 			@Override
@@ -116,31 +109,34 @@ public class Main extends JFrame {
 		copyAddButton.setToolTipText("Copy your Burst address to clipboard");
 		copyAddButton.setFont(largeFont);
 
-		Icon settinsIcon = IconFontSwing.buildIcon(FontAwesome.COG, 18);
+		Icon settinsIcon = IconFontSwing.buildIcon(FontAwesome.COG, 18, COLOR);
 		JButton settingsButton = new JButton(settinsIcon);
 		settingsButton.setToolTipText("Configure settings...");
 		settingsButton.setFont(largeFont);
 
-		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.SHARE, 18);
-		JButton sendButton = new JButton(sendIcon);
+		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_UP, 18, COLOR);
+		sendButton = new JButton(sendIcon);
+		sendButton.addActionListener(this);
 		sendButton.setToolTipText("Send BURST...");
 		sendButton.setFont(largeFont);
 
-		Icon createOfferIcon = IconFontSwing.buildIcon(FontAwesome.MONEY, 18);
-		JButton createOfferButton = new JButton(createOfferIcon);
+		Icon createOfferIcon = IconFontSwing.buildIcon(FontAwesome.MONEY, 18, COLOR);
+		createOfferButton = new JButton(createOfferIcon);
 		createOfferButton.setToolTipText("Create a new sell offer...");
 		createOfferButton.setFont(largeFont);
+
+		createOfferButton.addActionListener(this);
 
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
 		tabbedPane.setFont(largeFont);
 
-		Icon orderIcon = IconFontSwing.buildIcon(FontAwesome.BOOK, 18);
+		Icon orderIcon = IconFontSwing.buildIcon(FontAwesome.BOOK, 18, COLOR);
 		tabbedPane.addTab("ORDER BOOK", orderIcon, orderBook);
 
-		Icon ongoinIcon = IconFontSwing.buildIcon(FontAwesome.HANDSHAKE_O, 18);
+		Icon ongoinIcon = IconFontSwing.buildIcon(FontAwesome.HANDSHAKE_O, 18, COLOR);
 		tabbedPane.addTab("ONGOING TRADES", ongoinIcon, new JLabel());
 
-		Icon tradeIcon = IconFontSwing.buildIcon(FontAwesome.LINE_CHART, 18);
+		Icon tradeIcon = IconFontSwing.buildIcon(FontAwesome.LINE_CHART, 18, COLOR);
 		tabbedPane.addTab("TRADE HISTORY", tradeIcon, new JLabel());
 
 		balanceLabel = new JLabel();
@@ -169,7 +165,7 @@ public class Main extends JFrame {
 		setMinimumSize(new Dimension(900, 600));
 		setLocationRelativeTo(null);
 		setVisible(true);
-		
+
 		Thread updateThread = new UpdateThread();
 		updateThread.start();
 	}
@@ -205,5 +201,26 @@ public class Main extends JFrame {
 				new Main();
 			}
 		});
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		Market m = (Market) marketComboBox.getSelectedItem();
+		if(e.getSource() == createOfferButton) {
+			
+			PlaceSell dlg = new PlaceSell(this, m);
+
+			dlg.setLocationRelativeTo(Main.this);
+			dlg.setVisible(true);
+		}
+		else if (e.getSource() == marketComboBox) {
+			orderBook.setMarket(m);
+		}
+		else if (e.getSource() == sendButton) {
+			SendBurst dlg = new SendBurst(this);
+
+			dlg.setLocationRelativeTo(Main.this);
+			dlg.setVisible(true);			
+		}
 	}
 }
