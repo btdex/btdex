@@ -9,11 +9,12 @@ import bt.ui.EmulatorWindow;
  * The BlockTalk on-chain decentralized exchange smart contract for selling BURST.
  * 
  * Someone willing to sell BURST should create a contract instance and configure
- * it accordingly. There is a 0.1% fee for those selling BURST and 0.3% fee for
+ * it accordingly. There is a zero fee for those selling BURST and 0.25% fee for
  * the buyer (taker). Smart contract activation fees as well as transaction
  * network (mining) fees also apply.
  * 
- * Eventual trade disputes are handled by an arbitrator system.
+ * Eventual trade disputes are handled by an arbitrator system. Fees go to a
+ * smart contract account, distributed to BTDEX token holders monthly.
  * 
  * @author jjos
  */
@@ -33,20 +34,22 @@ public class SellContract extends Contract {
 	public static final long STATE_CREATOR_DISPUTE = 0x0000000000000200;
 	public static final long STATE_TAKER_DISPUTE = 0x0000000000000400;
 
+	/** Address of the contract collecting the fees to be distributed to BTDEX holders */
+	Address feeContract;
+	
 	Address arbitrator1;
 	Address arbitrator2;
 	long offerType;
 	long accountHash;
-	long nonce;
 
 	long state;
 	long rate;
 	Timestamp pauseTimeout;
 	long amount;
 	long security;
+	long nonce;
 
 	Address taker;
-	long fee;
 
 	/**
 	 * Update the offer settings, must be called by the creator.
@@ -119,28 +122,22 @@ public class SellContract extends Contract {
 	 * Report that the payment was received and then send the BURST amount to taker.
 	 * 
 	 * This method also return the respective security deposits as well as pays the
-	 * arbitration fees.
+	 * fee.
 	 */
 	public void reportComplete() {
 		if (getCurrentTxSender() == getCreator() && state >= STATE_WAITING_PAYMT) {
-			// Only creator can report the process is complete
+			// Only the creator can report the process is complete
 
-			fee = amount / 1000;
-			// creator gets his security minus 0.1 % fee
-			sendAmount(security - fee, getCreator());
+			// creator gets back the security deposity (zero fee)
+			sendAmount(security, getCreator());
 
-			fee += fee;
-			// 0.2 % for one arbitrator
-			sendAmount(fee, arbitrator1);
-
-			fee += fee;
-			// taker gets the amount plus his security minus the 0.3% fee
-			sendAmount(amount + security - fee, taker);
+			// taker gets the amount plus his security minus the 0.25% fee
+			sendAmount(amount + security - amount/400, taker);
 			taker = null;
 			state = STATE_FINISHED;
 
-			// the arbitrator2 fee comes from the balance
-			sendBalance(arbitrator2);
+			// the fee comes from the balance
+			sendBalance(feeContract);
 		}
 	}
 
@@ -173,10 +170,8 @@ public class SellContract extends Contract {
 			taker = null;
 			state = STATE_FINISHED;
 
-			// dispute fee is sent to the arbitrators
-			fee = getCurrentBalance() / 2;
-			sendAmount(fee, arbitrator1);
-			sendBalance(arbitrator2);
+			// dispute fee is sent to the fee contract
+			sendBalance(feeContract);
 		}
 	}
 

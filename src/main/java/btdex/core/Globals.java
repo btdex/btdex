@@ -57,6 +57,7 @@ public class Globals {
 	public static long MARKET_BTC            = 0x000000001;
 	public static long MARKET_LTC            = 0x000000002;
 	public static long MARKET_ETH            = 0x000000003;
+
 	// TODO: fill with other cryptos here
 	
 	public static long MARKET_USD            = 0x000001000;

@@ -7,6 +7,18 @@ import java.util.Locale;
 
 public abstract class Market {
 	
+	/**
+	 * If this market is for a BURST token, should return its ID.
+	 * 
+	 * @return the BURST token ID or null if not a token.
+	 */
+	public String getBurstTokenID() {
+		return null;
+	}
+
+	/**
+	 * @return a unique ID for the market or 0 if is a BURST token.
+	 */
 	public abstract long getID();
 	
 	private static final NumberFormat NF = NumberFormat.getInstance(Locale.ENGLISH);

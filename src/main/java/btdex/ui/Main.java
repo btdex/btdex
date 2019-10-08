@@ -30,6 +30,7 @@ import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.markets.MarketBTC;
+import btdex.markets.MarketBTDEX;
 import btdex.markets.MarketETH;
 import btdex.markets.MarketLTC;
 import burst.kit.entity.BurstAddress;
@@ -61,7 +62,7 @@ public class Main extends JFrame implements ActionListener {
 	private JButton sendButton;
 
 	public Main() {
-		super("BTDEX" + (Globals.IS_TESTNET ? " - TESTNET" : ""));
+		super("BlockTalk DEX" + (Globals.IS_TESTNET ? " - TESTNET" : ""));
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		try {
@@ -92,6 +93,7 @@ public class Main extends JFrame implements ActionListener {
 		marketComboBox.addItem(new MarketBTC());
 		marketComboBox.addItem(new MarketETH());
 		marketComboBox.addItem(new MarketLTC());
+		marketComboBox.addItem(new MarketBTDEX());
 
 		marketComboBox.addActionListener(this);
 		orderBook = new OrderBook((Market) marketComboBox.getSelectedItem());
