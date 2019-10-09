@@ -157,9 +157,12 @@ public class Main extends JFrame implements ActionListener {
 		Icon tradeIcon = IconFontSwing.buildIcon(FontAwesome.LINE_CHART, 18, COLOR);
 		tabbedPane.addTab("TRADE HISTORY", tradeIcon, new JLabel());
 
+		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.EXCHANGE, 18, COLOR);
+		tabbedPane.addTab("TRANSACTIONS", transactionsIcon, new JLabel());
+
 		top.add(new Desc("Market", marketComboBox));
 		top.add(new Desc("Your Burst address", copyAddButton));
-
+		
 		balanceLabel = new JLabel("0");
 		balanceLabel.setToolTipText("Available balance");
 		balanceLabel.setFont(largeFont);
