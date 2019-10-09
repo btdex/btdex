@@ -8,6 +8,7 @@ import org.junit.Test;
 import bt.BT;
 import bt.Contract;
 import btdex.core.Globals;
+import btdex.core.Market;
 import btdex.sm.SellContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
@@ -45,7 +46,7 @@ public class ContractTest extends BT {
 
         BurstID arbitrator1 = Globals.ARBITRATORS[0];
         BurstID arbitrator2 = Globals.ARBITRATOR_BAKCUP;
-        long offerType = Globals.MARKET_BTC;
+        long offerType = Market.MARKET_BTC;
         long state = SellContract.STATE_FINISHED;
 
         long data[] = { arbitrator1.getSignedLongId(), arbitrator2.getSignedLongId(), offerType };

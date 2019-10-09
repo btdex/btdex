@@ -12,12 +12,19 @@ class Desc extends JPanel {
 	JLabel label;
 
 	public Desc(String desc, Component child) {
+		this(desc, child, null);
+	}
+
+	public Desc(String desc, Component child, Component childBottom) {
 		super(new BorderLayout());
 
+		if(desc != null)
+			add(label = new JLabel(desc), BorderLayout.PAGE_START);
 		add(child, BorderLayout.CENTER);
-		add(label = new JLabel(desc), BorderLayout.PAGE_START);
+		if(childBottom!=null)
+			add(childBottom, BorderLayout.PAGE_END);
 	}
-	
+
 	public void setDesc(String desc) {
 		label.setText(desc);
 	}

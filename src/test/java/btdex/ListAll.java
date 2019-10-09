@@ -3,7 +3,7 @@ package btdex;
 import java.util.HashMap;
 
 import btdex.core.ContractState;
-import btdex.core.Globals;
+import btdex.core.Market;
 import burst.kit.entity.BurstAddress;
 
 public class ListAll {
@@ -14,7 +14,7 @@ public class ListAll {
 		ContractState.addContracts(map);
 		
 		for (ContractState s : map.values()) {
-			if(s.getMarket() == Globals.MARKET_BTC)
+			if(s.getMarket() == Market.MARKET_BTC)
 				System.out.println(s.getAddress());
 		}
 	}

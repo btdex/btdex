@@ -3,7 +3,6 @@ package btdex.markets;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import btdex.core.Globals;
 import btdex.core.Market;
 
 public class MarketBTC extends Market {
@@ -16,7 +15,7 @@ public class MarketBTC extends Market {
 	
 	@Override
 	public long getID() {
-		return Globals.MARKET_BTC;
+		return MARKET_BTC;
 	}
 	
 	@Override

@@ -9,7 +9,6 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JSlider;
@@ -97,7 +96,7 @@ public class SendBurst extends JDialog implements ActionListener {
 		pack();
 
 		try {
-			FeeSuggestion suggested = Globals.NS.suggestFee().blockingGet();
+			FeeSuggestion suggested = Globals.getInstance().getNS().suggestFee().blockingGet();
 			int feeInt = (int)suggested.getPriorityFee().longValue()/FEE_QUANT;
 			fee.getModel().setValue(feeInt);
 		}

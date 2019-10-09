@@ -39,7 +39,7 @@ public class ContractState {
 	}
 	
 	public long getMarket() {
-		return offerType & Globals.MARKET_MASK;
+		return offerType & Market.MARKET_MASK;
 	}
 	
 	public BurstAddress getAddress() {
@@ -105,9 +105,10 @@ public class ContractState {
 	 * @param map
 	 */
 	public static void addContracts(HashMap<BurstAddress, ContractState> map){
+		Globals g = Globals.getInstance();
 		
-		byte []code = Globals.contract.getCode();
-		BurstAddress[] atIDs = Globals.NS.getAtIds().blockingGet();
+		byte []code = g.getContract().getCode();
+		BurstAddress[] atIDs = g.getNS().getAtIds().blockingGet();
 		
 		// reverse order to get the more recent ones first
 		for (int i = atIDs.length-1; i >= 0; i--) {
@@ -117,7 +118,7 @@ public class ContractState {
 			if(map.containsKey(ad))
 				return;
 			
-			AT at = Globals.NS.getAt(ad).blockingGet();
+			AT at = g.getNS().getAt(ad).blockingGet();
 			
 			if(at.getMachineCode().length > code.length &&
 					Arrays.equals(at.getMachineCode(), 0, code.length, code, 0, code.length)){
@@ -136,7 +137,7 @@ public class ContractState {
 	
 	void updateState(AT at) {
 		if(at == null)
-			at = Globals.NS.getAt(address).blockingGet();
+			at = Globals.getInstance().getNS().getAt(address).blockingGet();
 		
 		this.at = at;
 		this.address = at.getId();

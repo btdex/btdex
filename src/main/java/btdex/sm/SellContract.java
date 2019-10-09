@@ -6,15 +6,17 @@ import bt.Timestamp;
 import bt.ui.EmulatorWindow;
 
 /**
- * The BlockTalk on-chain decentralized exchange smart contract for selling BURST.
+ * BlockTalk on-chain decentralized exchange smart contract for selling BURST.
  * 
  * Someone willing to sell BURST should create a contract instance and configure
- * it accordingly. There is a zero fee for those selling BURST and 0.25% fee for
+ * it accordingly. There is zero fee for those selling BURST and 0.25% fee for
  * the buyer (taker). Smart contract activation fees as well as transaction
  * network (mining) fees also apply.
  * 
  * Eventual trade disputes are handled by an arbitrator system. Fees go to a
  * smart contract account, distributed to BTDEX token holders monthly.
+ * BTDEX, in turn, is distributed as trade rewards, for trade offer makers
+ * and arbitrators.
  * 
  * @author jjos
  */
@@ -99,13 +101,15 @@ public class SellContract extends Contract {
 	 * 
 	 * @param rate         the exchange rate per BURST
 	 * @param security     the security deposit of this offer (in planck)
+	 * @param amount       the amount of this offer (in planck)
 	 */
-	public void take(long rate, long security) {
+	public void take(long rate, long security, long amount) {
 		if (getCurrentTxTimestamp().ge(this.pauseTimeout)) {
 			// offer has timed out
 			state = STATE_PAUSED;
 		}
 		if (state != STATE_OPEN || this.rate != rate || this.security != security
+				|| this.amount != amount
 				|| getCurrentTxAmount() + ACTIVATION_FEE < security) {
 			// if it is not open or values do no match, refund
 			sendAmount(getCurrentTxAmount(), getCurrentTxSender());

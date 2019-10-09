@@ -3,6 +3,7 @@ package btdex;
 import bt.BT;
 import bt.Contract;
 import btdex.core.Globals;
+import btdex.core.Market;
 import btdex.sm.SellContract;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
@@ -25,7 +26,7 @@ public class PopulateMarket extends BT {
 
 		BurstID arbitrator1 = Globals.ARBITRATORS[0];
 		BurstID arbitrator2 = Globals.ARBITRATOR_BAKCUP;
-		long offerType = Globals.MARKET_BTC;
+		long offerType = Market.MARKET_BTC;
 		long accountHash = 1234;
 
 		long data[] = { arbitrator1.getSignedLongId(), arbitrator2.getSignedLongId(),

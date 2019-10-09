@@ -7,6 +7,28 @@ import java.util.Locale;
 
 public abstract class Market {
 	
+	public static long MARKET_BTC            = 0x000000001;
+	public static long MARKET_LTC            = 0x000000002;
+	public static long MARKET_ETH            = 0x000000003;
+
+	// TODO: fill with other cryptos here
+	
+	public static long MARKET_USD            = 0x000001000;
+	public static long MARKET_EUR            = 0x000002000;
+	public static long MARKET_BRL            = 0x000003000;
+	// TODO: fill with other fiat currencies here
+	
+	public static long MARKET_MASK           = 0x0000fffff;
+	
+	public static long TRANSFER_SAME_BANK    = 0x000100000;
+	public static long TRANSFER_NATIONAL_BANK= 0x000200000;
+	public static long TRANSFER_SEPA         = 0x000300000;
+	public static long TRANSFER_SEPA_INST    = 0x000400000;
+	public static long TRANSFER_ZELLE        = 0x000500000;
+	// TODO: fill with other FIAT transfer methods
+	public static long TRANSFER_MASK         = 0x00ff00000;
+
+	
 	/**
 	 * If this market is for a BURST token, should return its ID.
 	 * 

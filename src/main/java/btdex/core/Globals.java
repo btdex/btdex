@@ -1,6 +1,8 @@
 package btdex.core;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Properties;
 
 import bt.BT;
 import bt.compiler.Compiler;
@@ -11,10 +13,18 @@ import burst.kit.service.BurstNodeService;
 
 public class Globals {
 	
-	public static BurstNodeService NS = BurstNodeService.getInstance(BT.NODE_LOCAL_TESTNET);
-	public static BurstCrypto BC = BurstCrypto.getInstance();
+	BurstNodeService NS = BurstNodeService.getInstance(BT.NODE_BURST_TEAM);
+	public static final BurstCrypto BC = BurstCrypto.getInstance();
 	
-	public static boolean IS_TESTNET = true;
+	static final String CONF_FILE = "config.properties";
+	
+	public static final String PROP_NODE = "node";
+	public static final String PROP_ENC_PASSPHRASE = "encryptedPassPhrase";
+	public static final String PROP_PUBKEY = "pubkey";
+		
+	Properties conf = new Properties();
+	
+	boolean IS_TESTNET = false;
 
 	public static Compiler contract;
 
@@ -28,9 +38,31 @@ public class Globals {
 			
 			ARBITRATOR_BAKCUP,
 	};
+	
+	static final Globals INSTANCE = new Globals();
+	
+	public static Globals getInstance() {
+		return INSTANCE;
+	}
+	
+	public static Properties getConf() {
+		return getInstance().conf;
+	}
 
-	static {
+	public Globals() {
 		try {
+			// Read properties from file
+			FileInputStream input = new FileInputStream(CONF_FILE);
+			conf.load(input);
+			
+			setNode(conf.getProperty(PROP_NODE, BT.NODE_BURST_TEAM));
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		try {
+			
 			contract = new Compiler(SellContract.class);
 			contract.compile();
 			contract.link();
@@ -39,14 +71,23 @@ public class Globals {
 		}
 	}
 	
-	public static void setNode(String node) {
+	public Compiler getContract() {
+		return contract;
+	}
+	
+	public BurstNodeService getNS() {
+		return NS;
+	}
+	
+	public void setNode(String node) {
+		conf.setProperty("node", node);
 		if(node.contains("6876"))
 			IS_TESTNET = true;
 		
 		NS = BurstNodeService.getInstance(node);
 	}
 	
-	public static boolean isArbitratorAccepted(long arb) {
+	public boolean isArbitratorAccepted(long arb) {
 		for (BurstID arbi : ARBITRATORS) {
 			if(arbi.getSignedLongId() == arb)
 				return true;
@@ -54,24 +95,4 @@ public class Globals {
 		return false;
 	}
 
-	public static long MARKET_BTC            = 0x000000001;
-	public static long MARKET_LTC            = 0x000000002;
-	public static long MARKET_ETH            = 0x000000003;
-
-	// TODO: fill with other cryptos here
-	
-	public static long MARKET_USD            = 0x000001000;
-	public static long MARKET_EUR            = 0x000002000;
-	public static long MARKET_BRL            = 0x000003000;
-	// TODO: fill with other fiat currencies here
-	
-	public static long MARKET_MASK           = 0x0000fffff;
-	
-	public static long TRANSFER_SAME_BANK    = 0x000100000;
-	public static long TRANSFER_NATIONAL_BANK= 0x000200000;
-	public static long TRANSFER_SEPA         = 0x000300000;
-	public static long TRANSFER_SEPA_INST    = 0x000400000;
-	public static long TRANSFER_ZELLE        = 0x000500000;
-	// TODO: fill with other FIAT transfer methods
-	public static long TRANSFER_MASK         = 0x00ff00000;
 }

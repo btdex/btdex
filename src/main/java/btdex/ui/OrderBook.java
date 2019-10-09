@@ -158,13 +158,15 @@ public class OrderBook extends JPanel {
 
 	synchronized public void update() {
 		ContractState.addContracts(map);
+		
+		Globals g = Globals.getInstance();
 
 		marketContracts.clear();
 		for(ContractState s : map.values()) {
 			if(s.getMarket() == selectedMarket.getID() && s.getAmountNQT() > 0
 					&& s.getState() == SellContract.STATE_OPEN
-					&& Globals.isArbitratorAccepted(s.getArbitrator1())
-					&& Globals.isArbitratorAccepted(s.getArbitrator2()) )
+					&& g.isArbitratorAccepted(s.getArbitrator1())
+					&& g.isArbitratorAccepted(s.getArbitrator2()) )
 				marketContracts.add(s);
 		}
 
