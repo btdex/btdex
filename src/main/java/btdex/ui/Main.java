@@ -11,7 +11,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.security.SecureRandom;
-import java.util.Properties;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -32,7 +31,6 @@ import btdex.markets.MarketBTC;
 import btdex.markets.MarketBTDEX;
 import btdex.markets.MarketETH;
 import btdex.markets.MarketLTC;
-import burst.kit.entity.BurstAddress;
 import burst.kit.entity.response.Account;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
@@ -127,7 +125,7 @@ public class Main extends JFrame implements ActionListener {
 		settingsButton.setToolTipText("Configure settings...");
 		settingsButton.setFont(largeFont);
 
-		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_UP, 18, COLOR);
+		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.CHEVRON_CIRCLE_UP, 18, COLOR);
 		Icon createOfferIcon = IconFontSwing.buildIcon(FontAwesome.MONEY, 18, COLOR);
 
 		sendButton = new JButton(sendIcon);
@@ -194,9 +192,6 @@ public class Main extends JFrame implements ActionListener {
 		setLocationRelativeTo(null);
 		setVisible(true);
 
-		Properties conf = Globals.getConf();
-		
-		String publicKeyStr = conf.getProperty(Globals.PROP_PUBKEY);
 		if(Globals.getInstance().getAddress()==null) {
 			// no public key or invalid, show the welcome screen
 			

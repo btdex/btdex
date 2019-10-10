@@ -2,8 +2,6 @@ package btdex.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.JButton;
@@ -27,8 +25,6 @@ public class TransactionsPanel extends JPanel {
 
 	JTable table;
 	DefaultTableModel model;
-
-	Lock lock = new ReentrantLock();
 
 	public static final int COL_ID = 0;
 	public static final int COL_DATE = 1;

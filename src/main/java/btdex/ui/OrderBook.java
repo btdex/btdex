@@ -5,8 +5,6 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.Icon;
@@ -35,8 +33,6 @@ public class OrderBook extends JPanel {
 
 	JTable table;
 	DefaultTableModel model;
-
-	Lock lock = new ReentrantLock();
 
 	HashMap<BurstAddress, ContractState> map = new HashMap<>();
 	ArrayList<ContractState> marketContracts = new ArrayList<>();
