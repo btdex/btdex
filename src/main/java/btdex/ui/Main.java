@@ -45,8 +45,7 @@ public class Main extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
 	OrderBook orderBook;
-
-	BurstAddress address;
+	TransactionsPanel transactionsPanel;
 
 	JTabbedPane tabbedPane;
 
@@ -105,6 +104,8 @@ public class Main extends JFrame implements ActionListener {
 
 		marketComboBox.addActionListener(this);
 		orderBook = new OrderBook((Market) marketComboBox.getSelectedItem());
+		
+		transactionsPanel = new TransactionsPanel();
 
 		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 18, COLOR);
 		copyAddButton = new JButton(copyIcon);
@@ -112,7 +113,7 @@ public class Main extends JFrame implements ActionListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-				StringSelection stringSelection = new StringSelection(address.getFullAddress());
+				StringSelection stringSelection = new StringSelection(Globals.getInstance().getAddress().getFullAddress());
 				clipboard.setContents(stringSelection, null);
 				
 				Toast.makeText(Main.this, "Address copied to clipboard.").display();
@@ -158,7 +159,7 @@ public class Main extends JFrame implements ActionListener {
 		tabbedPane.addTab("TRADE HISTORY", tradeIcon, new JLabel());
 
 		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.EXCHANGE, 18, COLOR);
-		tabbedPane.addTab("TRANSACTIONS", transactionsIcon, new JLabel());
+		tabbedPane.addTab("TRANSACTIONS", transactionsIcon, transactionsPanel);
 
 		top.add(new Desc("Market", marketComboBox));
 		top.add(new Desc("Your Burst address", copyAddButton));
@@ -196,16 +197,11 @@ public class Main extends JFrame implements ActionListener {
 		Properties conf = Globals.getConf();
 		
 		String publicKeyStr = conf.getProperty(Globals.PROP_PUBKEY);
-		if(publicKeyStr == null || publicKeyStr.length()!=64) {
+		if(Globals.getInstance().getAddress()==null) {
 			// no public key or invalid, show the welcome screen
 			
 		}
-
-		// get the updated public key and continue
-		publicKeyStr = conf.getProperty(Globals.PROP_PUBKEY);
-		byte []publicKey = Globals.BC.parseHexString(publicKeyStr);
-		address = Globals.BC.getBurstAddressFromPublic(publicKey);
-		copyAddButton.setText(address.getRawAddress());
+		copyAddButton.setText(Globals.getInstance().getAddress().getRawAddress());
 		
 		Thread updateThread = new UpdateThread();
 		updateThread.start();
@@ -216,7 +212,8 @@ public class Main extends JFrame implements ActionListener {
 		public void run() {
 			while (!Thread.currentThread().isInterrupted()) {
 				try {
-					Account ac = Globals.getInstance().getNS().getAccount(address).blockingGet();
+					Globals g = Globals.getInstance();
+					Account ac = g.getNS().getAccount(g.getAddress()).blockingGet();
 					
 					balanceLabel.setText(ContractState.format(ac.getBalance().longValue()));
 					lockedBalanceLabel.setText("+" + ContractState.format(0) + " locked");
@@ -227,11 +224,16 @@ public class Main extends JFrame implements ActionListener {
 					nodeStatus.setText("Node: " + Globals.getConf().getProperty(Globals.PROP_NODE));
 
 					orderBook.update();
-
-					sleep(10000);
+					transactionsPanel.update();
 				}
 				catch (RuntimeException rex) {
+					rex.printStackTrace();
+					
 					nodeStatus.setText(rex.getMessage());
+				}
+
+				try {
+					sleep(10000);
 				}
 				catch (InterruptedException ex) {
 					Thread.currentThread().interrupt();

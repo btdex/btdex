@@ -8,6 +8,7 @@ import bt.BT;
 import bt.compiler.Compiler;
 import btdex.sm.SellContract;
 import burst.kit.crypto.BurstCrypto;
+import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.service.BurstNodeService;
 
@@ -25,6 +26,7 @@ public class Globals {
 	Properties conf = new Properties();
 	
 	boolean IS_TESTNET = false;
+	private BurstAddress address;
 
 	public static Compiler contract;
 
@@ -56,6 +58,18 @@ public class Globals {
 			conf.load(input);
 			
 			setNode(conf.getProperty(PROP_NODE, BT.NODE_BURST_TEAM));
+			
+			String publicKeyStr = conf.getProperty(Globals.PROP_PUBKEY);
+			if(publicKeyStr == null || publicKeyStr.length()!=64) {
+				// no public key or invalid, show the welcome screen
+				conf.remove(PROP_PUBKEY);
+			}
+			else {
+				// get the updated public key and continue
+				publicKeyStr = conf.getProperty(Globals.PROP_PUBKEY);
+				byte []publicKey = BC.parseHexString(publicKeyStr);
+				address = BC.getBurstAddressFromPublic(publicKey);
+			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -69,6 +83,10 @@ public class Globals {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public BurstAddress getAddress() {
+		return address;
 	}
 	
 	public Compiler getContract() {

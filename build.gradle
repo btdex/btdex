@@ -18,8 +18,9 @@ allprojects {
 }
 
 dependencies {
+    //implementation 'com.github.burst-apps-team:burstkit4j:v0.12.2'
+    implementation 'com.github.jjos2372:burstkit4j:c37af5cdef'
     implementation 'com.github.jjos2372:blocktalk:-SNAPSHOT'
-    implementation 'com.github.burst-apps-team:burstkit4j:v0.12.2'
 
     implementation 'com.github.jiconfont:jiconfont-swing:1.0.0'
     implementation 'com.github.jiconfont:jiconfont-font_awesome:4.7.0.1'
