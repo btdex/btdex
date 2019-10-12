@@ -43,7 +43,7 @@ public class PlaceSell extends JDialog implements ActionListener {
 
 		this.market = market;
 
-		isToken = market.getBurstTokenID()!=null;
+		isToken = market.getTokenID()!=null;
 
 		account = new JComboBox<>();
 		accountDetails = new JTextField(36);
@@ -64,9 +64,10 @@ public class PlaceSell extends JDialog implements ActionListener {
 		panel.setBorder(BorderFactory.createTitledBorder("Offer configuration"));
 		panel.add(new Desc("Rate (" + market.toString() + ")", rate));
 		panel.add(new Desc("Amount (BURST)", amount));
-		panel.add(new Desc("Timeout (mins.)", timeout));
 
 		if(!isToken) {
+			panel.add(new Desc("Timeout (mins.)", timeout));
+
 			security = new JSlider(1, 20);
 
 			Desc securityDesc = new Desc("", security);

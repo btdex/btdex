@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
+import burst.kit.entity.BurstID;
+
 public abstract class Market {
 	
 	public static long MARKET_BTC            = 0x000000001;
@@ -34,7 +36,7 @@ public abstract class Market {
 	 * 
 	 * @return the BURST token ID or null if not a token.
 	 */
-	public String getBurstTokenID() {
+	public BurstID getTokenID() {
 		return null;
 	}
 

@@ -28,13 +28,15 @@ import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.markets.MarketBTC;
-import btdex.markets.MarketBTDEX;
 import btdex.markets.MarketETH;
 import btdex.markets.MarketLTC;
+import btdex.markets.MarketTRT;
 import burst.kit.entity.response.Account;
+import burst.kit.entity.response.AssetAccount;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
 import io.github.novacrypto.bip39.wordlists.English;
+import io.reactivex.Single;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
 
@@ -65,6 +67,8 @@ public class Main extends JFrame implements ActionListener {
 	private JLabel lockedBalanceLabelToken;
 
 	private JButton sendButtonToken;
+
+	private MarketTRT token;
 
 	public Main() {
 		super("BlockTalk DEX");
@@ -98,7 +102,7 @@ public class Main extends JFrame implements ActionListener {
 		marketComboBox.addItem(new MarketBTC());
 		marketComboBox.addItem(new MarketETH());
 		marketComboBox.addItem(new MarketLTC());
-		marketComboBox.addItem(new MarketBTDEX());
+		marketComboBox.addItem(token = new MarketTRT());
 
 		marketComboBox.addActionListener(this);
 		orderBook = new OrderBook((Market) marketComboBox.getSelectedItem());
@@ -125,7 +129,7 @@ public class Main extends JFrame implements ActionListener {
 		settingsButton.setToolTipText("Configure settings...");
 		settingsButton.setFont(largeFont);
 
-		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.CHEVRON_CIRCLE_UP, 18, COLOR);
+		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.PAPER_PLANE, 18, COLOR);
 		Icon createOfferIcon = IconFontSwing.buildIcon(FontAwesome.MONEY, 18, COLOR);
 
 		sendButton = new JButton(sendIcon);
@@ -137,7 +141,7 @@ public class Main extends JFrame implements ActionListener {
 		createOfferButton.addActionListener(this);
 
 		sendButtonToken = new JButton(sendIcon);
-		sendButtonToken.setToolTipText("Send BTDEX...");
+		sendButtonToken.setToolTipText(String.format("Send %s...", token.toString()));
 		sendButtonToken.addActionListener(this);
 
 //		createOfferButtonBTDEX = new JButton(createOfferIcon);
@@ -176,7 +180,7 @@ public class Main extends JFrame implements ActionListener {
 		balanceLabelToken.setFont(largeFont);
 		lockedBalanceLabelToken = new JLabel("0");
 		lockedBalanceLabelToken.setToolTipText("Amount locked in trades");
-		top.add(new Desc("Balance (BTDEX)", balanceLabelToken, lockedBalanceLabelToken));
+		top.add(new Desc(String.format("Balance (%s)", token), balanceLabelToken, lockedBalanceLabelToken));
 		top.add(new Desc("  ", sendButtonToken));
 //		top.add(new Desc("  ", createOfferButtonBTDEX));
 
@@ -212,9 +216,16 @@ public class Main extends JFrame implements ActionListener {
 					
 					balanceLabel.setText(ContractState.format(ac.getBalance().longValue()));
 					lockedBalanceLabel.setText("+" + ContractState.format(0) + " locked");
-
-					balanceLabelToken.setText(ContractState.format(0));
-					lockedBalanceLabelToken.setText("+" + ContractState.format(0) + " locked");
+					
+					AssetAccount[] accounts = g.getNS().getAssetAccounts(token.getTokenID()).blockingGet();
+					long tokenBalance = 0;
+					for (AssetAccount aac : accounts) {
+						if(aac.getAccount().getSignedLongId() == g.getAddress().getSignedLongId()) {
+							tokenBalance += aac.getQuantity().longValue();
+						}
+					}
+					balanceLabelToken.setText(token.numberFormat(tokenBalance));
+					lockedBalanceLabelToken.setText("+" + token.numberFormat(0) + " locked");
 
 					nodeStatus.setText("Node: " + Globals.getConf().getProperty(Globals.PROP_NODE));
 
