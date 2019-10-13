@@ -1,8 +1,7 @@
 package btdex.sm;
 
-import bt.Contract;
 import bt.Address;
-import bt.Timestamp;
+import bt.Contract;
 import bt.ui.EmulatorWindow;
 
 /**
@@ -13,20 +12,19 @@ import bt.ui.EmulatorWindow;
  * the buyer (taker). Smart contract activation fees as well as transaction
  * network (mining) fees also apply.
  * 
- * Eventual trade disputes are handled by an arbitrator system. Fees go to a
- * smart contract account, distributed to BTDEX token holders monthly.
- * BTDEX, in turn, is distributed as trade rewards, for trade offer makers
+ * Occasional trade disputes are handled by an arbitrator system. Fees go to a
+ * smart contract account to be distributed among TRT holders monthly.
+ * TRT, in turn, is distributed as trade rewards, for trade offer makers
  * and arbitrators.
  * 
  * @author jjos
  */
 public class SellContract extends Contract {
 
-	public static final long ACTIVATION_FEE = 28 * ONE_BURST;
+	public static final long ACTIVATION_FEE = 24 * ONE_BURST;
 
 	public static final long STATE_FINISHED = 0x0000000000000000;
 	public static final long STATE_OPEN = 0x0000000000000001;
-	public static final long STATE_PAUSED = 0x0000000000000002;
 
 	public static final long STATE_TAKEN = 0x0000000000000010;
 	public static final long STATE_WAITING_PAYMT = 0x0000000000000020;
@@ -46,7 +44,6 @@ public class SellContract extends Contract {
 
 	long state;
 	long rate;
-	Timestamp pauseTimeout;
 	long amount;
 	long security;
 	long nonce;
@@ -56,34 +53,30 @@ public class SellContract extends Contract {
 	/**
 	 * Update the offer settings, must be called by the creator.
 	 * 
-	 * With this method the creator can update the rate, security deposit, and pause
-	 * timeout. The offer status is also changed to **open** if the given timeout is
-	 * greater than zero. If the creator sets the security deposit to zero, the offer
-	 * is withdrawn and all balance is send back to the creator.
+	 * With this method the creator can update the rate, security deposit.
+	 * The offer status is also changed to **open** if the given security
+	 * deposit is greater than zero. If the creator sets the security
+	 * deposit as zero, the offer is withdrawn and all balance is sent back
+	 * to the creator.
 	 * 
 	 * @param rate         the exchange rate per BURST
 	 * @param security     the security deposit of this offer (in planck)
-	 * @param pauseTimeout number of minutes this order should be open
 	 */
-	public void update(long rate, long security, long pauseTimeout) {
+	public void update(long rate, long security) {
 		if (getCurrentTxSender() == getCreator() && state < STATE_TAKEN) {
 			// is the creator and the order should not be taken for us to change it
-			this.state = STATE_PAUSED;
 			this.rate = rate;
 			this.security = security;
+			this.state = STATE_OPEN;
 			nonce++;
 			if (security == 0) {
 				// withdraw, taking any security deposit balance
 				amount = 0;
+				this.state = STATE_FINISHED;
 				sendBalance(getCreator());
 				return;
 			}
 			
-			if (pauseTimeout > 0)
-				this.state = STATE_OPEN;
-			
-			this.pauseTimeout = getCurrentTxTimestamp().addMinutes(pauseTimeout);
-
 			// Amount being sold is the current balance, minus the security.
 			// Seller can loose the security deposit if not respecting the protocol
 			amount = getCurrentBalance() - security;
@@ -104,13 +97,9 @@ public class SellContract extends Contract {
 	 * @param amount       the amount of this offer (in planck)
 	 */
 	public void take(long rate, long security, long amount) {
-		if (getCurrentTxTimestamp().ge(this.pauseTimeout)) {
-			// offer has timed out
-			state = STATE_PAUSED;
-		}
 		if (state != STATE_OPEN || this.rate != rate || this.security != security
 				|| this.amount != amount
-				|| getCurrentTxAmount() + ACTIVATION_FEE < security) {
+				|| getCurrentTxAmount() < security) {
 			// if it is not open or values do no match, refund
 			sendAmount(getCurrentTxAmount(), getCurrentTxSender());
 			return;

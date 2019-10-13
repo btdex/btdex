@@ -16,7 +16,7 @@ public class MarketTRT extends Market {
 	
 	@Override
 	public BurstID getTokenID() {
-		return BurstID.fromLong("15164063889875975413");
+		return BurstID.fromLong("6124399134335154227");
 	}
 	
 	private static final NumberFormat NF = NumberFormat.getInstance(Locale.ENGLISH);
@@ -27,7 +27,7 @@ public class MarketTRT extends Market {
 
 	
 	public String numberFormat(long value) {
-		double dvalue = value/100000.0;
+		double dvalue = value/10000.0;
 		return NF.format(dvalue);
 	}
 	

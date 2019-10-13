@@ -5,13 +5,16 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.security.SecureRandom;
 
+import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -36,7 +39,6 @@ import burst.kit.entity.response.AssetAccount;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
 import io.github.novacrypto.bip39.wordlists.English;
-import io.reactivex.Single;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
 
@@ -64,26 +66,33 @@ public class Main extends JFrame implements ActionListener {
 
 	private JLabel balanceLabelToken;
 
-	private JLabel lockedBalanceLabelToken;
+	private JLabel balanceLabelTokenPending;
 
 	private JButton sendButtonToken;
 
 	private MarketTRT token;
 
 	public Main() {
-		super("BlockTalk DEX");
+		super("BTDEX");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+		
+		try {
+			Image image = ImageIO.read(Main.class.getResourceAsStream("icon.png"));
+			setIconImage(image);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		try {
 			DarculaLaf laf = new DarculaLaf();
 			UIManager.setLookAndFeel(laf);
 		} catch (UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-
+		
 		IconFontSwing.register(FontAwesome.getIconFont());
 		setBackground(Color.BLACK);
-
+		
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setOpaque(true);
 
@@ -98,7 +107,7 @@ public class Main extends JFrame implements ActionListener {
 		Color COLOR = marketComboBox.getForeground();
 		marketComboBox.setToolTipText("Select market");
 		marketComboBox.setFont(largeFont);
-
+		
 		marketComboBox.addItem(new MarketBTC());
 		marketComboBox.addItem(new MarketETH());
 		marketComboBox.addItem(new MarketLTC());
@@ -178,9 +187,9 @@ public class Main extends JFrame implements ActionListener {
 		balanceLabelToken = new JLabel("0");
 		balanceLabelToken.setToolTipText("Available balance");
 		balanceLabelToken.setFont(largeFont);
-		lockedBalanceLabelToken = new JLabel("0");
-		lockedBalanceLabelToken.setToolTipText("Amount locked in trades");
-		top.add(new Desc(String.format("Balance (%s)", token), balanceLabelToken, lockedBalanceLabelToken));
+		balanceLabelTokenPending = new JLabel("0");
+		balanceLabelTokenPending.setToolTipText("Pending from trade rewards");
+		top.add(new Desc(String.format("Balance (%s)", token), balanceLabelToken, balanceLabelTokenPending));
 		top.add(new Desc("  ", sendButtonToken));
 //		top.add(new Desc("  ", createOfferButtonBTDEX));
 
@@ -225,7 +234,7 @@ public class Main extends JFrame implements ActionListener {
 						}
 					}
 					balanceLabelToken.setText(token.numberFormat(tokenBalance));
-					lockedBalanceLabelToken.setText("+" + token.numberFormat(0) + " locked");
+					balanceLabelTokenPending.setText("+" + token.numberFormat(0) + " pending");
 
 					nodeStatus.setText("Node: " + Globals.getConf().getProperty(Globals.PROP_NODE));
 

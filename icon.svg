@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   aria-hidden="true"
+   focusable="false"
+   data-prefix="far"
+   data-icon="id-card"
+   class="svg-inline--fa fa-id-card fa-w-18"
+   role="img"
+   viewBox="0 0 576 575.99999"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="icon2.svg"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   width="576"
+   height="576"
+   inkscape:export-filename="/home/rafael/git/ex-change/src/main/java/btdex/ui/icon2.png"
+   inkscape:export-xdpi="21.33"
+   inkscape:export-ydpi="21.33">
+  <metadata
+     id="metadata10">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs8" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1859"
+     inkscape:window-height="1017"
+     id="namedview6"
+     showgrid="false"
+     inkscape:zoom="0.4609375"
+     inkscape:cx="288"
+     inkscape:cy="282.55178"
+     inkscape:window-x="61"
+     inkscape:window-y="34"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <rect
+     style="opacity:1;fill:#bbbbbb;fill-opacity:1;stroke:none;stroke-width:6.60284042;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:19.80852067, 6.60284022;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect865"
+     width="705"
+     height="705"
+     x="-62.23732"
+     y="-58.796608"
+     rx="99.988022"
+     ry="112.44324"
+     inkscape:export-filename="/home/rafael/git/ex-change/src/main/java/btdex/ui/icon2.png"
+     inkscape:export-xdpi="17.43"
+     inkscape:export-ydpi="17.43" />
+  <path
+     d="M 528,69.448209 H 48 c -26.5,0 -48,21.5 -48,47.999991 v 352 c 0,26.5 21.5,48 48,48 h 480 c 26.5,0 48,-21.5 48,-48 v -352 C 576,90.948209 554.5,69.448209 528,69.448209 Z M 528,469.4482 H 303.2 c 0.9,-4.5 0.8,3.6 0.8,-22.4 0,-31.8 -30.1,-57.6 -67.2,-57.6 -10.8,0 -18.7,8 -44.8,8 -26.9,0 -33.4,-8 -44.8,-8 -37.1,0 -67.2,25.8 -67.2,57.6 0,26 -0.2,17.9 0.8,22.4 H 48 v -288 h 480 z m -168,-80 h 112 c 4.4,0 8,-3.6 8,-8 v -16 c 0,-4.4 -3.6,-8 -8,-8 H 360 c -4.4,0 -8,3.6 -8,8 v 16 c 0,4.4 3.6,8 8,8 z m 0,-64 h 112 c 4.4,0 8,-3.6 8,-8 v -16 c 0,-4.4 -3.6,-8 -8,-8 H 360 c -4.4,0 -8,3.6 -8,8 v 16 c 0,4.4 3.6,8 8,8 z m 0,-64 h 112 c 4.4,0 8,-3.6 8,-8 v -16 c 0,-4.4 -3.6,-8 -8,-8 H 360 c -4.4,0 -8,3.6 -8,8 v 16 c 0,4.4 3.6,8 8,8 z m -168,96 c 35.3,0 64,-28.7 64,-64 0,-35.3 -28.7,-64 -64,-64 -35.3,0 -64,28.7 -64,64 0,35.3 28.7,64 64,64 z"
+     id="path2"
+     style="fill:#3c3f41;fill-opacity:1"
+     inkscape:connector-curvature="0"
+     inkscape:export-filename="/home/rafael/git/ex-change/src/main/java/btdex/ui/icon2.png"
+     inkscape:export-xdpi="17.43"
+     inkscape:export-ydpi="17.43" />
+  <rect
+     style="opacity:1;fill:#bbbbbb;fill-opacity:1;stroke:none;stroke-width:5.96472263;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:17.89416806, 5.96472269000000033;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect819-9"
+     width="651.08612"
+     height="80"
+     x="-435.46124"
+     y="400.53748"
+     rx="31.832336"
+     ry="63.628178"
+     transform="matrix(0.5073602,-0.86173408,0.87021297,0.49267574,0,0)"
+     inkscape:export-filename="/home/rafael/git/ex-change/src/main/java/btdex/ui/icon2.png"
+     inkscape:export-xdpi="17.43"
+     inkscape:export-ydpi="17.43" />
+  <rect
+     style="opacity:1;fill:#d10000;fill-opacity:1;stroke:none;stroke-width:5.96472263;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:17.89416806, 5.96472269000000033;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect819"
+     width="651.08612"
+     height="80"
+     x="-435.27222"
+     y="367.47757"
+     rx="31.832336"
+     ry="63.628178"
+     transform="matrix(0.5073602,-0.86173408,0.87021297,0.49267574,0,0)"
+     inkscape:export-filename="/home/rafael/git/ex-change/src/main/java/btdex/ui/icon2.png"
+     inkscape:export-xdpi="17.43"
+     inkscape:export-ydpi="17.43" />
+</svg>
