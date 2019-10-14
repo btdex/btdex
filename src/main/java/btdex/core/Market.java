@@ -1,5 +1,7 @@
 package btdex.core;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,6 +51,9 @@ public abstract class Market {
 	static {
 		NF.setMinimumFractionDigits(8);
 		NF.setMaximumFractionDigits(8);
+		DecimalFormatSymbols s = new DecimalFormatSymbols(Locale.ENGLISH);
+		s.setGroupingSeparator('\'');
+		((DecimalFormat)NF).setDecimalFormatSymbols(s);
 	}
 	
 	/**

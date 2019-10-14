@@ -1,5 +1,7 @@
 package btdex.core;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,7 +25,6 @@ public class ContractState {
 	
 	long state;
 	long rate;
-	long pauseTimeout;
 	long amount;
 	long security;
 	
@@ -31,6 +32,10 @@ public class ContractState {
 	static {
 		NF.setMinimumFractionDigits(4);
 		NF.setMaximumFractionDigits(4);
+		
+		DecimalFormatSymbols s = new DecimalFormatSymbols(Locale.ENGLISH);
+		s.setGroupingSeparator('\'');
+		((DecimalFormat)NF).setDecimalFormatSymbols(s);
 	}
 	
 	public static String format(long valueNQT) {
@@ -72,10 +77,6 @@ public class ContractState {
 
 	public long getRate() {
 		return rate;
-	}
-
-	public long getPauseTimeout() {
-		return pauseTimeout;
 	}
 
 	public long getAmountNQT() {
@@ -148,7 +149,6 @@ public class ContractState {
 		this.arbitrator2 = BT.getContractFieldValue(at, Globals.contract.getFieldAddress("arbitrator2"));
 		this.state = BT.getContractFieldValue(at, Globals.contract.getFieldAddress("state"));
 		this.rate = BT.getContractFieldValue(at, Globals.contract.getFieldAddress("rate"));
-		this.pauseTimeout = BT.getContractFieldValue(at, Globals.contract.getFieldAddress("pauseTimeout"));
 		this.amount = BT.getContractFieldValue(at, Globals.contract.getFieldAddress("amount"));
 		this.security = BT.getContractFieldValue(at, Globals.contract.getFieldAddress("security"));
 	}

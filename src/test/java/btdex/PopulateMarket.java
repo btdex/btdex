@@ -19,17 +19,17 @@ public class PopulateMarket extends BT {
 
 	public static void main(String[] args) throws Exception {
 
-		long amount = 10000 * Contract.ONE_BURST;
+		long amount = 1000 * Contract.ONE_BURST;
 		long rate = 70;
-		long pauseTimeout = 100;
 		long security = 100 * Contract.ONE_BURST;
 
+		BurstID feeContract = BT.getBurstAddressFromPassphrase(BT.PASSPHRASE).getBurstID();
 		BurstID arbitrator1 = Globals.ARBITRATORS[0];
 		BurstID arbitrator2 = Globals.ARBITRATOR_BAKCUP;
 		long offerType = Market.MARKET_BTC;
 		long accountHash = 1234;
 
-		long data[] = { arbitrator1.getSignedLongId(), arbitrator2.getSignedLongId(),
+		long data[] = { feeContract.getSignedLongId(), arbitrator1.getSignedLongId(), arbitrator2.getSignedLongId(),
 				offerType, accountHash };
 
 		bt.compiler.Compiler compiled = BT.compileContract(SellContract.class);
@@ -37,7 +37,7 @@ public class PopulateMarket extends BT {
 		for (int i = 0; i < 4; i++) {
 			String name = SellContract.class.getSimpleName() + System.currentTimeMillis();
 
-			BT.registerContract(BT.PASSPHRASE2, compiled.getCode(), compiled.getCodeNPages(), name, name, data,
+			BT.registerContract(BT.PASSPHRASE2, compiled.getCode(), compiled.getDataPages(), name, name, data,
 					BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BT.getMinRegisteringFee(compiled), 1000).blockingGet();
 			BT.forgeBlock();
 
@@ -47,7 +47,7 @@ public class PopulateMarket extends BT {
 			// Initialize the offer
 			BT.callMethod(BT.PASSPHRASE2, contract.getId(), compiled.getMethod("update"),
 					BurstValue.fromPlanck(amount + security + SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
-					rate, security, pauseTimeout).blockingGet();
+					rate, security).blockingGet();
 			BT.forgeBlock();
 			BT.forgeBlock();
 

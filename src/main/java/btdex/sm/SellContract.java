@@ -5,7 +5,7 @@ import bt.Contract;
 import bt.ui.EmulatorWindow;
 
 /**
- * BlockTalk on-chain decentralized exchange smart contract for selling BURST.
+ * BlockTalk on-chain decentralized exchange (BTDEX) smart contract for selling BURST.
  * 
  * Someone willing to sell BURST should create a contract instance and configure
  * it accordingly. There is zero fee for those selling BURST and 0.25% fee for
@@ -34,7 +34,7 @@ public class SellContract extends Contract {
 	public static final long STATE_CREATOR_DISPUTE = 0x0000000000000200;
 	public static final long STATE_TAKER_DISPUTE = 0x0000000000000400;
 
-	/** Address of the contract collecting the fees to be distributed to BTDEX holders */
+	/** Address of the contract collecting the fees to be distributed among TRT holders */
 	Address feeContract;
 	
 	Address arbitrator1;
@@ -46,7 +46,6 @@ public class SellContract extends Contract {
 	long rate;
 	long amount;
 	long security;
-	long nonce;
 
 	Address taker;
 
@@ -68,7 +67,6 @@ public class SellContract extends Contract {
 			this.rate = rate;
 			this.security = security;
 			this.state = STATE_OPEN;
-			nonce++;
 			if (security == 0) {
 				// withdraw, taking any security deposit balance
 				amount = 0;
@@ -121,7 +119,7 @@ public class SellContract extends Contract {
 		if (getCurrentTxSender() == getCreator() && state >= STATE_WAITING_PAYMT) {
 			// Only the creator can report the process is complete
 
-			// creator gets back the security deposity (zero fee)
+			// creator gets back the security deposit (zero fee)
 			sendAmount(security, getCreator());
 
 			// taker gets the amount plus his security minus the 0.25% fee

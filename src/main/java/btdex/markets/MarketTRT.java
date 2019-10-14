@@ -1,5 +1,7 @@
 package btdex.markets;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,6 +25,10 @@ public class MarketTRT extends Market {
 	static {
 		NF.setMinimumFractionDigits(4);
 		NF.setMaximumFractionDigits(4);
+		
+		DecimalFormatSymbols s = new DecimalFormatSymbols(Locale.ENGLISH);
+		s.setGroupingSeparator('\'');
+		((DecimalFormat)NF).setDecimalFormatSymbols(s);
 	}
 
 	

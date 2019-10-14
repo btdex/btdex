@@ -24,6 +24,7 @@ import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.sm.SellContract;
 import burst.kit.entity.BurstAddress;
+import burst.kit.entity.BurstID;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
 
@@ -34,7 +35,7 @@ public class OrderBook extends JPanel {
 	JTable table;
 	DefaultTableModel model;
 
-	HashMap<BurstAddress, ContractState> map = new HashMap<>();
+	HashMap<BurstAddress, ContractState> contractsMap = new HashMap<>();
 	ArrayList<ContractState> marketContracts = new ArrayList<>();
 
 	public static final int COL_CONTRACT = 3;
@@ -113,7 +114,7 @@ public class OrderBook extends JPanel {
 			table.getColumnModel().getColumn(c).setHeaderValue(model.getColumnName(c));
 		}
 		model.fireTableDataChanged();
-		
+
 		update();
 	}
 
@@ -139,7 +140,7 @@ public class OrderBook extends JPanel {
 		DefaultTableCellRenderer rend = (DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer();
 		rend.setHorizontalAlignment(JLabel.CENTER);
 		jtableHeader.setDefaultRenderer(rend);
-		
+
 		table.setAutoCreateColumnsFromModel(false);
 
 		table.getColumnModel().getColumn(COL_ACTION).setCellRenderer(RENDERER);
@@ -152,13 +153,29 @@ public class OrderBook extends JPanel {
 		add(scrollPane, BorderLayout.CENTER);
 	}
 
-	synchronized public void update() {
-		ContractState.addContracts(map);
+	public void update() {
+		if(selectedMarket.getTokenID()==null) {
+			updateContracts();
+		}
+		else
+			updateOffers();
+	}
+	
+	private void updateOffers() {
+		BurstID token = selectedMarket.getTokenID();
 		
+		Globals g = Globals.getInstance();
+		
+		// TODO update the offers
+	}
+
+	private void updateContracts() {
+		ContractState.addContracts(contractsMap);
+
 		Globals g = Globals.getInstance();
 
 		marketContracts.clear();
-		for(ContractState s : map.values()) {
+		for(ContractState s : contractsMap.values()) {
 			if(s.getMarket() == selectedMarket.getID() && s.getAmountNQT() > 0
 					&& s.getState() == SellContract.STATE_OPEN
 					&& g.isArbitratorAccepted(s.getArbitrator1())
