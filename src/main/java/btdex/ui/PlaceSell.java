@@ -27,7 +27,7 @@ public class PlaceSell extends JDialog implements ActionListener {
 
 	JComboBox<String> account;
 	JTextField accountDetails;
-	JTextField amount, rate, timeout;
+	JTextField amount, price;
 	JSlider security;
 
 	private JButton okButton;
@@ -57,17 +57,12 @@ public class PlaceSell extends JDialog implements ActionListener {
 		JPanel panel = new JPanel(new GridLayout(0, 2, 4, 4));
 
 		amount = new JTextField(16);
-		rate = new JTextField(16);
-		timeout = new JTextField(16);
-
+		price = new JTextField(16);
 
 		panel.setBorder(BorderFactory.createTitledBorder("Offer configuration"));
-		panel.add(new Desc("Rate (" + market.toString() + ")", rate));
 		panel.add(new Desc("Amount (BURST)", amount));
 
 		if(!isToken) {
-			panel.add(new Desc("Timeout (mins.)", timeout));
-
 			security = new JSlider(1, 20);
 
 			Desc securityDesc = new Desc("", security);

@@ -25,6 +25,7 @@ import btdex.core.Market;
 import btdex.sm.SellContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
+import burst.kit.entity.response.Order;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
 
@@ -38,17 +39,21 @@ public class OrderBook extends JPanel {
 	HashMap<BurstAddress, ContractState> contractsMap = new HashMap<>();
 	ArrayList<ContractState> marketContracts = new ArrayList<>();
 
+	public static final int COL_PRICE = 0;
+	public static final int COL_SIZE = 1;
+	public static final int COL_TOTAL = 2;
 	public static final int COL_CONTRACT = 3;
 	public static final int COL_SECURITY = 4;
 	public static final int COL_ACTION = 5;
 
-	String[] columnNames = {"ASK",
+	String[] columnNames = {
+			"PRICE",
 			"SIZE (BURST)",
 			"TOTAL",
 			"CONTRACT",
 			"SECURITY (BURST)",
-			// "TIMEOUT (MINS)",
-	"ACTION"};
+			"ACTION"
+	};
 
 	Icon TAKE_ICON = IconFontSwing.buildIcon(FontAwesome.HANDSHAKE_O, 12);
 
@@ -63,8 +68,10 @@ public class OrderBook extends JPanel {
 
 		public String getColumnName(int col) {
 			String colName = columnNames[col];
-			if(col == 0 || col == 2)
+			if(col == COL_PRICE || col == COL_TOTAL)
 				colName += " (" + selectedMarket.toString() + ")";
+			if(col == COL_CONTRACT && selectedMarket.getTokenID()!=null)
+				colName = "ORDER";
 			return colName;
 		}
 
@@ -158,15 +165,37 @@ public class OrderBook extends JPanel {
 			updateContracts();
 		}
 		else
-			updateOffers();
+			updateOrders();
 	}
-	
-	private void updateOffers() {
+
+	private void updateOrders() {
 		BurstID token = selectedMarket.getTokenID();
-		
+
 		Globals g = Globals.getInstance();
-		
-		// TODO update the offers
+
+		Order[] orders = g.getNS().getBidOrders(token).blockingGet();
+
+		model.setRowCount(orders.length);
+
+		// Update the contents
+		for (int row = 0; row < orders.length; row++) {
+			Order o = orders[row];
+
+			// price always come in Burst, so no problem in this division using long's
+			long priceBurst = o.getPrice().longValue()/100000000L;
+			long amountToken = o.getQuantity().longValue();
+
+			long priceToken = (100000000L)/priceBurst;
+			long amountPlank = (amountToken * priceBurst);
+
+			model.setValueAt(selectedMarket.numberFormat(priceToken), row, COL_PRICE);
+			model.setValueAt(ContractState.format(amountPlank), row, COL_SIZE);
+			model.setValueAt(selectedMarket.numberFormat(amountToken), row, COL_TOTAL);
+
+			model.setValueAt(new JButton(o.getOrder().getID()), row, COL_CONTRACT);
+			model.setValueAt("0", row, COL_SECURITY);
+			model.setValueAt(new JButton("Take"), row, COL_ACTION);
+		}
 	}
 
 	private void updateContracts() {

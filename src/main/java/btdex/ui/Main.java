@@ -139,7 +139,7 @@ public class Main extends JFrame implements ActionListener {
 		settingsButton.setFont(largeFont);
 
 		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.PAPER_PLANE, 18, COLOR);
-		Icon createOfferIcon = IconFontSwing.buildIcon(FontAwesome.MONEY, 18, COLOR);
+		Icon createOfferIcon = IconFontSwing.buildIcon(FontAwesome.USD, 18, COLOR);
 
 		sendButton = new JButton(sendIcon);
 		sendButton.setToolTipText("Send BURST...");
