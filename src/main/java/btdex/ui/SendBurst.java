@@ -70,8 +70,6 @@ public class SendBurst extends JDialog implements ActionListener {
 		});
 		fee.getModel().setValue(10);
 		
-		panel.add(new Desc("PIN", pin));
-
 		// Create a button
 		JPanel buttonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
@@ -81,8 +79,9 @@ public class SendBurst extends JDialog implements ActionListener {
 		calcelButton.addActionListener(this);
 		okButton.addActionListener(this);
 
-		buttonPane.add(calcelButton);
-		buttonPane.add(okButton);
+		buttonPane.add(new Desc("PIN", pin));
+		buttonPane.add(new Desc(" ", calcelButton));
+		buttonPane.add(new Desc(" ", okButton));
 
 		// set action listener on the button
 

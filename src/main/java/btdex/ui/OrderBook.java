@@ -72,6 +72,8 @@ public class OrderBook extends JPanel {
 				colName += " (" + selectedMarket.toString() + ")";
 			if(col == COL_CONTRACT && selectedMarket.getTokenID()!=null)
 				colName = "ORDER";
+			if(col == COL_SECURITY && selectedMarket.getTokenID()!=null)
+				colName = "TYPE";
 			return colName;
 		}
 
@@ -184,6 +186,9 @@ public class OrderBook extends JPanel {
 			// price always come in Burst, so no problem in this division using long's
 			long priceBurst = o.getPrice().longValue()/100000000L;
 			long amountToken = o.getQuantity().longValue();
+			
+			if(priceBurst == 0 || amountToken == 0)
+				continue;
 
 			long priceToken = (100000000L)/priceBurst;
 			long amountPlank = (amountToken * priceBurst);
@@ -193,8 +198,18 @@ public class OrderBook extends JPanel {
 			model.setValueAt(selectedMarket.numberFormat(amountToken), row, COL_TOTAL);
 
 			model.setValueAt(new JButton(o.getOrder().getID()), row, COL_CONTRACT);
-			model.setValueAt("0", row, COL_SECURITY);
-			model.setValueAt(new JButton("Take"), row, COL_ACTION);
+			
+			if(o.getType().equals("buy")) {
+				model.setValueAt("SELLING " + selectedMarket, row, COL_SECURITY);
+				model.setValueAt(new JButton("BUY " + selectedMarket), row, COL_ACTION);
+			}
+			else {
+				model.setValueAt("BUYING " + selectedMarket, row, COL_SECURITY);
+				model.setValueAt(new JButton("SELL" + selectedMarket), row, COL_ACTION);
+			}
+			
+			if(o.getAccount().getSignedLongId() == g.getAddress().getSignedLongId())
+				model.setValueAt(new JButton("CANCEL"), row, COL_ACTION);
 		}
 	}
 
@@ -227,34 +242,21 @@ public class OrderBook extends JPanel {
 		model.setRowCount(marketContracts.size());
 
 		// Update the contents
-		for (int row = 0; row < marketContracts.size(); row++) {
-			for (int col = 0; col < model.getColumnCount(); col++) {
-				ContractState s = marketContracts.get(row);
-				switch (col) {
-				case 0:
-					model.setValueAt(selectedMarket.numberFormat(s.getRate()), row, col);
-					break;
-				case 1:
-					model.setValueAt(s.getAmount(), row, col);
-					break;
-				case 2:
-					model.setValueAt(selectedMarket.numberFormat((s.getRate()*s.getAmountNQT()) / Contract.ONE_BURST),
-							row, col);
-					break;
-				case COL_CONTRACT:
-					model.setValueAt(new JButton(s.getAddress().getRawAddress()), row, col);
-					break;
-				case COL_SECURITY:
-					model.setValueAt(s.getSecurity(), row, col);
-					break;
-				case COL_ACTION:
-					model.setValueAt(new JButton("Take"), row, col);
-					break;
-					//				return new JButton("Take", TAKE_ICON);
-				default:
-					break;
-				}				
-			}
+		for (int row = 0; row < marketContracts.size(); row++) {			
+			ContractState s = marketContracts.get(row);
+			
+			model.setValueAt(selectedMarket.numberFormat(s.getRate()), row, COL_PRICE);
+			model.setValueAt(s.getAmount(), row, COL_TOTAL);
+			model.setValueAt(selectedMarket.numberFormat((s.getRate()*s.getAmountNQT()) / Contract.ONE_BURST),
+					row, COL_SIZE);
+			model.setValueAt(new JButton(s.getAddress().getRawAddress()), row, COL_CONTRACT);
+			model.setValueAt(s.getSecurity(), row, COL_SECURITY);
+			
+			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId())
+				model.setValueAt(new JButton("CANCEL"), row, COL_ACTION);
+			else
+				model.setValueAt(new JButton("BUY BURST"), row, COL_ACTION);
+			
 		}
 	}
 }

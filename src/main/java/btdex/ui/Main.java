@@ -146,7 +146,7 @@ public class Main extends JFrame implements ActionListener {
 		sendButton.addActionListener(this);
 
 		createOfferButton = new JButton(createOfferIcon);
-		createOfferButton.setToolTipText("Create a new BURST sell offer...");
+		createOfferButton.setToolTipText("Create a new offer...");
 		createOfferButton.addActionListener(this);
 
 		sendButtonToken = new JButton(sendIcon);
@@ -163,8 +163,8 @@ public class Main extends JFrame implements ActionListener {
 		Icon orderIcon = IconFontSwing.buildIcon(FontAwesome.BOOK, 18, COLOR);
 		tabbedPane.addTab("ORDER BOOK", orderIcon, orderBook);
 
-		Icon ongoinIcon = IconFontSwing.buildIcon(FontAwesome.HANDSHAKE_O, 18, COLOR);
-		tabbedPane.addTab("ONGOING TRADES", ongoinIcon, new JLabel());
+		Icon yourTradesIcon = IconFontSwing.buildIcon(FontAwesome.HANDSHAKE_O, 18, COLOR);
+		tabbedPane.addTab("YOUR TRADES", yourTradesIcon, new JLabel());
 
 		Icon tradeIcon = IconFontSwing.buildIcon(FontAwesome.LINE_CHART, 18, COLOR);
 		tabbedPane.addTab("TRADE HISTORY", tradeIcon, new JLabel());

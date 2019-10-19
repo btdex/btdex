@@ -3,7 +3,6 @@ package btdex.core;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -108,7 +107,6 @@ public class ContractState {
 	public static void addContracts(HashMap<BurstAddress, ContractState> map){
 		Globals g = Globals.getInstance();
 		
-		byte []code = g.getContract().getCode();
 		BurstAddress[] atIDs = g.getNS().getAtIds().blockingGet();
 		
 		// reverse order to get the more recent ones first
@@ -121,8 +119,7 @@ public class ContractState {
 			
 			AT at = g.getNS().getAt(ad).blockingGet();
 			
-			if(at.getMachineCode().length > code.length &&
-					Arrays.equals(at.getMachineCode(), 0, code.length, code, 0, code.length)){
+			if(checkContract(at)){
 				// machine code should match perfectly
 				ContractState s = new ContractState();
 				
@@ -130,6 +127,20 @@ public class ContractState {
 				map.put(ad, s);
 			}
 		}
+	}
+	
+	public static boolean checkContract(AT at) {
+		byte []code = Globals.getInstance().getContract().getCode();
+		
+		if(at.getMachineCode().length < code.length)
+			return false;
+		
+		for (int i = 0; i < code.length; i++) {
+			if(at.getMachineCode()[i] != code[i])
+				return false;
+		}
+		
+		return true;
 	}
 	
 	public void update() {
