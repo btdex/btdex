@@ -207,7 +207,14 @@ public class Main extends JFrame implements ActionListener {
 
 		if(Globals.getInstance().getAddress()==null) {
 			// no public key or invalid, show the welcome screen
+			Welcome welcome = new Welcome(this);
 			
+			welcome.setLocationRelativeTo(this);
+			welcome.setVisible(true);
+			if(welcome.getReturn() == 0) {
+				System.exit(0);
+				return;
+			}
 		}
 		copyAddButton.setText(Globals.getInstance().getAddress().getRawAddress());
 		
