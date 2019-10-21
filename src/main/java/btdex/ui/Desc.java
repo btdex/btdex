@@ -24,6 +24,16 @@ class Desc extends JPanel {
 		if(childBottom!=null)
 			add(childBottom, BorderLayout.PAGE_END);
 	}
+	
+	public Desc(Component desc, Component child, Component childBottom) {
+		super(new BorderLayout());
+
+		if(desc != null)
+			add(desc, BorderLayout.PAGE_START);
+		add(child, BorderLayout.CENTER);
+		if(childBottom!=null)
+			add(childBottom, BorderLayout.PAGE_END);
+	}
 
 	public void setDesc(String desc) {
 		label.setText(desc);

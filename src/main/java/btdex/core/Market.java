@@ -76,4 +76,12 @@ public abstract class Market {
 	 * @throws Exception
 	 */
 	public abstract void validate(HashMap<String, String> fields) throws Exception;
+	
+	/**
+	 * Should format the given field values into a single line string
+	 * 
+	 * @param fields
+	 * @throws Exception
+	 */
+	public abstract String format(HashMap<String, String> fields) throws Exception;
 }

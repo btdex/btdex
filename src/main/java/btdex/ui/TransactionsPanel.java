@@ -2,6 +2,7 @@ package btdex.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.util.ArrayList;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.JButton;
@@ -18,6 +19,7 @@ import btdex.core.ContractState;
 import btdex.core.Globals;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.response.Transaction;
+import burst.kit.entity.response.http.BRSError;
 
 public class TransactionsPanel extends JPanel {
 
@@ -128,16 +130,38 @@ public class TransactionsPanel extends JPanel {
 
 	public void update() {
 		Globals g = Globals.getInstance();
+		
+		ArrayList<Transaction> txs = new ArrayList<>();
 
-		Transaction[] txs = g.getNS().getAccountTransactions(g.getAddress()).blockingGet();
+		try {
+			Transaction[] unconf = g.getNS().getUnconfirmedTransactions(g.getAddress()).blockingGet();
+			Transaction[] conf = g.getNS().getAccountTransactions(g.getAddress()).blockingGet();
+			
+			for (int i = 0; i < unconf.length; i++) {
+				txs.add(unconf[i]);
+			}
+			for (int i = 0; i < conf.length; i++) {
+				txs.add(conf[i]);
+			}
+		}
+		catch (Exception e) {
+			if(e.getCause() instanceof BRSError) {
+				BRSError error = (BRSError) e.getCause();
+				if(error.getCode() != 5) // unknown account
+					throw e;
+			}
+			else
+				throw e;
+			// Unknown account, no transactions
+		}
 
-		int maxLines = Math.min(txs.length, 200);
+		int maxLines = Math.min(txs.size(), 200);
 
 		model.setRowCount(maxLines);
 
 		// Update the contents
 		for (int row = 0; row < maxLines; row++) {
-			Transaction tx = txs[row];
+			Transaction tx = txs.get(row);
 			BurstAddress account = null;
 			long amount = tx.getAmount().longValue();
 
@@ -190,7 +214,7 @@ public class TransactionsPanel extends JPanel {
 			if(tx.getRecipient()!=null && tx.getRecipient().getSignedLongId()!= g.getAddress().getSignedLongId())
 				account = tx.getRecipient();
 
-			model.setValueAt(tx.getConfirmations(), row, COL_CONF);
+			model.setValueAt(tx.getBlockId()==null ? "PENDING" : tx.getConfirmations(), row, COL_CONF);
 			model.setValueAt(account==null ? "" : account.getRawAddress(), row, COL_ACCOUNT);
 			model.setValueAt(new JButton(tx.getId().toString()), row, COL_ID);
 

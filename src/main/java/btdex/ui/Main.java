@@ -36,6 +36,7 @@ import btdex.markets.MarketLTC;
 import btdex.markets.MarketTRT;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.AssetAccount;
+import burst.kit.entity.response.http.BRSError;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
 import io.github.novacrypto.bip39.wordlists.English;
@@ -127,7 +128,7 @@ public class Main extends JFrame implements ActionListener {
 				StringSelection stringSelection = new StringSelection(Globals.getInstance().getAddress().getFullAddress());
 				clipboard.setContents(stringSelection, null);
 				
-				Toast.makeText(Main.this, "Address copied to clipboard.").display();
+				Toast.makeText(Main.this, "Address copied to clipboard.").display(copyAddButton);
 			}
 		});
 		copyAddButton.setToolTipText("Copy your Burst address to clipboard");
@@ -203,9 +204,10 @@ public class Main extends JFrame implements ActionListener {
 		pack();
 		setMinimumSize(new Dimension(1024, 600));
 		setLocationRelativeTo(null);
+		getContentPane().setVisible(false);
 		setVisible(true);
 
-		if(Globals.getInstance().getAddress()==null) {
+		if(Globals.getInstance().getAddress()==null) {			
 			// no public key or invalid, show the welcome screen
 			Welcome welcome = new Welcome(this);
 			
@@ -217,6 +219,7 @@ public class Main extends JFrame implements ActionListener {
 			}
 		}
 		copyAddButton.setText(Globals.getInstance().getAddress().getRawAddress());
+		getContentPane().setVisible(true);
 		
 		Thread updateThread = new UpdateThread();
 		updateThread.start();
@@ -226,12 +229,24 @@ public class Main extends JFrame implements ActionListener {
 		@Override
 		public void run() {
 			while (!Thread.currentThread().isInterrupted()) {
+				long balance = 0, locked = 0;
 				try {
 					Globals g = Globals.getInstance();
-					Account ac = g.getNS().getAccount(g.getAddress()).blockingGet();
-					
-					balanceLabel.setText(ContractState.format(ac.getBalance().longValue()));
-					lockedBalanceLabel.setText("+" + ContractState.format(0) + " locked");
+					try {
+						Account ac = g.getNS().getAccount(g.getAddress()).blockingGet();
+						balance = ac.getBalance().longValue();
+					}
+					catch (Exception e) {
+						if(e.getCause() instanceof BRSError) {
+							BRSError error = (BRSError) e.getCause();
+							if(error.getCode() != 5) // unknown account
+								throw e;
+						}
+						else
+							throw e;
+					}
+					balanceLabel.setText(ContractState.format(balance));
+					lockedBalanceLabel.setText("+" + ContractState.format(locked) + " locked");
 					
 					AssetAccount[] accounts = g.getNS().getAssetAccounts(token.getTokenID()).blockingGet();
 					long tokenBalance = 0;

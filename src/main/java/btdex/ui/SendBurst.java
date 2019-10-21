@@ -5,9 +5,11 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.ParseException;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -19,7 +21,12 @@ import javax.swing.event.ChangeListener;
 
 import btdex.core.ContractState;
 import btdex.core.Globals;
+import burst.kit.entity.BurstAddress;
+import burst.kit.entity.BurstID;
+import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.FeeSuggestion;
+import burst.kit.entity.response.TransactionBroadcast;
+import io.reactivex.Single;
 
 public class SendBurst extends JDialog implements ActionListener {
 	private static final long serialVersionUID = 1L;
@@ -49,10 +56,10 @@ public class SendBurst extends JDialog implements ActionListener {
 
 		recipient = new JTextField(26);
 		message = new JTextField(26);
-		
+
 		pin = new JPasswordField(12);
-		
-		amount = new JTextField();
+
+		amount = new JFormattedTextField(Globals.NF_FULL);
 		fee = new JSlider(1, N_SLOTS);
 
 		topPanel.add(new Desc("Recipient", recipient));
@@ -69,7 +76,7 @@ public class SendBurst extends JDialog implements ActionListener {
 			}
 		});
 		fee.getModel().setValue(10);
-		
+
 		// Create a button
 		JPanel buttonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
@@ -109,7 +116,65 @@ public class SendBurst extends JDialog implements ActionListener {
 		if(e.getSource() == calcelButton) {
 			setVisible(false);
 		}
+		if(e.getSource() == okButton) {
+			Globals g = Globals.getInstance();
 
+			String error = null;
+			String sadd = recipient.getText();
+			BurstID recID = null;
+			if(sadd.startsWith("BURST-")) {
+				try {
+					recID = Globals.BC.rsDecode(sadd.substring(5));
+				}
+				catch (Exception ex) {
+				}
+			}
+			if(recID == null)
+				error = "Invalid recipient address";
+
+			if(error == null && !g.checkPIN(pin.getPassword())) {
+				error = "Invalid PIN";
+				pin.requestFocus();
+			}
+
+			Number amountNumber = null;
+			if(error == null) {
+				try {
+					amountNumber = Globals.NF_FULL.parse(amount.getText());
+				} catch (ParseException e1) {
+					amount.requestFocus();
+					error = "Invalid amount";
+				}
+			}
+
+			if(error!=null) {
+				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(okButton);
+			}
+			else {
+				long feePlanck = FEE_QUANT * fee.getValue();
+
+				try {
+					// all set, lets make the transfer
+					Single<TransactionBroadcast> tx = g.getNS().generateTransaction(BurstAddress.fromId(recID), g.getPubKey(),
+							BurstValue.fromBurst(amountNumber.doubleValue()),
+							BurstValue.fromPlanck(feePlanck), 1440)
+							.flatMap(unsignedTransactionBytes -> {
+								byte[] signedTransactionBytes = Globals.getInstance().signTransaction(pin.getPassword(), unsignedTransactionBytes);
+								return Globals.getInstance().getNS().broadcastTransaction(signedTransactionBytes);
+							});
+
+					TransactionBroadcast tb = tx.blockingGet();
+					tb.getTransactionId();
+					setVisible(false);
+
+					Toast.makeText((JFrame) this.getOwner(),
+							String.format("Transaction %s broadcasted", tb.getTransactionId().toString())).display();
+				}
+				catch (Exception ex) {
+					Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
+				}
+			}
+		}
 	}
 
 }

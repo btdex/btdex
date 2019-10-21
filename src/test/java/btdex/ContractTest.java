@@ -14,7 +14,6 @@ import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;
-import burst.kit.entity.response.TransactionBroadcast;
 
 /**
  * We assume a localhost testnet with 0 seconds mock mining is available for the

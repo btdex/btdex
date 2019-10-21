@@ -1,10 +1,6 @@
 package btdex.core;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
 import java.util.HashMap;
-import java.util.Locale;
 
 import bt.BT;
 import bt.Contract;
@@ -27,19 +23,9 @@ public class ContractState {
 	long amount;
 	long security;
 	
-	private static final NumberFormat NF = NumberFormat.getInstance(Locale.ENGLISH);
-	static {
-		NF.setMinimumFractionDigits(4);
-		NF.setMaximumFractionDigits(4);
-		
-		DecimalFormatSymbols s = new DecimalFormatSymbols(Locale.ENGLISH);
-		s.setGroupingSeparator('\'');
-		((DecimalFormat)NF).setDecimalFormatSymbols(s);
-	}
-	
 	public static String format(long valueNQT) {
 		double dvalue = (double)valueNQT / Contract.ONE_BURST;
-		return NF.format(dvalue);
+		return Globals.NF.format(dvalue);
 	}
 	
 	public long getMarket() {
@@ -84,7 +70,7 @@ public class ContractState {
 	
 	public String getAmount() {
 		double dvalue = (double)amount / Contract.ONE_BURST;
-		return NF.format(dvalue);
+		return Globals.NF.format(dvalue);
 	}
 
 	public long getSecurityNQT() {
@@ -93,7 +79,7 @@ public class ContractState {
 	
 	public String getSecurity() {
 		double dvalue = (double)security / Contract.ONE_BURST;
-		return NF.format(dvalue);
+		return Globals.NF.format(dvalue);
 	}
 
 	/**

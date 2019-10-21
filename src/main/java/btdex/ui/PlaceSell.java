@@ -6,6 +6,9 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -13,6 +16,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JSlider;
@@ -22,6 +26,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import btdex.core.Globals;
 import btdex.core.Market;
 
 public class PlaceSell extends JDialog implements ActionListener {
@@ -76,6 +81,18 @@ public class PlaceSell extends JDialog implements ActionListener {
 		fieldPanel.add(new Desc("Total (" + market + ")", total));
 
 		if(!isToken) {
+			Properties conf = Globals.getConf();
+			ArrayList<String> fieldNames = market.getFieldNames();
+			
+			for (int i = 0; i < 100; i++) {
+				String acNameKey = market.toString() + i + ".name";
+				
+				String acName = conf.getProperty(acNameKey, null);
+				if(acName == null || acName.length()==0)
+					break;
+				account.addItem(acName);
+			}
+			
 			security = new JSlider(0, 20);
 
 			Desc securityDesc = new Desc("", security);
@@ -139,11 +156,39 @@ public class PlaceSell extends JDialog implements ActionListener {
 
 		pack();
 	}
+	
+	@Override
+	public void setVisible(boolean b) {
+		if(account.getItemCount()==0) {
+			JOptionPane.showMessageDialog(this, "You need to register a " + market + " account first.",
+					"Error", JOptionPane.ERROR_MESSAGE);
+			dispose();
+			
+			// TODO open the settings dialog here
+			return;
+		}
+
+		super.setVisible(b);
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == calcelButton) {
 			setVisible(false);
+		}
+		
+		if(e.getSource() == okButton) {
+			String error = null;
+			
+			if(account.getSelectedIndex() < 0) {
+				error = "You need to register an account first";
+			}
+			
+			if(error!=null) {
+				Toast.makeText((JFrame) this.getOwner(), error).display(okButton);
+				return;
+			}
+
 		}
 
 	}

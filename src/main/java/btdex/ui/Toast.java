@@ -1,5 +1,6 @@
 package btdex.ui;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -38,6 +39,7 @@ public class Toast extends JDialog {
 	private int mDuration;
 	private Color mBackgroundColor = Color.BLACK;
 	private Color mForegroundColor = Color.WHITE;
+	private Point mLocation;
     
     public Toast(JFrame owner){
     	super(owner);
@@ -81,8 +83,9 @@ public class Toast extends JDialog {
 
 		setOpacity(0);
 		timer.start();
-				
-		setLocation(getToastLocation());		
+		
+		Point loc = new Point(getToastLocation());
+		setLocation(loc);
 		setVisible(true);
 	}
 
@@ -107,6 +110,12 @@ public class Toast extends JDialog {
 	}
 	
 	private Point getToastLocation(){
+		if(mLocation!=null) {
+			Point p = new Point(mLocation);
+			p.x -= getWidth()/2;
+			p.y -= getHeight();
+			return p;
+		}
 		Point ownerLoc = mOwner.getLocation();		
 		int x = (int) (ownerLoc.getX() + ((mOwner.getWidth() - this.getWidth()) / 2)); 
 		int y = (int) (ownerLoc.getY() + DISTANCE_FROM_PARENT_TOP);
@@ -156,6 +165,14 @@ public class Toast extends JDialog {
     		toast.mBackgroundColor = NORMAL_BLACK;
     	
     	return toast;
+    }
+    
+    public void display(Component c) {
+		Point p = c.getLocationOnScreen();
+		p.x += c.getWidth()/2;
+		mLocation = p;
+
+    	display();
     }
         
     public void display(){

@@ -18,7 +18,7 @@ public class MarketTRT extends Market {
 	
 	@Override
 	public BurstID getTokenID() {
-		return BurstID.fromLong("6124399134335154227");
+		return BurstID.fromLong("107507544026763809");
 	}
 	
 	private static final NumberFormat NF = NumberFormat.getInstance(Locale.ENGLISH);
@@ -51,5 +51,11 @@ public class MarketTRT extends Market {
 	@Override
 	public void validate(HashMap<String, String> fields) throws Exception {
 		// not needed for a token
+	}
+	
+	@Override
+	public String format(HashMap<String, String> fields) throws Exception {
+		// not needed for a token
+		return "";
 	}
 }

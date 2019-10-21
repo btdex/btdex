@@ -33,4 +33,9 @@ public class MarketLTC extends Market {
 		if(!addr.matches(REGEX))
 			throw new Exception(addr + " is not a valid LTC address");
 	}
+	
+	@Override
+	public String format(HashMap<String, String> fields) throws Exception {
+		return fields.get(ADDRESS);
+	}
 }

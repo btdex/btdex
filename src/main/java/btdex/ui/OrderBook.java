@@ -246,9 +246,9 @@ public class OrderBook extends JPanel {
 			ContractState s = marketContracts.get(row);
 			
 			model.setValueAt(selectedMarket.numberFormat(s.getRate()), row, COL_PRICE);
-			model.setValueAt(s.getAmount(), row, COL_TOTAL);
+			model.setValueAt(s.getAmount(), row, COL_SIZE);
 			model.setValueAt(selectedMarket.numberFormat((s.getRate()*s.getAmountNQT()) / Contract.ONE_BURST),
-					row, COL_SIZE);
+					row, COL_TOTAL);
 			model.setValueAt(new JButton(s.getAddress().getRawAddress()), row, COL_CONTRACT);
 			model.setValueAt(s.getSecurity(), row, COL_SECURITY);
 			
