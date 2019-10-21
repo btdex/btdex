@@ -48,10 +48,10 @@ public class OrderBook extends JPanel {
 
 	String[] columnNames = {
 			"PRICE",
-			"SIZE (BURST)",
+			"SIZE",
 			"TOTAL",
 			"CONTRACT",
-			"SECURITY (BURST)",
+			"SECURITY",
 			"ACTION"
 	};
 
@@ -67,12 +67,16 @@ public class OrderBook extends JPanel {
 		}
 
 		public String getColumnName(int col) {
+			boolean isToken = selectedMarket.getTokenID()!=null;
+			
 			String colName = columnNames[col];
 			if(col == COL_PRICE || col == COL_TOTAL)
-				colName += " (" + selectedMarket.toString() + ")";
-			if(col == COL_CONTRACT && selectedMarket.getTokenID()!=null)
+				colName += " (" + (isToken ? "BURST" : selectedMarket) + ")";
+			if(col == COL_SIZE)				
+				colName += " (" + (isToken ? selectedMarket : "BURST") + ")";
+			if(col == COL_CONTRACT && isToken)
 				colName = "ORDER";
-			if(col == COL_SECURITY && selectedMarket.getTokenID()!=null)
+			if(col == COL_SECURITY && isToken)
 				colName = "TYPE";
 			return colName;
 		}
@@ -184,28 +188,28 @@ public class OrderBook extends JPanel {
 			Order o = orders[row];
 
 			// price always come in Burst, so no problem in this division using long's
-			long priceBurst = o.getPrice().longValue()/100000000L;
+			long priceBurst = o.getPrice().longValue()/selectedMarket.getFactor();
 			long amountToken = o.getQuantity().longValue();
 			
 			if(priceBurst == 0 || amountToken == 0)
 				continue;
 
-			long priceToken = (100000000L)/priceBurst;
-			long amountPlank = (amountToken * priceBurst);
+//			long priceToken = (100000000L)/priceBurst;
+//			long amountPlank = (amountToken * priceBurst);
 
-			model.setValueAt(selectedMarket.numberFormat(priceToken), row, COL_PRICE);
-			model.setValueAt(ContractState.format(amountPlank), row, COL_SIZE);
-			model.setValueAt(selectedMarket.numberFormat(amountToken), row, COL_TOTAL);
+			model.setValueAt(ContractState.format(priceBurst), row, COL_PRICE);
+			model.setValueAt(selectedMarket.numberFormat(amountToken), row, COL_SIZE);
+			model.setValueAt(ContractState.format((amountToken*priceBurst)/selectedMarket.getFactor()), row, COL_TOTAL);
 
 			model.setValueAt(new JButton(o.getOrder().getID()), row, COL_CONTRACT);
 			
-			if(o.getType().equals("buy")) {
-				model.setValueAt("SELLING " + selectedMarket, row, COL_SECURITY);
-				model.setValueAt(new JButton("BUY " + selectedMarket), row, COL_ACTION);
+			if(o.getType().equals("bid")) {
+				model.setValueAt("BUYING " + selectedMarket, row, COL_SECURITY);
+				model.setValueAt(new JButton("SELL " + selectedMarket), row, COL_ACTION);
 			}
 			else {
-				model.setValueAt("BUYING " + selectedMarket, row, COL_SECURITY);
-				model.setValueAt(new JButton("SELL" + selectedMarket), row, COL_ACTION);
+				model.setValueAt("SELLING " + selectedMarket, row, COL_SECURITY);
+				model.setValueAt(new JButton("BUY " + selectedMarket), row, COL_ACTION);
 			}
 			
 			if(o.getAccount().getSignedLongId() == g.getAddress().getSignedLongId())

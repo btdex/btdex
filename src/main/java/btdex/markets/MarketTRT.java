@@ -30,10 +30,15 @@ public class MarketTRT extends Market {
 		s.setGroupingSeparator('\'');
 		((DecimalFormat)NF).setDecimalFormatSymbols(s);
 	}
+	
+	@Override
+	public long getFactor() {
+		return 10000L;
+	}
 
 	
 	public String numberFormat(long value) {
-		double dvalue = value/10000.0;
+		double dvalue = (double)value/getFactor();
 		return NF.format(dvalue);
 	}
 	

@@ -109,10 +109,10 @@ public class Main extends JFrame implements ActionListener {
 		marketComboBox.setToolTipText("Select market");
 		marketComboBox.setFont(largeFont);
 		
+		marketComboBox.addItem(token = new MarketTRT());
 		marketComboBox.addItem(new MarketBTC());
 		marketComboBox.addItem(new MarketETH());
 		marketComboBox.addItem(new MarketLTC());
-		marketComboBox.addItem(token = new MarketTRT());
 
 		marketComboBox.addActionListener(this);
 		orderBook = new OrderBook((Market) marketComboBox.getSelectedItem());
@@ -303,7 +303,13 @@ public class Main extends JFrame implements ActionListener {
 			orderBook.setMarket(m);
 		}
 		else if (e.getSource() == sendButton) {
-			SendBurst dlg = new SendBurst(this);
+			SendDialog dlg = new SendDialog(this, null);
+
+			dlg.setLocationRelativeTo(Main.this);
+			dlg.setVisible(true);			
+		}
+		else if (e.getSource() == sendButtonToken) {
+			SendDialog dlg = new SendDialog(this, token);
 
 			dlg.setLocationRelativeTo(Main.this);
 			dlg.setVisible(true);			

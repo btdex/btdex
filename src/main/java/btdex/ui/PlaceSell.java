@@ -7,10 +7,10 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -19,9 +19,11 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -49,15 +51,21 @@ public class PlaceSell extends JDialog implements ActionListener {
 
 	private boolean isToken;
 
+	private JToggleButton buyToken;
+	private JToggleButton sellToken;
+
 	public PlaceSell(JFrame owner, Market market) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-		setTitle("Sell BURST for " + market.toString());
+		isToken = market.getTokenID()!=null;
+
+		if(isToken)
+			setTitle(String.format("Exchange %s for BURST", market.toString()));
+		else
+			setTitle(String.format("Sell BURST for %s", market.toString()));
 
 		this.market = market;
-
-		isToken = market.getTokenID()!=null;
 
 		account = new JComboBox<>();
 		accountDetails = new JTextField(36);
@@ -76,9 +84,22 @@ public class PlaceSell extends JDialog implements ActionListener {
 		total.setEditable(false);
 
 		fieldPanel.setBorder(BorderFactory.createTitledBorder("Offer configuration"));
-		fieldPanel.add(new Desc("Price (" + market + ")", price));
-		fieldPanel.add(new Desc("Size (BURST)", amount));
-		fieldPanel.add(new Desc("Total (" + market + ")", total));
+		
+		if(isToken) {
+			buyToken = new JRadioButton(String.format("Buy %s with BURST", market), true);
+	        sellToken = new JRadioButton(String.format("Sell %s for BURST", market));
+	        
+	        fieldPanel.add(buyToken);
+	        fieldPanel.add(sellToken);
+
+	        ButtonGroup bgroup = new ButtonGroup();
+	        bgroup.add(buyToken);
+	        bgroup.add(sellToken);
+		}
+		
+		fieldPanel.add(new Desc("Price (" + (isToken ? "BURST" : market) + ")", price));
+		fieldPanel.add(new Desc("Size (" + (isToken ? market : "BURST") + ")", amount));
+		fieldPanel.add(new Desc("Total (" + (isToken ? "BURST" : market) + ")", total));
 
 		if(!isToken) {
 			Properties conf = Globals.getConf();
@@ -159,7 +180,7 @@ public class PlaceSell extends JDialog implements ActionListener {
 	
 	@Override
 	public void setVisible(boolean b) {
-		if(account.getItemCount()==0) {
+		if(account.getItemCount()==0 && !isToken) {
 			JOptionPane.showMessageDialog(this, "You need to register a " + market + " account first.",
 					"Error", JOptionPane.ERROR_MESSAGE);
 			dispose();
@@ -180,7 +201,7 @@ public class PlaceSell extends JDialog implements ActionListener {
 		if(e.getSource() == okButton) {
 			String error = null;
 			
-			if(account.getSelectedIndex() < 0) {
+			if(account.getSelectedIndex() < 0 && !isToken) {
 				error = "You need to register an account first";
 			}
 			

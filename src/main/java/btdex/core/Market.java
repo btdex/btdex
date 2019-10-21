@@ -64,6 +64,10 @@ public abstract class Market {
 		return NF.format(dvalue);
 	}
 	
+	public long getFactor() {
+		return 1;
+	}
+	
 	/**
 	 * @return the expected field names when selling on this market.
 	 */

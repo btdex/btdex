@@ -21,6 +21,7 @@ import javax.swing.event.ChangeListener;
 
 import btdex.core.ContractState;
 import btdex.core.Globals;
+import btdex.core.Market;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
@@ -28,7 +29,7 @@ import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
-public class SendBurst extends JDialog implements ActionListener {
+public class SendDialog extends JDialog implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
 	JTextField recipient;
@@ -44,11 +45,11 @@ public class SendBurst extends JDialog implements ActionListener {
 
 	private JButton calcelButton;
 
-	public SendBurst(JFrame owner) {
+	public SendDialog(JFrame owner, Market token) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-		setTitle("Send BURST");
+		setTitle(String.format("Send %s", token==null ? "BURST" : token));
 
 		JPanel topPanel = new JPanel(new GridLayout(0, 1, 4, 4));
 
@@ -66,7 +67,7 @@ public class SendBurst extends JDialog implements ActionListener {
 		topPanel.add(new Desc("Message", message));
 		message.setToolTipText("Leave empty for no message");
 
-		panel.add(new Desc("Amount (BURST)", amount));
+		panel.add(new Desc(String.format("Amount (%s)", token==null ? "BURST" : token), amount));
 		Desc feeDesc = new Desc("", fee);
 		panel.add(feeDesc);
 		fee.addChangeListener(new ChangeListener() {
