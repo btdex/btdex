@@ -6,7 +6,6 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
@@ -103,7 +102,6 @@ public class PlaceSell extends JDialog implements ActionListener {
 
 		if(!isToken) {
 			Properties conf = Globals.getConf();
-			ArrayList<String> fieldNames = market.getFieldNames();
 			
 			for (int i = 0; i < 100; i++) {
 				String acNameKey = market.toString() + i + ".name";

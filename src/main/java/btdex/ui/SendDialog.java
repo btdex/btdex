@@ -45,9 +45,13 @@ public class SendDialog extends JDialog implements ActionListener {
 
 	private JButton calcelButton;
 
+	private Market token;
+
 	public SendDialog(JFrame owner, Market token) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		
+		this.token = token;
 
 		setTitle(String.format("Send %s", token==null ? "BURST" : token));
 
@@ -64,7 +68,8 @@ public class SendDialog extends JDialog implements ActionListener {
 		fee = new JSlider(1, N_SLOTS);
 
 		topPanel.add(new Desc("Recipient", recipient));
-		topPanel.add(new Desc("Message", message));
+		if(token==null)
+			topPanel.add(new Desc("Message", message));
 		message.setToolTipText("Leave empty for no message");
 
 		panel.add(new Desc(String.format("Amount (%s)", token==null ? "BURST" : token), amount));
@@ -137,6 +142,10 @@ public class SendDialog extends JDialog implements ActionListener {
 				error = "Invalid PIN";
 				pin.requestFocus();
 			}
+			
+			String msg = null;
+			if(message.getText().length()>0)
+				msg = message.getText();
 
 			Number amountNumber = null;
 			if(error == null) {
@@ -156,13 +165,26 @@ public class SendDialog extends JDialog implements ActionListener {
 
 				try {
 					// all set, lets make the transfer
-					Single<TransactionBroadcast> tx = g.getNS().generateTransaction(BurstAddress.fromId(recID), g.getPubKey(),
+					Single<TransactionBroadcast> tx = null;
+					
+					if(token!=null) {
+						tx = g.getNS().generateTransferAssetTransaction(g.getPubKey(), BurstAddress.fromId(recID),
+								token.getTokenID(), BurstValue.fromPlanck((long)(amountNumber.doubleValue()*token.getFactor())),
+								BurstValue.fromPlanck(feePlanck), 1440)
+								.flatMap(unsignedTransactionBytes -> {
+									byte[] signedTransactionBytes = Globals.getInstance().signTransaction(pin.getPassword(), unsignedTransactionBytes);
+									return Globals.getInstance().getNS().broadcastTransaction(signedTransactionBytes);
+								});						
+					}
+					else {
+						tx = g.getNS().generateTransactionWithMessage(BurstAddress.fromId(recID), g.getPubKey(),
 							BurstValue.fromBurst(amountNumber.doubleValue()),
-							BurstValue.fromPlanck(feePlanck), 1440)
+							BurstValue.fromPlanck(feePlanck), 1440, msg)
 							.flatMap(unsignedTransactionBytes -> {
 								byte[] signedTransactionBytes = Globals.getInstance().signTransaction(pin.getPassword(), unsignedTransactionBytes);
 								return Globals.getInstance().getNS().broadcastTransaction(signedTransactionBytes);
 							});
+					}
 
 					TransactionBroadcast tb = tx.blockingGet();
 					tb.getTransactionId();

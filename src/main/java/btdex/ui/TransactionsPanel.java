@@ -19,6 +19,7 @@ import btdex.core.ContractState;
 import btdex.core.Globals;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.response.Transaction;
+import burst.kit.entity.response.TransactionAttachment;
 import burst.kit.entity.response.http.BRSError;
 
 public class TransactionsPanel extends JPanel {
