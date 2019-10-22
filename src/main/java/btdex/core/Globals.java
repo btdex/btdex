@@ -22,7 +22,7 @@ public class Globals {
 	BurstNodeService NS = BurstNodeService.getInstance(BT.NODE_BURST_TEAM);
 	public static final BurstCrypto BC = BurstCrypto.getInstance();
 
-	static final String CONF_FILE = "config.properties";
+	static final String DEF_CONF_FILE = "config.properties";
 
 	public static final String PROP_NODE = "node";
 	public static final String PROP_ENC_PRIVKEY = "encPrivKey";
@@ -43,6 +43,7 @@ public class Globals {
 		((DecimalFormat)NF_FULL).setDecimalFormatSymbols(s);
 	}
 
+	static String confFile = DEF_CONF_FILE;
 	Properties conf = new Properties();
 
 	boolean IS_TESTNET = false;
@@ -61,10 +62,16 @@ public class Globals {
 			ARBITRATOR_BAKCUP,
 	};
 
-	static final Globals INSTANCE = new Globals();
+	static Globals INSTANCE;
 
 	public static Globals getInstance() {
+		if(INSTANCE==null)
+			INSTANCE = new Globals();
 		return INSTANCE;
+	}
+	
+	public static void setConfFile(String file) {
+		confFile = file;
 	}
 
 	public static Properties getConf() {
@@ -74,7 +81,7 @@ public class Globals {
 	public Globals() {
 		try {
 			// Read properties from file
-			FileInputStream input = new FileInputStream(CONF_FILE);
+			FileInputStream input = new FileInputStream(confFile);
 			conf.load(input);
 
 			setNode(conf.getProperty(PROP_NODE, BT.NODE_BURST_TEAM));
@@ -106,7 +113,7 @@ public class Globals {
 	}
 
 	public void saveConfs() throws Exception {
-		FileOutputStream f = new FileOutputStream(CONF_FILE);
+		FileOutputStream f = new FileOutputStream(confFile);
 		getInstance().conf.store(f, "BTDEX configuration file, only edit if you know what you're doing");
 	}
 
