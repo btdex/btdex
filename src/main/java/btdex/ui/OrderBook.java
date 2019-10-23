@@ -2,6 +2,8 @@ package btdex.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -9,10 +11,12 @@ import java.util.HashMap;
 import javax.swing.AbstractCellEditor;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -118,6 +122,42 @@ public class OrderBook extends JPanel {
 			return super.stopCellEditing();
 		}
 	};
+	
+	public class ActionButton extends JButton{
+		private static final long serialVersionUID = 1L;
+		
+		Order order;
+		ContractState contract;
+		
+		public ActionButton(String text, ContractState contract) {
+			this(text, null, contract);
+		}
+		
+		public ActionButton(String text, Order order) {
+			this(text, order, null);
+		}
+		
+		public ActionButton(String text, Order order, ContractState contract) {
+			super(text);
+			this.order = order;
+			this.contract = contract;
+			
+			addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
+					
+					if(order != null) {
+						PlaceOrderDialog dlg = new PlaceOrderDialog(f, selectedMarket, order);
+						dlg.setLocationRelativeTo(OrderBook.this);
+						dlg.setVisible(true);
+					}
+					
+					EDITOR.stopCellEditing();
+				}
+			});
+		}
+	}
 
 	public void setMarket(Market m) {
 		this.selectedMarket = m;
@@ -179,13 +219,31 @@ public class OrderBook extends JPanel {
 
 		Globals g = Globals.getInstance();
 
-		Order[] orders = g.getNS().getBidOrders(token).blockingGet();
+		ArrayList<Order> orders = new ArrayList<>();
+		Order[] bids = g.getNS().getBidOrders(token).blockingGet();
+		Order[] asks = g.getNS().getAskOrders(token).blockingGet();
+		
+		for (int i = 0; i < asks.length; i++) {
+			orders.add(asks[i]);
+		}
+		for (int i = 0; i < bids.length; i++) {
+			orders.add(bids[i]);
+		}
+		
+		// sort by price
+		orders.sort(new Comparator<Order>() {
+			@Override
+			public int compare(Order o1, Order o2) {
+				return (int)(o1.getPrice().doubleValue() - o2.getPrice().doubleValue());
+			}
+		});
 
-		model.setRowCount(orders.length);
+
+		model.setRowCount(orders.size());
 
 		// Update the contents
-		for (int row = 0; row < orders.length; row++) {
-			Order o = orders[row];
+		for (int row = 0; row < orders.size(); row++) {
+			Order o = orders.get(row);
 
 			// price always come in Burst, so no problem in this division using long's
 			long priceBurst = o.getPrice().longValue()/selectedMarket.getFactor();
@@ -205,15 +263,15 @@ public class OrderBook extends JPanel {
 			
 			if(o.getType().equals("bid")) {
 				model.setValueAt("BUYING " + selectedMarket, row, COL_SECURITY);
-				model.setValueAt(new JButton("SELL " + selectedMarket), row, COL_ACTION);
+				model.setValueAt(new ActionButton("SELL " + selectedMarket, o), row, COL_ACTION);
 			}
 			else {
 				model.setValueAt("SELLING " + selectedMarket, row, COL_SECURITY);
-				model.setValueAt(new JButton("BUY " + selectedMarket), row, COL_ACTION);
+				model.setValueAt(new ActionButton("BUY " + selectedMarket, o), row, COL_ACTION);
 			}
 			
 			if(o.getAccount().getSignedLongId() == g.getAddress().getSignedLongId())
-				model.setValueAt(new JButton("CANCEL"), row, COL_ACTION);
+				model.setValueAt(new ActionButton("CANCEL", o), row, COL_ACTION);
 		}
 	}
 
@@ -257,9 +315,9 @@ public class OrderBook extends JPanel {
 			model.setValueAt(s.getSecurity(), row, COL_SECURITY);
 			
 			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId())
-				model.setValueAt(new JButton("CANCEL"), row, COL_ACTION);
+				model.setValueAt(new ActionButton("CANCEL", s), row, COL_ACTION);
 			else
-				model.setValueAt(new JButton("BUY BURST"), row, COL_ACTION);
+				model.setValueAt(new ActionButton("BUY BURST", s), row, COL_ACTION);
 			
 		}
 	}

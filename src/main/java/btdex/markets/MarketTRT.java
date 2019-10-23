@@ -32,6 +32,11 @@ public class MarketTRT extends Market {
 	}
 	
 	@Override
+	public NumberFormat getNumberFormat() {
+		return NF;
+	}
+	
+	@Override
 	public long getFactor() {
 		return 10000L;
 	}

@@ -294,7 +294,7 @@ public class Main extends JFrame implements ActionListener {
 		Market m = (Market) marketComboBox.getSelectedItem();
 		if(e.getSource() == createOfferButton) {
 			
-			PlaceSell dlg = new PlaceSell(this, m);
+			PlaceOrderDialog dlg = new PlaceOrderDialog(this, m, null);
 
 			dlg.setLocationRelativeTo(Main.this);
 			dlg.setVisible(true);

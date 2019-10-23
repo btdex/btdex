@@ -38,8 +38,8 @@ public class SendDialog extends JDialog implements ActionListener {
 	JPasswordField pin;
 	JSlider fee;
 
-	private final int N_SLOTS = 1020;
-	private final int FEE_QUANT = 735000;
+	public static final int N_FEE_SLOTS = 1020;
+	public static final int FEE_QUANT = 735000;
 
 	private JButton okButton;
 
@@ -63,9 +63,10 @@ public class SendDialog extends JDialog implements ActionListener {
 		message = new JTextField(26);
 
 		pin = new JPasswordField(12);
+		pin.addActionListener(this);
 
 		amount = new JFormattedTextField(Globals.NF_FULL);
-		fee = new JSlider(1, N_SLOTS);
+		fee = new JSlider(1, N_FEE_SLOTS);
 
 		topPanel.add(new Desc("Recipient", recipient));
 		if(token==null)
@@ -122,7 +123,7 @@ public class SendDialog extends JDialog implements ActionListener {
 		if(e.getSource() == calcelButton) {
 			setVisible(false);
 		}
-		if(e.getSource() == okButton) {
+		if(e.getSource() == okButton || e.getSource() == pin) {
 			Globals g = Globals.getInstance();
 
 			String error = null;

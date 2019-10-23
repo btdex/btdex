@@ -64,6 +64,10 @@ public abstract class Market {
 		return NF.format(dvalue);
 	}
 	
+	public NumberFormat getNumberFormat() {
+		return NF;
+	}
+	
 	public long getFactor() {
 		return 1;
 	}

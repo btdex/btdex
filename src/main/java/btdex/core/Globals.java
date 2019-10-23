@@ -31,10 +31,10 @@ public class Globals {
 	public static final NumberFormat NF = NumberFormat.getInstance(Locale.ENGLISH);
 	public static final NumberFormat NF_FULL = NumberFormat.getInstance(Locale.ENGLISH);
 	static {
-		NF.setMinimumFractionDigits(4);
-		NF.setMaximumFractionDigits(4);
+		NF.setMinimumFractionDigits(2);
+		NF.setMaximumFractionDigits(5);
 		
-		NF_FULL.setMinimumFractionDigits(4);
+		NF_FULL.setMinimumFractionDigits(5);
 		NF_FULL.setMaximumFractionDigits(8);
 		
 		DecimalFormatSymbols s = new DecimalFormatSymbols(Locale.ENGLISH);
