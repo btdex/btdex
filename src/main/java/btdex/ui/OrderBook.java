@@ -128,26 +128,33 @@ public class OrderBook extends JPanel {
 		
 		Order order;
 		ContractState contract;
+		boolean cancel;
 		
-		public ActionButton(String text, ContractState contract) {
-			this(text, null, contract);
+		public ActionButton(String text, ContractState contract, boolean cancel) {
+			this(text, null, contract, cancel);
 		}
 		
-		public ActionButton(String text, Order order) {
-			this(text, order, null);
+		public ActionButton(String text, Order order, boolean cancel) {
+			this(text, order, null, cancel);
 		}
 		
-		public ActionButton(String text, Order order, ContractState contract) {
+		public ActionButton(String text, Order order, ContractState contract, boolean cancel) {
 			super(text);
 			this.order = order;
 			this.contract = contract;
+			this.cancel = cancel;
 			
 			addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
 					
-					if(order != null) {
+					if(cancel) {
+						CancelOrderDialog dlg = new CancelOrderDialog(f, selectedMarket, order);
+						dlg.setLocationRelativeTo(OrderBook.this);
+						dlg.setVisible(true);
+					}
+					else if(order != null) {
 						PlaceOrderDialog dlg = new PlaceOrderDialog(f, selectedMarket, order);
 						dlg.setLocationRelativeTo(OrderBook.this);
 						dlg.setVisible(true);
@@ -263,15 +270,15 @@ public class OrderBook extends JPanel {
 			
 			if(o.getType().equals("bid")) {
 				model.setValueAt("BUYING " + selectedMarket, row, COL_SECURITY);
-				model.setValueAt(new ActionButton("SELL " + selectedMarket, o), row, COL_ACTION);
+				model.setValueAt(new ActionButton("SELL " + selectedMarket, o, false), row, COL_ACTION);
 			}
 			else {
 				model.setValueAt("SELLING " + selectedMarket, row, COL_SECURITY);
-				model.setValueAt(new ActionButton("BUY " + selectedMarket, o), row, COL_ACTION);
+				model.setValueAt(new ActionButton("BUY " + selectedMarket, o, false), row, COL_ACTION);
 			}
 			
 			if(o.getAccount().getSignedLongId() == g.getAddress().getSignedLongId())
-				model.setValueAt(new ActionButton("CANCEL", o), row, COL_ACTION);
+				model.setValueAt(new ActionButton("CANCEL", o, true), row, COL_ACTION);
 		}
 	}
 
@@ -315,9 +322,9 @@ public class OrderBook extends JPanel {
 			model.setValueAt(s.getSecurity(), row, COL_SECURITY);
 			
 			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId())
-				model.setValueAt(new ActionButton("CANCEL", s), row, COL_ACTION);
+				model.setValueAt(new ActionButton("CANCEL", s, true), row, COL_ACTION);
 			else
-				model.setValueAt(new ActionButton("BUY BURST", s), row, COL_ACTION);
+				model.setValueAt(new ActionButton("BUY BURST", s, false), row, COL_ACTION);
 			
 		}
 	}

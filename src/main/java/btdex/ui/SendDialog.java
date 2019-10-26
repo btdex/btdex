@@ -166,29 +166,23 @@ public class SendDialog extends JDialog implements ActionListener {
 
 				try {
 					// all set, lets make the transfer
-					Single<TransactionBroadcast> tx = null;
-					
+					Single<byte[]> utx = null;
 					if(token!=null) {
-						tx = g.getNS().generateTransferAssetTransaction(g.getPubKey(), BurstAddress.fromId(recID),
+						utx = g.getNS().generateTransferAssetTransaction(g.getPubKey(), BurstAddress.fromId(recID),
 								token.getTokenID(), BurstValue.fromPlanck((long)(amountNumber.doubleValue()*token.getFactor())),
-								BurstValue.fromPlanck(feePlanck), 1440)
-								.flatMap(unsignedTransactionBytes -> {
-									byte[] signedTransactionBytes = Globals.getInstance().signTransaction(pin.getPassword(), unsignedTransactionBytes);
-									return Globals.getInstance().getNS().broadcastTransaction(signedTransactionBytes);
-								});						
+								BurstValue.fromPlanck(feePlanck), 1440);						
 					}
 					else {
-						tx = g.getNS().generateTransactionWithMessage(BurstAddress.fromId(recID), g.getPubKey(),
+						utx = g.getNS().generateTransactionWithMessage(BurstAddress.fromId(recID), g.getPubKey(),
 							BurstValue.fromBurst(amountNumber.doubleValue()),
-							BurstValue.fromPlanck(feePlanck), 1440, msg)
-							.flatMap(unsignedTransactionBytes -> {
-								byte[] signedTransactionBytes = Globals.getInstance().signTransaction(pin.getPassword(), unsignedTransactionBytes);
-								return Globals.getInstance().getNS().broadcastTransaction(signedTransactionBytes);
-							});
+							BurstValue.fromPlanck(feePlanck), 1440, msg);
 					}
 
+					Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
+								byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
+								return g.getNS().broadcastTransaction(signedTransactionBytes);
+							});
 					TransactionBroadcast tb = tx.blockingGet();
-					tb.getTransactionId();
 					setVisible(false);
 
 					Toast.makeText((JFrame) this.getOwner(),

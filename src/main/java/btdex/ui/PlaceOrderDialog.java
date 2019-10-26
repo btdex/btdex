@@ -266,29 +266,23 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			}
 
 			// all set, lets place the order
-			Single<TransactionBroadcast> tx = null;
-
 			try {
-
+				Single<byte[]> utx = null;
 				if(isToken) {
 					if(sellToken.isSelected())
-						tx = g.getNS().generatePlaceAskOrderTransaction(g.getPubKey(), market.getTokenID(),
-								quantityValue, priceValue, suggestedFee.getStandardFee(), 1440)
-							.flatMap(unsignedTransactionBytes -> {
-								byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
-								return g.getNS().broadcastTransaction(signedTransactionBytes);
-							});
+						utx = g.getNS().generatePlaceAskOrderTransaction(g.getPubKey(), market.getTokenID(),
+								quantityValue, priceValue, suggestedFee.getStandardFee(), 1440);
 					else
-						tx = g.getNS().generatePlaceBidOrderTransaction(g.getPubKey(), market.getTokenID(),
-								quantityValue, priceValue, suggestedFee.getStandardFee(), 1440)
-							.flatMap(unsignedTransactionBytes -> {
-								byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
-								return g.getNS().broadcastTransaction(signedTransactionBytes);
-							});						
+						utx = g.getNS().generatePlaceBidOrderTransaction(g.getPubKey(), market.getTokenID(),
+								quantityValue, priceValue, suggestedFee.getStandardFee(), 1440);
 				}
 				else {
 				}
 
+				Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
+					byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
+					return g.getNS().broadcastTransaction(signedTransactionBytes);
+				});
 				TransactionBroadcast tb = tx.blockingGet();
 				tb.getTransactionId();
 				setVisible(false);
@@ -330,7 +324,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			boolean isSell = sellToken.isSelected();
 
 			String terms = "You are %s up to %s %s %s BURST at a price of %s BURST each.\n\n"
-					+ "This order can be partially taken and will be open until filled or cancelled. "
+					+ "This order can be partially filled and will be open until filled or cancelled. "
 					+ "No trading fees apply, only a one time %s BURST transaction fee.";
 
 			terms = String.format(terms,
