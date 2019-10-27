@@ -1,11 +1,9 @@
 package btdex.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.util.ArrayList;
 
-import javax.swing.AbstractCellEditor;
-import javax.swing.JButton;
+import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -13,14 +11,14 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellEditor;
 
 import btdex.core.ContractState;
 import btdex.core.Globals;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.response.Transaction;
-import burst.kit.entity.response.TransactionAttachment;
 import burst.kit.entity.response.http.BRSError;
+import jiconfont.icons.font_awesome.FontAwesome;
+import jiconfont.swing.IconFontSwing;
 
 public class TransactionsPanel extends JPanel {
 
@@ -28,6 +26,7 @@ public class TransactionsPanel extends JPanel {
 
 	JTable table;
 	DefaultTableModel model;
+	Icon copyIcon;
 
 	public static final int COL_ID = 0;
 	public static final int COL_DATE = 1;
@@ -60,49 +59,17 @@ public class TransactionsPanel extends JPanel {
 		}
 
 		public boolean isCellEditable(int row, int col) {
-			return col == COL_ID;
+			return col == COL_ID || col == COL_ACCOUNT;
 		}
 	}
-
-	ButtonCellRenderer RENDERER = new ButtonCellRenderer();
-	public class ButtonCellRenderer extends DefaultTableCellRenderer	{
-		private static final long serialVersionUID = 1L;
-
-		public Component getTableCellRendererComponent(JTable table,
-				Object value, boolean isSelected, boolean hasFocus, int row,
-				int column) {
-			return (JButton)value;
-		}
-	}
-
-	ButtonCellEditor EDITOR = new ButtonCellEditor();
-	class ButtonCellEditor extends AbstractCellEditor implements TableCellEditor {
-		private static final long serialVersionUID = 1L;
-
-		JButton but;
-
-		public Component getTableCellEditorComponent(JTable table,
-				Object value, boolean isSelected, int row, int column) {
-
-			return but = (JButton) value;
-		}
-
-		public Object getCellEditorValue() {
-			return but;
-		}
-
-		// validate the input
-		public boolean stopCellEditing() {
-			return super.stopCellEditing();
-		}
-	};
 
 	public TransactionsPanel() {
 		super(new BorderLayout());
 
 		table = new JTable(model = new MyTableModel());
-
 		table.setRowHeight(table.getRowHeight()+7);
+		
+		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
@@ -120,8 +87,10 @@ public class TransactionsPanel extends JPanel {
 
 		table.setAutoCreateColumnsFromModel(false);
 
-		table.getColumnModel().getColumn(COL_ID).setCellRenderer(RENDERER);
-		table.getColumnModel().getColumn(COL_ID).setCellEditor(EDITOR);
+		table.getColumnModel().getColumn(COL_ID).setCellRenderer(OrderBook.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_ID).setCellEditor(OrderBook.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_ACCOUNT).setCellRenderer(OrderBook.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_ACCOUNT).setCellEditor(OrderBook.BUTTON_EDITOR);
 		//
 		table.getColumnModel().getColumn(COL_ACCOUNT).setPreferredWidth(200);
 		table.getColumnModel().getColumn(COL_ID).setPreferredWidth(200);
@@ -216,8 +185,9 @@ public class TransactionsPanel extends JPanel {
 				account = tx.getRecipient();
 
 			model.setValueAt(tx.getBlockId()==null ? "PENDING" : tx.getConfirmations(), row, COL_CONF);
-			model.setValueAt(account==null ? "" : account.getRawAddress(), row, COL_ACCOUNT);
-			model.setValueAt(new JButton(tx.getId().toString()), row, COL_ID);
+			model.setValueAt(account==null ? new JLabel() :
+				new CopyToClipboardButton(account.getRawAddress(), copyIcon, account.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
+			model.setValueAt(new CopyToClipboardButton(tx.getId().toString(), copyIcon, OrderBook.BUTTON_EDITOR), row, COL_ID);
 
 			model.setValueAt(ContractState.format(amount), row, COL_AMOUNT);
 			model.setValueAt(ContractState.format(tx.getFee().longValue()), row, COL_FEE);

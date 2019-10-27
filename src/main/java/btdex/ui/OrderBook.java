@@ -39,6 +39,8 @@ public class OrderBook extends JPanel {
 
 	JTable table;
 	DefaultTableModel model;
+	
+	Icon copyIcon;
 
 	HashMap<BurstAddress, ContractState> contractsMap = new HashMap<>();
 	ArrayList<ContractState> marketContracts = new ArrayList<>();
@@ -59,9 +61,10 @@ public class OrderBook extends JPanel {
 			"ACTION"
 	};
 
-	Icon TAKE_ICON = IconFontSwing.buildIcon(FontAwesome.HANDSHAKE_O, 12);
-
 	Market selectedMarket = null;
+	
+	public static final ButtonCellRenderer BUTTON_RENDERER = new ButtonCellRenderer();
+	public static final ButtonCellEditor BUTTON_EDITOR = new ButtonCellEditor();
 
 	class MyTableModel extends DefaultTableModel {
 		private static final long serialVersionUID = 1L;
@@ -90,19 +93,18 @@ public class OrderBook extends JPanel {
 		}
 	}
 
-	ButtonCellRenderer RENDERER = new ButtonCellRenderer();
-	public class ButtonCellRenderer extends DefaultTableCellRenderer	{
+	public static class ButtonCellRenderer extends DefaultTableCellRenderer	{
 		private static final long serialVersionUID = 1L;
 
 		public Component getTableCellRendererComponent(JTable table,
 				Object value, boolean isSelected, boolean hasFocus, int row,
 				int column) {
-			return (JButton)value;
+			return (Component)value;
 		}
 	}
 
-	ButtonCellEditor EDITOR = new ButtonCellEditor();
-	class ButtonCellEditor extends AbstractCellEditor implements TableCellEditor {
+
+	public static class ButtonCellEditor extends AbstractCellEditor implements TableCellEditor {
 		private static final long serialVersionUID = 1L;
 
 		JButton but;
@@ -160,7 +162,7 @@ public class OrderBook extends JPanel {
 						dlg.setVisible(true);
 					}
 					
-					EDITOR.stopCellEditing();
+					BUTTON_EDITOR.stopCellEditing();
 				}
 			});
 		}
@@ -184,8 +186,9 @@ public class OrderBook extends JPanel {
 		selectedMarket = m;
 
 		table = new JTable(model = new MyTableModel());
-
 		table.setRowHeight(table.getRowHeight()+7);
+		
+		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
@@ -203,10 +206,10 @@ public class OrderBook extends JPanel {
 
 		table.setAutoCreateColumnsFromModel(false);
 
-		table.getColumnModel().getColumn(COL_ACTION).setCellRenderer(RENDERER);
-		table.getColumnModel().getColumn(COL_ACTION).setCellEditor(EDITOR);
-		table.getColumnModel().getColumn(COL_CONTRACT).setCellRenderer(RENDERER);
-		table.getColumnModel().getColumn(COL_CONTRACT).setCellEditor(EDITOR);
+		table.getColumnModel().getColumn(COL_ACTION).setCellRenderer(BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_ACTION).setCellEditor(BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_CONTRACT).setCellRenderer(BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_CONTRACT).setCellEditor(BUTTON_EDITOR);
 
 		table.getColumnModel().getColumn(COL_CONTRACT).setPreferredWidth(200);
 
@@ -266,7 +269,7 @@ public class OrderBook extends JPanel {
 			model.setValueAt(selectedMarket.numberFormat(amountToken), row, COL_SIZE);
 			model.setValueAt(ContractState.format((amountToken*priceBurst)/selectedMarket.getFactor()), row, COL_TOTAL);
 
-			model.setValueAt(new JButton(o.getOrder().getID()), row, COL_CONTRACT);
+			model.setValueAt(new CopyToClipboardButton(o.getOrder().getID(), copyIcon, BUTTON_EDITOR), row, COL_CONTRACT);
 			
 			if(o.getType().equals("bid")) {
 				model.setValueAt("BUYING " + selectedMarket, row, COL_SECURITY);
@@ -318,7 +321,8 @@ public class OrderBook extends JPanel {
 			model.setValueAt(s.getAmount(), row, COL_SIZE);
 			model.setValueAt(selectedMarket.numberFormat((s.getRate()*s.getAmountNQT()) / Contract.ONE_BURST),
 					row, COL_TOTAL);
-			model.setValueAt(new JButton(s.getAddress().getRawAddress()), row, COL_CONTRACT);
+			model.setValueAt(new CopyToClipboardButton(s.getAddress().getRawAddress(), copyIcon,
+					s.getAddress().getFullAddress(), BUTTON_EDITOR), row, COL_CONTRACT);
 			model.setValueAt(s.getSecurity(), row, COL_SECURITY);
 			
 			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId())

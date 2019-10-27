@@ -63,7 +63,7 @@ public class Main extends JFrame implements ActionListener {
 
 	private JButton sendButton;
 
-	private JButton copyAddButton;
+	private CopyToClipboardButton copyAddButton;
 
 	private JLabel balanceLabelToken;
 
@@ -120,17 +120,7 @@ public class Main extends JFrame implements ActionListener {
 		transactionsPanel = new TransactionsPanel();
 
 		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 18, COLOR);
-		copyAddButton = new JButton(copyIcon);
-		copyAddButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-				StringSelection stringSelection = new StringSelection(Globals.getInstance().getAddress().getFullAddress());
-				clipboard.setContents(stringSelection, null);
-				
-				Toast.makeText(Main.this, "Address copied to clipboard.").display(copyAddButton);
-			}
-		});
+		copyAddButton = new CopyToClipboardButton("", copyIcon);
 		copyAddButton.setToolTipText("Copy your Burst address to clipboard");
 		copyAddButton.setFont(largeFont);
 
@@ -207,7 +197,8 @@ public class Main extends JFrame implements ActionListener {
 		getContentPane().setVisible(false);
 		setVisible(true);
 
-		if(Globals.getInstance().getAddress()==null) {			
+		Globals g = Globals.getInstance();
+		if(g.getAddress()==null) {			
 			// no public key or invalid, show the welcome screen
 			Welcome welcome = new Welcome(this);
 			
@@ -218,7 +209,8 @@ public class Main extends JFrame implements ActionListener {
 				return;
 			}
 		}
-		copyAddButton.setText(Globals.getInstance().getAddress().getRawAddress());
+		copyAddButton.setText(g.getAddress().getRawAddress());
+		copyAddButton.setClipboard(g.getAddress().getFullAddress());
 		getContentPane().setVisible(true);
 		
 		Thread updateThread = new UpdateThread();
