@@ -42,7 +42,7 @@ public class MarketTRT extends Market {
 	}
 
 	
-	public String numberFormat(long value) {
+	public String format(long value) {
 		double dvalue = (double)value/getFactor();
 		return NF.format(dvalue);
 	}

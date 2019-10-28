@@ -6,9 +6,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -49,6 +46,7 @@ public class Main extends JFrame implements ActionListener {
 
 	OrderBook orderBook;
 	TransactionsPanel transactionsPanel;
+	HistoryPanel historyPanel;
 
 	JTabbedPane tabbedPane;
 
@@ -118,6 +116,7 @@ public class Main extends JFrame implements ActionListener {
 		orderBook = new OrderBook((Market) marketComboBox.getSelectedItem());
 		
 		transactionsPanel = new TransactionsPanel();
+		historyPanel = new HistoryPanel((Market) marketComboBox.getSelectedItem());
 
 		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 18, COLOR);
 		copyAddButton = new CopyToClipboardButton("", copyIcon);
@@ -158,7 +157,7 @@ public class Main extends JFrame implements ActionListener {
 		tabbedPane.addTab("YOUR TRADES", yourTradesIcon, new JLabel());
 
 		Icon tradeIcon = IconFontSwing.buildIcon(FontAwesome.LINE_CHART, 18, COLOR);
-		tabbedPane.addTab("TRADE HISTORY", tradeIcon, new JLabel());
+		tabbedPane.addTab("TRADE HISTORY", tradeIcon, historyPanel);
 
 		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.EXCHANGE, 18, COLOR);
 		tabbedPane.addTab("TRANSACTIONS", transactionsIcon, transactionsPanel);
@@ -247,13 +246,14 @@ public class Main extends JFrame implements ActionListener {
 							tokenBalance += aac.getQuantity().longValue();
 						}
 					}
-					balanceLabelToken.setText(token.numberFormat(tokenBalance));
-					balanceLabelTokenPending.setText("+" + token.numberFormat(0) + " pending");
+					balanceLabelToken.setText(token.format(tokenBalance));
+					balanceLabelTokenPending.setText("+" + token.format(0) + " pending");
 
 					nodeStatus.setText("Node: " + Globals.getConf().getProperty(Globals.PROP_NODE));
 
 					orderBook.update();
 					transactionsPanel.update();
+					historyPanel.update();
 				}
 				catch (RuntimeException rex) {
 					rex.printStackTrace();
@@ -293,6 +293,7 @@ public class Main extends JFrame implements ActionListener {
 		}
 		else if (e.getSource() == marketComboBox) {
 			orderBook.setMarket(m);
+			historyPanel.setMarket(m);
 		}
 		else if (e.getSource() == sendButton) {
 			SendDialog dlg = new SendDialog(this, null);

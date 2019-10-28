@@ -207,7 +207,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				buyToken.setSelected(true);
 			
 			price.setText(ContractState.format(order.getPrice().longValue()/market.getFactor()));
-			amount.setText(market.numberFormat(order.getQuantity().longValue()));
+			amount.setText(market.format(order.getQuantity().longValue()));
 			somethingChanged();
 		}
 
@@ -314,7 +314,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			quantityValue = BurstValue.fromPlanck((long)(amountN.doubleValue()*market.getFactor()));
 
 			totalValue = BurstValue.fromBurst(priceN.doubleValue()*amountN.doubleValue());
-			total.setText(market.numberFormat(totalValue.longValue()/market.getFactor()));
+			total.setText(market.format(totalValue.longValue()/market.getFactor()));
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}

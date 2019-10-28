@@ -61,7 +61,7 @@ public class OrderBook extends JPanel {
 			"ACTION"
 	};
 
-	Market selectedMarket = null;
+	Market market = null;
 	
 	public static final ButtonCellRenderer BUTTON_RENDERER = new ButtonCellRenderer();
 	public static final ButtonCellEditor BUTTON_EDITOR = new ButtonCellEditor();
@@ -74,13 +74,13 @@ public class OrderBook extends JPanel {
 		}
 
 		public String getColumnName(int col) {
-			boolean isToken = selectedMarket.getTokenID()!=null;
+			boolean isToken = market.getTokenID()!=null;
 			
 			String colName = columnNames[col];
 			if(col == COL_PRICE || col == COL_TOTAL)
-				colName += " (" + (isToken ? "BURST" : selectedMarket) + ")";
+				colName += " (" + (isToken ? "BURST" : market) + ")";
 			if(col == COL_SIZE)				
-				colName += " (" + (isToken ? selectedMarket : "BURST") + ")";
+				colName += " (" + (isToken ? market : "BURST") + ")";
 			if(col == COL_CONTRACT && isToken)
 				colName = "ORDER";
 			if(col == COL_SECURITY && isToken)
@@ -152,12 +152,12 @@ public class OrderBook extends JPanel {
 					JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
 					
 					if(cancel) {
-						CancelOrderDialog dlg = new CancelOrderDialog(f, selectedMarket, order);
+						CancelOrderDialog dlg = new CancelOrderDialog(f, market, order);
 						dlg.setLocationRelativeTo(OrderBook.this);
 						dlg.setVisible(true);
 					}
 					else if(order != null) {
-						PlaceOrderDialog dlg = new PlaceOrderDialog(f, selectedMarket, order);
+						PlaceOrderDialog dlg = new PlaceOrderDialog(f, market, order);
 						dlg.setLocationRelativeTo(OrderBook.this);
 						dlg.setVisible(true);
 					}
@@ -169,7 +169,7 @@ public class OrderBook extends JPanel {
 	}
 
 	public void setMarket(Market m) {
-		this.selectedMarket = m;
+		this.market = m;
 
 		// update the column headers
 		for (int c = 0; c < columnNames.length; c++) {
@@ -183,7 +183,7 @@ public class OrderBook extends JPanel {
 	public OrderBook(Market m) {
 		super(new BorderLayout());
 
-		selectedMarket = m;
+		market = m;
 
 		table = new JTable(model = new MyTableModel());
 		table.setRowHeight(table.getRowHeight()+7);
@@ -217,7 +217,7 @@ public class OrderBook extends JPanel {
 	}
 
 	public void update() {
-		if(selectedMarket.getTokenID()==null) {
+		if(market.getTokenID()==null) {
 			updateContracts();
 		}
 		else
@@ -225,7 +225,7 @@ public class OrderBook extends JPanel {
 	}
 
 	private void updateOrders() {
-		BurstID token = selectedMarket.getTokenID();
+		BurstID token = market.getTokenID();
 
 		Globals g = Globals.getInstance();
 
@@ -256,7 +256,7 @@ public class OrderBook extends JPanel {
 			Order o = orders.get(row);
 
 			// price always come in Burst, so no problem in this division using long's
-			long priceBurst = o.getPrice().longValue()/selectedMarket.getFactor();
+			long priceBurst = o.getPrice().longValue()/market.getFactor();
 			long amountToken = o.getQuantity().longValue();
 			
 			if(priceBurst == 0 || amountToken == 0)
@@ -266,18 +266,18 @@ public class OrderBook extends JPanel {
 //			long amountPlank = (amountToken * priceBurst);
 
 			model.setValueAt(ContractState.format(priceBurst), row, COL_PRICE);
-			model.setValueAt(selectedMarket.numberFormat(amountToken), row, COL_SIZE);
-			model.setValueAt(ContractState.format((amountToken*priceBurst)/selectedMarket.getFactor()), row, COL_TOTAL);
+			model.setValueAt(market.format(amountToken), row, COL_SIZE);
+			model.setValueAt(ContractState.format((amountToken*priceBurst)/market.getFactor()), row, COL_TOTAL);
 
 			model.setValueAt(new CopyToClipboardButton(o.getOrder().getID(), copyIcon, BUTTON_EDITOR), row, COL_CONTRACT);
 			
 			if(o.getType().equals("bid")) {
-				model.setValueAt("BUYING " + selectedMarket, row, COL_SECURITY);
-				model.setValueAt(new ActionButton("SELL " + selectedMarket, o, false), row, COL_ACTION);
+				model.setValueAt("BUYING " + market, row, COL_SECURITY);
+				model.setValueAt(new ActionButton("SELL " + market, o, false), row, COL_ACTION);
 			}
 			else {
-				model.setValueAt("SELLING " + selectedMarket, row, COL_SECURITY);
-				model.setValueAt(new ActionButton("BUY " + selectedMarket, o, false), row, COL_ACTION);
+				model.setValueAt("SELLING " + market, row, COL_SECURITY);
+				model.setValueAt(new ActionButton("BUY " + market, o, false), row, COL_ACTION);
 			}
 			
 			if(o.getAccount().getSignedLongId() == g.getAddress().getSignedLongId())
@@ -292,7 +292,7 @@ public class OrderBook extends JPanel {
 
 		marketContracts.clear();
 		for(ContractState s : contractsMap.values()) {
-			if(s.getMarket() == selectedMarket.getID() && s.getAmountNQT() > 0
+			if(s.getMarket() == market.getID() && s.getAmountNQT() > 0
 					&& s.getState() == SellContract.STATE_OPEN
 					&& g.isArbitratorAccepted(s.getArbitrator1())
 					&& g.isArbitratorAccepted(s.getArbitrator2()) )
@@ -317,9 +317,9 @@ public class OrderBook extends JPanel {
 		for (int row = 0; row < marketContracts.size(); row++) {			
 			ContractState s = marketContracts.get(row);
 			
-			model.setValueAt(selectedMarket.numberFormat(s.getRate()), row, COL_PRICE);
+			model.setValueAt(market.format(s.getRate()), row, COL_PRICE);
 			model.setValueAt(s.getAmount(), row, COL_SIZE);
-			model.setValueAt(selectedMarket.numberFormat((s.getRate()*s.getAmountNQT()) / Contract.ONE_BURST),
+			model.setValueAt(market.format((s.getRate()*s.getAmountNQT()) / Contract.ONE_BURST),
 					row, COL_TOTAL);
 			model.setValueAt(new CopyToClipboardButton(s.getAddress().getRawAddress(), copyIcon,
 					s.getAddress().getFullAddress(), BUTTON_EDITOR), row, COL_CONTRACT);

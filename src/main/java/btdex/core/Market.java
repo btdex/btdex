@@ -59,7 +59,7 @@ public abstract class Market {
 	/**
 	 * @return the formatted value (default is satoshi units)
 	 */
-	public String numberFormat(long value) {
+	public String format(long value) {
 		double dvalue = value/100000000.0;
 		return NF.format(dvalue);
 	}
