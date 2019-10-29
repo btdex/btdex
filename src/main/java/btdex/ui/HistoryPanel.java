@@ -1,6 +1,9 @@
 package btdex.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -18,13 +21,13 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.data.xy.DefaultOHLCDataset;
 import org.jfree.data.xy.OHLCDataItem;
 
 import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
-import burst.kit.entity.BurstAddress;
 import burst.kit.entity.response.Trade;
 import burst.kit.entity.response.http.BRSError;
 import jiconfont.icons.font_awesome.FontAwesome;
@@ -40,19 +43,21 @@ public class HistoryPanel extends JPanel {
 	
 	Market market = null;
 	private JFreeChart chart;
+	
+	static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss yyyy-MM-dd");
 
 	public static final int COL_PRICE = 0;
 	public static final int COL_AMOUNT = 1;
-	public static final int COL_DATE = 2;
-	public static final int COL_TYPE = 3;
-	public static final int COL_ACCOUNT = 4;
+	public static final int COL_TIME = 2;
+	public static final int COL_BUYER = 3;
+	public static final int COL_SELLER = 4;
 
 	String[] columnNames = {
 			"PRICE",
 			"AMOUNT",
-			"DATE",
-			"TYPE",
-			"CONTRACT",
+			"TIME",
+			"BUYER",
+			"SELLER",
 	};
 
 	class MyTableModel extends DefaultTableModel {
@@ -68,8 +73,7 @@ public class HistoryPanel extends JPanel {
 		}
 
 		public boolean isCellEditable(int row, int col) {
-//			return col == COL_ID || col == COL_ACCOUNT;
-			return false;
+			return col == COL_BUYER || col == COL_SELLER;
 		}
 	}
 
@@ -78,6 +82,7 @@ public class HistoryPanel extends JPanel {
 
 		table = new JTable(model = new MyTableModel());
 		table.setRowHeight(table.getRowHeight()+7);
+		table.setPreferredScrollableViewportSize(new Dimension(200, 200));
 		
 		this.market = market;
 		
@@ -91,10 +96,15 @@ public class HistoryPanel extends JPanel {
 
         chart.setBackgroundPaint(table.getBackground());
         chart.setBorderPaint(table.getForeground());
+        chart.getXYPlot().setBackgroundPaint(table.getBackground());
         chart.getXYPlot().getRangeAxis().setTickLabelPaint(table.getForeground());
         chart.getXYPlot().getRangeAxis().setLabelPaint(table.getForeground());
         chart.getXYPlot().getDomainAxis().setTickLabelPaint(table.getForeground());
         chart.getXYPlot().getDomainAxis().setLabelPaint(table.getForeground());
+        CandlestickRenderer r = (CandlestickRenderer) chart.getXYPlot().getRenderer();
+        r.setDownPaint(Color.decode("#BE474A"));
+        r.setUpPaint(Color.decode("#29BF76"));
+        r.setSeriesPaint(0, table.getForeground());
         
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
@@ -112,12 +122,14 @@ public class HistoryPanel extends JPanel {
 
 		table.setAutoCreateColumnsFromModel(false);
 
-//		table.getColumnModel().getColumn(COL_ID).setCellRenderer(OrderBook.BUTTON_RENDERER);
-//		table.getColumnModel().getColumn(COL_ID).setCellEditor(OrderBook.BUTTON_EDITOR);
-//		table.getColumnModel().getColumn(COL_ACCOUNT).setCellRenderer(OrderBook.BUTTON_RENDERER);
-//		table.getColumnModel().getColumn(COL_ACCOUNT).setCellEditor(OrderBook.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_BUYER).setCellRenderer(OrderBook.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_BUYER).setCellEditor(OrderBook.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_SELLER).setCellRenderer(OrderBook.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_SELLER).setCellEditor(OrderBook.BUTTON_EDITOR);
 		//
-		table.getColumnModel().getColumn(COL_ACCOUNT).setPreferredWidth(200);
+		table.getColumnModel().getColumn(COL_TIME).setPreferredWidth(120);
+		table.getColumnModel().getColumn(COL_BUYER).setPreferredWidth(200);
+		table.getColumnModel().getColumn(COL_SELLER).setPreferredWidth(200);
 
 		add(scrollPane, BorderLayout.CENTER);
 		add(chartPanel, BorderLayout.PAGE_END);
@@ -151,17 +163,18 @@ public class HistoryPanel extends JPanel {
 				// Update the contents
 				for (int row = 0; row < maxLines; row++) {
 					Trade tr = trs[row];
-					BurstAddress account = null;
+
 					long amount = tr.getQuantity().longValue();
 					long price = tr.getPrice().longValue();
 
-					model.setValueAt(account==null ? new JLabel() :
-						new CopyToClipboardButton(account.getRawAddress(), copyIcon, account.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
-					model.setValueAt(new CopyToClipboardButton(tr.getAskOrder().toString(), copyIcon, OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
+					model.setValueAt(new CopyToClipboardButton(tr.getBuyer().getRawAddress(), copyIcon,
+							tr.getBuyer().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
+					model.setValueAt(new CopyToClipboardButton(tr.getSeller().getRawAddress(), copyIcon,
+							tr.getSeller().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
 
 					model.setValueAt(ContractState.format(price*market.getFactor()), row, COL_PRICE);
 					model.setValueAt(market.format(amount), row, COL_AMOUNT);
-					model.setValueAt(tr.getTimestamp().getAsDate(), row, COL_DATE);
+					model.setValueAt(DATE_FORMAT.format(tr.getTimestamp().getAsDate()), row, COL_TIME);
 				}
 				
 				
@@ -171,7 +184,6 @@ public class HistoryPanel extends JPanel {
 				Date start = new Date(System.currentTimeMillis() - DELTA*NCANDLES);
 				Date next = new Date(start.getTime() + DELTA);
 				
-				int startRow = 0;
 				double lastClose = Double.NaN;
 				for (int i = 0; i < 50; i++) {
 					double high = 0;
@@ -182,7 +194,7 @@ public class HistoryPanel extends JPanel {
 					if(!Double.isNaN(lastClose))
 						high = lastClose;
 					
-					for (int row = startRow; row < maxLines; row++) {
+					for (int row = maxLines-1; row >= 0; row--) {
 						Trade tr = trs[row];
 						Date date = tr.getTimestamp().getAsDate();
 						double price = tr.getPrice().doubleValue()*market.getFactor();
@@ -198,6 +210,8 @@ public class HistoryPanel extends JPanel {
 						}
 					}
 					low = Math.min(high, low);
+					if(!Double.isNaN(close))
+						lastClose = close;
 					
 					if(!Double.isNaN(open)) {
 						OHLCDataItem item = new OHLCDataItem(
