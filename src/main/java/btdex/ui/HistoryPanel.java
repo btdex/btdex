@@ -142,9 +142,8 @@ public class HistoryPanel extends JPanel {
 		for (int c = 0; c < columnNames.length; c++) {
 			table.getColumnModel().getColumn(c).setHeaderValue(model.getColumnName(c));
 		}
+		model.setRowCount(0);
 		model.fireTableDataChanged();
-
-		update();
 	}
 
 	public void update() {

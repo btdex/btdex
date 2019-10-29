@@ -70,6 +70,8 @@ public class Main extends JFrame implements ActionListener {
 	private JButton sendButtonToken;
 
 	private MarketTRT token;
+	
+	private long lastUpdated;
 
 	public Main() {
 		super("BTDEX");
@@ -215,11 +217,31 @@ public class Main extends JFrame implements ActionListener {
 		Thread updateThread = new UpdateThread();
 		updateThread.start();
 	}
+	
+	/**
+	 * Signal an update should take place.
+	 */
+	public void update() {
+		lastUpdated = 0;
+	}
 
 	public class UpdateThread extends Thread {
+		
 		@Override
 		public void run() {
 			while (!Thread.currentThread().isInterrupted()) {
+				// Update at every 10 seconds
+				if(System.currentTimeMillis() - lastUpdated < 10000) {
+					try {
+						sleep(100);
+						continue;
+					}
+					catch (InterruptedException ex) {
+						Thread.currentThread().interrupt();
+					}
+				}				
+				lastUpdated = System.currentTimeMillis();
+				
 				long balance = 0, locked = 0;
 				try {
 					Globals g = Globals.getInstance();
@@ -260,13 +282,6 @@ public class Main extends JFrame implements ActionListener {
 					
 					nodeStatus.setText(rex.getMessage());
 				}
-
-				try {
-					sleep(10000);
-				}
-				catch (InterruptedException ex) {
-					Thread.currentThread().interrupt();
-				}
 			}
 		}
 	};
@@ -294,6 +309,7 @@ public class Main extends JFrame implements ActionListener {
 		else if (e.getSource() == marketComboBox) {
 			orderBook.setMarket(m);
 			historyPanel.setMarket(m);
+			update();
 		}
 		else if (e.getSource() == sendButton) {
 			SendDialog dlg = new SendDialog(this, null);

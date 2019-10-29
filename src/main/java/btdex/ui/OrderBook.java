@@ -175,9 +175,8 @@ public class OrderBook extends JPanel {
 		for (int c = 0; c < columnNames.length; c++) {
 			table.getColumnModel().getColumn(c).setHeaderValue(model.getColumnName(c));
 		}
+		model.setRowCount(0);
 		model.fireTableDataChanged();
-
-		update();
 	}
 
 	public OrderBook(Market m) {
@@ -247,7 +246,6 @@ public class OrderBook extends JPanel {
 				return (int)(o1.getPrice().doubleValue() - o2.getPrice().doubleValue());
 			}
 		});
-
 
 		model.setRowCount(orders.size());
 
