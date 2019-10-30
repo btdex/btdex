@@ -1,8 +1,9 @@
-// Apply the java plugin to add support for Java
-apply plugin: 'java'
 
-// Apply the application plugin to add support for building an application
-apply plugin: 'application'
+plugins {
+  id 'com.github.johnrengelman.shadow' version '4.0.3'
+  id 'java'
+  id 'application'
+}
 
 // In this section you declare where to find the dependencies of your project
 repositories {
@@ -33,6 +34,7 @@ dependencies {
 	
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
+    
 }
 
 // If we want to refresh our libraries (get a new snapshot)
@@ -41,4 +43,4 @@ configurations.all {
 }
 
 // Define the main class for the application
-mainClassName = 'Exchange'
+mainClassName = 'BTDEX'

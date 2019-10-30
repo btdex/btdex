@@ -74,11 +74,11 @@ public class Main extends JFrame implements ActionListener {
 	private long lastUpdated;
 
 	public Main() {
-		super("BTDEX");
+		super("BTDEX" + (Globals.getInstance().isTestnet() ? "-TESTNET" : ""));
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		try {
-			Image image = ImageIO.read(Main.class.getResourceAsStream("icon.png"));
+			Image image = ImageIO.read(Main.class.getResourceAsStream("/icon.png"));
 			setIconImage(image);
 		} catch (IOException e) {
 			e.printStackTrace();

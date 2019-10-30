@@ -227,6 +227,9 @@ public class HistoryPanel extends JPanel {
 				chart.getXYPlot().setDataset(dataset);
 			}
 			
+			else {
+				chart.getXYPlot().setDataset(null);
+			}
 			
 			
 		}

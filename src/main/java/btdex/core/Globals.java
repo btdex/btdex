@@ -19,7 +19,7 @@ import burst.kit.service.BurstNodeService;
 
 public class Globals {
 
-	BurstNodeService NS = BurstNodeService.getInstance(BT.NODE_BURST_TEAM);
+	BurstNodeService NS;
 	public static final BurstCrypto BC = BurstCrypto.getInstance();
 
 	static final String DEF_CONF_FILE = "config.properties";
@@ -84,7 +84,8 @@ public class Globals {
 			FileInputStream input = new FileInputStream(confFile);
 			conf.load(input);
 
-			setNode(conf.getProperty(PROP_NODE, BT.NODE_BURST_TEAM));
+			// TODO: default node on testnet for now
+			setNode(conf.getProperty(PROP_NODE, BT.NODE_TESTNET));
 
 			String publicKeyStr = conf.getProperty(Globals.PROP_PUBKEY);
 			if(publicKeyStr == null || publicKeyStr.length()!=64) {
@@ -170,6 +171,10 @@ public class Globals {
 			IS_TESTNET = true;
 
 		NS = BurstNodeService.getInstance(node);
+	}
+	
+	public boolean isTestnet() {
+		return IS_TESTNET;
 	}
 
 	public boolean isArbitratorAccepted(long arb) {
