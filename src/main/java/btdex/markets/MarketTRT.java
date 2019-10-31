@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
+import btdex.core.Globals;
 import btdex.core.Market;
 import burst.kit.entity.BurstID;
 
@@ -18,6 +19,9 @@ public class MarketTRT extends Market {
 	
 	@Override
 	public BurstID getTokenID() {
+		if(Globals.getInstance().isTestnet())
+			return BurstID.fromLong("13868324881938171674");
+		
 		return BurstID.fromLong("107507544026763809");
 	}
 	

@@ -1,5 +1,6 @@
 package btdex.core;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -81,8 +82,16 @@ public class Globals {
 	public Globals() {
 		try {
 			// Read properties from file
-			FileInputStream input = new FileInputStream(confFile);
-			conf.load(input);
+			File f = new File(confFile);
+			if (f.exists() && f.isFile()) {
+				try {
+					FileInputStream input = new FileInputStream(confFile);
+					conf.load(input);
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 
 			// TODO: default node on testnet for now
 			setNode(conf.getProperty(PROP_NODE, BT.NODE_TESTNET));

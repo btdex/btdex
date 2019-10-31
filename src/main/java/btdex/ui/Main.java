@@ -245,6 +245,8 @@ public class Main extends JFrame implements ActionListener {
 				long balance = 0, locked = 0;
 				try {
 					Globals g = Globals.getInstance();
+					if(g.getNS() == null)
+						continue;
 					try {
 						Account ac = g.getNS().getAccount(g.getAddress()).blockingGet();
 						balance = ac.getBalance().longValue();
@@ -261,6 +263,10 @@ public class Main extends JFrame implements ActionListener {
 					balanceLabel.setText(ContractState.format(balance));
 					lockedBalanceLabel.setText("+" + ContractState.format(locked) + " locked");
 					
+					transactionsPanel.update();
+					orderBook.update();
+					historyPanel.update();
+					
 					AssetAccount[] accounts = g.getNS().getAssetAccounts(token.getTokenID()).blockingGet();
 					long tokenBalance = 0;
 					for (AssetAccount aac : accounts) {
@@ -272,10 +278,6 @@ public class Main extends JFrame implements ActionListener {
 					balanceLabelTokenPending.setText("+" + token.format(0) + " pending");
 
 					nodeStatus.setText("Node: " + Globals.getConf().getProperty(Globals.PROP_NODE));
-
-					orderBook.update();
-					transactionsPanel.update();
-					historyPanel.update();
 				}
 				catch (RuntimeException rex) {
 					rex.printStackTrace();
