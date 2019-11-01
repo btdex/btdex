@@ -44,7 +44,7 @@ public class HistoryPanel extends JPanel {
 	Market market = null;
 	private JFreeChart chart;
 	
-	static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss yyyy-MM-dd");
+	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss yyyy-MM-dd");
 
 	public static final int COL_PRICE = 0;
 	public static final int COL_AMOUNT = 1;

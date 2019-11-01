@@ -8,7 +8,12 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.Socket;
 import java.security.SecureRandom;
 
 import javax.imageio.ImageIO;
@@ -17,6 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
@@ -214,6 +220,50 @@ public class Main extends JFrame implements ActionListener {
 		copyAddButton.setClipboard(g.getAddress().getFullAddress());
 		getContentPane().setVisible(true);
 		
+
+		// check if this is a known account
+		try {
+			g.getNS().getAccount(g.getAddress()).blockingGet();
+		}
+		catch (Exception e) {
+			if(e.getCause() instanceof BRSError) {
+				BRSError error = (BRSError) e.getCause();
+				if(error.getCode() == 5) {
+					// unknown account
+					int ret = JOptionPane.showConfirmDialog(Main.this,
+							"You have a new account, do you want to activate it\n"
+							+ "with a complimentary BTDEX message?", "Activate account",
+							JOptionPane.YES_NO_OPTION);
+					if(ret == JOptionPane.YES_OPTION) {
+						// try to get some from faucet
+						try {
+							Socket s = new Socket(Globals.FAUCET, Globals.FAUCET_PORT);
+							
+							InputStream inp = s.getInputStream();
+							BufferedReader brinp = new BufferedReader(new InputStreamReader(inp));
+							DataOutputStream out = new DataOutputStream(s.getOutputStream());
+							
+							out.writeBytes(Globals.BC.toHexString(g.getPubKey()));
+							out.writeBytes("\n");
+							out.flush();
+							
+							String resp = brinp.readLine();
+							if(resp.equals("success"))
+								Toast.makeText(this, "Welcome transaction being processed, it will take a few minutes", Toast.Style.SUCCESS).display();
+							else
+								Toast.makeText(this, resp, Toast.Style.ERROR).display();
+							
+							s.close();
+						}
+						catch (Exception e1) {
+							e1.printStackTrace();
+							Toast.makeText(this, e1.getLocalizedMessage(), Toast.Style.ERROR).display();
+						}
+					}
+				}
+			}
+		}
+
 		Thread updateThread = new UpdateThread();
 		updateThread.start();
 	}
@@ -245,8 +295,6 @@ public class Main extends JFrame implements ActionListener {
 				long balance = 0, locked = 0;
 				try {
 					Globals g = Globals.getInstance();
-					if(g.getNS() == null)
-						continue;
 					try {
 						Account ac = g.getNS().getAccount(g.getAddress()).blockingGet();
 						balance = ac.getBalance().longValue();

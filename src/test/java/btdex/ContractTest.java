@@ -45,7 +45,7 @@ public class ContractTest extends BT {
         BT.forgeBlock();
 
         BurstID arbitrator1 = Globals.ARBITRATORS[0];
-        BurstID arbitrator2 = Globals.ARBITRATOR_BAKCUP;
+        BurstID arbitrator2 = Globals.ARBITRATORS[1];
         long offerType = Market.MARKET_BTC;
         long state = SellContract.STATE_FINISHED;
 

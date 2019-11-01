@@ -29,6 +29,9 @@ public class Globals {
 	public static final String PROP_ENC_PRIVKEY = "encPrivKey";
 	public static final String PROP_PUBKEY = "pubKey";
 	
+	public static final int FAUCET_PORT = 1978;
+	public static final String FAUCET = "localhost";
+	
 	public static final NumberFormat NF = NumberFormat.getInstance(Locale.ENGLISH);
 	public static final NumberFormat NF_FULL = NumberFormat.getInstance(Locale.ENGLISH);
 	static {
@@ -52,15 +55,12 @@ public class Globals {
 
 	public static Compiler contract;
 
-	/** Back-up arbitrator */
-	public static final BurstID ARBITRATOR_BAKCUP = BC.rsDecode("TMSU-YBH5-RVC7-6J6WJ");
-
 	/** Arbitrator list to choose randomly from */
 	public static final BurstID[] ARBITRATORS = {
+			BC.rsDecode("TMSU-YBH5-RVC7-6J6WJ"),
 			BC.rsDecode("GFP4-TVNR-S7TY-E5KAY"),
 			// TODO: add other arbitrators here
 
-			ARBITRATOR_BAKCUP,
 	};
 
 	static Globals INSTANCE;

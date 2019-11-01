@@ -29,7 +29,7 @@ public class TransactionsPanel extends JPanel {
 	Icon copyIcon;
 
 	public static final int COL_ID = 0;
-	public static final int COL_DATE = 1;
+	public static final int COL_TIME = 1;
 	public static final int COL_TYPE = 2;
 	public static final int COL_AMOUNT = 3;
 	public static final int COL_FEE = 4;
@@ -38,7 +38,7 @@ public class TransactionsPanel extends JPanel {
 
 	String[] columnNames = {
 			"TRANSACTION ID",
-			"DATE",
+			"TIME",
 			"TYPE",
 			"AMOUNT (BURST)",
 			"FEE (BURST)",
@@ -94,6 +94,7 @@ public class TransactionsPanel extends JPanel {
 		//
 		table.getColumnModel().getColumn(COL_ACCOUNT).setPreferredWidth(200);
 		table.getColumnModel().getColumn(COL_ID).setPreferredWidth(200);
+		table.getColumnModel().getColumn(COL_TIME).setPreferredWidth(120);
 
 		add(scrollPane, BorderLayout.CENTER);
 	}
@@ -192,7 +193,7 @@ public class TransactionsPanel extends JPanel {
 			model.setValueAt(ContractState.format(amount), row, COL_AMOUNT);
 			model.setValueAt(ContractState.format(tx.getFee().longValue()), row, COL_FEE);
 			model.setValueAt(type, row, COL_TYPE);
-			model.setValueAt(tx.getTimestamp().toString(), row, COL_DATE);
+			model.setValueAt(HistoryPanel.DATE_FORMAT.format(tx.getTimestamp().getAsDate()), row, COL_TIME);
 		}
 	}
 }

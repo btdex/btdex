@@ -10,8 +10,7 @@ import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;
 
 /**
- * We assume a localhost testnet with 0 seconds mock mining is available for the
- * tests to work.
+ * Add some orders to a market.
  * 
  * @author jjos
  */
@@ -25,7 +24,7 @@ public class PopulateMarket extends BT {
 
 		BurstID feeContract = BT.getBurstAddressFromPassphrase(BT.PASSPHRASE).getBurstID();
 		BurstID arbitrator1 = Globals.ARBITRATORS[0];
-		BurstID arbitrator2 = Globals.ARBITRATOR_BAKCUP;
+		BurstID arbitrator2 = Globals.ARBITRATORS[1];
 		long offerType = Market.MARKET_BTC;
 		long accountHash = 1234;
 
