@@ -44,8 +44,8 @@ public class ContractTest extends BT {
         BT.sendAmount(BT.PASSPHRASE, maker, BurstValue.fromPlanck(2 * amount + 3 * security)).blockingGet();
         BT.forgeBlock();
 
-        BurstID arbitrator1 = Globals.ARBITRATORS[0];
-        BurstID arbitrator2 = Globals.ARBITRATORS[1];
+        BurstID arbitrator1 = Globals.MEDIATORS[0];
+        BurstID arbitrator2 = Globals.MEDIATORS[1];
         long offerType = Market.MARKET_BTC;
         long state = SellContract.STATE_FINISHED;
 

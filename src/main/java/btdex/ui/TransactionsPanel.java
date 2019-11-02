@@ -105,12 +105,15 @@ public class TransactionsPanel extends JPanel {
 		ArrayList<Transaction> txs = new ArrayList<>();
 
 		try {
-			Transaction[] unconf = g.getNS().getUnconfirmedTransactions(g.getAddress()).blockingGet();
-			Transaction[] conf = g.getNS().getAccountTransactions(g.getAddress()).blockingGet();
-			
+			Transaction[] unconf = g.getNS().getUnconfirmedTransactions(null).blockingGet();
 			for (int i = 0; i < unconf.length; i++) {
-				txs.add(unconf[i]);
+				Transaction utx = unconf[i];
+				if(utx.getRecipient().getSignedLongId() == g.getAddress().getSignedLongId() ||
+						utx.getSender().getSignedLongId() == g.getAddress().getSignedLongId())
+					txs.add(utx);
 			}
+			
+			Transaction[] conf = g.getNS().getAccountTransactions(g.getAddress()).blockingGet();
 			for (int i = 0; i < conf.length; i++) {
 				txs.add(conf[i]);
 			}

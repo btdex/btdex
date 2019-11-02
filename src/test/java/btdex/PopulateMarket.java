@@ -23,8 +23,8 @@ public class PopulateMarket extends BT {
 		long security = 100 * Contract.ONE_BURST;
 
 		BurstID feeContract = BT.getBurstAddressFromPassphrase(BT.PASSPHRASE).getBurstID();
-		BurstID arbitrator1 = Globals.ARBITRATORS[0];
-		BurstID arbitrator2 = Globals.ARBITRATORS[1];
+		BurstID arbitrator1 = Globals.MEDIATORS[0];
+		BurstID arbitrator2 = Globals.MEDIATORS[1];
 		long offerType = Market.MARKET_BTC;
 		long accountHash = 1234;
 

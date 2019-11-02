@@ -235,7 +235,7 @@ public class Main extends JFrame implements ActionListener {
 							+ "with a complimentary BTDEX message?", "Activate account",
 							JOptionPane.YES_NO_OPTION);
 					if(ret == JOptionPane.YES_OPTION) {
-						// try to get some from faucet
+						// try to activate this account from faucet
 						try {
 							Socket s = new Socket(Globals.FAUCET, Globals.FAUCET_PORT);
 							
@@ -243,13 +243,14 @@ public class Main extends JFrame implements ActionListener {
 							BufferedReader brinp = new BufferedReader(new InputStreamReader(inp));
 							DataOutputStream out = new DataOutputStream(s.getOutputStream());
 							
-							out.writeBytes(Globals.BC.toHexString(g.getPubKey()));
-							out.writeBytes("\n");
+							out.write(g.getPubKey(), 0, g.getPubKey().length);
 							out.flush();
 							
 							String resp = brinp.readLine();
-							if(resp.equals("success"))
-								Toast.makeText(this, "Welcome transaction being processed, it will take a few minutes", Toast.Style.SUCCESS).display();
+							if(resp.equals("success")) {
+								Toast.makeText(this, "Great, in a few minutes your account will be activated.", Toast.Style.SUCCESS).display();
+								tabbedPane.setSelectedComponent(transactionsPanel);
+							}
 							else
 								Toast.makeText(this, resp, Toast.Style.ERROR).display();
 							

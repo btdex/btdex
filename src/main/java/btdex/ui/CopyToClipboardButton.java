@@ -36,7 +36,8 @@ public class CopyToClipboardButton extends JButton {
 				clipboard.setContents(stringSelection, null);
 				
 				JFrame f = (JFrame) SwingUtilities.getRoot(CopyToClipboardButton.this);
-				Toast.makeText(f, CopyToClipboardButton.this.clipboard + " copied to clipboard").display(CopyToClipboardButton.this);
+				Toast.makeText(f, CopyToClipboardButton.this.clipboard + " copied to clipboard.",
+						Toast.Style.SUCCESS).display(CopyToClipboardButton.this);
 				
 				if(editor!=null)
 					editor.stopCellEditing();

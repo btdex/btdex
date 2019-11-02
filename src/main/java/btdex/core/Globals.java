@@ -29,7 +29,7 @@ public class Globals {
 	public static final String PROP_ENC_PRIVKEY = "encPrivKey";
 	public static final String PROP_PUBKEY = "pubKey";
 	
-	public static final int FAUCET_PORT = 1978;
+	public static int FAUCET_PORT = Faucet.PORT;
 	public static final String FAUCET = "localhost";
 	
 	public static final NumberFormat NF = NumberFormat.getInstance(Locale.ENGLISH);
@@ -56,7 +56,7 @@ public class Globals {
 	public static Compiler contract;
 
 	/** Arbitrator list to choose randomly from */
-	public static final BurstID[] ARBITRATORS = {
+	public static final BurstID[] MEDIATORS = {
 			BC.rsDecode("TMSU-YBH5-RVC7-6J6WJ"),
 			BC.rsDecode("GFP4-TVNR-S7TY-E5KAY"),
 			// TODO: add other arbitrators here
@@ -176,8 +176,10 @@ public class Globals {
 
 	public void setNode(String node) {
 		conf.setProperty("node", node);
-		if(node.contains("6876"))
+		if(node.contains("6876")) {
 			IS_TESTNET = true;
+			FAUCET_PORT = Faucet.PORT_TESTNET;
+		}
 
 		NS = BurstNodeService.getInstance(node);
 	}
@@ -187,7 +189,7 @@ public class Globals {
 	}
 
 	public boolean isArbitratorAccepted(long arb) {
-		for (BurstID arbi : ARBITRATORS) {
+		for (BurstID arbi : MEDIATORS) {
 			if(arbi.getSignedLongId() == arb)
 				return true;
 		}
