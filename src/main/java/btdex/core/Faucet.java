@@ -27,7 +27,7 @@ import io.reactivex.Single;
  *
  */
 public class Faucet extends Thread {
-
+	
 	public static final int PORT_TESTNET = 1978;
 	public static final int PORT = 1980;
 

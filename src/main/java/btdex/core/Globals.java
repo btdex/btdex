@@ -22,15 +22,15 @@ public class Globals {
 
 	BurstNodeService NS;
 	public static final BurstCrypto BC = BurstCrypto.getInstance();
+	
+	public static final String FAUCET_TESTNET =
+			"https://burst-account-activator-testnet.ohager.now.sh/api/activate";
 
 	static final String DEF_CONF_FILE = "config.properties";
 
 	public static final String PROP_NODE = "node";
 	public static final String PROP_ENC_PRIVKEY = "encPrivKey";
 	public static final String PROP_PUBKEY = "pubKey";
-	
-	public static int FAUCET_PORT = Faucet.PORT;
-	public static final String FAUCET = "localhost";
 	
 	public static final NumberFormat NF = NumberFormat.getInstance(Locale.ENGLISH);
 	public static final NumberFormat NF_FULL = NumberFormat.getInstance(Locale.ENGLISH);
@@ -178,7 +178,6 @@ public class Globals {
 		conf.setProperty("node", node);
 		if(node.contains("6876")) {
 			IS_TESTNET = true;
-			FAUCET_PORT = Faucet.PORT_TESTNET;
 		}
 
 		NS = BurstNodeService.getInstance(node);
