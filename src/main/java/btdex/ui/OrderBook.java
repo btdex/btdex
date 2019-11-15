@@ -50,14 +50,16 @@ public class OrderBook extends JPanel {
 	public static final int COL_SIZE = 1;
 	public static final int COL_TOTAL = 2;
 	public static final int COL_CONTRACT = 3;
-	public static final int COL_SECURITY = 4;
-	public static final int COL_ACTION = 5;
+	public static final int COL_ACCOUNT = 4;
+	public static final int COL_SECURITY = 5;
+	public static final int COL_ACTION = 6;
 
 	String[] columnNames = {
 			"PRICE",
 			"SIZE",
 			"TOTAL",
 			"CONTRACT",
+			"ACCOUNT",
 			"SECURITY",
 			"ACTION"
 	};
@@ -90,7 +92,7 @@ public class OrderBook extends JPanel {
 		}
 
 		public boolean isCellEditable(int row, int col) {
-			return col == COL_ACTION || col == COL_CONTRACT;
+			return col == COL_ACTION || col == COL_CONTRACT || col == COL_ACCOUNT;
 		}
 	}
 
@@ -220,8 +222,11 @@ public class OrderBook extends JPanel {
 		table.getColumnModel().getColumn(COL_ACTION).setCellEditor(BUTTON_EDITOR);
 		table.getColumnModel().getColumn(COL_CONTRACT).setCellRenderer(BUTTON_RENDERER);
 		table.getColumnModel().getColumn(COL_CONTRACT).setCellEditor(BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_ACCOUNT).setCellRenderer(BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_ACCOUNT).setCellEditor(BUTTON_EDITOR);
 
 		table.getColumnModel().getColumn(COL_CONTRACT).setPreferredWidth(200);
+		table.getColumnModel().getColumn(COL_ACCOUNT).setPreferredWidth(200);
 
 		add(listOnlyMine, BorderLayout.PAGE_START);
 		add(scrollPane, BorderLayout.CENTER);
@@ -286,7 +291,10 @@ public class OrderBook extends JPanel {
 			model.setValueAt(ContractState.format((amountToken*priceBurst)/market.getFactor()), row, COL_TOTAL);
 
 			model.setValueAt(new CopyToClipboardButton(o.getOrder().getID(), copyIcon, BUTTON_EDITOR), row, COL_CONTRACT);
-			
+			model.setValueAt(new CopyToClipboardButton(
+					o.getAccount().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : o.getAccount().getRawAddress(), copyIcon,
+					o.getAccount().getFullAddress(), BUTTON_EDITOR), row, COL_ACCOUNT);
+
 			if(o.getType().equals("bid")) {
 				model.setValueAt("BUYING " + market, row, COL_SECURITY);
 				model.setValueAt(new ActionButton("SELL " + market, o, false), row, COL_ACTION);
@@ -339,6 +347,11 @@ public class OrderBook extends JPanel {
 					row, COL_TOTAL);
 			model.setValueAt(new CopyToClipboardButton(s.getAddress().getRawAddress(), copyIcon,
 					s.getAddress().getFullAddress(), BUTTON_EDITOR), row, COL_CONTRACT);
+			
+			model.setValueAt(new CopyToClipboardButton(
+					s.getCreator().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : s.getCreator().getRawAddress(), copyIcon,
+					s.getCreator().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
+
 			model.setValueAt(s.getSecurity(), row, COL_SECURITY);
 			
 			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId())
