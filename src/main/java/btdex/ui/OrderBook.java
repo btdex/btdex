@@ -44,7 +44,7 @@ public class OrderBook extends JPanel {
 	JCheckBox listOnlyMine;
 
 	HashMap<BurstAddress, ContractState> contractsMap = new HashMap<>();
-	BurstID recentID;
+	BurstID mostRecentID;
 	ArrayList<ContractState> marketContracts = new ArrayList<>();
 
 	public static final int COL_PRICE = 0;
@@ -311,7 +311,7 @@ public class OrderBook extends JPanel {
 	}
 
 	private void updateContracts() {
-		recentID = ContractState.addContracts(contractsMap, recentID);
+		mostRecentID = ContractState.addContracts(contractsMap, mostRecentID);
 
 		Globals g = Globals.getInstance();
 
@@ -324,6 +324,10 @@ public class OrderBook extends JPanel {
 				marketContracts.add(s);
 		}
 
+		for (ContractState s : marketContracts) {
+			s.update();
+		}
+		
 		// sort by rate
 		marketContracts.sort(new Comparator<ContractState>() {
 			@Override
@@ -331,10 +335,6 @@ public class OrderBook extends JPanel {
 				return (int)(o1.getRate() - o2.getRate());
 			}
 		});
-
-		for (ContractState s : marketContracts) {
-			s.update();
-		}
 
 		model.setRowCount(marketContracts.size());
 
