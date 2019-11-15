@@ -156,13 +156,13 @@ public class SellContract extends Contract {
 			disputeCreatorAmountToCreator = amountToCreator;
 			disputeCreatorAmountToTaker = amountToTaker;
 			
-			state &= STATE_CREATOR_DISPUTE;
+			state |= STATE_CREATOR_DISPUTE;
 		}
 		if (state >= STATE_WAITING_PAYMT && getCurrentTxSender() == taker) {
 			disputeTakerAmountToCreator = amountToCreator;
 			disputeTakerAmountToTaker = amountToTaker;
 
-			state &= STATE_TAKER_DISPUTE;
+			state |= STATE_TAKER_DISPUTE;
 		}
 		
 		// check if there is agreement or is the mediator
