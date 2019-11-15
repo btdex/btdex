@@ -16,7 +16,6 @@ import btdex.core.ContractState;
 import btdex.core.Globals;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.response.Transaction;
-import burst.kit.entity.response.http.BRSError;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
 
@@ -121,14 +120,7 @@ public class TransactionsPanel extends JPanel {
 			}
 		}
 		catch (Exception e) {
-			if(e.getCause() instanceof BRSError) {
-				BRSError error = (BRSError) e.getCause();
-				if(error.getCode() != 5) // unknown account
-					throw e;
-			}
-			else
-				throw e;
-			// Unknown account, no transactions
+			e.printStackTrace();
 		}
 
 		int maxLines = Math.min(txs.size(), 200);
