@@ -17,6 +17,8 @@ import burst.kit.entity.response.AT;
 public class PopulateMarket extends BT {
 
 	public static void main(String[] args) throws Exception {
+		
+		BT.setNodeAddress(BT.NODE_TESTNET);
 
 		long amount = 1000 * Contract.ONE_BURST;
 		long rate = 70;
@@ -28,8 +30,11 @@ public class PopulateMarket extends BT {
 		long offerType = Market.MARKET_BTC;
 		long accountHash = 1234;
 
-		long data[] = { feeContract.getSignedLongId(), arbitrator1.getSignedLongId(), arbitrator2.getSignedLongId(),
-				offerType, accountHash };
+		long data[] = {
+				feeContract.getSignedLongId(),
+				arbitrator1.getSignedLongId(), arbitrator2.getSignedLongId(),
+				offerType, accountHash
+		};
 
 		bt.compiler.Compiler compiled = BT.compileContract(SellContract.class);
 

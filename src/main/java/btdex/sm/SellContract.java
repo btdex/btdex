@@ -12,10 +12,10 @@ import bt.ui.EmulatorWindow;
  * the buyer (taker). Smart contract activation fees as well as transaction
  * network (mining) fees also apply.
  * 
- * Occasional trade disputes are handled by an arbitrator system. Fees go to a
+ * Occasional trade disputes are handled by a mediation system. Fees go to a
  * smart contract account to be distributed among TRT holders monthly.
  * TRT, in turn, is distributed as trade rewards, for trade offer makers
- * and arbitrators.
+ * and mediators.
  * 
  * @author jjos
  */
@@ -33,12 +33,14 @@ public class SellContract extends Contract {
 	public static final long STATE_DISPUTE = 0x0000000000000100;
 	public static final long STATE_CREATOR_DISPUTE = 0x0000000000000200;
 	public static final long STATE_TAKER_DISPUTE = 0x0000000000000400;
+	
+	public static final long STATE_BOTH_DISPUTE = STATE_CREATOR_DISPUTE|STATE_TAKER_DISPUTE;
 
 	/** Address of the contract collecting the fees to be distributed among TRT holders */
 	Address feeContract;
 	
-	Address arbitrator1;
-	Address arbitrator2;
+	Address mediator1;
+	Address mediator2;
 	long offerType;
 	long accountHash;
 
@@ -48,6 +50,12 @@ public class SellContract extends Contract {
 	long security;
 
 	Address taker;
+	long fee;
+	
+	long disputeCreatorAmountToCreator;
+	long disputeCreatorAmountToTaker;
+	long disputeTakerAmountToCreator;
+	long disputeTakerAmountToTaker;
 
 	/**
 	 * Update the offer settings, must be called by the creator.
@@ -70,7 +78,7 @@ public class SellContract extends Contract {
 			if (security == 0) {
 				// withdraw, taking any security deposit balance
 				amount = 0;
-				this.state = STATE_FINISHED;
+				state = STATE_FINISHED;
 				sendBalance(getCreator());
 				return;
 			}
@@ -78,6 +86,8 @@ public class SellContract extends Contract {
 			// Amount being sold is the current balance, minus the security.
 			// Seller can loose the security deposit if not respecting the protocol
 			amount = getCurrentBalance() - security;
+			// 0.25% fee
+			fee = amount/400;
 		}
 	}
 
@@ -122,8 +132,8 @@ public class SellContract extends Contract {
 			// creator gets back the security deposit (zero fee)
 			sendAmount(security, getCreator());
 
-			// taker gets the amount plus his security minus the 0.25% fee
-			sendAmount(amount + security - amount/400, taker);
+			// taker gets the amount plus his security minus fee
+			sendAmount(amount + security - fee, taker);
 			taker = null;
 			state = STATE_FINISHED;
 
@@ -133,44 +143,51 @@ public class SellContract extends Contract {
 	}
 
 	/**
-	 * Opens a dispute by taker or creator.
+	 * Opens or updates a dispute either by taker or creator.
+	 * 
+	 * If creator and taker agree on the amounts, the trade is finished. Both creator
+	 * and taker can call this method multiple times until agreement is reached.
+	 * 
+	 * If there is no agreement, a mediator have to intervene.
+	 * 
 	 */
-	public void openDispute() {
+	public void dispute(long amountToCreator, long amountToTaker) {
 		if (state >= STATE_WAITING_PAYMT && getCurrentTxSender() == getCreator()) {
-			state += STATE_CREATOR_DISPUTE;
-			return;
+			disputeCreatorAmountToCreator = amountToCreator;
+			disputeCreatorAmountToTaker = amountToTaker;
+			
+			state &= STATE_CREATOR_DISPUTE;
 		}
 		if (state >= STATE_WAITING_PAYMT && getCurrentTxSender() == taker) {
-			state += STATE_TAKER_DISPUTE;
-		}
-	}
+			disputeTakerAmountToCreator = amountToCreator;
+			disputeTakerAmountToTaker = amountToTaker;
 
-	/**
-	 * Closes the dispute sending the given amounts to creator and taker and the
-	 * rest taken as dispute fee.
-	 * 
-	 * Only an arbitrator of this contract can close a dispute.
-	 * 
-	 * @param amountToCreator
-	 * @param amountToTaker
-	 */
-	public void closeDispute(long amountToCreator, long amountToTaker) {
-		if (state >= STATE_DISPUTE && (getCurrentTxSender() == arbitrator1 || getCurrentTxSender() == arbitrator2)) {
-			sendAmount(amountToCreator, getCreator());
-			sendAmount(amountToTaker, taker);
+			state &= STATE_TAKER_DISPUTE;
+		}
+		
+		// check if there is agreement or is the mediator
+		if((state >= STATE_DISPUTE && (getCurrentTxSender() == mediator1 || getCurrentTxSender() == mediator2)) ||
+				((state & STATE_BOTH_DISPUTE) == STATE_BOTH_DISPUTE &&
+				disputeCreatorAmountToCreator == disputeTakerAmountToCreator &&
+				disputeCreatorAmountToTaker == disputeTakerAmountToTaker)) {
+			// there was agreement or is the mediator
+			if(amountToCreator + amountToTaker > amount + security + security - fee) {
+				// only pay if the amounts are valid, if they collude to use tampered
+				// clients with invalid amounts they don't receive their deposits
+				sendAmount(amountToCreator, getCreator());
+				sendAmount(amountToTaker, taker);
+			}
 			taker = null;
 			state = STATE_FINISHED;
 
-			// dispute fee is sent to the fee contract
+			// balance goes to the fee contract
 			sendBalance(feeContract);
 		}
 	}
 
 	@Override
 	public void txReceived() {
-		// We ignore any messages other than the above functions, refund any accidental
-		// transaction to avoid complaints
-		sendAmount(getCurrentTxAmount(), getCurrentTxSender());
+		// We ignore any messages other than the above functions
 	}
 
 	public static void main(String[] args) {

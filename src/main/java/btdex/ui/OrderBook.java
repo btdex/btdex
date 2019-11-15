@@ -317,15 +317,18 @@ public class OrderBook extends JPanel {
 
 		marketContracts.clear();
 		for(ContractState s : contractsMap.values()) {
-			if(s.getMarket() == market.getID() && s.getAmountNQT() > 0
-					&& s.getState() == SellContract.STATE_OPEN
-					&& g.isArbitratorAccepted(s.getArbitrator1())
-					&& g.isArbitratorAccepted(s.getArbitrator2()) )
-				marketContracts.add(s);
-		}
-
-		for (ContractState s : marketContracts) {
+			// if not the right market, do not update
+			if(s.getMarket() != market.getID())
+				continue;
+			
 			s.update();
+			// FIXME: add more validity tests here
+			if(s.getAmountNQT() > 0
+					&& s.getState() == SellContract.STATE_OPEN
+					&& g.getFeeContract() == s.getFeeContract()
+					&& g.isArbitratorAccepted(s.getMediator1())
+					&& g.isArbitratorAccepted(s.getMediator2()) )
+				marketContracts.add(s);
 		}
 		
 		// sort by rate

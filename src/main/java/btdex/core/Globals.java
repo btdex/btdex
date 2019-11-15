@@ -42,6 +42,9 @@ public class Globals {
 	public static final String PROP_ENC_PRIVKEY = "encPrivKey";
 	public static final String PROP_PUBKEY = "pubKey";
 	
+	// FIXME: set the fee contract
+	public final long FEE_CONTRACT = 222222L;
+	
 	public static final NumberFormat NF = NumberFormat.getInstance(Locale.ENGLISH);
 	public static final NumberFormat NF_FULL = NumberFormat.getInstance(Locale.ENGLISH);
 	static {
@@ -213,6 +216,10 @@ public class Globals {
 	
 	public boolean isTestnet() {
 		return IS_TESTNET;
+	}
+	
+	public long getFeeContract() {
+		return FEE_CONTRACT;
 	}
 
 	public boolean isArbitratorAccepted(long arb) {

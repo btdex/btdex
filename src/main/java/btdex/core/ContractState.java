@@ -15,9 +15,10 @@ public class ContractState {
 	AT at;
 	BurstValue balance;
 	
-	long arbitrator1;
-	long arbitrator2;
+	long mediator1;
+	long mediator2;
 	long offerType;
+	long feeContract;
 	
 	long state;
 	long rate;
@@ -45,12 +46,12 @@ public class ContractState {
 		return balance;
 	}
 
-	public long getArbitrator1() {
-		return arbitrator1;
+	public long getMediator1() {
+		return mediator1;
 	}
 
-	public long getArbitrator2() {
-		return arbitrator2;
+	public long getMediator2() {
+		return mediator2;
 	}
 
 	public long getOfferType() {
@@ -67,6 +68,10 @@ public class ContractState {
 
 	public long getAmountNQT() {
 		return amount;
+	}
+	
+	public long getFeeContract() {
+		return feeContract;
 	}
 	
 	public String getAmount() {
@@ -161,12 +166,13 @@ public class ContractState {
 		this.balance = at.getBalance();
 		
 		this.offerType = BT.getContractFieldValue(at, Globals.contract.getFieldAddress("offerType"));
-		this.arbitrator1 = BT.getContractFieldValue(at, Globals.contract.getFieldAddress("arbitrator1"));
-		this.arbitrator2 = BT.getContractFieldValue(at, Globals.contract.getFieldAddress("arbitrator2"));
+		this.mediator1 = BT.getContractFieldValue(at, Globals.contract.getFieldAddress("mediator1"));
+		this.mediator2 = BT.getContractFieldValue(at, Globals.contract.getFieldAddress("mediator2"));
 		this.state = BT.getContractFieldValue(at, Globals.contract.getFieldAddress("state"));
 		this.rate = BT.getContractFieldValue(at, Globals.contract.getFieldAddress("rate"));
 		this.amount = BT.getContractFieldValue(at, Globals.contract.getFieldAddress("amount"));
 		this.security = BT.getContractFieldValue(at, Globals.contract.getFieldAddress("security"));
+		this.feeContract = BT.getContractFieldValue(at, Globals.contract.getFieldAddress("feeContract"));
 	}
 
 }
