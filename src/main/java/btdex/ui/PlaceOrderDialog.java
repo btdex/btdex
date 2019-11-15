@@ -288,7 +288,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				setVisible(false);
 
 				Toast.makeText((JFrame) this.getOwner(),
-						String.format("Transaction %s broadcasted", tb.getTransactionId().toString())).display();
+						String.format("Transaction %s broadcasted", tb.getTransactionId().toString(), Toast.Style.SUCCESS)).display();
 			}
 			catch (Exception ex) {
 				Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
