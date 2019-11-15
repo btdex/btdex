@@ -10,6 +10,8 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.Properties;
 
+import com.google.gson.JsonObject;
+
 import bt.BT;
 import bt.compiler.Compiler;
 import btdex.sm.SellContract;
@@ -17,14 +19,22 @@ import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.service.BurstNodeService;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class Globals {
 
 	BurstNodeService NS;
 	public static final BurstCrypto BC = BurstCrypto.getInstance();
 	
-	public static final String FAUCET_TESTNET =
+	static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+	
+	static final String FAUCET_TESTNET =
 			"https://burst-account-activator-testnet.ohager.now.sh/api/activate";
+	static final String FAUCET = "https://burst-account-activator.now.sh/api/activate";
 
 	static final String DEF_CONF_FILE = "config.properties";
 
@@ -181,6 +191,24 @@ public class Globals {
 		}
 
 		NS = BurstNodeService.getInstance(node);
+	}
+	
+	public Response activate() throws IOException {
+		OkHttpClient client = new OkHttpClient();
+		
+		JsonObject params = new JsonObject();
+		params.addProperty("account", getAddress().getID());
+		params.addProperty("publickey", BC.toHexString(getPubKey()));
+		
+		RequestBody body = RequestBody.create(JSON, params.toString());
+		
+		String faucet = isTestnet() ? FAUCET_TESTNET : FAUCET;
+		Request request = new Request.Builder()
+		        .url(faucet)
+		        .post(body)
+		        .build();
+		
+		return client.newCall(request).execute();
 	}
 	
 	public boolean isTestnet() {

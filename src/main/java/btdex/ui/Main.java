@@ -25,7 +25,6 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import com.bulenkov.darcula.DarculaLaf;
-import com.google.gson.JsonObject;
 
 import btdex.core.ContractState;
 import btdex.core.Globals;
@@ -42,10 +41,6 @@ import io.github.novacrypto.bip39.Words;
 import io.github.novacrypto.bip39.wordlists.English;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class Main extends JFrame implements ActionListener {
@@ -60,8 +55,6 @@ public class Main extends JFrame implements ActionListener {
 
 	JLabel nodeStatus;
 	
-	static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-
 	private JLabel balanceLabel;
 	private JLabel lockedBalanceLabel;
 
@@ -236,22 +229,9 @@ public class Main extends JFrame implements ActionListener {
 							+ "with a complimentary message?", "Activate account",
 							JOptionPane.YES_NO_OPTION);
 					if(ret == JOptionPane.YES_OPTION) {
-						// try to activate this account from faucet
+						// try to activate this account
 						try {
-							OkHttpClient client = new OkHttpClient();
-							
-							JsonObject params = new JsonObject();
-							params.addProperty("account", g.getAddress().getID());
-							params.addProperty("publickey", Globals.BC.toHexString(g.getPubKey()));
-							
-							RequestBody body = RequestBody.create(JSON, params.toString());
-							
-							Request request = new Request.Builder()
-							        .url(Globals.FAUCET_TESTNET)
-							        .post(body)
-							        .build();
-							
-							Response response = client.newCall(request).execute();
+							Response response = g.activate();
 							if(response.isSuccessful()) {
 								Toast.makeText(this, "Great, in a few minutes your account will be activated.", Toast.Style.SUCCESS).display();
 								tabbedPane.setSelectedComponent(transactionsPanel);
