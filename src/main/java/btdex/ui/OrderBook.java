@@ -11,6 +11,7 @@ import java.util.HashMap;
 import javax.swing.AbstractCellEditor;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -39,8 +40,8 @@ public class OrderBook extends JPanel {
 
 	JTable table;
 	DefaultTableModel model;
-	
 	Icon copyIcon;
+	JCheckBox listOnlyMine;
 
 	HashMap<BurstAddress, ContractState> contractsMap = new HashMap<>();
 	ArrayList<ContractState> marketContracts = new ArrayList<>();
@@ -179,8 +180,18 @@ public class OrderBook extends JPanel {
 		model.fireTableDataChanged();
 	}
 
-	public OrderBook(Market m) {
+	public OrderBook(Main main, Market m) {
 		super(new BorderLayout());
+		
+		listOnlyMine = new JCheckBox("List my orders only");
+		listOnlyMine.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				model.setRowCount(0);
+				model.fireTableDataChanged();
+				main.update();
+			}
+		});
 
 		market = m;
 
@@ -212,6 +223,7 @@ public class OrderBook extends JPanel {
 
 		table.getColumnModel().getColumn(COL_CONTRACT).setPreferredWidth(200);
 
+		add(listOnlyMine, BorderLayout.PAGE_START);
 		add(scrollPane, BorderLayout.CENTER);
 	}
 
@@ -227,15 +239,21 @@ public class OrderBook extends JPanel {
 		BurstID token = market.getTokenID();
 
 		Globals g = Globals.getInstance();
+		
+		boolean onlyMine = listOnlyMine.isSelected();
 
 		ArrayList<Order> orders = new ArrayList<>();
 		Order[] bids = g.getNS().getBidOrders(token).blockingGet();
 		Order[] asks = g.getNS().getAskOrders(token).blockingGet();
 		
 		for (int i = 0; i < asks.length; i++) {
+			if(onlyMine && asks[i].getAccount().getSignedLongId() != g.getAddress().getSignedLongId())
+				continue;
 			orders.add(asks[i]);
 		}
 		for (int i = 0; i < bids.length; i++) {
+			if(onlyMine && bids[i].getAccount().getSignedLongId() != g.getAddress().getSignedLongId())
+				continue;
 			orders.add(bids[i]);
 		}
 		

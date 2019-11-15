@@ -3,12 +3,15 @@ package btdex.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.Icon;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -40,10 +43,11 @@ public class HistoryPanel extends JPanel {
 	JTable table;
 	DefaultTableModel model;
 	Icon copyIcon;
-	
+	JCheckBox listOnlyMine;
+
 	Market market = null;
 	private JFreeChart chart;
-	
+
 	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss yyyy-MM-dd");
 
 	public static final int COL_PRICE = 0;
@@ -77,35 +81,46 @@ public class HistoryPanel extends JPanel {
 		}
 	}
 
-	public HistoryPanel(Market market) {
+	public HistoryPanel(Main main, Market market) {
 		super(new BorderLayout());
+		
+		listOnlyMine = new JCheckBox("List my trades only");
+		listOnlyMine.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				model.setRowCount(0);
+				model.fireTableDataChanged();
+				main.update();
+			}
+		});
 
 		table = new JTable(model = new MyTableModel());
 		table.setRowHeight(table.getRowHeight()+7);
 		table.setPreferredScrollableViewportSize(new Dimension(200, 200));
-		
-		this.market = market;
-		
-		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
-		
-		chart = ChartFactory.createCandlestickChart(null, null, null, null, true);
-        chart.getXYPlot().setOrientation(PlotOrientation.VERTICAL);
-        chart.removeLegend();
-        ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(200, 200));
 
-        chart.setBackgroundPaint(table.getBackground());
-        chart.setBorderPaint(table.getForeground());
-        chart.getXYPlot().setBackgroundPaint(table.getBackground());
-        chart.getXYPlot().getRangeAxis().setTickLabelPaint(table.getForeground());
-        chart.getXYPlot().getRangeAxis().setLabelPaint(table.getForeground());
-        chart.getXYPlot().getDomainAxis().setTickLabelPaint(table.getForeground());
-        chart.getXYPlot().getDomainAxis().setLabelPaint(table.getForeground());
-        CandlestickRenderer r = (CandlestickRenderer) chart.getXYPlot().getRenderer();
-        r.setDownPaint(Color.decode("#BE474A"));
-        r.setUpPaint(Color.decode("#29BF76"));
-        r.setSeriesPaint(0, table.getForeground());
-        
+		this.market = market;
+
+		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
+
+		ChartPanel chartPanel = null;
+		chart = ChartFactory.createCandlestickChart(null, null, null, null, true);
+		chart.getXYPlot().setOrientation(PlotOrientation.VERTICAL);
+		chart.removeLegend();
+		chartPanel = new ChartPanel(chart);
+		chartPanel.setPreferredSize(new java.awt.Dimension(200, 200));
+
+		chart.setBackgroundPaint(table.getBackground());
+		chart.setBorderPaint(table.getForeground());
+		chart.getXYPlot().setBackgroundPaint(table.getBackground());
+		chart.getXYPlot().getRangeAxis().setTickLabelPaint(table.getForeground());
+		chart.getXYPlot().getRangeAxis().setLabelPaint(table.getForeground());
+		chart.getXYPlot().getDomainAxis().setTickLabelPaint(table.getForeground());
+		chart.getXYPlot().getDomainAxis().setLabelPaint(table.getForeground());
+		CandlestickRenderer r = (CandlestickRenderer) chart.getXYPlot().getRenderer();
+		r.setDownPaint(Color.decode("#BE474A"));
+		r.setUpPaint(Color.decode("#29BF76"));
+		r.setSeriesPaint(0, table.getForeground());
+
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
 
@@ -131,10 +146,11 @@ public class HistoryPanel extends JPanel {
 		table.getColumnModel().getColumn(COL_BUYER).setPreferredWidth(200);
 		table.getColumnModel().getColumn(COL_SELLER).setPreferredWidth(200);
 
+		add(listOnlyMine, BorderLayout.PAGE_START);
 		add(scrollPane, BorderLayout.CENTER);
 		add(chartPanel, BorderLayout.PAGE_END);
 	}
-	
+
 	public void setMarket(Market m) {
 		this.market = m;
 
@@ -144,45 +160,67 @@ public class HistoryPanel extends JPanel {
 		}
 		model.setRowCount(0);
 		model.fireTableDataChanged();
+
+		if(chart!=null)
+			chart.getXYPlot().setDataset(null);
 	}
 
 	public void update() {
 		Globals g = Globals.getInstance();
-		
+
 		boolean isToken = market.getTokenID()!=null;
-		
+		boolean myHistory = listOnlyMine.isSelected();
+
 		try {
 			if(isToken) {
 				Trade trs[] = g.getNS().getAssetTrades(market.getTokenID()).blockingGet();
-				
-				int maxLines = Math.min(trs.length, 200);
 
-				model.setRowCount(maxLines);
+				int nLines = 0;
+
+				int maxLines = Math.min(200, trs.length);
+				for (int i = 0; i < maxLines; i++) {
+					Trade tr = trs[i];
+					if(myHistory &&
+							tr.getBuyer().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
+							tr.getSeller().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
+						continue;
+					nLines++;
+				}
+
+				model.setRowCount(nLines);
 
 				// Update the contents
-				for (int row = 0; row < maxLines; row++) {
-					Trade tr = trs[row];
+				for (int row = 0, i=0; i < maxLines; i++) {
+					Trade tr = trs[i];
+					if(myHistory &&
+							tr.getBuyer().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
+							tr.getSeller().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
+						continue;
 
 					long amount = tr.getQuantity().longValue();
 					long price = tr.getPrice().longValue();
 
-					model.setValueAt(new CopyToClipboardButton(tr.getBuyer().getRawAddress(), copyIcon,
+					model.setValueAt(new CopyToClipboardButton(
+							tr.getBuyer().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getBuyer().getRawAddress(), copyIcon,
 							tr.getBuyer().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
-					model.setValueAt(new CopyToClipboardButton(tr.getSeller().getRawAddress(), copyIcon,
+					model.setValueAt(new CopyToClipboardButton(
+							tr.getSeller().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getSeller().getRawAddress(), copyIcon,
 							tr.getSeller().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
 
 					model.setValueAt(ContractState.format(price*market.getFactor()), row, COL_PRICE);
 					model.setValueAt(market.format(amount), row, COL_AMOUNT);
 					model.setValueAt(DATE_FORMAT.format(tr.getTimestamp().getAsDate()), row, COL_TIME);
+
+					row++;
 				}
-				
-				
+
+
 				ArrayList<OHLCDataItem> data = new ArrayList<>();
 				int NCANDLES = 50;
 				long DELTA = TimeUnit.DAYS.toMillis(1);
 				Date start = new Date(System.currentTimeMillis() - DELTA*NCANDLES);
 				Date next = new Date(start.getTime() + DELTA);
-				
+
 				double lastClose = Double.NaN;
 				for (int i = 0; i < 50; i++) {
 					double high = 0;
@@ -192,12 +230,12 @@ public class HistoryPanel extends JPanel {
 					double volume = 0;
 					if(!Double.isNaN(lastClose))
 						high = lastClose;
-					
+
 					for (int row = maxLines-1; row >= 0; row--) {
 						Trade tr = trs[row];
 						Date date = tr.getTimestamp().getAsDate();
 						double price = tr.getPrice().doubleValue()*market.getFactor();
-						
+
 						if(date.after(start) && date.before(next)) {
 							close = price;
 							open = lastClose;
@@ -211,27 +249,26 @@ public class HistoryPanel extends JPanel {
 					low = Math.min(high, low);
 					if(!Double.isNaN(close))
 						lastClose = close;
-					
+
 					if(!Double.isNaN(open)) {
 						OHLCDataItem item = new OHLCDataItem(
 								start, open, high, low, close, volume);
 						data.add(item);
 					}
-					
+
 					start = next;
 					next = new Date(start.getTime() + DELTA);
 				}
-				
+
 				DefaultOHLCDataset dataset = new DefaultOHLCDataset(market.toString(), data.toArray(new OHLCDataItem[data.size()]));
-				
+
 				chart.getXYPlot().setDataset(dataset);
 			}
-			
+
 			else {
-				chart.getXYPlot().setDataset(null);
+				if(chart!=null)
+					chart.getXYPlot().setDataset(null);
 			}
-			
-			
 		}
 		catch (Exception e) {
 			if(e.getCause() instanceof BRSError) {

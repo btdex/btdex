@@ -2,6 +2,7 @@ package btdex.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -124,10 +125,10 @@ public class Main extends JFrame implements ActionListener {
 		marketComboBox.addItem(new MarketLTC());
 
 		marketComboBox.addActionListener(this);
-		orderBook = new OrderBook((Market) marketComboBox.getSelectedItem());
+		orderBook = new OrderBook(this, (Market) marketComboBox.getSelectedItem());
 		
 		transactionsPanel = new TransactionsPanel();
-		historyPanel = new HistoryPanel((Market) marketComboBox.getSelectedItem());
+		historyPanel = new HistoryPanel(this, (Market) marketComboBox.getSelectedItem());
 
 		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 18, COLOR);
 		copyAddButton = new CopyToClipboardButton("", copyIcon);
@@ -163,9 +164,6 @@ public class Main extends JFrame implements ActionListener {
 
 		Icon orderIcon = IconFontSwing.buildIcon(FontAwesome.BOOK, 18, COLOR);
 		tabbedPane.addTab("ORDER BOOK", orderIcon, orderBook);
-
-		Icon yourTradesIcon = IconFontSwing.buildIcon(FontAwesome.HANDSHAKE_O, 18, COLOR);
-		tabbedPane.addTab("YOUR TRADES", yourTradesIcon, new JLabel());
 
 		Icon tradeIcon = IconFontSwing.buildIcon(FontAwesome.LINE_CHART, 18, COLOR);
 		tabbedPane.addTab("TRADE HISTORY", tradeIcon, historyPanel);
@@ -273,6 +271,7 @@ public class Main extends JFrame implements ActionListener {
 			}
 		}
 
+		update();
 		Thread updateThread = new UpdateThread();
 		updateThread.start();
 	}
@@ -282,6 +281,7 @@ public class Main extends JFrame implements ActionListener {
 	 */
 	public void update() {
 		lastUpdated = 0;
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 	}
 
 	public class UpdateThread extends Thread {
@@ -341,6 +341,7 @@ public class Main extends JFrame implements ActionListener {
 					
 					nodeStatus.setText(rex.getMessage());
 				}
+				setCursor(Cursor.getDefaultCursor());
 			}
 		}
 	};
