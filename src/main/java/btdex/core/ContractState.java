@@ -5,6 +5,7 @@ import java.util.HashMap;
 import bt.BT;
 import bt.Contract;
 import burst.kit.entity.BurstAddress;
+import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;
 
@@ -89,19 +90,35 @@ public class ContractState {
 	 * add possibly recently registered contracts.
 	 * 
 	 * @param map
+	 * 
+	 * @return the most recent ID visited
 	 */
-	public static void addContracts(HashMap<BurstAddress, ContractState> map){
+	public static BurstID addContracts(HashMap<BurstAddress, ContractState> map, BurstID mostRecent){
 		Globals g = Globals.getInstance();
 		
 		BurstAddress[] atIDs = g.getNS().getAtIds().blockingGet();
+		
+		BurstID first = null;
+		BurstID idLimit = BurstID.fromLong("17889689123018230142");
+		// FIXME: add a mainnet limit
 		
 		// reverse order to get the more recent ones first
 		for (int i = atIDs.length-1; i >= 0; i--) {
 			BurstAddress ad = atIDs[i];
 			
+			if(first == null)
+				first = ad.getBurstID();
+			
+			// avoid running all IDs, we know these past one are useless
+			if(ad.getBurstID().getSignedLongId() == idLimit.getSignedLongId())
+				break;
+			// already visited, no need to continue
+			if(mostRecent!=null && ad.getBurstID().getSignedLongId() == mostRecent.getSignedLongId())
+				break;
+			
 			// If the map already have this one stop, since they come in order
 			if(map.containsKey(ad))
-				return;
+				break;
 			
 			AT at = g.getNS().getAt(ad).blockingGet();
 			
@@ -113,6 +130,8 @@ public class ContractState {
 				map.put(ad, s);
 			}
 		}
+		
+		return first;
 	}
 	
 	public static boolean checkContract(AT at) {

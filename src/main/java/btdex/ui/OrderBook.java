@@ -44,6 +44,7 @@ public class OrderBook extends JPanel {
 	JCheckBox listOnlyMine;
 
 	HashMap<BurstAddress, ContractState> contractsMap = new HashMap<>();
+	BurstID recentID;
 	ArrayList<ContractState> marketContracts = new ArrayList<>();
 
 	public static final int COL_PRICE = 0;
@@ -310,7 +311,7 @@ public class OrderBook extends JPanel {
 	}
 
 	private void updateContracts() {
-		ContractState.addContracts(contractsMap);
+		recentID = ContractState.addContracts(contractsMap, recentID);
 
 		Globals g = Globals.getInstance();
 

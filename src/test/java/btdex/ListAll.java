@@ -11,7 +11,7 @@ public class ListAll {
 	public static void main(String[] args) {
 		HashMap<BurstAddress, ContractState> map = new HashMap<>();
 		
-		ContractState.addContracts(map);
+		ContractState.addContracts(map, null);
 		
 		for (ContractState s : map.values()) {
 			if(s.getMarket() == Market.MARKET_BTC)
