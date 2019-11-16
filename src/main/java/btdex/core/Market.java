@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
+import com.google.gson.JsonObject;
+
 import burst.kit.entity.BurstID;
 
 public abstract class Market {
@@ -86,10 +88,22 @@ public abstract class Market {
 	public abstract void validate(HashMap<String, String> fields) throws Exception;
 	
 	/**
-	 * Should format the given field values into a single line string
+	 * @param fields
+	 * @return a simple formatted version of the fields
+	 */
+	public abstract String simpleFormat(HashMap<String, String> fields);
+	
+	/**
+	 * Format the fields in a Json format.
 	 * 
 	 * @param fields
 	 * @throws Exception
 	 */
-	public abstract String format(HashMap<String, String> fields) throws Exception;
+	public String format(HashMap<String, String> fields) {
+		JsonObject params = new JsonObject();
+		for (String key: fields.keySet()) {
+			params.addProperty(key, fields.get(key));			
+		}
+		return params.toString();
+	}
 }

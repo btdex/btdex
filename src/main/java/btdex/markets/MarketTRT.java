@@ -68,8 +68,7 @@ public class MarketTRT extends Market {
 	}
 	
 	@Override
-	public String format(HashMap<String, String> fields) throws Exception {
-		// not needed for a token
-		return "";
+	public String simpleFormat(HashMap<String, String> fields) {
+		return getTokenID().getID();
 	}
 }

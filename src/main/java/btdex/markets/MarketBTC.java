@@ -32,9 +32,9 @@ public class MarketBTC extends Market {
 		if(!BTCAddrValidator.validate(addr))
 			throw new Exception(addr + " is not a valid BTC address");
 	}
-	
+
 	@Override
-	public String format(HashMap<String, String> fields) throws Exception {
+	public String simpleFormat(HashMap<String, String> fields) {
 		return fields.get(ADDRESS);
 	}
 }

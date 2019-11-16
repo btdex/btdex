@@ -35,7 +35,7 @@ public class MarketETH extends Market {
 	}
 	
 	@Override
-	public String format(HashMap<String, String> fields) throws Exception {
+	public String simpleFormat(HashMap<String, String> fields) {
 		return fields.get(ADDRESS);
 	}
 }

@@ -122,7 +122,7 @@ public class SellContract extends Contract {
 	/**
 	 * Report that the payment was received and then send the BURST amount to taker.
 	 * 
-	 * This method also return the respective security deposits as well as pays the
+	 * This method also returns the respective security deposits as well as pays the
 	 * fee.
 	 */
 	public void reportComplete() {

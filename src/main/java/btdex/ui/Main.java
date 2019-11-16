@@ -29,10 +29,6 @@ import com.bulenkov.darcula.DarculaLaf;
 import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
-import btdex.markets.MarketBTC;
-import btdex.markets.MarketETH;
-import btdex.markets.MarketLTC;
-import btdex.markets.MarketTRT;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.AssetAccount;
 import burst.kit.entity.response.http.BRSError;
@@ -50,6 +46,7 @@ public class Main extends JFrame implements ActionListener {
 	OrderBook orderBook;
 	TransactionsPanel transactionsPanel;
 	HistoryPanel historyPanel;
+	AccountsPanel accountsPanel;
 
 	JTabbedPane tabbedPane;
 
@@ -72,7 +69,7 @@ public class Main extends JFrame implements ActionListener {
 
 	private JButton sendButtonToken;
 
-	private MarketTRT token;
+	private Market token;
 	
 	private long lastUpdated;
 
@@ -97,6 +94,8 @@ public class Main extends JFrame implements ActionListener {
 		IconFontSwing.register(FontAwesome.getIconFont());
 		setBackground(Color.BLACK);
 		
+		Globals g = Globals.getInstance();
+		
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setOpaque(true);
 
@@ -112,16 +111,16 @@ public class Main extends JFrame implements ActionListener {
 		marketComboBox.setToolTipText("Select market");
 		marketComboBox.setFont(largeFont);
 		
-		marketComboBox.addItem(token = new MarketTRT());
-		marketComboBox.addItem(new MarketBTC());
-		marketComboBox.addItem(new MarketETH());
-		marketComboBox.addItem(new MarketLTC());
+		for(Market m : g.getMarkets())
+			marketComboBox.addItem(m);
+		token = g.getToken();
 
 		marketComboBox.addActionListener(this);
 		orderBook = new OrderBook(this, (Market) marketComboBox.getSelectedItem());
 		
 		transactionsPanel = new TransactionsPanel();
 		historyPanel = new HistoryPanel(this, (Market) marketComboBox.getSelectedItem());
+		accountsPanel = new AccountsPanel(this);
 
 		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 18, COLOR);
 		copyAddButton = new CopyToClipboardButton("", copyIcon);
@@ -161,7 +160,10 @@ public class Main extends JFrame implements ActionListener {
 		Icon tradeIcon = IconFontSwing.buildIcon(FontAwesome.LINE_CHART, 18, COLOR);
 		tabbedPane.addTab("TRADE HISTORY", tradeIcon, historyPanel);
 
-		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.EXCHANGE, 18, COLOR);
+		Icon accountIcon = IconFontSwing.buildIcon(FontAwesome.USER_CIRCLE, 18, COLOR);
+		tabbedPane.addTab("ACCOUNTS", accountIcon, accountsPanel);
+
+		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.LINK, 18, COLOR);
 		tabbedPane.addTab("TRANSACTIONS", transactionsIcon, transactionsPanel);
 
 		top.add(new Desc("Market", marketComboBox));
@@ -198,7 +200,6 @@ public class Main extends JFrame implements ActionListener {
 		getContentPane().setVisible(false);
 		setVisible(true);
 
-		Globals g = Globals.getInstance();
 		if(g.getAddress()==null) {			
 			// no public key or invalid, show the welcome screen
 			Welcome welcome = new Welcome(this);

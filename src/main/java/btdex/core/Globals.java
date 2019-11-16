@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -14,6 +16,10 @@ import com.google.gson.JsonObject;
 
 import bt.BT;
 import bt.compiler.Compiler;
+import btdex.markets.MarketBTC;
+import btdex.markets.MarketETH;
+import btdex.markets.MarketLTC;
+import btdex.markets.MarketTRT;
 import btdex.sm.SellContract;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstAddress;
@@ -39,11 +45,15 @@ public class Globals {
 	static final String DEF_CONF_FILE = "config.properties";
 
 	public static final String PROP_NODE = "node";
+	public static final String PROP_ACCOUNT = "account";
 	public static final String PROP_ENC_PRIVKEY = "encPrivKey";
 	public static final String PROP_PUBKEY = "pubKey";
 	
+	ArrayList<Market> markets = new ArrayList<>();
+	Market token;
+	
 	// FIXME: set the fee contract
-	public final long FEE_CONTRACT = 222222L;
+	public final long feeContract = 222222L;
 	
 	public static final NumberFormat NF = NumberFormat.getInstance(Locale.ENGLISH);
 	public static final NumberFormat NF_FULL = NumberFormat.getInstance(Locale.ENGLISH);
@@ -62,8 +72,10 @@ public class Globals {
 
 	static String confFile = DEF_CONF_FILE;
 	Properties conf = new Properties();
+	
+	ArrayList<Account> accounts = new ArrayList<>();
 
-	boolean IS_TESTNET = false;
+	boolean testnet = false;
 	private BurstAddress address;
 
 	public static Compiler contract;
@@ -105,6 +117,11 @@ public class Globals {
 					e.printStackTrace();
 				}
 			}
+			
+			markets.add(token = new MarketTRT());
+			markets.add(new MarketBTC());
+			markets.add(new MarketETH());
+			markets.add(new MarketLTC());
 
 			// TODO: default node on testnet for now
 			setNode(conf.getProperty(PROP_NODE, BT.NODE_TESTNET));
@@ -120,19 +137,27 @@ public class Globals {
 				byte []publicKey = BC.parseHexString(publicKeyStr);
 				address = BC.getBurstAddressFromPublic(publicKey);
 			}
+			loadAccounts();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		try {
-
 			contract = new Compiler(SellContract.class);
 			contract.compile();
 			contract.link();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public ArrayList<Market> getMarkets(){
+		return markets;
+	}
+	
+	public Market getToken() {
+		return token;
 	}
 
 	public void saveConfs() throws Exception {
@@ -170,6 +195,76 @@ public class Globals {
 
 		return BC.signTransaction(privKey, unsigned);
 	}
+	
+	public ArrayList<Account> getAccounts() {
+		return accounts;
+	}
+	
+	private void loadAccounts() {
+		// load the accounts
+		int i = 1;
+		while(true) {
+			String accountMarket = conf.getProperty(PROP_ACCOUNT + i, null);
+			if(accountMarket == null || accountMarket.length()==0)
+				break;
+
+			String accountName = conf.getProperty(PROP_ACCOUNT + i + ".name", null);
+
+			Market m = null;
+			for (int j = 0; j < markets.size(); j++) {
+				if(markets.get(j).toString().equals(accountMarket)) {
+					m = markets.get(j);
+					break;
+				}
+			}
+			if(m == null)
+				break;
+			
+			ArrayList<String> fieldNames = m.getFieldNames();
+			HashMap<String, String> fields = new HashMap<>();
+			for(String key : fieldNames) {
+				fields.put(key, conf.getProperty(PROP_ACCOUNT + i + "." + key, ""));
+			}
+			if(accountName == null)
+				accountName = m.simpleFormat(fields);
+			
+			accounts.add(new Account(accountMarket, accountName, fields));
+			
+			i++;
+		}
+	}
+	
+	private void saveAccounts() {
+		int i = 1;
+		for (; i <= accounts.size(); i++) {
+			Account ac = accounts.get(i-1);
+			conf.setProperty(PROP_ACCOUNT + i, ac.getMarket());
+			conf.setProperty(PROP_ACCOUNT + i + ".name", ac.getName());
+			
+			HashMap<String, String> fields = ac.getFields();
+			for(String key : fields.keySet()) {
+				conf.setProperty(PROP_ACCOUNT + i + "." + key, fields.get(key));
+			}
+		}
+		// null terminated list
+		conf.setProperty(PROP_ACCOUNT + i, "");
+		
+		try {
+			saveConfs();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void addAccount(Account ac) {
+		accounts.add(ac);
+		saveAccounts();
+	}
+	
+	public void removeAccount(int index) {
+		accounts.remove(index);
+		saveAccounts();
+	}
 
 	public BurstAddress getAddress() {
 		return address;
@@ -190,7 +285,7 @@ public class Globals {
 	public void setNode(String node) {
 		conf.setProperty("node", node);
 		if(node.contains("6876")) {
-			IS_TESTNET = true;
+			testnet = true;
 		}
 
 		NS = BurstNodeService.getInstance(node);
@@ -215,11 +310,11 @@ public class Globals {
 	}
 	
 	public boolean isTestnet() {
-		return IS_TESTNET;
+		return testnet;
 	}
 	
 	public long getFeeContract() {
-		return FEE_CONTRACT;
+		return feeContract;
 	}
 
 	public boolean isArbitratorAccepted(long arb) {

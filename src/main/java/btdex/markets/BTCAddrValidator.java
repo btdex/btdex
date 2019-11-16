@@ -58,7 +58,7 @@ public class BTCAddrValidator {
       int addressHeader = getAddressHeader(addr);
       return (addressHeader == 0 || addressHeader == 5);
     } catch (Exception x) {
-      x.printStackTrace();
+//      x.printStackTrace();
     }
     return false;
   }
