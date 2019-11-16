@@ -58,6 +58,8 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 
 	private Main main;
 
+	private JPanel rightButtonPane;
+
 	public static final int COL_MARKET = 0;
 	public static final int COL_NAME = 1;
 
@@ -142,10 +144,10 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 
 		cancelButton.addActionListener(this);
 		okButton.addActionListener(this);
-		buttonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-		buttonPane.add(cancelButton);
-		buttonPane.add(okButton);
-		right.add(buttonPane);
+		rightButtonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		rightButtonPane.add(cancelButton);
+		rightButtonPane.add(okButton);
+		right.add(rightButtonPane);
 
 		add(left, BorderLayout.LINE_START);
 		JPanel rightContainer = new JPanel(new BorderLayout());
@@ -176,6 +178,9 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 
 		if(e.getSource() == addButton) {
 			right.setVisible(true);
+			marketComboBox.setEnabled(true);
+			nameField.setEditable(true);
+			rightButtonPane.setVisible(true);
 			marketComboBox.setSelectedIndex(0);
 			addButton.setEnabled(false);
 			table.setEnabled(false);
@@ -210,21 +215,10 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 			loadAccounts();
 			right.setVisible(false);
 			addButton.setEnabled(true);
+			table.setEnabled(true);
 		}
 		if(e.getSource() == marketComboBox) {
-			formPanel.removeAll();
-			formFields.clear();
-
-			for (int i = 0; i < fieldNames.size(); i++) {
-				JLabel l = new JLabel(fieldNames.get(i), JLabel.TRAILING);
-				formPanel.add(l);
-				JTextField textField = new JTextField(10);
-				formFields.add(textField);
-				l.setLabelFor(textField);
-				formPanel.add(textField);
-			}			
-			SpringUtilities.makeCompactGrid(formPanel, fieldNames.size(), 2, 0, 0, PAD, PAD);
-			validate();
+			createFields(fieldNames, true);
 			formFields.get(0).requestFocusInWindow();
 		}
 
@@ -238,9 +232,27 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 				if(ret == JOptionPane.YES_OPTION) {
 					Globals.getInstance().removeAccount(row);
 					loadAccounts();
-				}
+					right.setVisible(false);
+				}				
 			}
 		}
+	}
+	
+	private void createFields(ArrayList<String> fieldNames, boolean editable) {
+		formPanel.removeAll();
+		formFields.clear();
+
+		for (int i = 0; i < fieldNames.size(); i++) {
+			JLabel l = new JLabel(fieldNames.get(i), JLabel.TRAILING);
+			formPanel.add(l);
+			JTextField textField = new JTextField(10);
+			textField.setEditable(editable);
+			formFields.add(textField);
+			l.setLabelFor(textField);
+			formPanel.add(textField);
+		}			
+		SpringUtilities.makeCompactGrid(formPanel, fieldNames.size(), 2, 0, 0, PAD, PAD);
+		validate();
 	}
 
 	@Override
@@ -249,5 +261,30 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 			return;
 		int row = table.getSelectedRow();
 		removeButton.setEnabled(row >= 0);
+		
+		if(row >= 0) {
+			rightButtonPane.setVisible(false);
+			right.setVisible(true);
+			marketComboBox.setEnabled(false);
+			nameField.setEditable(false);
+			
+			// show this account properties
+			Account ac = Globals.getInstance().getAccounts().get(row);
+			
+			for (int i = 0; i < marketComboBox.getItemCount(); i++) {
+				if(ac.getMarket().equals(marketComboBox.getItemAt(i).toString())) {
+					marketComboBox.setSelectedIndex(i);
+					break;
+				}
+			}
+			
+			ArrayList<String> fieldNames = new ArrayList<>();
+			fieldNames.addAll(ac.getFields().keySet());
+			createFields(fieldNames, false);
+			
+			for (int i = 0; i < fieldNames.size(); i++) {
+				formFields.get(i).setText(ac.getFields().get(fieldNames.get(i)));
+			}
+		}
 	}
 }

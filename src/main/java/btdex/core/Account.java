@@ -13,6 +13,11 @@ public class Account {
 		this.fields = fields;
 	}
 	
+	@Override
+	public String toString() {
+		return name;
+	}
+	
 	public String getMarket() {
 		return market;
 	}

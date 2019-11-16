@@ -7,7 +7,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.ParseException;
-import java.util.Properties;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -26,12 +26,14 @@ import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JToggleButton;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import btdex.core.Account;
 import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
@@ -46,7 +48,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 	Market market;
 
-	JComboBox<String> account;
+	JComboBox<Account> accountComboBox;
 	JTextField accountDetails;
 	JTextField amount, price, total;
 	JSlider security;
@@ -81,13 +83,13 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 		this.market = market;
 
-		account = new JComboBox<>();
+		accountComboBox = new JComboBox<>();
 		accountDetails = new JTextField(36);
 		accountDetails.setEditable(false);
 
 		JPanel topPanel = new JPanel(new GridLayout(0, 1, 4, 4));
 		topPanel.setBorder(BorderFactory.createTitledBorder("Account to receive " + market.toString()));
-		topPanel.add(account);
+		topPanel.add(accountComboBox);
 		topPanel.add(accountDetails);
 
 		JPanel fieldPanel = new JPanel(new GridLayout(0, 2, 4, 4));
@@ -121,17 +123,13 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		fieldPanel.add(new Desc("Total (" + (isToken ? "BURST" : market) + ")", total));
 
 		if(!isToken) {
-			Properties conf = Globals.getConf();
+			ArrayList<Account> acs = Globals.getInstance().getAccounts();
 
-			for (int i = 0; i < 100; i++) {
-				String acNameKey = market.toString() + i + ".name";
-
-				String acName = conf.getProperty(acNameKey, null);
-				if(acName == null || acName.length()==0)
-					break;
-				account.addItem(acName);
+			for (Account ac : acs) {
+				if(ac.getMarket().equals(market.toString()))
+					accountComboBox.addItem(ac);
 			}
-
+			
 			security = new JSlider(0, 20);
 
 			Desc securityDesc = new Desc("", security);
@@ -145,11 +143,11 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						desc = "Security deposit 0.1 %";
 
 					securityDesc.setDesc(desc);
+					somethingChanged();
 				}
 			});
 			security.getModel().setValue(5);
 		}
-
 		conditions = new JTextPane();
 		//		conditions.setContentType("text/html");
 		//		conditions.setEditable(false);
@@ -186,7 +184,11 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 		JPanel conditionsPanel = new JPanel(new BorderLayout());
 		conditionsPanel.setBorder(BorderFactory.createTitledBorder("Terms and conditions"));
-		conditionsPanel.add(new JScrollPane(conditions), BorderLayout.CENTER);
+		JScrollPane scroll = new JScrollPane(conditions);
+		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		scroll.setPreferredSize(conditions.getPreferredSize());
+		conditionsPanel.add(scroll, BorderLayout.CENTER);
 
 		conditionsPanel.add(acceptBox, BorderLayout.PAGE_END);
 
@@ -211,12 +213,16 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			somethingChanged();
 		}
 
+		accountComboBox.addActionListener(this);
+		if(accountComboBox.getItemCount() > 0)
+			accountComboBox.setSelectedIndex(0);
+
 		pack();
 	}
 
 	@Override
 	public void setVisible(boolean b) {
-		if(account.getItemCount()==0 && !isToken) {
+		if(accountComboBox.getItemCount()==0 && !isToken) {
 			JOptionPane.showMessageDialog(this, "You need to register a " + market + " account first.",
 					"Error", JOptionPane.ERROR_MESSAGE);
 			dispose();
@@ -233,6 +239,13 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		if(e.getSource() == calcelButton) {
 			setVisible(false);
 		}
+		
+		if(e.getSource() == accountComboBox) {
+			Account ac = (Account) accountComboBox.getSelectedItem();
+			String details = market.simpleFormat(ac.getFields());
+			accountDetails.setText(details);
+			somethingChanged();
+		}
 
 		if(e.getSource()==buyToken || e.getSource()==sellToken) {
 			somethingChanged();
@@ -242,7 +255,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			String error = null;
 			Globals g = Globals.getInstance();
 
-			if(account.getSelectedIndex() < 0 && !isToken) {
+			if(accountComboBox.getSelectedIndex() < 0 && !isToken) {
 				error = "You need to register an account first";
 			}
 
@@ -297,6 +310,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	}
 
 	private void somethingChanged(){
+		if(acceptBox == null)
+			return;
+		
 		acceptBox.setSelected(false);
 
 		totalValue = null;
@@ -320,10 +336,11 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		}
 
 
+		String terms = null;
 		if(isToken) {
 			boolean isSell = sellToken.isSelected();
 
-			String terms = "You are %s up to %s %s %s BURST at a price of %s BURST each.\n\n"
+			terms = "You are %s up to %s %s %s BURST at a price of %s BURST each.\n\n"
 					+ "This order can be partially filled and will be open until filled or cancelled. "
 					+ "No trading fees apply, only a one time %s BURST transaction fee.";
 
@@ -334,11 +351,29 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 							isSell ? "for" : "with",
 									price.getText(), ContractState.format(suggestedFee.getStandardFee().longValue()));
 
-			if(!conditions.getText().equals(terms))
-				conditions.setText(terms);
 		}
 		else {
-
+			terms = "You are selling %s BURST for %s at a price of %s %s each.\n\n"
+					+ "A smart contract will hold your %s BURST plus a security deposity of %s. "
+					+ "The taker will deposit %s %s on your account %s.\n\n"
+					+ "There are no trade fees for you, but up to 40 BURST smart contract and transaction fees. "
+					+ "It can take up to 4 blocks for your order to be available. "
+					+ "You need to open BTDEX at least every 24 h so your account details can be sent in case your offer was taken. "
+					+ "This order will be open until taken or cancelled.";
+			
+			String deposityStr = "0.1 %";
+			if(security.getValue() > 0)
+				deposityStr = String.format("%d %%", security.getValue());
+			
+			terms = String.format(terms,
+							amount.getText(), market, price.getText(), market,
+							amount.getText(), deposityStr,
+							total.getText(), market, accountDetails.getText()
+							);
+		}
+		if(!conditions.getText().equals(terms)) {
+			conditions.setText(terms);
+			conditions.setCaretPosition(0);
 		}
 	}
 
