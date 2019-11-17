@@ -50,7 +50,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 	JComboBox<Account> accountComboBox;
 	JTextField accountDetails;
-	JTextField amount, price, total;
+	JTextField amountField, priceField, total;
 	JSlider security;
 
 	JTextPane conditions;
@@ -68,7 +68,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 	private FeeSuggestion suggestedFee;
 
-	private BurstValue totalValue, quantityValue, priceValue;
+	private BurstValue amountValue, priceValue;
 
 	public PlaceOrderDialog(JFrame owner, Market market, Order order) {
 		super(owner, ModalityType.APPLICATION_MODAL);
@@ -94,13 +94,13 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 		JPanel fieldPanel = new JPanel(new GridLayout(0, 2, 4, 4));
 
-		amount = new JFormattedTextField(Globals.NF_FULL);
-		price = new JFormattedTextField(Globals.NF_FULL);
+		amountField = new JFormattedTextField(Globals.NF_FULL);
+		priceField = new JFormattedTextField(isToken ? Globals.NF_FULL : market.getNumberFormat());
 		total = new JTextField(16);
 		total.setEditable(false);
 
-		amount.getDocument().addDocumentListener(this);
-		price.getDocument().addDocumentListener(this);
+		amountField.getDocument().addDocumentListener(this);
+		priceField.getDocument().addDocumentListener(this);
 
 		fieldPanel.setBorder(BorderFactory.createTitledBorder("Offer configuration"));
 
@@ -118,8 +118,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			sellToken.addActionListener(this);
 		}
 
-		fieldPanel.add(new Desc("Price (" + (isToken ? "BURST" : market) + ")", price));
-		fieldPanel.add(new Desc("Size (" + (isToken ? market : "BURST") + ")", amount));
+		fieldPanel.add(new Desc("Price (" + (isToken ? "BURST" : market) + ")", priceField));
+		fieldPanel.add(new Desc("Size (" + (isToken ? market : "BURST") + ")", amountField));
 		fieldPanel.add(new Desc("Total (" + (isToken ? "BURST" : market) + ")", total));
 
 		if(!isToken) {
@@ -208,8 +208,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			else
 				buyToken.setSelected(true);
 			
-			price.setText(ContractState.format(order.getPrice().longValue()/market.getFactor()));
-			amount.setText(market.format(order.getQuantity().longValue()));
+			priceField.setText(ContractState.format(order.getPrice().longValue()/market.getFactor()));
+			amountField.setText(market.format(order.getQuantity().longValue()));
 			somethingChanged();
 		}
 
@@ -259,8 +259,11 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				error = "You need to register an account first";
 			}
 
-			if(error == null && totalValue == null) {
-				error = "Invalid price or amount";
+			if(error == null && priceValue == null) {
+				error = "Invalid price";
+			}
+			if(error == null && amountValue == null) {
+				error = "Invalid amount";
 			}
 
 			if(error == null && !acceptBox.isSelected()) {
@@ -284,10 +287,10 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				if(isToken) {
 					if(sellToken.isSelected())
 						utx = g.getNS().generatePlaceAskOrderTransaction(g.getPubKey(), market.getTokenID(),
-								quantityValue, priceValue, suggestedFee.getStandardFee(), 1440);
+								amountValue, priceValue, suggestedFee.getStandardFee(), 1440);
 					else
 						utx = g.getNS().generatePlaceBidOrderTransaction(g.getPubKey(), market.getTokenID(),
-								quantityValue, priceValue, suggestedFee.getStandardFee(), 1440);
+								amountValue, priceValue, suggestedFee.getStandardFee(), 1440);
 				}
 				else {
 				}
@@ -315,22 +318,34 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		
 		acceptBox.setSelected(false);
 
-		totalValue = null;
-		quantityValue = null;
+		amountValue = null;
 		priceValue = null;
 
-		if(price.getText().length()==0 || amount.getText().length()==0)
+		if(priceField.getText().length()==0 || amountField.getText().length()==0)
 			return;
 
 		try {
-			Number priceN = Globals.NF.parse(price.getText());
-			Number amountN = Globals.NF.parse(amount.getText());
-			
-			priceValue = BurstValue.fromPlanck((long)(priceN.doubleValue()*market.getFactor()));
-			quantityValue = BurstValue.fromPlanck((long)(amountN.doubleValue()*market.getFactor()));
+			// For token, price is in BURST, others price is on the selected market
+			if(isToken) {
+				Number priceN = Globals.NF.parse(priceField.getText());
+				Number amountN = Globals.NF.parse(amountField.getText());
 
-			totalValue = BurstValue.fromBurst(priceN.doubleValue()*amountN.doubleValue());
-			total.setText(market.format(totalValue.longValue()/market.getFactor()));
+				priceValue = BurstValue.fromPlanck((long)(priceN.doubleValue()*market.getFactor()));
+				amountValue = BurstValue.fromPlanck((long)(amountN.doubleValue()*market.getFactor()));
+
+				double totalValue = priceN.doubleValue()*amountN.doubleValue();
+				total.setText(Globals.NF_FULL.format(totalValue));
+			}
+			else {
+				Number priceN = market.getNumberFormat().parse(priceField.getText());
+				Number amountN = Globals.NF_FULL.parse(amountField.getText());
+
+				priceValue = BurstValue.fromPlanck((long)(priceN.doubleValue()*market.getFactor()));
+				amountValue = BurstValue.fromPlanck((long)(amountN.doubleValue()*Market.BURST_TO_PLANCK));
+
+				double totalValue = priceN.doubleValue()*amountN.doubleValue()*market.getFactor();
+				total.setText(market.format((long)totalValue));
+			}
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
@@ -346,10 +361,10 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 			terms = String.format(terms,
 					isSell ? "selling" : "buying",
-							amount.getText(),
+							amountField.getText(),
 							market,
 							isSell ? "for" : "with",
-									price.getText(), ContractState.format(suggestedFee.getStandardFee().longValue()));
+									priceField.getText(), ContractState.format(suggestedFee.getStandardFee().longValue()));
 
 		}
 		else {
@@ -358,7 +373,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					+ "The taker will deposit %s %s on your account %s.\n\n"
 					+ "There are no trade fees for you, but up to 40 BURST smart contract and transaction fees. "
 					+ "It can take up to 4 blocks for your order to be available. "
-					+ "You need to open BTDEX at least every 24 h so your account details can be sent in case your offer was taken. "
+					+ "You need to open BTDEX at least once every 24 h so your %s account can be sent in case your offer was taken. "
 					+ "This order will be open until taken or cancelled.";
 			
 			String deposityStr = "0.1 %";
@@ -366,9 +381,10 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				deposityStr = String.format("%d %%", security.getValue());
 			
 			terms = String.format(terms,
-							amount.getText(), market, price.getText(), market,
-							amount.getText(), deposityStr,
-							total.getText(), market, accountDetails.getText()
+							amountField.getText(), market, priceField.getText(), market,
+							amountField.getText(), deposityStr,
+							total.getText(), market, accountDetails.getText(),
+							market
 							);
 		}
 		if(!conditions.getText().equals(terms)) {

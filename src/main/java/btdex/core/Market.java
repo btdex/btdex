@@ -13,6 +13,9 @@ import burst.kit.entity.BurstID;
 
 public abstract class Market {
 	
+	public static long BTC_TO_SAT = 100000000L;
+	public static long BURST_TO_PLANCK = 100000000L;
+	
 	public static long MARKET_BTC            = 0x000000001;
 	public static long MARKET_LTC            = 0x000000002;
 	public static long MARKET_ETH            = 0x000000003;
@@ -59,10 +62,10 @@ public abstract class Market {
 	}
 	
 	/**
-	 * @return the formatted value (default is satoshi units)
+	 * @return the formatted value (assuming value is in SATs)
 	 */
 	public String format(long value) {
-		double dvalue = value/100000000.0;
+		double dvalue = (double)value/BTC_TO_SAT;
 		return NF.format(dvalue);
 	}
 	
@@ -70,8 +73,13 @@ public abstract class Market {
 		return NF;
 	}
 	
+	/**
+	 * Factor to get amounts as a long (maximum number of decimal places).
+	 * 
+	 * @return the multiplying factor to get amounts on this market as a long 
+	 */
 	public long getFactor() {
-		return 1;
+		return BTC_TO_SAT;
 	}
 	
 	/**
