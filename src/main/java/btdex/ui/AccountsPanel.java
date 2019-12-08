@@ -277,12 +277,14 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 					break;
 				}
 			}
+			nameField.setText(ac.getName());
 			
 			ArrayList<String> fieldNames = new ArrayList<>();
 			fieldNames.addAll(ac.getFields().keySet());
 			createFields(fieldNames, false);
 			
 			for (int i = 0; i < fieldNames.size(); i++) {
+				System.out.println(fieldNames.get(i));
 				formFields.get(i).setText(ac.getFields().get(fieldNames.get(i)));
 			}
 		}
