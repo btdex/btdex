@@ -231,6 +231,7 @@ public class Main extends JFrame implements ActionListener {
 							JOptionPane.YES_NO_OPTION);
 					if(ret == JOptionPane.YES_OPTION) {
 						// try to activate this account
+						setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 						try {
 							Response response = g.activate();
 							if(response.isSuccessful()) {
@@ -247,6 +248,7 @@ public class Main extends JFrame implements ActionListener {
 							e1.printStackTrace();
 							Toast.makeText(this, e1.getLocalizedMessage(), Toast.Style.ERROR).display();
 						}
+						setCursor(Cursor.getDefaultCursor());
 					}
 				}
 			}
