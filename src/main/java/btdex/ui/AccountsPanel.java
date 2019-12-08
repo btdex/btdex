@@ -284,7 +284,6 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 			createFields(fieldNames, false);
 			
 			for (int i = 0; i < fieldNames.size(); i++) {
-				System.out.println(fieldNames.get(i));
 				formFields.get(i).setText(ac.getFields().get(fieldNames.get(i)));
 			}
 		}
