@@ -133,6 +133,7 @@ public class Main extends JFrame implements ActionListener {
 		JButton settingsButton = new JButton(settinsIcon);
 		settingsButton.setToolTipText("Configure settings...");
 		settingsButton.setFont(largeFont);
+		settingsButton.setVisible(false);
 
 		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.PAPER_PLANE, 18, COLOR);
 		Icon createOfferIcon = IconFontSwing.buildIcon(FontAwesome.USD, 18, COLOR);
@@ -354,7 +355,12 @@ public class Main extends JFrame implements ActionListener {
 		if(e.getSource() == createOfferButton) {
 			
 			PlaceOrderDialog dlg = new PlaceOrderDialog(this, m, null);
-
+			
+			if(m.getTokenID()==null) {
+				Toast.makeText(this, "Cross-chain markets will be open only "
+						+ "after TRT initial distribution is finished.", Toast.Style.ERROR).display();
+				return;
+			}
 			dlg.setLocationRelativeTo(Main.this);
 			dlg.setVisible(true);
 		}
@@ -365,6 +371,10 @@ public class Main extends JFrame implements ActionListener {
 			if(m.getTokenID() == null) {
 				// not a token market, show TRT in the token field 
 				tokenDesc.setDesc(String.format("Balance (%s)", token));
+				
+				// FIXME: remove this when operational
+				Toast.makeText(this, "Cross-chain markets will be open only "
+						+ "after TRT initial distribution is finished.", Toast.Style.ERROR).display();
 			}
 			else {
 				// this is a token market, show it on the token field 

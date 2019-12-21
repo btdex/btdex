@@ -104,7 +104,7 @@ public class ContractState {
 		BurstAddress[] atIDs = g.getNS().getAtIds().blockingGet();
 		
 		BurstID first = null;
-		BurstID idLimit = BurstID.fromLong("17889689123018230142");
+		BurstID idLimit = BurstID.fromLong("9601465021860021685");
 		// FIXME: add a mainnet limit
 		
 		// reverse order to get the more recent ones first
