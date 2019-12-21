@@ -63,6 +63,8 @@ public class Main extends JFrame implements ActionListener {
 
 	private CopyToClipboardButton copyAddButton;
 
+	private Desc tokenDesc;
+	
 	private JLabel balanceLabelToken;
 
 	private JLabel balanceLabelTokenPending;
@@ -183,7 +185,7 @@ public class Main extends JFrame implements ActionListener {
 		balanceLabelToken.setFont(largeFont);
 		balanceLabelTokenPending = new JLabel("0");
 		balanceLabelTokenPending.setToolTipText("Pending from trade rewards");
-		top.add(new Desc(String.format("Balance (%s)", token), balanceLabelToken, balanceLabelTokenPending));
+		top.add(tokenDesc = new Desc(String.format("Balance (%s)", token), balanceLabelToken, balanceLabelTokenPending));
 		top.add(new Desc("  ", sendButtonToken));
 //		top.add(new Desc("  ", createOfferButtonBTDEX));
 
@@ -307,7 +309,11 @@ public class Main extends JFrame implements ActionListener {
 					orderBook.update();
 					historyPanel.update();
 					
-					AssetAccount[] accounts = g.getNS().getAssetAccounts(token.getTokenID()).blockingGet();
+					Market tokenMarket = token;
+					Market m = (Market) marketComboBox.getSelectedItem();
+					if(m.getTokenID()!=null && m!=token)
+						tokenMarket = m;
+					AssetAccount[] accounts = g.getNS().getAssetAccounts(tokenMarket.getTokenID()).blockingGet();
 					long tokenBalance = 0;
 					for (AssetAccount aac : accounts) {
 						if(aac.getAccount().getSignedLongId() == g.getAddress().getSignedLongId()) {
@@ -315,7 +321,10 @@ public class Main extends JFrame implements ActionListener {
 						}
 					}
 					balanceLabelToken.setText(token.format(tokenBalance));
-					balanceLabelTokenPending.setText("+" + token.format(0) + " pending");
+					if(tokenMarket == token)
+						balanceLabelTokenPending.setText("+" + token.format(0) + " pending");
+					else
+						balanceLabelTokenPending.setText(" ");
 
 					nodeStatus.setText("Node: " + Globals.getConf().getProperty(Globals.PROP_NODE));
 				}
@@ -352,6 +361,19 @@ public class Main extends JFrame implements ActionListener {
 		else if (e.getSource() == marketComboBox) {
 			orderBook.setMarket(m);
 			historyPanel.setMarket(m);
+			
+			if(m.getTokenID() == null) {
+				// not a token market, show TRT in the token field 
+				tokenDesc.setDesc(String.format("Balance (%s)", token));
+			}
+			else {
+				// this is a token market, show it on the token field 
+				tokenDesc.setDesc(String.format("Balance (%s)", m));
+				balanceLabelToken.setText(m.format(0));
+				balanceLabelTokenPending.setText(" ");
+				sendButtonToken.setToolTipText(String.format("Send %s...", m.toString()));
+			}
+			
 			update();
 		}
 		else if (e.getSource() == sendButton) {
@@ -361,7 +383,7 @@ public class Main extends JFrame implements ActionListener {
 			dlg.setVisible(true);			
 		}
 		else if (e.getSource() == sendButtonToken) {
-			SendDialog dlg = new SendDialog(this, token);
+			SendDialog dlg = new SendDialog(this, m.getTokenID()==null ? token : m);
 
 			dlg.setLocationRelativeTo(Main.this);
 			dlg.setVisible(true);			

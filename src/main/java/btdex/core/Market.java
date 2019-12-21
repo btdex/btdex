@@ -19,6 +19,7 @@ public abstract class Market {
 	public static long MARKET_BTC            = 0x000000001;
 	public static long MARKET_LTC            = 0x000000002;
 	public static long MARKET_ETH            = 0x000000003;
+	public static long MARKET_XMR            = 0x000000004;
 
 	// TODO: fill with other cryptos here
 	

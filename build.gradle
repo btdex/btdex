@@ -32,6 +32,8 @@ dependencies {
 	
 	implementation 'jfree:jfreechart:1.0.13'
 	
+	implementation 'io.github.monero-ecosystem:monero-java:0.2.1'
+	
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
     

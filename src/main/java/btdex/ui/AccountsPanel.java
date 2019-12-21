@@ -122,7 +122,7 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 
 		marketComboBox = new JComboBox<Market>();
 		for(Market m : Globals.getInstance().getMarkets()) {
-			if(m == Globals.getInstance().getToken())
+			if(m.getTokenID()!=null)
 				continue;
 			marketComboBox.addItem(m);
 		}

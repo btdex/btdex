@@ -19,7 +19,9 @@ import bt.compiler.Compiler;
 import btdex.markets.MarketBTC;
 import btdex.markets.MarketETH;
 import btdex.markets.MarketLTC;
+import btdex.markets.MarketNDST;
 import btdex.markets.MarketTRT;
+import btdex.markets.MarketXMR;
 import btdex.sm.SellContract;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstAddress;
@@ -119,9 +121,11 @@ public class Globals {
 			}
 			
 			markets.add(token = new MarketTRT());
+			markets.add(new MarketNDST());
 			markets.add(new MarketBTC());
 			markets.add(new MarketETH());
 			markets.add(new MarketLTC());
+			markets.add(new MarketXMR());
 
 			// TODO: default node on testnet for now
 			setNode(conf.getProperty(PROP_NODE, BT.NODE_TESTNET));
