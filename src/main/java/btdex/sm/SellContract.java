@@ -148,7 +148,7 @@ public class SellContract extends Contract {
 	 * If creator and taker agree on the amounts, the trade is finished. Both creator
 	 * and taker can call this method multiple times until agreement is reached.
 	 * 
-	 * If there is no agreement, a mediator have to intervene.
+	 * If there is no agreement, one mediator have to intervene.
 	 * 
 	 */
 	public void dispute(long amountToCreator, long amountToTaker) {
@@ -171,7 +171,7 @@ public class SellContract extends Contract {
 				disputeCreatorAmountToCreator == disputeTakerAmountToCreator &&
 				disputeCreatorAmountToTaker == disputeTakerAmountToTaker)) {
 			// there was agreement or is the mediator
-			if(amountToCreator + amountToTaker > amount + security + security - fee) {
+			if(amountToCreator + amountToTaker < amount + security + security - fee) {
 				// only pay if the amounts are valid, if they collude to use tampered
 				// clients with invalid amounts they don't receive their deposits
 				sendAmount(amountToCreator, getCreator());
