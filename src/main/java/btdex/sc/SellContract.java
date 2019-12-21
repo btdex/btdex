@@ -1,4 +1,4 @@
-package btdex.sm;
+package btdex.sc;
 
 import bt.Address;
 import bt.Contract;

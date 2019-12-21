@@ -4,7 +4,7 @@ import bt.BT;
 import bt.Contract;
 import btdex.core.Globals;
 import btdex.core.Market;
-import btdex.sm.SellContract;
+import btdex.sc.SellContract;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;

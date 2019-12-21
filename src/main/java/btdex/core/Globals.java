@@ -22,7 +22,7 @@ import btdex.markets.MarketLTC;
 import btdex.markets.MarketNDST;
 import btdex.markets.MarketTRT;
 import btdex.markets.MarketXMR;
-import btdex.sm.SellContract;
+import btdex.sc.SellContract;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
