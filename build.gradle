@@ -36,7 +36,6 @@ dependencies {
 	
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
-    
 }
 
 // If we want to refresh our libraries (get a new snapshot)

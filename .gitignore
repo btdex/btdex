@@ -3,3 +3,5 @@ build
 bin
 /conf/
 /new.properties
+/l4j/
+/btdex.exe

@@ -4,6 +4,18 @@
 
 This is in pre-alpha stage, use only on testnet. More instructions will come later.
 
+## Compile
+
+Clone this repository code and run the gradle build:
+
+`$ ./gradlew shadowJar`
+
+This will result on the following file:
+
+`build/libs/btdex-all.jar`
+
+Just run this file with Java 8 or more recent.
+
 ## License
 [GPL license](LICENSE)
 
