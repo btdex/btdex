@@ -1,4 +1,4 @@
-# BTDEX - BlocTalk Decentralized Exchange reference client
+# BTDEX - BlockTalk Decentralized Exchange reference client
 
 [BlockTalk](https://github.com/jjos2372/blocktalk) based decentralized exchange.
 
