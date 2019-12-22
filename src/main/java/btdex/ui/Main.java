@@ -18,7 +18,6 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
@@ -228,17 +227,19 @@ public class Main extends JFrame implements ActionListener {
 				BRSError error = (BRSError) e.getCause();
 				if(error.getCode() == 5) {
 					// unknown account
+					/* TODO: think about this auto-activation thing
 					int ret = JOptionPane.showConfirmDialog(Main.this,
 							"You have a new account, do you want to activate it\n"
 							+ "with a complimentary message?", "Activate account",
 							JOptionPane.YES_NO_OPTION);
 					if(ret == JOptionPane.YES_OPTION) {
+					*/
 						// try to activate this account
 						setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 						try {
 							Response response = g.activate();
 							if(response.isSuccessful()) {
-								Toast.makeText(this, "Great, in a few minutes your account will be activated.", Toast.Style.SUCCESS).display();
+								Toast.makeText(this, "Great, in a few minutes your new account will be activated.", Toast.Style.SUCCESS).display();
 								tabbedPane.setSelectedComponent(transactionsPanel);
 							}
 							else {
@@ -252,7 +253,7 @@ public class Main extends JFrame implements ActionListener {
 							Toast.makeText(this, e1.getLocalizedMessage(), Toast.Style.ERROR).display();
 						}
 						setCursor(Cursor.getDefaultCursor());
-					}
+					//}
 				}
 			}
 		}
