@@ -19,4 +19,16 @@
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
   </jre>
+  <versionInfo>
+    <fileVersion>0.0.1.3</fileVersion>
+    <txtFileVersion>0.0.1-pre-alpha</txtFileVersion>
+    <fileDescription>BTDEX reference client</fileDescription>
+    <copyright>BTDEX</copyright>
+    <productVersion>0.0.1.3</productVersion>
+    <txtProductVersion>0.0.1-pre-alpha</txtProductVersion>
+    <productName>BTDEX</productName>
+    <companyName>BTDEX</companyName>
+    <internalName>btdex</internalName>
+    <originalFilename>btdex.exe</originalFilename>
+  </versionInfo>
 </launch4jConfig>
