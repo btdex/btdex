@@ -333,6 +333,8 @@ public class Main extends JFrame implements ActionListener {
 				catch (RuntimeException rex) {
 					rex.printStackTrace();
 					
+					Toast.makeText(Main.this, rex.getMessage(), Toast.Style.ERROR).display();
+
 					nodeStatus.setText(rex.getMessage());
 				}
 				setCursor(Cursor.getDefaultCursor());
