@@ -30,7 +30,7 @@ import btdex.core.Market;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
-import burst.kit.entity.response.Order;
+import burst.kit.entity.response.AssetOrder;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
 
@@ -132,7 +132,7 @@ public class OrderBook extends JPanel {
 	public class ActionButton extends JButton{
 		private static final long serialVersionUID = 1L;
 		
-		Order order;
+		AssetOrder order;
 		ContractState contract;
 		boolean cancel;
 		
@@ -140,11 +140,11 @@ public class OrderBook extends JPanel {
 			this(text, null, contract, cancel);
 		}
 		
-		public ActionButton(String text, Order order, boolean cancel) {
+		public ActionButton(String text, AssetOrder order, boolean cancel) {
 			this(text, order, null, cancel);
 		}
 		
-		public ActionButton(String text, Order order, ContractState contract, boolean cancel) {
+		public ActionButton(String text, AssetOrder order, ContractState contract, boolean cancel) {
 			super(text);
 			this.order = order;
 			this.contract = contract;
@@ -248,25 +248,25 @@ public class OrderBook extends JPanel {
 		
 		boolean onlyMine = listOnlyMine.isSelected();
 
-		ArrayList<Order> orders = new ArrayList<>();
-		Order[] bids = g.getNS().getBidOrders(token).blockingGet();
-		Order[] asks = g.getNS().getAskOrders(token).blockingGet();
+		ArrayList<AssetOrder> orders = new ArrayList<>();
+		AssetOrder[] bids = g.getNS().getBidOrders(token).blockingGet();
+		AssetOrder[] asks = g.getNS().getAskOrders(token).blockingGet();
 		
 		for (int i = 0; i < asks.length; i++) {
-			if(onlyMine && asks[i].getAccount().getSignedLongId() != g.getAddress().getSignedLongId())
+			if(onlyMine && asks[i].getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
 				continue;
 			orders.add(asks[i]);
 		}
 		for (int i = 0; i < bids.length; i++) {
-			if(onlyMine && bids[i].getAccount().getSignedLongId() != g.getAddress().getSignedLongId())
+			if(onlyMine && bids[i].getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
 				continue;
 			orders.add(bids[i]);
 		}
 		
 		// sort by price
-		orders.sort(new Comparator<Order>() {
+		orders.sort(new Comparator<AssetOrder>() {
 			@Override
-			public int compare(Order o1, Order o2) {
+			public int compare(AssetOrder o1, AssetOrder o2) {
 				return (int)(o1.getPrice().doubleValue() - o2.getPrice().doubleValue());
 			}
 		});
@@ -275,7 +275,7 @@ public class OrderBook extends JPanel {
 
 		// Update the contents
 		for (int row = 0; row < orders.size(); row++) {
-			Order o = orders.get(row);
+			AssetOrder o = orders.get(row);
 
 			// price always come in Burst, so no problem in this division using long's
 			long priceBurst = o.getPrice().longValue()/market.getFactor();
@@ -291,12 +291,12 @@ public class OrderBook extends JPanel {
 			model.setValueAt(market.format(amountToken), row, COL_SIZE);
 			model.setValueAt(ContractState.format((amountToken*priceBurst)/market.getFactor()), row, COL_TOTAL);
 
-			model.setValueAt(new CopyToClipboardButton(o.getOrder().getID(), copyIcon, BUTTON_EDITOR), row, COL_CONTRACT);
+			model.setValueAt(new CopyToClipboardButton(o.getId().getID(), copyIcon, BUTTON_EDITOR), row, COL_CONTRACT);
 			model.setValueAt(new CopyToClipboardButton(
-					o.getAccount().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : o.getAccount().getRawAddress(), copyIcon,
-					o.getAccount().getFullAddress(), BUTTON_EDITOR), row, COL_ACCOUNT);
+					o.getAccountAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : o.getAccountAddress().getRawAddress(), copyIcon,
+					o.getAccountAddress().getFullAddress(), BUTTON_EDITOR), row, COL_ACCOUNT);
 
-			if(o.getType().equals("bid")) {
+			if(o.getType() == AssetOrder.OrderType.BID) {
 				model.setValueAt("BUYING " + market, row, COL_SECURITY);
 				model.setValueAt(new ActionButton("SELL " + market, o, false), row, COL_ACTION);
 			}
@@ -305,7 +305,7 @@ public class OrderBook extends JPanel {
 				model.setValueAt(new ActionButton("BUY " + market, o, false), row, COL_ACTION);
 			}
 			
-			if(o.getAccount().getSignedLongId() == g.getAddress().getSignedLongId())
+			if(o.getAccountAddress().getSignedLongId() == g.getAddress().getSignedLongId())
 				model.setValueAt(new ActionButton("CANCEL", o, true), row, COL_ACTION);
 		}
 	}

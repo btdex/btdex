@@ -20,8 +20,8 @@ import javax.swing.border.EmptyBorder;
 import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
+import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.FeeSuggestion;
-import burst.kit.entity.response.Order;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
@@ -29,7 +29,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
 	Market market;
-	Order order;
+	AssetOrder order;
 
 	JTextPane conditions;
 	JCheckBox acceptBox;
@@ -43,7 +43,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 
 	private FeeSuggestion suggestedFee;
 
-	public CancelOrderDialog(JFrame owner, Market market, Order order) {
+	public CancelOrderDialog(JFrame owner, Market market, AssetOrder order) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setTitle(String.format("Cancel Order", market.toString()));
@@ -96,14 +96,14 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 		
 		
 		if(isToken) {
-			boolean isSell = !order.getType().equals("bid");
+			boolean isSell = !(order.getType() == AssetOrder.OrderType.BID);
 
 			String terms = "You are cancelling the %s %s order %s.\n\n"
 					+ "The cancel order is executed by means of a transaction, "
 					+ "fee will be %s BURST.";
 
 			terms = String.format(terms,
-					isSell ? "sell" : "buy", market, order.getOrder(),
+					isSell ? "sell" : "buy", market, order.getId(),
 							ContractState.format(suggestedFee.getStandardFee().longValue()));
 			conditions.setText(terms);
 		}
@@ -141,11 +141,11 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 				Single<byte[]> utx = null;
 
 				if(isToken) {
-					if(order.getType().equals("bid"))
-						utx = g.getNS().generateCancelBidOrderTransaction(g.getPubKey(), order.getOrder(),
+					if(order.getType() == AssetOrder.OrderType.BID)
+						utx = g.getNS().generateCancelBidOrderTransaction(g.getPubKey(), order.getId(),
 								suggestedFee.getStandardFee(), 1440);
 					else
-						utx = g.getNS().generateCancelAskOrderTransaction(g.getPubKey(), order.getOrder(),
+						utx = g.getNS().generateCancelAskOrderTransaction(g.getPubKey(), order.getId(),
 							suggestedFee.getStandardFee(), 1440);
 				}
 				else {

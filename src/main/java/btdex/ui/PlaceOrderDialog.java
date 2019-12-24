@@ -38,8 +38,8 @@ import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
 import burst.kit.entity.BurstValue;
+import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.FeeSuggestion;
-import burst.kit.entity.response.Order;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
@@ -70,7 +70,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 	private BurstValue amountValue, priceValue;
 
-	public PlaceOrderDialog(JFrame owner, Market market, Order order) {
+	public PlaceOrderDialog(JFrame owner, Market market, AssetOrder order) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
@@ -203,7 +203,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		
 		if(order != null) {
 			// taking this order
-			if(order.getType().equals("bid"))
+			if(order.getType() == AssetOrder.OrderType.BID)
 				sellToken.setSelected(true);
 			else
 				buyToken.setSelected(true);

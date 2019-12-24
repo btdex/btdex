@@ -29,7 +29,7 @@ import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
 import burst.kit.entity.response.Account;
-import burst.kit.entity.response.AssetAccount;
+import burst.kit.entity.response.AssetBalance;
 import burst.kit.entity.response.http.BRSError;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
@@ -315,11 +315,11 @@ public class Main extends JFrame implements ActionListener {
 					Market m = (Market) marketComboBox.getSelectedItem();
 					if(m.getTokenID()!=null && m!=token)
 						tokenMarket = m;
-					AssetAccount[] accounts = g.getNS().getAssetAccounts(tokenMarket.getTokenID()).blockingGet();
+					AssetBalance[] accounts = g.getNS().getAssetBalances(tokenMarket.getTokenID()).blockingGet();
 					long tokenBalance = 0;
-					for (AssetAccount aac : accounts) {
-						if(aac.getAccount().getSignedLongId() == g.getAddress().getSignedLongId()) {
-							tokenBalance += aac.getQuantity().longValue();
+					for (AssetBalance aac : accounts) {
+						if(aac.getAccountAddress().getSignedLongId() == g.getAddress().getSignedLongId()) {
+							tokenBalance += aac.getBalance().longValue();
 						}
 					}
 					balanceLabelToken.setText(token.format(tokenBalance));

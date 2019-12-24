@@ -31,7 +31,7 @@ import org.jfree.data.xy.OHLCDataItem;
 import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
-import burst.kit.entity.response.Trade;
+import burst.kit.entity.response.AssetTrade;
 import burst.kit.entity.response.http.BRSError;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
@@ -173,16 +173,18 @@ public class HistoryPanel extends JPanel {
 
 		try {
 			if(isToken) {
-				Trade trs[] = g.getNS().getAssetTrades(market.getTokenID()).blockingGet();
+				AssetTrade trs[] = g.getNS().getAssetTrades(market.getTokenID(),
+						// myHistory ? g.getAddress() :
+							null, 0, 200).blockingGet();
 
 				int nLines = 0;
 
 				int maxLines = Math.min(200, trs.length);
 				for (int i = 0; i < maxLines; i++) {
-					Trade tr = trs[i];
+					AssetTrade tr = trs[i];
 					if(myHistory &&
-							tr.getBuyer().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
-							tr.getSeller().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
+							tr.getBuyerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
+							tr.getSellerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
 						continue;
 					nLines++;
 				}
@@ -191,21 +193,21 @@ public class HistoryPanel extends JPanel {
 
 				// Update the contents
 				for (int row = 0, i=0; i < maxLines; i++) {
-					Trade tr = trs[i];
+					AssetTrade tr = trs[i];
 					if(myHistory &&
-							tr.getBuyer().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
-							tr.getSeller().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
+							tr.getBuyerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
+							tr.getSellerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
 						continue;
 
 					long amount = tr.getQuantity().longValue();
 					long price = tr.getPrice().longValue();
 
 					model.setValueAt(new CopyToClipboardButton(
-							tr.getBuyer().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getBuyer().getRawAddress(), copyIcon,
-							tr.getBuyer().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
+							tr.getBuyerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getBuyerAddress().getRawAddress(), copyIcon,
+							tr.getBuyerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
 					model.setValueAt(new CopyToClipboardButton(
-							tr.getSeller().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getSeller().getRawAddress(), copyIcon,
-							tr.getSeller().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
+							tr.getSellerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getSellerAddress().getRawAddress(), copyIcon,
+							tr.getSellerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
 
 					model.setValueAt(ContractState.format(price*market.getFactor()), row, COL_PRICE);
 					model.setValueAt(market.format(amount), row, COL_AMOUNT);
@@ -232,7 +234,7 @@ public class HistoryPanel extends JPanel {
 						high = lastClose;
 
 					for (int row = maxLines-1; row >= 0; row--) {
-						Trade tr = trs[row];
+						AssetTrade tr = trs[row];
 						Date date = tr.getTimestamp().getAsDate();
 						double price = tr.getPrice().doubleValue()*market.getFactor();
 
