@@ -19,7 +19,6 @@ import bt.compiler.Compiler;
 import btdex.markets.MarketBTC;
 import btdex.markets.MarketETH;
 import btdex.markets.MarketLTC;
-import btdex.markets.MarketNDST;
 import btdex.markets.MarketTRT;
 import btdex.markets.MarketXMR;
 import btdex.sc.SellContract;
@@ -121,7 +120,7 @@ public class Globals {
 			}
 			
 			markets.add(token = new MarketTRT());
-			markets.add(new MarketNDST());
+//			markets.add(new MarketNDST());
 			markets.add(new MarketBTC());
 			markets.add(new MarketETH());
 			markets.add(new MarketLTC());
