@@ -36,6 +36,9 @@ public class MarketXMR extends Market {
 		MoneroNetworkType type = Globals.getInstance().isTestnet() ?
 				MoneroNetworkType.TESTNET : MoneroNetworkType.MAINNET;
 		
+		if(addr == null || addr.isEmpty())
+			throw new Exception("Address cannot be empty");
+		
 		try{
 			MoneroUtils.validateAddress(addr, type);
 		}

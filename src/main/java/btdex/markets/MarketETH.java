@@ -30,6 +30,9 @@ public class MarketETH extends Market {
 	public void validate(HashMap<String, String> fields) throws Exception {
 		String addr = fields.get(ADDRESS);
 		
+		if(addr == null || addr.isEmpty())
+			throw new Exception("Address cannot be empty");
+		
 		if(!addr.matches(REGEX))
 			throw new Exception(addr + " is not a valid ETH address");
 	}
