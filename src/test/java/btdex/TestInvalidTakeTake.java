@@ -21,15 +21,15 @@ import burst.kit.entity.response.AT;
  * 
  * @author jjos
  */
-public class ContractTest extends BT {
+public class TestInvalidTakeTake extends BT {
 
     public static void main(String[] args) throws Exception {
-        ContractTest t = new ContractTest();
-        t.testCreate();
+        TestInvalidTakeTake t = new TestInvalidTakeTake();
+        t.testOpenTake();
     }
 
     @Test
-    public void testCreate() throws Exception {
+    public void testOpenTake() throws Exception {
 
         long amount = 10000 * Contract.ONE_BURST;
 
@@ -39,17 +39,19 @@ public class ContractTest extends BT {
         // Create a maker address and send some coins
         String makerPass = Long.toString(System.currentTimeMillis());
         BurstAddress maker = BT.getBurstAddressFromPassphrase(makerPass);
-        BurstAddress feeContract = BT.getBurstAddressFromPassphrase(BT.PASSPHRASE);
+        long feeContract = Globals.getInstance().getFeeContract();
 
         BT.sendAmount(BT.PASSPHRASE, maker, BurstValue.fromPlanck(2 * amount + 3 * security)).blockingGet();
         BT.forgeBlock();
 
-        BurstID arbitrator1 = Globals.MEDIATORS[0];
-        BurstID arbitrator2 = Globals.MEDIATORS[1];
+        BurstID mediator1 = Globals.MEDIATORS[0];
+        BurstID mediator2 = Globals.MEDIATORS[1];
         long offerType = Market.MARKET_BTC;
         long state = SellContract.STATE_FINISHED;
+        long accountHash = 0;
 
-        long data[] = { feeContract.getSignedLongId(), arbitrator1.getSignedLongId(), arbitrator2.getSignedLongId(), offerType };
+        long data[] = { feeContract, mediator1.getSignedLongId(), mediator2.getSignedLongId(),
+        		offerType, accountHash};
 
         bt.compiler.Compiler compiled = BT.compileContract(SellContract.class);
         String name = SellContract.class.getSimpleName() + System.currentTimeMillis();
@@ -60,21 +62,21 @@ public class ContractTest extends BT {
         AT contract = BT.findContract(maker, name);
         System.out.println(contract.getId().getID());
 
-        long arb1_chain = BT.getContractFieldValue(contract, compiled.getField("arbitrator1").getAddress());
-        long arb2_chain = BT.getContractFieldValue(contract, compiled.getField("arbitrator2").getAddress());
+        long med1_chain = BT.getContractFieldValue(contract, compiled.getField("mediator1").getAddress());
+        long med2_chain = BT.getContractFieldValue(contract, compiled.getField("mediator2").getAddress());
 
         long offerType_chain = BT.getContractFieldValue(contract, compiled.getField("offerType").getAddress());
         long state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
 
-        assertEquals(arbitrator1.getSignedLongId(), arb1_chain);
-        assertEquals(arbitrator2.getSignedLongId(), arb2_chain);
+        assertEquals(mediator1.getSignedLongId(), med1_chain);
+        assertEquals(mediator2.getSignedLongId(), med2_chain);
         assertEquals(offerType, offerType_chain);
         assertEquals(state, state_chain);
 
         // Initialize the offer
         long sent = amount + security + SellContract.ACTIVATION_FEE;
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                BurstValue.fromPlanck(sent), BurstValue.fromBurst(0.1), 100,
+                BurstValue.fromPlanck(sent), BurstValue.fromBurst(0.1), 1000,
                 rate, security).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
@@ -155,40 +157,5 @@ public class ContractTest extends BT {
         balance = BT.getContractBalance(contract).longValue();
         assertTrue("not enough balance", balance == 0);
         assertTrue("taker have not received", taker_balance > amount);
-
-        // Reopen the offer
-        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                BurstValue.fromPlanck(amount + security + SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
-                rate, security).blockingGet();
-        BT.forgeBlock();
-        BT.forgeBlock();
-
-        // should now be open
-        state = SellContract.STATE_OPEN;
-        state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
-        rate_chain = BT.getContractFieldValue(contract, compiled.getField("rate").getAddress());
-        amount_chain = BT.getContractFieldValue(contract, compiled.getField("amount").getAddress());
-        security_chain = BT.getContractFieldValue(contract, compiled.getField("security").getAddress());
-
-        assertEquals(state, state_chain);
-        assertEquals(rate, rate_chain);
-        assertTrue(amount_chain > amount);
-        assertEquals(security, security_chain);
-
-        // Cancel and withdraw the offer
-        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
-                rate, 0).blockingGet();
-        BT.forgeBlock();
-        BT.forgeBlock();
-
-        state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
-        rate_chain = BT.getContractFieldValue(contract, compiled.getField("rate").getAddress());
-        amount_chain = BT.getContractFieldValue(contract, compiled.getField("amount").getAddress());
-        security_chain = BT.getContractFieldValue(contract, compiled.getField("security").getAddress());
-
-        assertEquals(SellContract.STATE_FINISHED, state_chain);
-        assertEquals(0, amount_chain);
-        assertEquals(0, BT.getContractBalance(contract).longValue());
     }
 }
