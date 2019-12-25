@@ -159,8 +159,9 @@ public class TestInvalidTakeReopenWithdraw extends BT {
         assertTrue("taker have not received", taker_balance > amount);
 
         // Reopen the offer
+        sent = amount + security + SellContract.ACTIVATION_FEE;
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                BurstValue.fromPlanck(amount + security + SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
+                BurstValue.fromPlanck(sent), BurstValue.fromBurst(0.1), 100,
                 rate, security).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
@@ -176,6 +177,9 @@ public class TestInvalidTakeReopenWithdraw extends BT {
         assertEquals(rate, rate_chain);
         assertTrue(amount_chain > amount);
         assertEquals(security, security_chain);
+        
+        balance = BT.getContractBalance(contract).longValue();
+        System.out.println("Contract fees to reopen: " + BurstValue.fromPlanck(sent-balance));
 
         // Cancel and withdraw the offer
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
