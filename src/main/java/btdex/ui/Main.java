@@ -41,6 +41,8 @@ import okhttp3.Response;
 public class Main extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
+	
+	public static final int ICON_SIZE = 22;
 
 	OrderBook orderBook;
 	TransactionsPanel transactionsPanel;
@@ -107,7 +109,7 @@ public class Main extends JFrame implements ActionListener {
 		getContentPane().add(bottom, BorderLayout.PAGE_END);
 
 		marketComboBox = new JComboBox<Market>();
-		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, 18);
+		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, ICON_SIZE);
 		Color COLOR = marketComboBox.getForeground();
 		marketComboBox.setToolTipText("Select market");
 		marketComboBox.setFont(largeFont);
@@ -123,19 +125,19 @@ public class Main extends JFrame implements ActionListener {
 		historyPanel = new HistoryPanel(this, (Market) marketComboBox.getSelectedItem());
 		accountsPanel = new AccountsPanel(this);
 
-		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 18, COLOR);
+		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, ICON_SIZE, COLOR);
 		copyAddButton = new CopyToClipboardButton("", copyIcon);
 		copyAddButton.setToolTipText("Copy your Burst address to clipboard");
 		copyAddButton.setFont(largeFont);
 
-		Icon settinsIcon = IconFontSwing.buildIcon(FontAwesome.COG, 18, COLOR);
+		Icon settinsIcon = IconFontSwing.buildIcon(FontAwesome.COG, ICON_SIZE, COLOR);
 		JButton settingsButton = new JButton(settinsIcon);
 		settingsButton.setToolTipText("Configure settings...");
 		settingsButton.setFont(largeFont);
 		settingsButton.setVisible(false);
 
-		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.PAPER_PLANE, 18, COLOR);
-		Icon createOfferIcon = IconFontSwing.buildIcon(FontAwesome.USD, 18, COLOR);
+		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.PAPER_PLANE, ICON_SIZE, COLOR);
+		Icon createOfferIcon = IconFontSwing.buildIcon(FontAwesome.CART_PLUS, ICON_SIZE, COLOR);
 
 		sendButton = new JButton(sendIcon);
 		sendButton.setToolTipText("Send BURST...");
@@ -156,16 +158,16 @@ public class Main extends JFrame implements ActionListener {
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
 		tabbedPane.setFont(largeFont);
 
-		Icon orderIcon = IconFontSwing.buildIcon(FontAwesome.BOOK, 18, COLOR);
+		Icon orderIcon = IconFontSwing.buildIcon(FontAwesome.BOOK, ICON_SIZE, COLOR);
 		tabbedPane.addTab("ORDER BOOK", orderIcon, orderBook);
 
-		Icon tradeIcon = IconFontSwing.buildIcon(FontAwesome.LINE_CHART, 18, COLOR);
+		Icon tradeIcon = IconFontSwing.buildIcon(FontAwesome.LINE_CHART, ICON_SIZE, COLOR);
 		tabbedPane.addTab("TRADE HISTORY", tradeIcon, historyPanel);
 
-		Icon accountIcon = IconFontSwing.buildIcon(FontAwesome.USER_CIRCLE, 18, COLOR);
+		Icon accountIcon = IconFontSwing.buildIcon(FontAwesome.USER_CIRCLE, ICON_SIZE, COLOR);
 		tabbedPane.addTab("ACCOUNTS", accountIcon, accountsPanel);
 
-		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.LINK, 18, COLOR);
+		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.LINK, ICON_SIZE, COLOR);
 		tabbedPane.addTab("TRANSACTIONS", transactionsIcon, transactionsPanel);
 
 		top.add(new Desc("Market", marketComboBox));
