@@ -33,7 +33,6 @@ public class TestInvalidTakeReopenWithdraw extends BT {
 
         long amount = 10000 * Contract.ONE_BURST;
 
-        long rate = 70;
         long security = 100 * Contract.ONE_BURST;
 
         // Create a maker address and send some coins
@@ -77,19 +76,17 @@ public class TestInvalidTakeReopenWithdraw extends BT {
         long sent = amount + security + SellContract.ACTIVATION_FEE;
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
                 BurstValue.fromPlanck(sent), BurstValue.fromBurst(0.1), 1000,
-                rate, security).blockingGet();
+                security).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 
         // should now be open
         state = SellContract.STATE_OPEN;
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
-        long rate_chain = BT.getContractFieldValue(contract, compiled.getField("rate").getAddress());
         long amount_chain = BT.getContractFieldValue(contract, compiled.getField("amount").getAddress());
         long security_chain = BT.getContractFieldValue(contract, compiled.getField("security").getAddress());
 
         assertEquals(state, state_chain);
-        assertEquals(rate, rate_chain);
         // assertEquals(pauseTimeout, pauseTimeout_chain);
         assertTrue(amount_chain > amount);
         assertEquals(security, security_chain);
@@ -108,7 +105,7 @@ public class TestInvalidTakeReopenWithdraw extends BT {
         // Invalid take, not enough security
         sent = balance + SellContract.ACTIVATION_FEE*2;
         BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE*2), BurstValue.fromBurst(0.1), 100, rate, security, amount_chain)
+                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE*2), BurstValue.fromBurst(0.1), 100, security, amount_chain)
                 .blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
@@ -127,7 +124,7 @@ public class TestInvalidTakeReopenWithdraw extends BT {
         // Take the offer
         BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
                 BurstValue.fromPlanck(security + SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
-                rate, security, amount_chain).blockingGet();
+                security, amount_chain).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 
@@ -162,19 +159,17 @@ public class TestInvalidTakeReopenWithdraw extends BT {
         sent = amount + security + SellContract.ACTIVATION_FEE;
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
                 BurstValue.fromPlanck(sent), BurstValue.fromBurst(0.1), 100,
-                rate, security).blockingGet();
+                security).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 
         // should now be open
         state = SellContract.STATE_OPEN;
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
-        rate_chain = BT.getContractFieldValue(contract, compiled.getField("rate").getAddress());
         amount_chain = BT.getContractFieldValue(contract, compiled.getField("amount").getAddress());
         security_chain = BT.getContractFieldValue(contract, compiled.getField("security").getAddress());
 
         assertEquals(state, state_chain);
-        assertEquals(rate, rate_chain);
         assertTrue(amount_chain > amount);
         assertEquals(security, security_chain);
         
@@ -184,12 +179,11 @@ public class TestInvalidTakeReopenWithdraw extends BT {
         // Cancel and withdraw the offer
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
                 BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
-                rate, 0).blockingGet();
+                0).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
-        rate_chain = BT.getContractFieldValue(contract, compiled.getField("rate").getAddress());
         amount_chain = BT.getContractFieldValue(contract, compiled.getField("amount").getAddress());
         security_chain = BT.getContractFieldValue(contract, compiled.getField("security").getAddress());
 

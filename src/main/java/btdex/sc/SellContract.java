@@ -5,7 +5,7 @@ import bt.Contract;
 import bt.ui.EmulatorWindow;
 
 /**
- * BlockTalk on-chain decentralized exchange (BTDEX) smart contract for selling BURST.
+ * BTDEX smart contract for selling BURST.
  * 
  * Someone willing to sell BURST should create a contract instance and configure
  * it accordingly. There is zero fee for those selling BURST and 0.25% fee for
@@ -21,7 +21,7 @@ import bt.ui.EmulatorWindow;
  */
 public class SellContract extends Contract {
 
-	public static final long ACTIVATION_FEE = 24 * ONE_BURST;
+	public static final long ACTIVATION_FEE = 21 * ONE_BURST;
 
 	public static final long STATE_FINISHED = 0x0000000000000000;
 	public static final long STATE_OPEN = 0x0000000000000001;
@@ -45,7 +45,6 @@ public class SellContract extends Contract {
 	long accountHash;
 
 	long state;
-	long rate;
 	long amount;
 	long security;
 
@@ -66,13 +65,11 @@ public class SellContract extends Contract {
 	 * deposit as zero, the offer is withdrawn and all balance is sent back
 	 * to the creator.
 	 * 
-	 * @param rate         the exchange rate per BURST
 	 * @param security     the security deposit of this offer (in planck)
 	 */
-	public void update(long rate, long security) {
+	public void update(long security) {
 		if (getCurrentTxSender() == getCreator() && state < STATE_TAKEN) {
-			// is the creator and the order should not be taken for us to change it
-			this.rate = rate;
+			// only if is the creator and the order should not be taken for us to change it
 			this.security = security;
 			this.state = STATE_OPEN;
 			if (security == 0) {
@@ -104,8 +101,8 @@ public class SellContract extends Contract {
 	 * @param security     the security deposit of this offer (in planck)
 	 * @param amount       the amount of this offer (in planck)
 	 */
-	public void take(long rate, long security, long amount) {
-		if (state != STATE_OPEN || this.rate != rate || this.security != security
+	public void take(long security, long amount) {
+		if (state != STATE_OPEN || this.security != security
 				|| this.amount != amount
 				|| getCurrentTxAmount() < security) {
 			// if it is not open or values do no match, refund
