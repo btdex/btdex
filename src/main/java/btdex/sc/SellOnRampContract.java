@@ -6,12 +6,12 @@ import bt.Timestamp;
 import bt.ui.EmulatorWindow;
 
 /**
- * BTDEX smart contract for on-ramp selling BURST (without security deposit).
+ * BTDEX smart contract for on-ramp selling BURST (without buyer security deposit).
  * 
  * This is another smart contract option which is actually never *taken* by buyers,
  * requiring no security deposit from the buyer side. Most of the logic is checked
- * outside the smart contract, by checking for standard (low fee) on-chain messages
- * sending zero BURST.
+ * outside the smart contract, by checking for standard (low fee) on-chain text 
+ * messages sending zero BURST.
  * 
  * Someone willing to sell BURST should create a contract instance and configure
  * it accordingly. For the on-ramp contracts there is a one time 1% fee charged
