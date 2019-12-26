@@ -6,15 +6,17 @@ import bt.Timestamp;
 import bt.ui.EmulatorWindow;
 
 /**
- * BTDEX smart contract for on-ramp selling BURST.
+ * BTDEX smart contract for on-ramp selling BURST (without security deposit).
  * 
- * This is another smart contract option which is actually never *taken* by buyers.
- * All in handled by standard (low fee) on-chain messages sending zero BURST.
+ * This is another smart contract option which is actually never *taken* by buyers,
+ * requiring no security deposit from the buyer side. Most of the logic is checked
+ * outside the smart contract, by checking for standard (low fee) on-chain messages
+ * sending zero BURST.
  * 
  * Someone willing to sell BURST should create a contract instance and configure
  * it accordingly. For the on-ramp contracts there is a one time 1% fee charged
- * only on withdraw. The same amount paid in BURST as fee is rewarded on TRT to
- * the contract creator and mediators.
+ * only on BURST withdraw. The same amount paid in BURST as fee is rewarded on
+ * TRT to the contract creator and mediators.
  * 
  * Occasional trade disputes are handled by a mediation system. Fees go to a
  * smart contract account to be distributed among TRT holders monthly.
@@ -64,7 +66,8 @@ public class SellOnRampContract extends Contract {
 	/**
 	 * Method to open/update a dispute.
 	 * 
-	 * For this particular contract, dispute is open by a mediator only.
+	 * For this particular contract with no security deposit, disputes are open by
+	 * a mediator only.
 	 * 
 	 * The creator cannot withdraw funds when a dispute is open.
 	 * 
