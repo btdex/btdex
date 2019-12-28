@@ -18,6 +18,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
@@ -203,6 +204,15 @@ public class Main extends JFrame implements ActionListener {
 		setLocationRelativeTo(null);
 		getContentPane().setVisible(false);
 		setVisible(true);
+		
+		// The testnet pre-release warning note
+		if(g.isTestnet()) {
+			JOptionPane.showMessageDialog(Main.this,
+					"This is the pre-release TESTNET version.\n"
+					+ "Main net release is scheduled for January 4th 2020.\n"
+					+ "Make sure you update your BTDEX client on that date.", "TESTNET version",
+					JOptionPane.INFORMATION_MESSAGE);
+		}
 
 		if(g.getAddress()==null) {			
 			// no public key or invalid, show the welcome screen
@@ -259,7 +269,7 @@ public class Main extends JFrame implements ActionListener {
 				}
 			}
 		}
-
+		
 		update();
 		Thread updateThread = new UpdateThread();
 		updateThread.start();
