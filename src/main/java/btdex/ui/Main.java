@@ -13,7 +13,9 @@ import java.io.IOException;
 import java.security.SecureRandom;
 
 import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -103,10 +105,13 @@ public class Main extends JFrame implements ActionListener {
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setOpaque(true);
 
+		JPanel topAll = new JPanel(new BorderLayout());
+
 		JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JPanel bottom = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-		getContentPane().add(top, BorderLayout.PAGE_START);
+		topAll.add(top, BorderLayout.CENTER);
+		getContentPane().add(topAll, BorderLayout.PAGE_START);
 		getContentPane().add(bottom, BorderLayout.PAGE_END);
 
 		marketComboBox = new JComboBox<Market>();
@@ -170,6 +175,12 @@ public class Main extends JFrame implements ActionListener {
 
 		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.LINK, ICON_SIZE, COLOR);
 		tabbedPane.addTab("TRANSACTIONS", transactionsIcon, transactionsPanel);
+		
+		if(getIconImage()!=null) {
+			JLabel iconLabel = new JLabel(new ImageIcon(getIconImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH)));
+			iconLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+			topAll.add(iconLabel, BorderLayout.LINE_END);
+		}
 
 		top.add(new Desc("Market", marketComboBox));
 		top.add(new Desc("Your Burst address", copyAddButton));
