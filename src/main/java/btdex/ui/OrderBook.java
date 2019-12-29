@@ -1,7 +1,6 @@
 package btdex.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -200,7 +199,7 @@ public class OrderBook extends JPanel {
 		market = m;
 
 		table = new JTable(model = new MyTableModel());
-		table.setRowHeight(table.getRowHeight()+7);
+		table.setRowHeight(table.getRowHeight()+10);
 		
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
 
