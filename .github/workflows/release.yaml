@@ -17,8 +17,10 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - name: Build with Gradle
+      - name: Build Jar
         run: ./gradlew shadowJar
+      - name: Build Exe
+        run: ./gradlew createExe
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1.0.0
@@ -32,8 +34,8 @@ jobs:
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-      - name: Upload Release Asset
-        id: upload-release-asset
+      - name: Upload Release Asset - Jar
+        id: upload-release-asset-jar
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -42,3 +44,13 @@ jobs:
           asset_path: ./build/libs/btdex-all.jar
           asset_name: btdex-${{ steps.get_version.outputs.VERSION }}.jar
           asset_content_type: application/java-archive
+      - name: Upload Release Asset - Exe
+        id: upload-release-asset-exe
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/launch4j/btdex.exe
+          asset_name: btdex-win-${{ steps.get_version.outputs.VERSION }}.exe
+          asset_content_type: application/vnd.microsoft.portable-executable
