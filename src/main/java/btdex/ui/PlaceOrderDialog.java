@@ -1,6 +1,7 @@
 package btdex.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -107,6 +108,11 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		if(isToken) {
 			buyToken = new JRadioButton(String.format("Buy %s with BURST", market), true);
 			sellToken = new JRadioButton(String.format("Sell %s for BURST", market));
+			
+			buyToken.setBackground(HistoryPanel.GREEN);
+			sellToken.setBackground(HistoryPanel.RED);
+			buyToken.setForeground(Color.WHITE);
+			sellToken.setForeground(Color.WHITE);
 
 			fieldPanel.add(buyToken);
 			fieldPanel.add(sellToken);

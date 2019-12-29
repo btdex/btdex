@@ -1,6 +1,7 @@
 package btdex.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -298,11 +299,15 @@ public class OrderBook extends JPanel {
 
 			if(o.getType() == AssetOrder.OrderType.BID) {
 				model.setValueAt("BUYING " + market, row, COL_SECURITY);
-				model.setValueAt(new ActionButton("SELL " + market, o, false), row, COL_ACTION);
+				JButton b = new ActionButton("SELL " + market, o, false);
+				b.setBackground(HistoryPanel.RED);
+				model.setValueAt(b, row, COL_ACTION);
 			}
 			else {
 				model.setValueAt("SELLING " + market, row, COL_SECURITY);
-				model.setValueAt(new ActionButton("BUY " + market, o, false), row, COL_ACTION);
+				JButton b = new ActionButton("BUY " + market, o, false);
+				b.setBackground(HistoryPanel.GREEN);
+				model.setValueAt(b, row, COL_ACTION);
 			}
 			
 			if(o.getAccountAddress().getSignedLongId() == g.getAddress().getSignedLongId())

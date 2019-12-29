@@ -44,7 +44,10 @@ public class HistoryPanel extends JPanel {
 	DefaultTableModel model;
 	Icon copyIcon;
 	JCheckBox listOnlyMine;
-
+	
+	public static final Color RED = Color.decode("#BE474A");
+	public static final Color GREEN = Color.decode("#29BF76");
+	
 	Market market = null;
 	private JFreeChart chart;
 
@@ -117,8 +120,8 @@ public class HistoryPanel extends JPanel {
 		chart.getXYPlot().getDomainAxis().setTickLabelPaint(table.getForeground());
 		chart.getXYPlot().getDomainAxis().setLabelPaint(table.getForeground());
 		CandlestickRenderer r = (CandlestickRenderer) chart.getXYPlot().getRenderer();
-		r.setDownPaint(Color.decode("#BE474A"));
-		r.setUpPaint(Color.decode("#29BF76"));
+		r.setDownPaint(RED);
+		r.setUpPaint(GREEN);
 		r.setSeriesPaint(0, table.getForeground());
 
 		JScrollPane scrollPane = new JScrollPane(table);
