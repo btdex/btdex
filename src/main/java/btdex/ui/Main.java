@@ -3,6 +3,7 @@ package btdex.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -10,10 +11,11 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.SecureRandom;
 
 import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -177,9 +179,21 @@ public class Main extends JFrame implements ActionListener {
 		tabbedPane.addTab("TRANSACTIONS", transactionsIcon, transactionsPanel);
 		
 		if(getIconImage()!=null) {
-			JLabel iconLabel = new JLabel(new ImageIcon(getIconImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH)));
-			iconLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-			topAll.add(iconLabel, BorderLayout.LINE_END);
+			JButton iconButton = new JButton(new ImageIcon(getIconImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH)));
+			topAll.add(iconButton, BorderLayout.LINE_END);
+			
+			iconButton.setToolTipText("Opens the BTDEX website");
+			iconButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						Desktop.getDesktop().browse(new URI("https://btdex.trade"));
+						Toast.makeText(Main.this, "Opening the BTDEX website", Toast.Style.SUCCESS).display();
+					} catch (Exception ex) {
+						Toast.makeText(Main.this, ex.getMessage(), Toast.Style.ERROR).display();
+					}
+				}
+			});
 		}
 
 		top.add(new Desc("Market", marketComboBox));
