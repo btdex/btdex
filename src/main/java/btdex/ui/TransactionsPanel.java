@@ -67,7 +67,7 @@ public class TransactionsPanel extends JPanel {
 		super(new BorderLayout());
 
 		table = new JTable(model = new MyTableModel());
-		table.setRowHeight(table.getRowHeight()+7);
+		table.setRowHeight(table.getRowHeight()+10);
 		
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
 

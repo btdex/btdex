@@ -199,7 +199,7 @@ public class OrderBook extends JPanel {
 		market = m;
 
 		table = new JTable(model = new MyTableModel());
-		table.setRowHeight(table.getRowHeight()+7);
+		table.setRowHeight(table.getRowHeight()+10);
 		
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
 
@@ -298,11 +298,15 @@ public class OrderBook extends JPanel {
 
 			if(o.getType() == AssetOrder.OrderType.BID) {
 				model.setValueAt("BUYING " + market, row, COL_SECURITY);
-				model.setValueAt(new ActionButton("SELL " + market, o, false), row, COL_ACTION);
+				JButton b = new ActionButton("SELL " + market, o, false);
+				b.setBackground(HistoryPanel.RED);
+				model.setValueAt(b, row, COL_ACTION);
 			}
 			else {
 				model.setValueAt("SELLING " + market, row, COL_SECURITY);
-				model.setValueAt(new ActionButton("BUY " + market, o, false), row, COL_ACTION);
+				JButton b = new ActionButton("BUY " + market, o, false);
+				b.setBackground(HistoryPanel.GREEN);
+				model.setValueAt(b, row, COL_ACTION);
 			}
 			
 			if(o.getAccountAddress().getSignedLongId() == g.getAddress().getSignedLongId())
