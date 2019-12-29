@@ -188,7 +188,7 @@ public class Main extends JFrame implements ActionListener {
 				public void actionPerformed(ActionEvent e) {
 					try {
 						Desktop.getDesktop().browse(new URI("https://btdex.trade"));
-						Toast.makeText(Main.this, "Opening the BTDEX website", Toast.Style.SUCCESS).display();
+						Toast.makeText(Main.this, "Opening the BTDEX website...", Toast.Style.SUCCESS).display();
 					} catch (Exception ex) {
 						Toast.makeText(Main.this, ex.getMessage(), Toast.Style.ERROR).display();
 					}
