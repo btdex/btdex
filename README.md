@@ -12,11 +12,17 @@ Clone this repository code and run the gradle build:
 
 `$ ./gradlew shadowJar`
 
-This will result on the following file:
+This will result on the following file (runnable with Java 8 or more recent):
 
 `build/libs/btdex-all.jar`
 
-Just run this file with Java 8 or more recent.
+To build the windows executable run:
+
+`$ ./gradlew createExe`
+
+This will result on the following file:
+
+`build/launch4j/btdex.exe`
 
 ## License
 [GPL license](LICENSE)
