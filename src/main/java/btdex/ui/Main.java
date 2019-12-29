@@ -32,6 +32,7 @@ import btdex.core.Market;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.AssetBalance;
 import burst.kit.entity.response.http.BRSError;
+import burst.kit.entity.response.http.SuggestFeeResponse;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
 import io.github.novacrypto.bip39.wordlists.English;
@@ -76,7 +77,7 @@ public class Main extends JFrame implements ActionListener {
 	private Market token;
 	
 	private long lastUpdated;
-
+	
 	public Main() {
 		super("BTDEX" + (Globals.getInstance().isTestnet() ? "-TESTNET" : ""));
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -318,6 +319,8 @@ public class Main extends JFrame implements ActionListener {
 					}
 					balanceLabel.setText(ContractState.format(balance));
 					lockedBalanceLabel.setText("+" + ContractState.format(locked) + " locked");
+					
+					g.updateSuggestedFee();
 					
 					transactionsPanel.update();
 					orderBook.update();

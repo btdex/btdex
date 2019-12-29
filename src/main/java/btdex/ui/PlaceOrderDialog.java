@@ -199,7 +199,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		content.add(centerPanel, BorderLayout.CENTER);
 		content.add(buttonPane, BorderLayout.PAGE_END);
 
-		suggestedFee = Globals.getInstance().getNS().suggestFee().blockingGet();
+		suggestedFee = Globals.getInstance().getSuggestedFee();
 		
 		if(order != null) {
 			// taking this order

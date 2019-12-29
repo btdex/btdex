@@ -25,6 +25,7 @@ import btdex.sc.SellContract;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
+import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.service.BurstNodeService;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -78,6 +79,7 @@ public class Globals {
 
 	boolean testnet = false;
 	private BurstAddress address;
+	private FeeSuggestion suggestedFee;
 
 	public static Compiler contract;
 
@@ -161,6 +163,14 @@ public class Globals {
 	
 	public Market getToken() {
 		return token;
+	}
+	
+	public void updateSuggestedFee() {
+		suggestedFee = getNS().suggestFee().blockingGet();
+	}
+	
+	public FeeSuggestion getSuggestedFee() {
+		return suggestedFee;
 	}
 
 	public void saveConfs() throws Exception {
