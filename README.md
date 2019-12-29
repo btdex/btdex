@@ -1,5 +1,7 @@
 # BTDEX - BlockTalk Decentralized Exchange reference client
 
+![](https://github.com//btdex/btdex/workflows/BTDEX%20Build/badge.svg)
+
 [BlockTalk](https://github.com/jjos2372/blocktalk) based decentralized exchange.
 
 This is in pre-alpha stage, use only on testnet. More instructions will come later.
