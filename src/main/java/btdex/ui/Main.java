@@ -32,7 +32,6 @@ import btdex.core.Market;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.AssetBalance;
 import burst.kit.entity.response.http.BRSError;
-import burst.kit.entity.response.http.SuggestFeeResponse;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
 import io.github.novacrypto.bip39.wordlists.English;
