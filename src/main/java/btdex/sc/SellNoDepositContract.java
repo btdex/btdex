@@ -6,7 +6,7 @@ import bt.Timestamp;
 import bt.ui.EmulatorWindow;
 
 /**
- * BTDEX smart contract for on-ramp selling BURST (without buyer security deposit).
+ * BTDEX special no-deposit smart contract.
  * 
  * This is another smart contract option which is actually never *taken* by buyers,
  * requiring no security deposit from the buyer side. Most of the logic is checked
@@ -14,7 +14,7 @@ import bt.ui.EmulatorWindow;
  * messages sending zero BURST.
  * 
  * Someone willing to sell BURST should create a contract instance and configure
- * it accordingly. For the on-ramp contracts there is a one time 1% fee charged
+ * it accordingly. For these no-deposit contracts there is a one time 1% fee charged
  * only on BURST withdraw. The same amount paid in BURST as fee is rewarded on
  * TRT to the contract creator and mediators.
  * 
@@ -23,7 +23,7 @@ import bt.ui.EmulatorWindow;
  *  
  * @author jjos
  */
-public class SellOnRampContract extends Contract {
+public class SellNoDepositContract extends Contract {
 
 	public static final long ACTIVATION_FEE = 20 * ONE_BURST;
 
@@ -66,7 +66,7 @@ public class SellOnRampContract extends Contract {
 	/**
 	 * Method to open/update a dispute.
 	 * 
-	 * For this particular contract with no security deposit, disputes are open by
+	 * For this particular contract with no buyer security deposit, disputes are open by
 	 * a mediator only.
 	 * 
 	 * The creator cannot withdraw funds when a dispute is open.
@@ -90,6 +90,6 @@ public class SellOnRampContract extends Contract {
 	}
 
 	public static void main(String[] args) {
-		new EmulatorWindow(SellOnRampContract.class);
+		new EmulatorWindow(SellNoDepositContract.class);
 	}
 }
