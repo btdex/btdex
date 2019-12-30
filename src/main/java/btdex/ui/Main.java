@@ -34,6 +34,7 @@ import btdex.core.Globals;
 import btdex.core.Market;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.AssetBalance;
+import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.http.BRSError;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
@@ -202,7 +203,7 @@ public class Main extends JFrame implements ActionListener {
 		balanceLabel.setToolTipText("Available balance");
 		balanceLabel.setFont(largeFont);
 		lockedBalanceLabel = new JLabel("0");
-		lockedBalanceLabel.setToolTipText("Amount locked in trades");
+		lockedBalanceLabel.setToolTipText("Amount locked in orders");
 		top.add(new Desc("Balance (BURST)", balanceLabel, lockedBalanceLabel));
 		top.add(new Desc("  ", sendButton));
 		top.add(new Desc("  ", createOfferButton));
@@ -330,6 +331,20 @@ public class Main extends JFrame implements ActionListener {
 					try {
 						Account ac = g.getNS().getAccount(g.getAddress()).blockingGet();
 						balance = ac.getBalance().longValue();
+						
+						// All bids also go to the locked
+						// TODO: iterate over all markets
+						AssetOrder[] bids = g.getNS().getBidOrders(token.getTokenID()).blockingGet();
+						for(AssetOrder o : bids) {
+							if(o.getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
+								continue;
+							long priceBurst = o.getPrice().longValue()/token.getFactor();
+							long amountToken = o.getQuantity().longValue();
+							
+							locked += (amountToken*priceBurst)/token.getFactor();
+						}
+						
+						balance -= locked;
 					}
 					catch (Exception e) {
 						if(e.getCause() instanceof BRSError) {
