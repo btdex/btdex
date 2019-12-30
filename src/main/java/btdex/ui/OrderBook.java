@@ -267,7 +267,7 @@ public class OrderBook extends JPanel {
 		orders.sort(new Comparator<AssetOrder>() {
 			@Override
 			public int compare(AssetOrder o1, AssetOrder o2) {
-				return (int)(o1.getPrice().doubleValue() - o2.getPrice().doubleValue());
+				return (int)(o1.getPrice().longValue() - o2.getPrice().longValue());
 			}
 		});
 
@@ -278,7 +278,7 @@ public class OrderBook extends JPanel {
 			AssetOrder o = orders.get(row);
 
 			// price always come in Burst, so no problem in this division using long's
-			long priceBurst = o.getPrice().longValue()/market.getFactor();
+			long priceBurst = o.getPrice().longValue()*market.getFactor();
 			long amountToken = o.getQuantity().longValue();
 			
 			if(priceBurst == 0 || amountToken == 0)

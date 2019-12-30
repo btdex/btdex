@@ -338,10 +338,10 @@ public class Main extends JFrame implements ActionListener {
 						for(AssetOrder o : bids) {
 							if(o.getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
 								continue;
-							long priceBurst = o.getPrice().longValue()/token.getFactor();
-							long amountToken = o.getQuantity().longValue();
+							long price = o.getPrice().longValue();
+							long amount = o.getQuantity().longValue();
 							
-							locked += (amountToken*priceBurst)/token.getFactor();
+							locked += amount*price;
 						}
 						
 						balance -= locked;
