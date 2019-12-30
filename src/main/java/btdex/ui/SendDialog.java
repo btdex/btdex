@@ -109,7 +109,7 @@ public class SendDialog extends JDialog implements ActionListener {
 		pack();
 
 		FeeSuggestion suggested = Globals.getInstance().getSuggestedFee();
-		int feeInt = (int)suggested.getPriorityFee().longValue()/FEE_QUANT;
+		int feeInt = (int)suggested.getStandardFee().longValue()/FEE_QUANT;
 		fee.getModel().setValue(feeInt);
 	}
 
