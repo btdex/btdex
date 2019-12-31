@@ -2,6 +2,7 @@ package btdex.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -289,6 +290,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 			// all set, lets place the order
 			try {
+				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
 				Single<byte[]> utx = null;
 				if(isToken) {
 					if(sellToken.isSelected())
@@ -315,6 +318,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			catch (Exception ex) {
 				Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
 			}
+			setCursor(Cursor.getDefaultCursor());
 		}
 	}
 
