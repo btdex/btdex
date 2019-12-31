@@ -212,7 +212,7 @@ public class Main extends JFrame implements ActionListener {
 		balanceLabelToken.setToolTipText("Available balance");
 		balanceLabelToken.setFont(largeFont);
 		balanceLabelTokenPending = new JLabel("0");
-		balanceLabelTokenPending.setToolTipText("Pending from trade rewards");
+		balanceLabelTokenPending.setToolTipText("Amount locked in orders or rewards pending");
 		top.add(tokenDesc = new Desc(String.format("Balance (%s)", token), balanceLabelToken, balanceLabelTokenPending));
 		top.add(new Desc("  ", sendButtonToken));
 //		top.add(new Desc("  ", createOfferButtonBTDEX));
@@ -368,16 +368,23 @@ public class Main extends JFrame implements ActionListener {
 						tokenMarket = m;
 					AssetBalance[] accounts = g.getNS().getAssetBalances(tokenMarket.getTokenID()).blockingGet();
 					long tokenBalance = 0;
+					long tokenLocked = 0;
 					for (AssetBalance aac : accounts) {
 						if(aac.getAccountAddress().getSignedLongId() == g.getAddress().getSignedLongId()) {
 							tokenBalance += aac.getBalance().longValue();
 						}
 					}
+					
+					AssetOrder[] asks = g.getNS().getAskOrders(token.getTokenID()).blockingGet();
+					for(AssetOrder o : asks) {
+						if(o.getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
+							continue;
+						tokenLocked += o.getQuantity().longValue();
+					}
+					tokenBalance -= tokenLocked;
+					
 					balanceLabelToken.setText(token.format(tokenBalance));
-					if(tokenMarket == token)
-						balanceLabelTokenPending.setText("+" + token.format(0) + " pending");
-					else
-						balanceLabelTokenPending.setText(" ");
+					balanceLabelTokenPending.setText("+ " + token.format(tokenLocked) + " locked");
 
 					nodeStatus.setText("Node: " + Globals.getConf().getProperty(Globals.PROP_NODE));
 				}
