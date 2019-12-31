@@ -252,8 +252,6 @@ public class Main extends JFrame implements ActionListener {
 		}
 		copyAddButton.setText(g.getAddress().getRawAddress());
 		copyAddButton.setClipboard(g.getAddress().getFullAddress());
-		getContentPane().setVisible(true);
-		
 
 		// check if this is a known account
 		try {
@@ -294,7 +292,8 @@ public class Main extends JFrame implements ActionListener {
 				}
 			}
 		}
-		
+
+		Toast.makeText(this, "Getting info from node...", Toast.Style.SUCCESS).display();
 		update();
 		Thread updateThread = new UpdateThread();
 		updateThread.start();
@@ -305,7 +304,6 @@ public class Main extends JFrame implements ActionListener {
 	 */
 	public void update() {
 		lastUpdated = 0;
-		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 	}
 
 	public class UpdateThread extends Thread {
@@ -390,7 +388,7 @@ public class Main extends JFrame implements ActionListener {
 
 					nodeStatus.setText(rex.getMessage());
 				}
-				setCursor(Cursor.getDefaultCursor());
+				getContentPane().setVisible(true);
 			}
 		}
 	};
