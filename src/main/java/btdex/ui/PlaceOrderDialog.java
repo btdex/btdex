@@ -215,7 +215,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			else
 				buyToken.setSelected(true);
 			
-			priceField.setText(ContractState.format(order.getPrice().longValue()/market.getFactor()));
+			priceField.setText(ContractState.format(order.getPrice().longValue()*market.getFactor()));
 			amountField.setText(market.format(order.getQuantity().longValue()));
 			somethingChanged();
 		}
