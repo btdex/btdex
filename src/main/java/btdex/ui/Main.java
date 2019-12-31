@@ -172,8 +172,8 @@ public class Main extends JFrame implements ActionListener {
 		Icon tradeIcon = IconFontSwing.buildIcon(FontAwesome.LINE_CHART, ICON_SIZE, COLOR);
 		tabbedPane.addTab("TRADE HISTORY", tradeIcon, historyPanel);
 
-		Icon accountIcon = IconFontSwing.buildIcon(FontAwesome.USER_CIRCLE, ICON_SIZE, COLOR);
-		tabbedPane.addTab("ACCOUNTS", accountIcon, accountsPanel);
+//		Icon accountIcon = IconFontSwing.buildIcon(FontAwesome.USER_CIRCLE, ICON_SIZE, COLOR);
+//		tabbedPane.addTab("ACCOUNTS", accountIcon, accountsPanel);
 
 		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.LINK, ICON_SIZE, COLOR);
 		tabbedPane.addTab("TRANSACTIONS", transactionsIcon, transactionsPanel);
@@ -254,10 +254,12 @@ public class Main extends JFrame implements ActionListener {
 		copyAddButton.setClipboard(g.getAddress().getFullAddress());
 
 		// check if this is a known account
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		try {
 			g.getNS().getAccount(g.getAddress()).blockingGet();
 		}
 		catch (Exception e) {
+			setCursor(Cursor.getDefaultCursor());
 			if(e.getCause() instanceof BRSError) {
 				BRSError error = (BRSError) e.getCause();
 				if(error.getCode() == 5) {
@@ -287,11 +289,11 @@ public class Main extends JFrame implements ActionListener {
 							e1.printStackTrace();
 							Toast.makeText(this, e1.getLocalizedMessage(), Toast.Style.ERROR).display();
 						}
-						setCursor(Cursor.getDefaultCursor());
 					//}
 				}
 			}
 		}
+		setCursor(Cursor.getDefaultCursor());
 
 		Toast.makeText(this, "Getting info from node...", Toast.Style.SUCCESS).display();
 		update();
