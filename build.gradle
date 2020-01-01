@@ -4,6 +4,7 @@ plugins {
   id 'java'
   id 'application'
   id 'edu.sc.seis.launch4j' version '2.4.6'
+  id 'org.gradle.crypto.checksum' version '1.1.0'
 }
 
 // In this section you declare where to find the dependencies of your project
@@ -47,10 +48,22 @@ configurations.all {
 // Define the main class for the application
 mainClassName = 'BTDEX'
 
-launch4j {
+createExe {
     outfile = 'btdex.exe'
     mainClassName = project.mainClassName
     copyConfigurable = project.tasks.shadowJar.outputs.files
     jar = "lib/${project.tasks.shadowJar.archiveName}"
 }
+
+import org.gradle.crypto.checksum.Checksum
+
+task createJarChecksum(type: Checksum, dependsOn: shadowJar) {
+  files = project.tasks.shadowJar.outputs.files
+}
+shadowJar.finalizedBy(createJarChecksum)
+
+task createExeChecksum(type: Checksum, dependsOn: createExe) {
+  files = files('build/launch4j/btdex.exe')
+}
+createExe.finalizedBy createExeChecksum
 
