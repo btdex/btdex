@@ -1,6 +1,7 @@
 package btdex.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -109,7 +110,7 @@ public class SendDialog extends JDialog implements ActionListener {
 		pack();
 
 		FeeSuggestion suggested = Globals.getInstance().getSuggestedFee();
-		int feeInt = (int)suggested.getPriorityFee().longValue()/FEE_QUANT;
+		int feeInt = (int)suggested.getStandardFee().longValue()/FEE_QUANT;
 		fee.getModel().setValue(feeInt);
 	}
 
@@ -159,6 +160,8 @@ public class SendDialog extends JDialog implements ActionListener {
 			else {
 				long feePlanck = FEE_QUANT * fee.getValue();
 
+				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
 				try {
 					// all set, lets make the transfer
 					Single<byte[]> utx = null;
@@ -186,6 +189,7 @@ public class SendDialog extends JDialog implements ActionListener {
 				catch (Exception ex) {
 					Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
 				}
+				setCursor(Cursor.getDefaultCursor());
 			}
 		}
 	}

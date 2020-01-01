@@ -12,7 +12,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.SecureRandom;
 
 import javax.imageio.ImageIO;
@@ -30,11 +29,13 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import com.bulenkov.darcula.DarculaLaf;
 
+import bt.BT;
 import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.AssetBalance;
+import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.http.BRSError;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
@@ -56,7 +57,10 @@ public class Main extends JFrame implements ActionListener {
 
 	JTabbedPane tabbedPane;
 
-	JLabel nodeStatus;
+	JLabel statusLabel;
+	JButton nodeButton;
+	
+	Icon ICON_CONNECTED, ICON_DISCONNECTED;
 	
 	private JLabel balanceLabel;
 	private JLabel lockedBalanceLabel;
@@ -132,6 +136,9 @@ public class Main extends JFrame implements ActionListener {
 		transactionsPanel = new TransactionsPanel();
 		historyPanel = new HistoryPanel(this, (Market) marketComboBox.getSelectedItem());
 		accountsPanel = new AccountsPanel(this);
+		
+		ICON_CONNECTED = IconFontSwing.buildIcon(FontAwesome.WIFI, ICON_SIZE, COLOR);
+		ICON_DISCONNECTED = IconFontSwing.buildIcon(FontAwesome.EXCLAMATION, ICON_SIZE, COLOR);
 
 		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, ICON_SIZE, COLOR);
 		copyAddButton = new CopyToClipboardButton("", copyIcon);
@@ -172,8 +179,8 @@ public class Main extends JFrame implements ActionListener {
 		Icon tradeIcon = IconFontSwing.buildIcon(FontAwesome.LINE_CHART, ICON_SIZE, COLOR);
 		tabbedPane.addTab("TRADE HISTORY", tradeIcon, historyPanel);
 
-		Icon accountIcon = IconFontSwing.buildIcon(FontAwesome.USER_CIRCLE, ICON_SIZE, COLOR);
-		tabbedPane.addTab("ACCOUNTS", accountIcon, accountsPanel);
+//		Icon accountIcon = IconFontSwing.buildIcon(FontAwesome.USER_CIRCLE, ICON_SIZE, COLOR);
+//		tabbedPane.addTab("ACCOUNTS", accountIcon, accountsPanel);
 
 		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.LINK, ICON_SIZE, COLOR);
 		tabbedPane.addTab("TRANSACTIONS", transactionsIcon, transactionsPanel);
@@ -203,7 +210,7 @@ public class Main extends JFrame implements ActionListener {
 		balanceLabel.setToolTipText("Available balance");
 		balanceLabel.setFont(largeFont);
 		lockedBalanceLabel = new JLabel("0");
-		lockedBalanceLabel.setToolTipText("Amount locked in trades");
+		lockedBalanceLabel.setToolTipText("Amount locked in orders");
 		top.add(new Desc("Balance (BURST)", balanceLabel, lockedBalanceLabel));
 		top.add(new Desc("  ", sendButton));
 		top.add(new Desc("  ", createOfferButton));
@@ -212,7 +219,7 @@ public class Main extends JFrame implements ActionListener {
 		balanceLabelToken.setToolTipText("Available balance");
 		balanceLabelToken.setFont(largeFont);
 		balanceLabelTokenPending = new JLabel("0");
-		balanceLabelTokenPending.setToolTipText("Pending from trade rewards");
+		balanceLabelTokenPending.setToolTipText("Amount locked in orders or rewards pending");
 		top.add(tokenDesc = new Desc(String.format("Balance (%s)", token), balanceLabelToken, balanceLabelTokenPending));
 		top.add(new Desc("  ", sendButtonToken));
 //		top.add(new Desc("  ", createOfferButtonBTDEX));
@@ -220,9 +227,13 @@ public class Main extends JFrame implements ActionListener {
 		
 		top.add(new Desc("  ", settingsButton));
 
-		nodeStatus = new JLabel();
+		nodeButton = new JButton(g.getNode());
+		nodeButton.setToolTipText("Select node...");
+		nodeButton.addActionListener(this);
+		statusLabel = new JLabel();
 
-		bottom.add(nodeStatus);
+		bottom.add(nodeButton);
+		bottom.add(statusLabel);
 
 		pack();
 		setMinimumSize(new Dimension(1024, 600));
@@ -252,14 +263,14 @@ public class Main extends JFrame implements ActionListener {
 		}
 		copyAddButton.setText(g.getAddress().getRawAddress());
 		copyAddButton.setClipboard(g.getAddress().getFullAddress());
-		getContentPane().setVisible(true);
-		
 
 		// check if this is a known account
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		try {
 			g.getNS().getAccount(g.getAddress()).blockingGet();
 		}
 		catch (Exception e) {
+			setCursor(Cursor.getDefaultCursor());
 			if(e.getCause() instanceof BRSError) {
 				BRSError error = (BRSError) e.getCause();
 				if(error.getCode() == 5) {
@@ -289,12 +300,15 @@ public class Main extends JFrame implements ActionListener {
 							e1.printStackTrace();
 							Toast.makeText(this, e1.getLocalizedMessage(), Toast.Style.ERROR).display();
 						}
-						setCursor(Cursor.getDefaultCursor());
 					//}
 				}
 			}
 		}
+		setCursor(Cursor.getDefaultCursor());
 		
+		statusLabel.setText(g.getNode());
+
+		Toast.makeText(this, "Getting info from node...", Toast.Style.SUCCESS).display();
 		update();
 		Thread updateThread = new UpdateThread();
 		updateThread.start();
@@ -305,7 +319,6 @@ public class Main extends JFrame implements ActionListener {
 	 */
 	public void update() {
 		lastUpdated = 0;
-		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 	}
 
 	public class UpdateThread extends Thread {
@@ -331,6 +344,20 @@ public class Main extends JFrame implements ActionListener {
 					try {
 						Account ac = g.getNS().getAccount(g.getAddress()).blockingGet();
 						balance = ac.getBalance().longValue();
+						
+						// All bids also go to the locked
+						// TODO: iterate over all markets
+						AssetOrder[] bids = g.getNS().getBidOrders(token.getTokenID()).blockingGet();
+						for(AssetOrder o : bids) {
+							if(o.getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
+								continue;
+							long price = o.getPrice().longValue();
+							long amount = o.getQuantity().longValue();
+							
+							locked += amount*price;
+						}
+						
+						balance -= locked;
 					}
 					catch (Exception e) {
 						if(e.getCause() instanceof BRSError) {
@@ -356,27 +383,36 @@ public class Main extends JFrame implements ActionListener {
 						tokenMarket = m;
 					AssetBalance[] accounts = g.getNS().getAssetBalances(tokenMarket.getTokenID()).blockingGet();
 					long tokenBalance = 0;
+					long tokenLocked = 0;
 					for (AssetBalance aac : accounts) {
 						if(aac.getAccountAddress().getSignedLongId() == g.getAddress().getSignedLongId()) {
 							tokenBalance += aac.getBalance().longValue();
 						}
 					}
+					
+					AssetOrder[] asks = g.getNS().getAskOrders(token.getTokenID()).blockingGet();
+					for(AssetOrder o : asks) {
+						if(o.getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
+							continue;
+						tokenLocked += o.getQuantity().longValue();
+					}
+					tokenBalance -= tokenLocked;
+					
 					balanceLabelToken.setText(token.format(tokenBalance));
-					if(tokenMarket == token)
-						balanceLabelTokenPending.setText("+" + token.format(0) + " pending");
-					else
-						balanceLabelTokenPending.setText(" ");
+					balanceLabelTokenPending.setText("+ " + token.format(tokenLocked) + " locked");
 
-					nodeStatus.setText("Node: " + Globals.getConf().getProperty(Globals.PROP_NODE));
+					statusLabel.setText("");
+					nodeButton.setIcon(ICON_CONNECTED);
 				}
 				catch (RuntimeException rex) {
 					rex.printStackTrace();
 					
 					Toast.makeText(Main.this, rex.getMessage(), Toast.Style.ERROR).display();
 
-					nodeStatus.setText(rex.getMessage());
+					nodeButton.setIcon(ICON_DISCONNECTED);
+					statusLabel.setText(rex.getMessage());
 				}
-				setCursor(Cursor.getDefaultCursor());
+				getContentPane().setVisible(true);
 			}
 		}
 	};
@@ -439,6 +475,30 @@ public class Main extends JFrame implements ActionListener {
 
 			dlg.setLocationRelativeTo(Main.this);
 			dlg.setVisible(true);			
+		}
+		else if (e.getSource() == nodeButton) {
+			
+			String[] list = {
+					BT.NODE_TESTNET, BT.NODE_TESTNET_MEGASH, BT.NODE_LOCAL_TESTNET
+					};
+			
+			JComboBox<String> nodeComboBox = new JComboBox<String>(list);
+			nodeComboBox.setEditable(true);
+			int ret = JOptionPane.showConfirmDialog(this, nodeComboBox, "Select node", JOptionPane.OK_CANCEL_OPTION);
+			
+			if(ret == JOptionPane.OK_OPTION) {
+				Globals g = Globals.getInstance();
+				g.setNode(nodeComboBox.getSelectedItem().toString());
+				try {
+					g.saveConfs();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					Toast.makeText(this, ex.getMessage(), Toast.Style.ERROR).display();
+				}
+				
+				nodeButton.setText(g.getNode());
+				update();
+			}
 		}
 	}
 }
