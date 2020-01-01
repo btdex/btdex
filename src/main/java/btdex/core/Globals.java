@@ -47,6 +47,7 @@ public class Globals {
 	static final String DEF_CONF_FILE = "config.properties";
 
 	public static final String PROP_NODE = "node";
+	public static final String PROP_TESTNET = "testnet";
 	public static final String PROP_ACCOUNT = "account";
 	public static final String PROP_ENC_PRIVKEY = "encPrivKey";
 	public static final String PROP_PUBKEY = "pubKey";
@@ -129,6 +130,7 @@ public class Globals {
 			markets.add(new MarketXMR());
 
 			// TODO: default node on testnet for now
+			testnet = Boolean.parseBoolean(conf.getProperty(PROP_TESTNET, "true"));
 			setNode(conf.getProperty(PROP_NODE, BT.NODE_TESTNET));
 
 			String publicKeyStr = conf.getProperty(Globals.PROP_PUBKEY);
@@ -163,6 +165,10 @@ public class Globals {
 	
 	public Market getToken() {
 		return token;
+	}
+	
+	public String getNode() {
+		return conf.getProperty(Globals.PROP_NODE);
 	}
 	
 	public void updateSuggestedFee() {
@@ -297,9 +303,6 @@ public class Globals {
 
 	public void setNode(String node) {
 		conf.setProperty("node", node);
-		if(node.contains("6876")) {
-			testnet = true;
-		}
 
 		NS = BurstNodeService.getInstance(node);
 	}

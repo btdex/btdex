@@ -29,6 +29,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import com.bulenkov.darcula.DarculaLaf;
 
+import bt.BT;
 import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
@@ -56,7 +57,10 @@ public class Main extends JFrame implements ActionListener {
 
 	JTabbedPane tabbedPane;
 
-	JLabel nodeStatus;
+	JLabel statusLabel;
+	JButton nodeButton;
+	
+	Icon ICON_CONNECTED, ICON_DISCONNECTED;
 	
 	private JLabel balanceLabel;
 	private JLabel lockedBalanceLabel;
@@ -132,6 +136,9 @@ public class Main extends JFrame implements ActionListener {
 		transactionsPanel = new TransactionsPanel();
 		historyPanel = new HistoryPanel(this, (Market) marketComboBox.getSelectedItem());
 		accountsPanel = new AccountsPanel(this);
+		
+		ICON_CONNECTED = IconFontSwing.buildIcon(FontAwesome.WIFI, ICON_SIZE, COLOR);
+		ICON_DISCONNECTED = IconFontSwing.buildIcon(FontAwesome.EXCLAMATION, ICON_SIZE, COLOR);
 
 		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, ICON_SIZE, COLOR);
 		copyAddButton = new CopyToClipboardButton("", copyIcon);
@@ -220,9 +227,13 @@ public class Main extends JFrame implements ActionListener {
 		
 		top.add(new Desc("  ", settingsButton));
 
-		nodeStatus = new JLabel();
+		nodeButton = new JButton(g.getNode());
+		nodeButton.setToolTipText("Select node...");
+		nodeButton.addActionListener(this);
+		statusLabel = new JLabel();
 
-		bottom.add(nodeStatus);
+		bottom.add(nodeButton);
+		bottom.add(statusLabel);
 
 		pack();
 		setMinimumSize(new Dimension(1024, 600));
@@ -294,6 +305,8 @@ public class Main extends JFrame implements ActionListener {
 			}
 		}
 		setCursor(Cursor.getDefaultCursor());
+		
+		statusLabel.setText(g.getNode());
 
 		Toast.makeText(this, "Getting info from node...", Toast.Style.SUCCESS).display();
 		update();
@@ -388,14 +401,16 @@ public class Main extends JFrame implements ActionListener {
 					balanceLabelToken.setText(token.format(tokenBalance));
 					balanceLabelTokenPending.setText("+ " + token.format(tokenLocked) + " locked");
 
-					nodeStatus.setText("Node: " + Globals.getConf().getProperty(Globals.PROP_NODE));
+					statusLabel.setText("");
+					nodeButton.setIcon(ICON_CONNECTED);
 				}
 				catch (RuntimeException rex) {
 					rex.printStackTrace();
 					
 					Toast.makeText(Main.this, rex.getMessage(), Toast.Style.ERROR).display();
 
-					nodeStatus.setText(rex.getMessage());
+					nodeButton.setIcon(ICON_DISCONNECTED);
+					statusLabel.setText(rex.getMessage());
 				}
 				getContentPane().setVisible(true);
 			}
@@ -460,6 +475,30 @@ public class Main extends JFrame implements ActionListener {
 
 			dlg.setLocationRelativeTo(Main.this);
 			dlg.setVisible(true);			
+		}
+		else if (e.getSource() == nodeButton) {
+			
+			String[] list = {
+					BT.NODE_TESTNET, BT.NODE_TESTNET_MEGASH, BT.NODE_LOCAL_TESTNET
+					};
+			
+			JComboBox<String> nodeComboBox = new JComboBox<String>(list);
+			nodeComboBox.setEditable(true);
+			int ret = JOptionPane.showConfirmDialog(this, nodeComboBox, "Select node", JOptionPane.OK_CANCEL_OPTION);
+			
+			if(ret == JOptionPane.OK_OPTION) {
+				Globals g = Globals.getInstance();
+				g.setNode(nodeComboBox.getSelectedItem().toString());
+				try {
+					g.saveConfs();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					Toast.makeText(this, ex.getMessage(), Toast.Style.ERROR).display();
+				}
+				
+				nodeButton.setText(g.getNode());
+				update();
+			}
 		}
 	}
 }
