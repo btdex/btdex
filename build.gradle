@@ -5,6 +5,7 @@ plugins {
   id 'application'
   id 'edu.sc.seis.launch4j' version '2.4.6'
   id 'org.gradle.crypto.checksum' version '1.1.0'
+  id 'com.palantir.git-version' version '0.12.2'
 }
 
 // In this section you declare where to find the dependencies of your project
@@ -23,7 +24,8 @@ allprojects {
 dependencies {
     implementation 'com.github.burst-apps-team:burstkit4j:734c9f83bf'
     //implementation 'com.github.jjos2372:burstkit4j:f1364a8ded'
-    implementation 'com.github.jjos2372:blocktalk:-SNAPSHOT'
+    //implementation 'com.github.jjos2372:blocktalk:-SNAPSHOT'
+    implementation 'com.github.jjos2372:blocktalk:415d8a8f78'
 
     implementation 'com.github.jiconfont:jiconfont-swing:1.0.0'
     implementation 'com.github.jiconfont:jiconfont-font_awesome:4.7.0.1'
@@ -42,14 +44,22 @@ dependencies {
 
 // If we want to refresh our libraries (get a new snapshot)
 configurations.all {
-    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    // resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
 // Define the main class for the application
 mainClassName = 'BTDEX'
 
+def details = versionDetails()
+
 createExe {
     outfile = 'btdex.exe'
+    icon = "${projectDir}/btdex.ico"
+    jreMinVersion = '1.8.0'
+    copyright = 'BTDEX'
+    companyName = 'https://btdex.trade'
+    textVersion = details.lastTag
+    
     mainClassName = project.mainClassName
     copyConfigurable = project.tasks.shadowJar.outputs.files
     jar = "lib/${project.tasks.shadowJar.archiveName}"
