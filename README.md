@@ -1,12 +1,19 @@
 # BTDEX - BlockTalk Decentralized Exchange reference client
 
 ![](https://github.com//btdex/btdex/workflows/BTDEX%20Build/badge.svg)
+[![GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 
-[BlockTalk](https://github.com/jjos2372/blocktalk) based decentralized exchange.
+BTDEX is a decentralized exchange system running on the [Burst](https://www.burst-coin.org/) blockchain.
+It implements a unique non-custodial exchange method for cryptocurrencies and conventional fiat currencies based on [BlockTalk](https://github.com/jjos2372/blocktalk) Smart Contracts and Burstcoin on-chain encrypted messages.
+The exchange method is serverless and fees are distributed among Trade Token (TRT) holders.
 
-This is in pre-alpha stage, use only on testnet. More instructions will come later.
+BTDEX is currently on *initial token distribution*, more details at [https://btdex.trade](https://btdex.trade).
 
-## Compile
+## Download
+
+Check the [releases](https://github.com/btdex/btdex/releases) and get the latest one.
+
+## Compile from source
 
 Clone this repository code and run the gradle build:
 
