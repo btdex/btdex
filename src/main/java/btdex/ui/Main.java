@@ -308,7 +308,7 @@ public class Main extends JFrame implements ActionListener {
 		
 		statusLabel.setText(g.getNode());
 
-		Toast.makeText(this, "Getting info from node...", Toast.Style.SUCCESS).display();
+		Toast.makeText(this, "Getting info from node...", 8000, Toast.Style.SUCCESS).display();
 		update();
 		Thread updateThread = new UpdateThread();
 		updateThread.start();
@@ -478,16 +478,19 @@ public class Main extends JFrame implements ActionListener {
 		}
 		else if (e.getSource() == nodeButton) {
 			
-			String[] list = {
-					BT.NODE_TESTNET, BT.NODE_TESTNET_MEGASH, BT.NODE_LOCAL_TESTNET
-					};
+			Globals g = Globals.getInstance();
+			
+			String[] list = {BT.NODE_BURSTCOIN_RO, BT.NODE_BURST_ALLIANCE, BT.NODE_BURSTCOIN_RO2,
+					BT.NODE_BURST_TEAM, BT.NODE_LOCAL_TESTNET, "http://localhost:8125"};
+			if(g.isTestnet()){
+				list = new String[]{BT.NODE_TESTNET, BT.NODE_TESTNET_MEGASH, BT.NODE_LOCAL_TESTNET };
+			}
 			
 			JComboBox<String> nodeComboBox = new JComboBox<String>(list);
 			nodeComboBox.setEditable(true);
 			int ret = JOptionPane.showConfirmDialog(this, nodeComboBox, "Select node", JOptionPane.OK_CANCEL_OPTION);
 			
 			if(ret == JOptionPane.OK_OPTION) {
-				Globals g = Globals.getInstance();
 				g.setNode(nodeComboBox.getSelectedItem().toString());
 				try {
 					g.saveConfs();
