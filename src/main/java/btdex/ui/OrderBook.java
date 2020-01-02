@@ -278,18 +278,15 @@ public class OrderBook extends JPanel {
 			AssetOrder o = orders.get(row);
 
 			// price always come in Burst, so no problem in this division using long's
-			long priceBurst = o.getPrice().longValue()*market.getFactor();
+			long price = o.getPrice().longValue();
 			long amountToken = o.getQuantity().longValue();
 			
-			if(priceBurst == 0 || amountToken == 0)
+			if(price == 0 || amountToken == 0)
 				continue;
 
-//			long priceToken = (100000000L)/priceBurst;
-//			long amountPlank = (amountToken * priceBurst);
-
-			model.setValueAt(ContractState.format(priceBurst), row, COL_PRICE);
+			model.setValueAt(ContractState.format(price*market.getFactor()), row, COL_PRICE);
 			model.setValueAt(market.format(amountToken), row, COL_SIZE);
-			model.setValueAt(ContractState.format((amountToken*priceBurst)/market.getFactor()), row, COL_TOTAL);
+			model.setValueAt(ContractState.format(amountToken*price), row, COL_TOTAL);
 
 			model.setValueAt(new CopyToClipboardButton(o.getId().getID(), copyIcon, BUTTON_EDITOR), row, COL_CONTRACT);
 			model.setValueAt(new CopyToClipboardButton(
