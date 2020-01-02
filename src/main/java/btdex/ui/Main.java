@@ -265,6 +265,7 @@ public class Main extends JFrame implements ActionListener {
 
 		// check if this is a known account
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		boolean newAccount = false;
 		try {
 			g.getNS().getAccount(g.getAddress()).blockingGet();
 		}
@@ -273,6 +274,7 @@ public class Main extends JFrame implements ActionListener {
 			if(e.getCause() instanceof BRSError) {
 				BRSError error = (BRSError) e.getCause();
 				if(error.getCode() == 5) {
+					newAccount = true;
 					// unknown account
 					/* TODO: think about this auto-activation thing
 					int ret = JOptionPane.showConfirmDialog(Main.this,
@@ -307,7 +309,8 @@ public class Main extends JFrame implements ActionListener {
 		
 		statusLabel.setText(g.getNode());
 
-		Toast.makeText(this, "Getting info from node...", 8000, Toast.Style.SUCCESS).display();
+		if(!newAccount)
+			Toast.makeText(this, "Getting info from node...", 8000, Toast.Style.SUCCESS).display();
 		update();
 		Thread updateThread = new UpdateThread();
 		updateThread.start();
