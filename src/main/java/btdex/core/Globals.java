@@ -129,9 +129,8 @@ public class Globals {
 			markets.add(new MarketLTC());
 			markets.add(new MarketXMR());
 
-			// TODO: default node on testnet for now
-			testnet = Boolean.parseBoolean(conf.getProperty(PROP_TESTNET, "true"));
-			setNode(conf.getProperty(PROP_NODE, BT.NODE_TESTNET));
+			testnet = Boolean.parseBoolean(conf.getProperty(PROP_TESTNET, "false"));
+			setNode(conf.getProperty(PROP_NODE, isTestnet() ? BT.NODE_TESTNET : BT.NODE_BURSTCOIN_RO));
 
 			String publicKeyStr = conf.getProperty(Globals.PROP_PUBKEY);
 			if(publicKeyStr == null || publicKeyStr.length()!=64) {
@@ -302,7 +301,7 @@ public class Globals {
 	}
 
 	public void setNode(String node) {
-		conf.setProperty("node", node);
+		conf.setProperty(PROP_NODE, node);
 
 		NS = BurstNodeService.getInstance(node);
 	}

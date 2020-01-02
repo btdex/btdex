@@ -22,7 +22,7 @@ public class MarketTRT extends Market {
 		if(Globals.getInstance().isTestnet())
 			return BurstID.fromLong("13868324881938171674");
 		
-		return BurstID.fromLong("107507544026763809");
+		return BurstID.fromLong("12402415494995249540");
 	}
 	
 	private static final NumberFormat NF = NumberFormat.getInstance(Locale.ENGLISH);

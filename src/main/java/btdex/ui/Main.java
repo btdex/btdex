@@ -236,7 +236,7 @@ public class Main extends JFrame implements ActionListener {
 		bottom.add(statusLabel);
 
 		pack();
-		setMinimumSize(new Dimension(1024, 600));
+		setMinimumSize(new Dimension(1200, 600));
 		setLocationRelativeTo(null);
 		getContentPane().setVisible(false);
 		setVisible(true);
@@ -244,9 +244,8 @@ public class Main extends JFrame implements ActionListener {
 		// The testnet pre-release warning note
 		if(g.isTestnet()) {
 			JOptionPane.showMessageDialog(Main.this,
-					"This is the pre-release TESTNET version.\n"
-					+ "Main net release is scheduled for January 4th 2020.\n"
-					+ "Make sure you update your BTDEX client on that date.", "TESTNET version",
+					"You selected to run on TESTNET.\n"
+					+ "Make sure you are connected to a testnet node!\n", "TESTNET version",
 					JOptionPane.INFORMATION_MESSAGE);
 		}
 
