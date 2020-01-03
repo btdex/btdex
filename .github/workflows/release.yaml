@@ -53,6 +53,7 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
           asset_path: ./build/checksums/btdex-all.jar.sha256
           asset_name: btdex-all-${{ steps.get_version.outputs.VERSION }}.jar.sha256
+          asset_content_type: text/plain
       - name: Upload Release Asset - Exe
         id: upload-release-asset-exe
         uses: actions/upload-release-asset@v1.0.1
@@ -72,4 +73,6 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
           asset_path: ./build/checksums/btdex.exe.sha256
           asset_name: btdex-win-${{ steps.get_version.outputs.VERSION }}.exe.sha256
+          asset_content_type: text/plain
+          
           
