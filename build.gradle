@@ -52,6 +52,13 @@ mainClassName = 'BTDEX'
 
 def details = versionDetails()
 
+task versionProp()  {
+    doFirst {
+        new File(sourceSets.main.output.resourcesDir, "/version.properties").text = "version:${details.lastTag}"
+    }
+}
+shadowJar.dependsOn versionProp
+
 createExe {
     outfile = 'btdex.exe'
     icon = "${projectDir}/btdex.ico"

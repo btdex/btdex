@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
 import java.security.SecureRandom;
+import java.util.Properties;
 
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
@@ -24,6 +25,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -88,10 +90,15 @@ public class Main extends JFrame implements ActionListener {
 	public Main() {
 		super("BTDEX" + (Globals.getInstance().isTestnet() ? "-TESTNET" : ""));
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		String version = "";
 		
 		try {
 			Image image = ImageIO.read(Main.class.getResourceAsStream("/icon.png"));
 			setIconImage(image);
+			
+			Properties versionProp = new Properties();
+			versionProp.load(Main.class.getResourceAsStream("/version.properties"));
+			version = versionProp.getProperty("version");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -112,13 +119,29 @@ public class Main extends JFrame implements ActionListener {
 		tabbedPane.setOpaque(true);
 
 		JPanel topAll = new JPanel(new BorderLayout());
+		JPanel bottomAll = new JPanel(new BorderLayout());
 
 		JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JPanel bottom = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
 		topAll.add(top, BorderLayout.CENTER);
 		getContentPane().add(topAll, BorderLayout.PAGE_START);
-		getContentPane().add(bottom, BorderLayout.PAGE_END);
+		getContentPane().add(bottomAll, BorderLayout.PAGE_END);
+				
+		JPanel bottomRight = new JPanel();
+		bottomAll.add(bottomRight, BorderLayout.LINE_END);
+		bottomAll.add(bottom, BorderLayout.CENTER);
+		
+		JButton versionButton = new JButton(version);
+		versionButton.setToolTipText("Check for a new release...");
+		versionButton.setVerticalAlignment(SwingConstants.CENTER);
+		versionButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				browse("https://github.com/btdex/btdex/releases");
+			}
+		});
+		bottomRight.add(versionButton);
 
 		marketComboBox = new JComboBox<Market>();
 		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, ICON_SIZE);
@@ -193,12 +216,7 @@ public class Main extends JFrame implements ActionListener {
 			iconButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					try {
-						Desktop.getDesktop().browse(new URI("https://btdex.trade"));
-						Toast.makeText(Main.this, "Opening the BTDEX website...", Toast.Style.SUCCESS).display();
-					} catch (Exception ex) {
-						Toast.makeText(Main.this, ex.getMessage(), Toast.Style.ERROR).display();
-					}
+					browse("https://btdex.trade");
 				}
 			});
 		}
@@ -314,6 +332,15 @@ public class Main extends JFrame implements ActionListener {
 		update();
 		Thread updateThread = new UpdateThread();
 		updateThread.start();
+	}
+	
+	private void browse(String url) {
+		try {
+			Desktop.getDesktop().browse(new URI(url));
+			Toast.makeText(Main.this, "Opening " + url, Toast.Style.SUCCESS).display();
+		} catch (Exception ex) {
+			Toast.makeText(Main.this, ex.getMessage(), Toast.Style.ERROR).display();
+		}
 	}
 	
 	/**
