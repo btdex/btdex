@@ -131,7 +131,14 @@ public class Main extends JFrame implements ActionListener {
 		bottomAll.add(bottomRight, BorderLayout.LINE_END);
 		bottomAll.add(bottom, BorderLayout.CENTER);
 		
-		JButton versionButton = new JButton(version);
+		marketComboBox = new JComboBox<Market>();
+		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, ICON_SIZE);
+		Color COLOR = marketComboBox.getForeground();
+		marketComboBox.setToolTipText("Select market");
+		marketComboBox.setFont(largeFont);
+		
+		Icon versionIcon = IconFontSwing.buildIcon(FontAwesome.CODE_FORK, ICON_SIZE, COLOR);
+		JButton versionButton = new JButton(version, versionIcon);
 		versionButton.setToolTipText("Check for a new release...");
 		versionButton.setVerticalAlignment(SwingConstants.CENTER);
 		versionButton.addActionListener(new ActionListener() {
@@ -141,12 +148,6 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 		bottomRight.add(versionButton);
-
-		marketComboBox = new JComboBox<Market>();
-		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, ICON_SIZE);
-		Color COLOR = marketComboBox.getForeground();
-		marketComboBox.setToolTipText("Select market");
-		marketComboBox.setFont(largeFont);
 		
 		for(Market m : g.getMarkets())
 			marketComboBox.addItem(m);
