@@ -10,7 +10,6 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.net.URI;
 import java.security.SecureRandom;
 import java.util.Properties;
@@ -90,7 +89,7 @@ public class Main extends JFrame implements ActionListener {
 	public Main() {
 		super("BTDEX" + (Globals.getInstance().isTestnet() ? "-TESTNET" : ""));
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		String version = "";
+		String version = "dev";
 		
 		try {
 			Image image = ImageIO.read(Main.class.getResourceAsStream("/icon.png"));
@@ -99,8 +98,8 @@ public class Main extends JFrame implements ActionListener {
 			Properties versionProp = new Properties();
 			versionProp.load(Main.class.getResourceAsStream("/version.properties"));
 			version = versionProp.getProperty("version");
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 		
 		try {
