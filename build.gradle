@@ -74,13 +74,7 @@ createExe {
 
 import org.gradle.crypto.checksum.Checksum
 
-task createJarChecksum(type: Checksum, dependsOn: shadowJar) {
-  files = project.tasks.shadowJar.outputs.files
+task release(type: Checksum, dependsOn: [shadowJar, createExe]) {
+  files = project.tasks.shadowJar.outputs.files.plus(files('build/launch4j/btdex.exe'))
 }
-shadowJar.finalizedBy(createJarChecksum)
-
-task createExeChecksum(type: Checksum, dependsOn: createExe) {
-  files = files('build/launch4j/btdex.exe')
-}
-createExe.finalizedBy createExeChecksum
 
