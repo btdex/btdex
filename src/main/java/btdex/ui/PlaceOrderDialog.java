@@ -97,7 +97,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		JPanel fieldPanel = new JPanel(new GridLayout(0, 2, 4, 4));
 
 		amountField = new JFormattedTextField(Globals.NF_FULL);
-		priceField = new JFormattedTextField(isToken ? Globals.NF_FULL : market.getNumberFormat());
+		priceField = new JFormattedTextField(isToken ? market.getNumberFormat() : Globals.NF_FULL);
 		total = new JTextField(16);
 		total.setEditable(false);
 
