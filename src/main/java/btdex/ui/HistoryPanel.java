@@ -222,7 +222,7 @@ public class HistoryPanel extends JPanel {
 
 				ArrayList<OHLCDataItem> data = new ArrayList<>();
 				int NCANDLES = 50;
-				long DELTA = TimeUnit.DAYS.toMillis(1);
+				long DELTA = TimeUnit.HOURS.toMillis(4);
 				Date start = new Date(System.currentTimeMillis() - DELTA*NCANDLES);
 				Date next = new Date(start.getTime() + DELTA);
 
