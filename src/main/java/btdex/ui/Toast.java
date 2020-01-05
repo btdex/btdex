@@ -41,6 +41,8 @@ public class Toast extends JDialog {
 	private Color mForegroundColor = Color.WHITE;
 	private Point mLocation;
     
+	private boolean opacitySupported = true;
+	
     public Toast(JFrame owner){
     	super(owner);
     	mOwner = owner;
@@ -74,14 +76,21 @@ public class Toast extends JDialog {
 			private float opacity = 0;
 			@Override public void actionPerformed(ActionEvent e) {
 				opacity += OPACITY_INCREMENT;
-				setOpacity(Math.min(opacity, MAX_OPACITY));
+				if(opacitySupported)
+					setOpacity(Math.min(opacity, MAX_OPACITY));
 				if (opacity >= MAX_OPACITY){
 					timer.stop();
 				}
 			}
 		});
 
-		setOpacity(0);
+		try {
+			setOpacity(0);
+		}
+		catch (UnsupportedOperationException e) {
+			// translucency not supported on some systems
+			opacitySupported = false;
+		}
 		timer.start();
 		
 		Point loc = new Point(getToastLocation());
@@ -96,7 +105,8 @@ public class Toast extends JDialog {
 			private float opacity = MAX_OPACITY;
 			@Override public void actionPerformed(ActionEvent e) {
 				opacity -= OPACITY_INCREMENT;
-				setOpacity(Math.max(opacity, 0));
+				if(opacitySupported)
+					setOpacity(Math.max(opacity, 0));
 				if (opacity <= 0) {
 					timer.stop();
 					setVisible(false);
@@ -105,7 +115,8 @@ public class Toast extends JDialog {
 			}
 		});
 
-		setOpacity(MAX_OPACITY);
+		if(opacitySupported)
+			setOpacity(MAX_OPACITY);
 		timer.start();
 	}
 	
