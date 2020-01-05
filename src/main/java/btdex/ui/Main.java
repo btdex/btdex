@@ -443,6 +443,8 @@ public class Main extends JFrame implements ActionListener {
 				}
 				getContentPane().setVisible(true);
 			}
+			
+			System.err.println("Update thread finished!");
 		}
 	};
 
