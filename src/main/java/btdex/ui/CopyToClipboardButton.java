@@ -25,8 +25,15 @@ public class CopyToClipboardButton extends JButton {
 	}
 
 	public CopyToClipboardButton(String text, Icon icon, String clipboardText, TableCellEditor editor) {
+		this(text, icon, clipboardText, editor, null);
+	}
+	
+	public CopyToClipboardButton(String text, Icon icon, String clipboardText, TableCellEditor editor,
+			String tooltipText) {
 		super(text, icon);
 		this.clipboard = clipboardText;
+		if(tooltipText!=null)
+			setToolTipText(tooltipText);
 		
 		addActionListener(new ActionListener() {
 			@Override

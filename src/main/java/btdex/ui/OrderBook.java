@@ -22,6 +22,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 
 import bt.Contract;
 import btdex.core.ContractState;
@@ -31,6 +32,7 @@ import btdex.sc.SellContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.response.AssetOrder;
+import burst.kit.entity.response.AssetTrade;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
 
@@ -40,8 +42,11 @@ public class OrderBook extends JPanel {
 
 	JTable table;
 	DefaultTableModel model;
-	Icon copyIcon;
+	Icon copyIcon, upIcon, downIcon;
 	JCheckBox listOnlyMine;
+	int lastPriceRow;
+	
+	int ROW_HEIGHT;
 
 	HashMap<BurstAddress, ContractState> contractsMap = new HashMap<>();
 	BurstID mostRecentID;
@@ -50,19 +55,19 @@ public class OrderBook extends JPanel {
 	public static final int COL_PRICE = 0;
 	public static final int COL_SIZE = 1;
 	public static final int COL_TOTAL = 2;
-	public static final int COL_CONTRACT = 3;
-	public static final int COL_ACCOUNT = 4;
-	public static final int COL_SECURITY = 5;
-	public static final int COL_ACTION = 6;
+	public static final int COL_CONTRACT = 4;
+	public static final int COL_ACCOUNT = 5;
+//	public static final int COL_SECURITY = 3;
+	public static final int COL_ACTION = 3;
 
 	String[] columnNames = {
 			"PRICE",
 			"SIZE",
 			"TOTAL",
+//			"SECURITY",
+			"ACTION",
 			"CONTRACT",
 			"ACCOUNT",
-			"SECURITY",
-			"ACTION"
 	};
 
 	Market market = null;
@@ -87,13 +92,38 @@ public class OrderBook extends JPanel {
 				colName += " (" + (isToken ? market : "BURST") + ")";
 			if(col == COL_CONTRACT && isToken)
 				colName = "ORDER";
-			if(col == COL_SECURITY && isToken)
-				colName = "TYPE";
+//			if(col == COL_SECURITY && isToken)
+//				colName = "TYPE";
 			return colName;
 		}
 
 		public boolean isCellEditable(int row, int col) {
 			return col == COL_ACTION || col == COL_CONTRACT || col == COL_ACCOUNT;
+		}
+	}
+	
+	class MyTable extends JTable {
+		private static final long serialVersionUID = 3251005544025726619L;
+
+		public MyTable(DefaultTableModel model) {
+			super(model);
+		}
+
+		@Override
+		public TableCellRenderer getCellRenderer(int row, int column) {
+			if(column == COL_ACTION || column == COL_CONTRACT || column == COL_ACCOUNT
+					|| row == lastPriceRow)
+				return BUTTON_RENDERER;
+			
+			return super.getCellRenderer(row, column);
+		}
+		
+		@Override
+		public TableCellEditor getCellEditor(int row, int column) {
+			if(column == COL_ACTION || column == COL_CONTRACT || column == COL_ACCOUNT)
+				return BUTTON_EDITOR;
+			
+			return super.getCellEditor(row, column);
 		}
 	}
 
@@ -198,10 +228,12 @@ public class OrderBook extends JPanel {
 
 		market = m;
 
-		table = new JTable(model = new MyTableModel());
-		table.setRowHeight(table.getRowHeight()+10);
+		table = new MyTable(model = new MyTableModel());
+		ROW_HEIGHT = table.getRowHeight()+10;
 		
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
+		upIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_UP, 18, HistoryPanel.GREEN);
+		downIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_DOWN, 18, HistoryPanel.RED);
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
@@ -218,13 +250,6 @@ public class OrderBook extends JPanel {
 		jtableHeader.setDefaultRenderer(rend);
 
 		table.setAutoCreateColumnsFromModel(false);
-
-		table.getColumnModel().getColumn(COL_ACTION).setCellRenderer(BUTTON_RENDERER);
-		table.getColumnModel().getColumn(COL_ACTION).setCellEditor(BUTTON_EDITOR);
-		table.getColumnModel().getColumn(COL_CONTRACT).setCellRenderer(BUTTON_RENDERER);
-		table.getColumnModel().getColumn(COL_CONTRACT).setCellEditor(BUTTON_EDITOR);
-		table.getColumnModel().getColumn(COL_ACCOUNT).setCellRenderer(BUTTON_RENDERER);
-		table.getColumnModel().getColumn(COL_ACCOUNT).setCellEditor(BUTTON_EDITOR);
 
 		table.getColumnModel().getColumn(COL_CONTRACT).setPreferredWidth(200);
 		table.getColumnModel().getColumn(COL_ACCOUNT).setPreferredWidth(200);
@@ -267,15 +292,48 @@ public class OrderBook extends JPanel {
 		orders.sort(new Comparator<AssetOrder>() {
 			@Override
 			public int compare(AssetOrder o1, AssetOrder o2) {
-				return (int)(o1.getPrice().longValue() - o2.getPrice().longValue());
+				int cmp = (int)(o2.getPrice().longValue() - o1.getPrice().longValue());
+				if(cmp == 0)
+					cmp = o2.getHeight() - o1.getHeight();
+				return cmp;
 			}
 		});
 
-		model.setRowCount(orders.size());
-
+		model.setRowCount(orders.size() + 1);
+		
+		boolean lastPriceAdded = false;
+		AssetTrade trs[] = g.getNS().getAssetTrades(market.getTokenID(), null, 0, 2).blockingGet();
+		AssetTrade lastTrade = trs.length > 0 ? trs[0] : null;
+		boolean lastIsUp = true;
+		if(trs.length > 1 && trs[1].getPrice().longValue() < trs[1].getPrice().longValue())
+			lastIsUp = false;
+		
 		// Update the contents
-		for (int row = 0; row < orders.size(); row++) {
-			AssetOrder o = orders.get(row);
+		for (int i = 0, row = 0; i < orders.size(); i++, row++) {
+			AssetOrder o = orders.get(i);
+			
+			if(lastPriceAdded == false && o.getType() == AssetOrder.OrderType.BID) {
+				lastPriceRow = row;
+				table.setRowHeight(row, ROW_HEIGHT*2);
+				
+				JButton lastPriceButton = new CopyToClipboardButton(ContractState.format(lastTrade.getPrice().longValue()*market.getFactor()),
+						lastIsUp ? upIcon : downIcon, lastTrade.getAskOrderId().getID(),
+						BUTTON_EDITOR, "Last trade price");
+				lastPriceButton.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
+				model.setValueAt(lastPriceButton, row, COL_PRICE);
+
+				model.setValueAt(null, row, COL_SIZE);
+				model.setValueAt(null, row, COL_TOTAL);
+				model.setValueAt(new CopyToClipboardButton(lastTrade.getAskOrderId().getID(), copyIcon),
+						row, COL_CONTRACT);
+				model.setValueAt(null, row, COL_ACCOUNT);
+//				model.setValueAt(null, row, COL_SECURITY);
+				model.setValueAt(null, row, COL_ACTION);
+				
+				row++;
+				lastPriceAdded = true;
+			}
+			table.setRowHeight(row, ROW_HEIGHT);
 
 			// price always come in Burst, so no problem in this division using long's
 			long price = o.getPrice().longValue();
@@ -294,13 +352,13 @@ public class OrderBook extends JPanel {
 					o.getAccountAddress().getFullAddress(), BUTTON_EDITOR), row, COL_ACCOUNT);
 
 			if(o.getType() == AssetOrder.OrderType.BID) {
-				model.setValueAt("BUYING " + market, row, COL_SECURITY);
+//				model.setValueAt("BUYING " + market, row, COL_SECURITY);
 				JButton b = new ActionButton("SELL " + market, o, false);
 				b.setBackground(HistoryPanel.RED);
 				model.setValueAt(b, row, COL_ACTION);
 			}
 			else {
-				model.setValueAt("SELLING " + market, row, COL_SECURITY);
+//				model.setValueAt("SELLING " + market, row, COL_SECURITY);
 				JButton b = new ActionButton("BUY " + market, o, false);
 				b.setBackground(HistoryPanel.GREEN);
 				model.setValueAt(b, row, COL_ACTION);
@@ -357,7 +415,7 @@ public class OrderBook extends JPanel {
 					s.getCreator().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : s.getCreator().getRawAddress(), copyIcon,
 					s.getCreator().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
 
-			model.setValueAt(s.getSecurity(), row, COL_SECURITY);
+//			model.setValueAt(s.getSecurity(), row, COL_SECURITY);
 			
 			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId())
 				model.setValueAt(new ActionButton("CANCEL", s, true), row, COL_ACTION);
