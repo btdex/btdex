@@ -31,6 +31,12 @@ This will result on the following file:
 
 `build/launch4j/btdex.exe`
 
+## How to run jar file
+
+You need to have Java (8 or more recent) installed.
+
+`java -jar ./btdex-all.jar`
+
 ## License
 [GPL license](LICENSE)
 
