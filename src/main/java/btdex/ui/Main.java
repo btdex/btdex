@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -350,7 +349,7 @@ public class Main extends JFrame implements ActionListener {
 	
 	private void browse(String url) {
 		try {
-			Desktop.getDesktop().browse(new URI(url));
+			DesktopApi.browse(new URI(url));
 			Toast.makeText(Main.this, "Opening " + url, Toast.Style.SUCCESS).display();
 		} catch (Exception ex) {
 			Toast.makeText(Main.this, ex.getMessage(), Toast.Style.ERROR).display();
