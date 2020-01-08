@@ -13,13 +13,25 @@ BTDEX is currently on *initial token distribution*, more details at [https://btd
 
 Check the [releases](https://github.com/btdex/btdex/releases) and get the latest one.
 
+### Running on Windows
+Just download the `btdex-version.exe` [latest release](https://github.com/btdex/btdex/releases) and copy it
+to a folder you have write rights (it will create a file named `config.properties` with your account details).
+Double click on `btdex-version.exe` to start the application.
+
+### Running on Linux
+Just download the `btdex-all-version.jar` [latest release](https://github.com/btdex/btdex/releases) and copy it
+to a folder you have write rights (it will create a file named `config.properties` with your account details).
+Run this jar file with Java 8 or more recent (the `xdg-utils` package is required to open your browser when necessary):
+
+`java -jar btdex-all-version.jar`
+
 ## Compile from source
 
-Clone this repository code and run the gradle build:
+Clone this repository code and run the gradle build (requires Java 8 to build):
 
 `$ ./gradlew shadowJar`
 
-This will result on the following file (runnable with Java 8 or more recent):
+This will result on the following file:
 
 `build/libs/btdex-all.jar`
 
@@ -30,12 +42,6 @@ To build the windows executable run:
 This will result on the following file:
 
 `build/launch4j/btdex.exe`
-
-## How to run jar the file on Linux machines
-
-You need to have Java (8 or more recent) installed.
-
-`java -jar ./build/libs/btdex-all.jar`
 
 ## License
 [GPL license](LICENSE)
