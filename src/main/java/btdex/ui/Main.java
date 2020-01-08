@@ -389,18 +389,6 @@ public class Main extends JFrame implements ActionListener {
 						// Locked value in *market* and possibly other Burst coin stuff.
 						locked = balance - ac.getUnconfirmedBalance().longValue();
 						
-						// All bids also go to the locked
-						// TODO: iterate over all markets
-						AssetOrder[] bids = g.getNS().getBidOrders(token.getTokenID()).blockingGet();
-						for(AssetOrder o : bids) {
-							if(o.getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
-								continue;
-							long price = o.getPrice().longValue();
-							long amount = o.getQuantity().longValue();
-							
-							locked += amount*price;
-						}
-						
 						balance -= locked;
 					}
 					catch (Exception e) {
