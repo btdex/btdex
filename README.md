@@ -43,6 +43,15 @@ This will result on the following file:
 
 `build/launch4j/btdex.exe`
 
+## Running on testnet
+
+Edit your `config.properties` file and add the following lines:
+
+```
+testnet=True
+node=http\://testnet.getburst.net\:6876
+```
+
 ## License
 [GPL license](LICENSE)
 
