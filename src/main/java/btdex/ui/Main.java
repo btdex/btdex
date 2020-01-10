@@ -54,6 +54,7 @@ public class Main extends JFrame implements ActionListener {
 	Image icon;
 
 	CardLayout cardLayout;
+	boolean showingSplash;
 	OrderBook orderBook;
 	TransactionsPanel transactionsPanel;
 	HistoryPanel historyPanel;
@@ -215,8 +216,11 @@ public class Main extends JFrame implements ActionListener {
 		Icon tradeIcon = IconFontSwing.buildIcon(FontAwesome.LINE_CHART, ICON_SIZE, COLOR);
 		tabbedPane.addTab("TRADE HISTORY", tradeIcon, historyPanel);
 
-//		Icon accountIcon = IconFontSwing.buildIcon(FontAwesome.USER_CIRCLE, ICON_SIZE, COLOR);
-//		tabbedPane.addTab("ACCOUNTS", accountIcon, accountsPanel);
+		if(g.isTestnet()) {
+			// FIXME: accounts on testnet only for now
+			Icon accountIcon = IconFontSwing.buildIcon(FontAwesome.USER_CIRCLE, ICON_SIZE, COLOR);
+			tabbedPane.addTab("ACCOUNTS", accountIcon, accountsPanel);
+		}
 
 		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.LINK, ICON_SIZE, COLOR);
 		tabbedPane.addTab("TRANSACTIONS", transactionsIcon, transactionsPanel);
@@ -270,6 +274,7 @@ public class Main extends JFrame implements ActionListener {
 		setMinimumSize(new Dimension(1200, 600));
 		setLocationRelativeTo(null);
 		cardLayout.last(getContentPane());
+		showingSplash = true;
 		setVisible(true);
 		
 		// The testnet pre-release warning note
@@ -444,7 +449,10 @@ public class Main extends JFrame implements ActionListener {
 					nodeButton.setIcon(ICON_DISCONNECTED);
 					statusLabel.setText(rex.getMessage());
 				}
-				cardLayout.first(getContentPane());
+				if(showingSplash) {
+					showingSplash = false;
+					cardLayout.first(getContentPane());
+				}
 			}
 			
 			System.err.println("Update thread finished!");
