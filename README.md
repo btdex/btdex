@@ -5,7 +5,7 @@
 
 BTDEX is a decentralized exchange system running on the [Burst](https://www.burst-coin.org/) blockchain.
 It implements a unique non-custodial exchange method for cryptocurrencies and conventional fiat currencies based on [BlockTalk](https://github.com/jjos2372/blocktalk) Smart Contracts and Burstcoin on-chain encrypted messages.
-The exchange method is serverless and fees are distributed among [Trade Token (TRT)](https://explore2.burstcoin.ro/asset/12402415494995249540) holders.
+The exchange method is serverless and fees are distributed among [Trade Token (TRT)](https://explore.burstcoin.ro/asset/12402415494995249540) holders.
 
 BTDEX is currently on *initial token distribution*, more details at [https://btdex.trade](https://btdex.trade).
 
