@@ -1,9 +1,9 @@
 package btdex.ui;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -50,7 +50,10 @@ public class Main extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	
 	public static final int ICON_SIZE = 22;
+	
+	Image icon;
 
+	CardLayout cardLayout;
 	OrderBook orderBook;
 	TransactionsPanel transactionsPanel;
 	HistoryPanel historyPanel;
@@ -92,8 +95,8 @@ public class Main extends JFrame implements ActionListener {
 		String version = "dev";
 		
 		try {
-			Image image = ImageIO.read(Main.class.getResourceAsStream("/icon.png"));
-			setIconImage(image);
+			icon = ImageIO.read(Main.class.getResourceAsStream("/icon.png"));
+			setIconImage(icon);
 			
 			Properties versionProp = new Properties();
 			versionProp.load(Main.class.getResourceAsStream("/version.properties"));
@@ -122,10 +125,20 @@ public class Main extends JFrame implements ActionListener {
 
 		JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JPanel bottom = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		
+		cardLayout = new CardLayout();
+		getContentPane().setLayout(cardLayout);
+		
+		JPanel content = new JPanel(new BorderLayout());
+		JPanel splash = new JPanel(new BorderLayout());
+		splash.add(new JLabel(new ImageIcon(icon)), BorderLayout.CENTER);
+
+		getContentPane().add(content, "content");
+		getContentPane().add(splash, "splash");
 
 		topAll.add(top, BorderLayout.CENTER);
-		getContentPane().add(topAll, BorderLayout.PAGE_START);
-		getContentPane().add(bottomAll, BorderLayout.PAGE_END);
+		content.add(topAll, BorderLayout.PAGE_START);
+		content.add(bottomAll, BorderLayout.PAGE_END);
 				
 		JPanel bottomRight = new JPanel();
 		bottomAll.add(bottomRight, BorderLayout.LINE_END);
@@ -193,7 +206,7 @@ public class Main extends JFrame implements ActionListener {
 //		createOfferButtonBTDEX.setToolTipText("Create a new BTDEX sell offer...");
 //		createOfferButtonBTDEX.addActionListener(this);
 
-		getContentPane().add(tabbedPane, BorderLayout.CENTER);
+		content.add(tabbedPane, BorderLayout.CENTER);
 		tabbedPane.setFont(largeFont);
 
 		Icon orderIcon = IconFontSwing.buildIcon(FontAwesome.BOOK, ICON_SIZE, COLOR);
@@ -208,8 +221,8 @@ public class Main extends JFrame implements ActionListener {
 		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.LINK, ICON_SIZE, COLOR);
 		tabbedPane.addTab("TRANSACTIONS", transactionsIcon, transactionsPanel);
 		
-		if(getIconImage()!=null) {
-			JButton iconButton = new JButton(new ImageIcon(getIconImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH)));
+		if(icon!=null) {
+			JButton iconButton = new JButton(new ImageIcon(icon.getScaledInstance(64, 64, Image.SCALE_SMOOTH)));
 			topAll.add(iconButton, BorderLayout.LINE_END);
 			
 			iconButton.setToolTipText("Opens the BTDEX website");
@@ -256,7 +269,7 @@ public class Main extends JFrame implements ActionListener {
 		pack();
 		setMinimumSize(new Dimension(1200, 600));
 		setLocationRelativeTo(null);
-		getContentPane().setVisible(false);
+		cardLayout.last(getContentPane());
 		setVisible(true);
 		
 		// The testnet pre-release warning note
@@ -336,7 +349,7 @@ public class Main extends JFrame implements ActionListener {
 	
 	private void browse(String url) {
 		try {
-			Desktop.getDesktop().browse(new URI(url));
+			DesktopApi.browse(new URI(url));
 			Toast.makeText(Main.this, "Opening " + url, Toast.Style.SUCCESS).display();
 		} catch (Exception ex) {
 			Toast.makeText(Main.this, ex.getMessage(), Toast.Style.ERROR).display();
@@ -373,18 +386,8 @@ public class Main extends JFrame implements ActionListener {
 					try {
 						Account ac = g.getNS().getAccount(g.getAddress()).blockingGet();
 						balance = ac.getBalance().longValue();
-						
-						// All bids also go to the locked
-						// TODO: iterate over all markets
-						AssetOrder[] bids = g.getNS().getBidOrders(token.getTokenID()).blockingGet();
-						for(AssetOrder o : bids) {
-							if(o.getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
-								continue;
-							long price = o.getPrice().longValue();
-							long amount = o.getQuantity().longValue();
-							
-							locked += amount*price;
-						}
+						// Locked value in *market* and possibly other Burst coin stuff.
+						locked = balance - ac.getUnconfirmedBalance().longValue();
 						
 						balance -= locked;
 					}
@@ -441,7 +444,7 @@ public class Main extends JFrame implements ActionListener {
 					nodeButton.setIcon(ICON_DISCONNECTED);
 					statusLabel.setText(rex.getMessage());
 				}
-				getContentPane().setVisible(true);
+				cardLayout.first(getContentPane());
 			}
 			
 			System.err.println("Update thread finished!");
