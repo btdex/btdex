@@ -84,11 +84,11 @@ public class Globals {
 
 	public static Compiler contract;
 
-	/** Arbitrator list to choose randomly from */
+	/** Mediator list to choose randomly from */
 	public static final BurstID[] MEDIATORS = {
 			BC.rsDecode("TMSU-YBH5-RVC7-6J6WJ"),
 			BC.rsDecode("GFP4-TVNR-S7TY-E5KAY"),
-			// TODO: add other arbitrators here
+			// TODO: add other mediators here
 
 	};
 
@@ -102,10 +102,6 @@ public class Globals {
 	
 	public static void setConfFile(String file) {
 		confFile = file;
-	}
-
-	public static Properties getConf() {
-		return getInstance().conf;
 	}
 
 	public Globals() {
@@ -187,8 +183,8 @@ public class Globals {
 		byte[] pinKey = BC.getSha256().digest(new String(pin).getBytes("UTF-8"));
 		byte[] encPrivKey = Globals.BC.aesEncrypt(privKey, pinKey);
 
-		Globals.getConf().setProperty(Globals.PROP_PUBKEY, Globals.BC.toHexString(pubKey));
-		Globals.getConf().setProperty(Globals.PROP_ENC_PRIVKEY, Globals.BC.toHexString(encPrivKey));
+		conf.setProperty(Globals.PROP_PUBKEY, Globals.BC.toHexString(pubKey));
+		conf.setProperty(Globals.PROP_ENC_PRIVKEY, Globals.BC.toHexString(encPrivKey));
 
 		address = BC.getBurstAddressFromPublic(pubKey);
 	}
