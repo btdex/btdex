@@ -29,7 +29,11 @@ Run this jar file with Java 8 or more recent (the `xdg-utils` package is require
 
 Clone this repository code and run the gradle build (requires Java 8 to build):
 
-`$ ./gradlew shadowJar`
+```
+$ git clone https://github.com/btdex/btdex.git
+$ cd btdex
+$ ./gradlew shadowJar
+```
 
 This will result on the following file:
 
