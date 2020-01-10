@@ -7,4 +7,7 @@ bin
 /btdex.exe
 /config.properties
 .idea
-
+/.vscode
+/.settings
+.project
+.classpath
