@@ -57,7 +57,7 @@ public class ExplorerButton extends JPanel {
 		mainButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String t = type == TYPE_ADDRESS ? ExplorerButton.this.addressRS : ExplorerButton.this.id;
+				String t = ExplorerButton.this.type == TYPE_ADDRESS ? ExplorerButton.this.addressRS : ExplorerButton.this.id;
 				
 				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 				StringSelection stringSelection = new StringSelection(t);
@@ -70,7 +70,7 @@ public class ExplorerButton extends JPanel {
 		explorerButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				OpenExplorer exp = Main.getInstance().explorer;
+				ExplorerWrapper exp = Main.getInstance().explorer;
 				
 				switch (ExplorerButton.this.type) {
 				case TYPE_ADDRESS:

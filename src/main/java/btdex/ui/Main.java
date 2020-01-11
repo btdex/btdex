@@ -64,7 +64,7 @@ public class Main extends JFrame implements ActionListener {
 
 	JLabel statusLabel;
 	JButton nodeSelector, explorerSelector;
-	OpenExplorer explorer;
+	ExplorerWrapper explorer;
 	
 	Icon ICON_CONNECTED, ICON_DISCONNECTED;
 	
@@ -274,7 +274,7 @@ public class Main extends JFrame implements ActionListener {
 		nodeSelector.setToolTipText("Select node...");
 		nodeSelector.addActionListener(this);
 		
-		explorer = OpenExplorer.getExplorer(g.getExplorer());
+		explorer = ExplorerWrapper.getExplorer(g.getExplorer());
 		explorerSelector = new JButton(explorer.toString(),
 				IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, ICON_SIZE, COLOR));
 		explorerSelector.setToolTipText("Select explorer...");
@@ -564,15 +564,15 @@ public class Main extends JFrame implements ActionListener {
 		
 		else if (e.getSource() == explorerSelector) {
 			
-			JComboBox<OpenExplorer> explorerCombo = new JComboBox<OpenExplorer>();
-			explorerCombo.addItem(OpenExplorer.burstcoinRo());
-			explorerCombo.addItem(OpenExplorer.burstDevtrue());
-			explorerCombo.addItem(OpenExplorer.burstcoinNetwork());
+			JComboBox<ExplorerWrapper> explorerCombo = new JComboBox<ExplorerWrapper>();
+			explorerCombo.addItem(ExplorerWrapper.burstcoinRo());
+			explorerCombo.addItem(ExplorerWrapper.burstDevtrue());
+			explorerCombo.addItem(ExplorerWrapper.burstcoinNetwork());
 			
 			int ret = JOptionPane.showConfirmDialog(this, explorerCombo, "Select explorer", JOptionPane.OK_CANCEL_OPTION);
 			
 			if(ret == JOptionPane.OK_OPTION) {
-				explorer = (OpenExplorer) explorerCombo.getSelectedItem();
+				explorer = (ExplorerWrapper) explorerCombo.getSelectedItem();
 				explorerSelector.setText(explorer.toString());
 				
 				Globals g = Globals.getInstance();

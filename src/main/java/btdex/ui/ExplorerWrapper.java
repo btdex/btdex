@@ -10,16 +10,16 @@ import btdex.core.Globals;
  * @author jjos
  *
  */
-public class OpenExplorer {
+public class ExplorerWrapper {
 	
-	private String baseURL, desc, key;
+	private String baseURL, key;
 	private String accountPath, transactionPath;
 	
-	public static final String BURSTCOIN_NETWORK = "burstcoin_network";
-	public static final String BURSTCOIN_RO = "burstcoin_ro";
-	public static final String BURST_DEVTRUE = "burst_devtrue";
+	public static final String BURSTCOIN_NETWORK = "burstcoin.network";
+	public static final String BURSTCOIN_RO = "burstcoin.ro";
+	public static final String BURST_DEVTRUE = "burst.devtrue";
 	
-	public static OpenExplorer getExplorer(String exp) {
+	public static ExplorerWrapper getExplorer(String exp) {
 		if(exp!=null) {
 			switch (exp) {
 			case BURSTCOIN_NETWORK:
@@ -31,28 +31,27 @@ public class OpenExplorer {
 		return burstcoinRo();
 	}
 	
-	public static OpenExplorer burstcoinNetwork() {
+	public static ExplorerWrapper burstcoinNetwork() {
 		String baseURL = Globals.getInstance().isTestnet() ?
 				"https://testnet.explorer.burstcoin.network" : "https://explorer.burstcoin.network";
-		return new OpenExplorer(BURSTCOIN_NETWORK, baseURL, baseURL,
+		return new ExplorerWrapper(BURSTCOIN_NETWORK, baseURL,
 				"/?action=account&account=", "/?action=transaction&id=");
 	}
 
-	public static OpenExplorer burstcoinRo() {
-		return new OpenExplorer(BURSTCOIN_RO, "https://explore.burstcoin.ro", "https://explore.burstcoin.ro",
+	public static ExplorerWrapper burstcoinRo() {
+		return new ExplorerWrapper(BURSTCOIN_RO, "https://explore.burstcoin.ro",
 				"/account/", "/transaction/");
 	}
 
-	public static OpenExplorer burstDevtrue() {
+	public static ExplorerWrapper burstDevtrue() {
 		String baseURL = Globals.getInstance().isTestnet() ?
 				"http://explorer.testnet.burst.devtrue.net" : "https://explorer.burst.devtrue.net";
-		return new OpenExplorer(BURST_DEVTRUE, baseURL, baseURL,
+		return new ExplorerWrapper(BURST_DEVTRUE, baseURL,
 				"/address/", "/tx/");
 	}
 
-	public OpenExplorer(String key, String desc, String baseURL, String accountPath, String transactionPath) {
+	public ExplorerWrapper(String key, String baseURL, String accountPath, String transactionPath) {
 		this.key = key;
-		this.desc = desc;
 		this.baseURL = baseURL;
 		this.accountPath = accountPath;
 		this.transactionPath = transactionPath;
@@ -60,7 +59,7 @@ public class OpenExplorer {
 	
 	@Override
 	public String toString() {
-		return desc;
+		return key;
 	}
 	
 	public String getKey() {
