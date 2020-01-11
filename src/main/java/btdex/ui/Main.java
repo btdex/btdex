@@ -63,7 +63,7 @@ public class Main extends JFrame implements ActionListener {
 	JTabbedPane tabbedPane;
 
 	JLabel statusLabel;
-	JButton nodeButton, explorerButton;
+	JButton nodeSelector, explorerSelector;
 	OpenExplorer explorer;
 	
 	Icon ICON_CONNECTED, ICON_DISCONNECTED;
@@ -186,9 +186,9 @@ public class Main extends JFrame implements ActionListener {
 		ICON_DISCONNECTED = IconFontSwing.buildIcon(FontAwesome.EXCLAMATION, ICON_SIZE, COLOR);
 
 		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, ICON_SIZE, COLOR);
-		copyAddButton = new ExplorerButton("", copyIcon);
-		copyAddButton.setToolTipText("Check your addres on the explorer");
-		copyAddButton.setFont(largeFont);
+		Icon expIcon = IconFontSwing.buildIcon(FontAwesome.MAP_MARKER, ICON_SIZE, COLOR);
+		copyAddButton = new ExplorerButton("", copyIcon, expIcon);
+		copyAddButton.getMainButton().setFont(largeFont);
 
 		Icon settinsIcon = IconFontSwing.buildIcon(FontAwesome.COG, ICON_SIZE, COLOR);
 		JButton settingsButton = new JButton(settinsIcon);
@@ -270,20 +270,20 @@ public class Main extends JFrame implements ActionListener {
 		
 		top.add(new Desc("  ", settingsButton));
 
-		nodeButton = new JButton(g.getNode());
-		nodeButton.setToolTipText("Select node...");
-		nodeButton.addActionListener(this);
+		nodeSelector = new JButton(g.getNode());
+		nodeSelector.setToolTipText("Select node...");
+		nodeSelector.addActionListener(this);
 		
 		explorer = OpenExplorer.getExplorer(g.getExplorer());
-		explorerButton = new JButton(explorer.toString(),
-				IconFontSwing.buildIcon(FontAwesome.MAP, ICON_SIZE, COLOR));
-		explorerButton.setToolTipText("Select explorer...");
-		explorerButton.addActionListener(this);
+		explorerSelector = new JButton(explorer.toString(),
+				IconFontSwing.buildIcon(FontAwesome.MAP_MARKER, ICON_SIZE, COLOR));
+		explorerSelector.setToolTipText("Select explorer...");
+		explorerSelector.addActionListener(this);
 		
 		statusLabel = new JLabel();
 
-		bottom.add(nodeButton);
-		bottom.add(explorerButton);
+		bottom.add(nodeSelector);
+		bottom.add(explorerSelector);
 		bottom.add(statusLabel);
 
 		pack();
@@ -312,7 +312,7 @@ public class Main extends JFrame implements ActionListener {
 				return;
 			}
 		}
-		copyAddButton.setText(g.getAddress().getRawAddress());
+		copyAddButton.getMainButton().setText(g.getAddress().getRawAddress());
 		copyAddButton.setAddress(g.getAddress().getID(), g.getAddress().getFullAddress());
 
 		// check if this is a known account
@@ -455,14 +455,14 @@ public class Main extends JFrame implements ActionListener {
 					balanceLabelTokenPending.setText("+ " + token.format(tokenLocked) + " locked");
 
 					statusLabel.setText("");
-					nodeButton.setIcon(ICON_CONNECTED);
+					nodeSelector.setIcon(ICON_CONNECTED);
 				}
 				catch (RuntimeException rex) {
 					rex.printStackTrace();
 					
 					Toast.makeText(Main.this, rex.getMessage(), Toast.Style.ERROR).display();
 
-					nodeButton.setIcon(ICON_DISCONNECTED);
+					nodeSelector.setIcon(ICON_DISCONNECTED);
 					statusLabel.setText(rex.getMessage());
 				}
 				if(showingSplash) {
@@ -534,7 +534,7 @@ public class Main extends JFrame implements ActionListener {
 			dlg.setLocationRelativeTo(Main.this);
 			dlg.setVisible(true);			
 		}
-		else if (e.getSource() == nodeButton) {
+		else if (e.getSource() == nodeSelector) {
 			
 			Globals g = Globals.getInstance();
 			
@@ -557,24 +557,23 @@ public class Main extends JFrame implements ActionListener {
 					Toast.makeText(this, ex.getMessage(), Toast.Style.ERROR).display();
 				}
 				
-				nodeButton.setText(g.getNode());
+				nodeSelector.setText(g.getNode());
 				update();
 			}
 		}
 		
-		else if (e.getSource() == explorerButton) {
+		else if (e.getSource() == explorerSelector) {
 			
 			JComboBox<OpenExplorer> explorerCombo = new JComboBox<OpenExplorer>();
 			explorerCombo.addItem(OpenExplorer.burstcoinRo());
 			explorerCombo.addItem(OpenExplorer.burstDevtrue());
 			explorerCombo.addItem(OpenExplorer.burstcoinNetwork());
-			explorerCombo.addItem(OpenExplorer.clipboard());
 			
 			int ret = JOptionPane.showConfirmDialog(this, explorerCombo, "Select explorer", JOptionPane.OK_CANCEL_OPTION);
 			
 			if(ret == JOptionPane.OK_OPTION) {
 				explorer = (OpenExplorer) explorerCombo.getSelectedItem();
-				explorerButton.setText(explorer.toString());
+				explorerSelector.setText(explorer.toString());
 				
 				Globals g = Globals.getInstance();
 				g.setExplorer(explorer.getKey());

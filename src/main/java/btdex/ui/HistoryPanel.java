@@ -42,7 +42,7 @@ public class HistoryPanel extends JPanel {
 
 	JTable table;
 	DefaultTableModel model;
-	Icon copyIcon;
+	Icon copyIcon, expIcon;
 	JCheckBox listOnlyMine;
 	
 	public static final Color RED = Color.decode("#BE474A");
@@ -104,6 +104,7 @@ public class HistoryPanel extends JPanel {
 		this.market = market;
 
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
+		expIcon = IconFontSwing.buildIcon(FontAwesome.MAP_MARKER, 12, table.getForeground());
 
 		ChartPanel chartPanel = null;
 		chart = ChartFactory.createCandlestickChart(null, null, null, null, true);
@@ -206,10 +207,10 @@ public class HistoryPanel extends JPanel {
 					long price = tr.getPrice().longValue();
 
 					model.setValueAt(new ExplorerButton(
-							tr.getBuyerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getBuyerAddress().getRawAddress(), copyIcon,
+							tr.getBuyerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getBuyerAddress().getRawAddress(), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, tr.getBuyerAddress().getID(), tr.getBuyerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
 					model.setValueAt(new ExplorerButton(
-							tr.getSellerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getSellerAddress().getRawAddress(), copyIcon,
+							tr.getSellerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getSellerAddress().getRawAddress(), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, tr.getSellerAddress().getID(), tr.getSellerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
 
 					model.setValueAt(ContractState.format(price*market.getFactor()), row, COL_PRICE);

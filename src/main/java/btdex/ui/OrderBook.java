@@ -42,7 +42,7 @@ public class OrderBook extends JPanel {
 
 	JTable table;
 	DefaultTableModel model;
-	Icon copyIcon, upIcon, downIcon;
+	Icon copyIcon, expIcon, upIcon, downIcon;
 	JCheckBox listOnlyMine;
 	int lastPriceRow;
 	
@@ -141,12 +141,12 @@ public class OrderBook extends JPanel {
 	public static class ButtonCellEditor extends AbstractCellEditor implements TableCellEditor {
 		private static final long serialVersionUID = 1L;
 
-		JButton but;
+		ExplorerButton but;
 
 		public Component getTableCellEditorComponent(JTable table,
 				Object value, boolean isSelected, int row, int column) {
 
-			return but = (JButton) value;
+			return but = (ExplorerButton) value;
 		}
 
 		public Object getCellEditorValue() {
@@ -232,6 +232,7 @@ public class OrderBook extends JPanel {
 		ROW_HEIGHT = table.getRowHeight()+10;
 		
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
+		expIcon = IconFontSwing.buildIcon(FontAwesome.MAP_MARKER, 12, table.getForeground());
 		upIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_UP, 18, HistoryPanel.GREEN);
 		downIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_DOWN, 18, HistoryPanel.RED);
 
@@ -316,16 +317,17 @@ public class OrderBook extends JPanel {
 				lastPriceRow = row;
 				table.setRowHeight(row, ROW_HEIGHT*2);
 				
-				JButton lastPriceButton = new ExplorerButton(ContractState.format(lastTrade.getPrice().longValue()*market.getFactor()),
-						lastIsUp ? upIcon : downIcon, ExplorerButton.TYPE_TRANSACTION, lastTrade.getAskOrderId().getID(),
+				ExplorerButton lastPriceButton = new ExplorerButton(ContractState.format(lastTrade.getPrice().longValue()*market.getFactor()),
+						lastIsUp ? upIcon : downIcon, null, ExplorerButton.TYPE_TRANSACTION, lastTrade.getAskOrderId().getID(),
 						BUTTON_EDITOR);
-				lastPriceButton.setToolTipText("Last trade price");
-				lastPriceButton.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
+				lastPriceButton.getMainButton().setToolTipText("Last trade price");
+				lastPriceButton.getMainButton().setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
+				lastPriceButton.getExplorerButton().setVisible(false);
 				model.setValueAt(lastPriceButton, row, COL_PRICE);
 
 				model.setValueAt(null, row, COL_SIZE);
 				model.setValueAt(null, row, COL_TOTAL);
-				model.setValueAt(new ExplorerButton(lastTrade.getAskOrderId().getID(), copyIcon),
+				model.setValueAt(new ExplorerButton(lastTrade.getAskOrderId().getID(), copyIcon, expIcon),
 						row, COL_CONTRACT);
 				model.setValueAt(null, row, COL_ACCOUNT);
 //				model.setValueAt(null, row, COL_SECURITY);
@@ -347,9 +349,9 @@ public class OrderBook extends JPanel {
 			model.setValueAt(market.format(amountToken), row, COL_SIZE);
 			model.setValueAt(ContractState.format(amountToken*price), row, COL_TOTAL);
 
-			model.setValueAt(new ExplorerButton(o.getId().getID(), copyIcon, BUTTON_EDITOR), row, COL_CONTRACT);
+			model.setValueAt(new ExplorerButton(o.getId().getID(), copyIcon, expIcon, BUTTON_EDITOR), row, COL_CONTRACT);
 			model.setValueAt(new ExplorerButton(
-					o.getAccountAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : o.getAccountAddress().getRawAddress(), copyIcon,
+					o.getAccountAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : o.getAccountAddress().getRawAddress(), copyIcon, expIcon,
 					ExplorerButton.TYPE_ADDRESS, o.getAccountAddress().getID(), o.getAccountAddress().getFullAddress(), BUTTON_EDITOR), row, COL_ACCOUNT);
 
 			if(o.getType() == AssetOrder.OrderType.BID) {
@@ -409,11 +411,11 @@ public class OrderBook extends JPanel {
 			model.setValueAt(s.getAmount(), row, COL_SIZE);
 			model.setValueAt(market.format((s.getRate()*s.getAmountNQT()) / Contract.ONE_BURST),
 					row, COL_TOTAL);
-			model.setValueAt(new ExplorerButton(s.getAddress().getRawAddress(), copyIcon,
+			model.setValueAt(new ExplorerButton(s.getAddress().getRawAddress(), copyIcon, expIcon,
 					ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(), s.getAddress().getFullAddress(), BUTTON_EDITOR), row, COL_CONTRACT);
 			
 			model.setValueAt(new ExplorerButton(
-					s.getCreator().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : s.getCreator().getRawAddress(), copyIcon,
+					s.getCreator().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : s.getCreator().getRawAddress(), copyIcon, expIcon,
 					ExplorerButton.TYPE_ADDRESS, s.getCreator().getID(), s.getCreator().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
 
 //			model.setValueAt(s.getSecurity(), row, COL_SECURITY);

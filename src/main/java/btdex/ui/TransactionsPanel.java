@@ -26,7 +26,7 @@ public class TransactionsPanel extends JPanel {
 
 	JTable table;
 	DefaultTableModel model;
-	Icon copyIcon;
+	Icon copyIcon, expIcon;
 
 	public static final int COL_ID = 0;
 	public static final int COL_TIME = 1;
@@ -70,6 +70,7 @@ public class TransactionsPanel extends JPanel {
 		table.setRowHeight(table.getRowHeight()+10);
 		
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
+		expIcon = IconFontSwing.buildIcon(FontAwesome.MAP_MARKER, 12, table.getForeground());
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
@@ -191,9 +192,9 @@ public class TransactionsPanel extends JPanel {
 
 			model.setValueAt(tx.getBlockId()==null ? "PENDING" : tx.getConfirmations(), row, COL_CONF);
 			model.setValueAt(account==null ? new JLabel() :
-				new ExplorerButton(account.getRawAddress(), copyIcon, ExplorerButton.TYPE_ADDRESS,
+				new ExplorerButton(account.getRawAddress(), copyIcon, expIcon, ExplorerButton.TYPE_ADDRESS,
 						account.getID(), account.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
-			model.setValueAt(new ExplorerButton(tx.getId().toString(), copyIcon, OrderBook.BUTTON_EDITOR), row, COL_ID);
+			model.setValueAt(new ExplorerButton(tx.getId().toString(), copyIcon, expIcon, OrderBook.BUTTON_EDITOR), row, COL_ID);
 
 			model.setValueAt(ContractState.format(amount), row, COL_AMOUNT);
 			model.setValueAt(ContractState.format(tx.getFee().longValue()), row, COL_FEE);

@@ -1,9 +1,5 @@
 package btdex.ui;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-
 import btdex.core.Globals;
 
 /**
@@ -19,7 +15,6 @@ public class OpenExplorer {
 	private String baseURL, desc, key;
 	private String accountPath, transactionPath;
 	
-	public static final String CLIPBOARD = "clipboard";
 	public static final String BURSTCOIN_NETWORK = "burstcoin_network";
 	public static final String BURSTCOIN_RO = "burstcoin_ro";
 	public static final String BURST_DEVTRUE = "burst_devtrue";
@@ -27,8 +22,6 @@ public class OpenExplorer {
 	public static OpenExplorer getExplorer(String exp) {
 		if(exp!=null) {
 			switch (exp) {
-			case CLIPBOARD:
-				return clipboard();
 			case BURSTCOIN_NETWORK:
 				return burstcoinNetwork();
 			case BURST_DEVTRUE:
@@ -38,10 +31,6 @@ public class OpenExplorer {
 		return burstcoinRo();
 	}
 	
-	public static OpenExplorer clipboard() {
-		return new OpenExplorer(CLIPBOARD, "Copy to clipboard", null, null, null);
-	}
-
 	public static OpenExplorer burstcoinNetwork() {
 		String baseURL = Globals.getInstance().isTestnet() ?
 				"https://testnet.explorer.burstcoin.network" : "https://explorer.burstcoin.network";
@@ -78,29 +67,11 @@ public class OpenExplorer {
 		return key;
 	}
 	
-	public void openAddress(String addressRS, String addressId) {
-		if(baseURL!=null) {
-			String url = baseURL + accountPath + addressId;
-			Main.getInstance().browse(url);
-		}
-		else
-			copyToClipboard(addressRS);
+	public String openAddress(String addressRS, String addressId) {
+		return baseURL + accountPath + addressId;
 	}
 	
-	public void openTransaction(String transaction) {
-		if(baseURL!=null) {
-			String url = baseURL + transactionPath + transaction;
-			Main.getInstance().browse(url);
-		}
-		else
-			copyToClipboard(transaction);
-	}
-	
-	private void copyToClipboard(String t) {
-		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-		StringSelection stringSelection = new StringSelection(t);
-		clipboard.setContents(stringSelection, null);
-		
-		Toast.makeText(Main.getInstance(), t + " copied to clipboard.", Toast.Style.SUCCESS).display();
+	public String openTransaction(String transaction) {
+		return baseURL + transactionPath + transaction;
 	}
 }
