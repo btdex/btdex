@@ -12,6 +12,8 @@ import java.util.List;
  *
  * net.mightypork.rpack.utils
  * 
+ * FIXME: disabled logging for now, this needs to be improved 
+ * 
  */
 public class DesktopApi {
 
@@ -190,16 +192,16 @@ public class DesktopApi {
     }
 
     private static void logErr(String msg, Throwable t) {
-        System.err.println(msg);
-        t.printStackTrace();
+//        System.err.println(msg);
+//        t.printStackTrace();
     }
 
     private static void logErr(String msg) {
-        System.err.println(msg);
+//        System.err.println(msg);
     }
 
     private static void logOut(String msg) {
-        System.out.println(msg);
+//        System.out.println(msg);
     }
 
     public static enum EnumOS {
