@@ -187,7 +187,7 @@ public class Main extends JFrame implements ActionListener {
 
 		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, ICON_SIZE, COLOR);
 		copyAddButton = new ExplorerButton("", copyIcon);
-		copyAddButton.setToolTipText("Copy your Burst address to clipboard");
+		copyAddButton.setToolTipText("Check your addres on the explorer");
 		copyAddButton.setFont(largeFont);
 
 		Icon settinsIcon = IconFontSwing.buildIcon(FontAwesome.COG, ICON_SIZE, COLOR);
