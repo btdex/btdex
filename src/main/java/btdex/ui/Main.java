@@ -186,7 +186,7 @@ public class Main extends JFrame implements ActionListener {
 		ICON_DISCONNECTED = IconFontSwing.buildIcon(FontAwesome.EXCLAMATION, ICON_SIZE, COLOR);
 
 		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, ICON_SIZE, COLOR);
-		Icon expIcon = IconFontSwing.buildIcon(FontAwesome.MAP_MARKER, ICON_SIZE, COLOR);
+		Icon expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, ICON_SIZE, COLOR);
 		copyAddButton = new ExplorerButton("", copyIcon, expIcon);
 		copyAddButton.getMainButton().setFont(largeFont);
 
@@ -276,7 +276,7 @@ public class Main extends JFrame implements ActionListener {
 		
 		explorer = OpenExplorer.getExplorer(g.getExplorer());
 		explorerSelector = new JButton(explorer.toString(),
-				IconFontSwing.buildIcon(FontAwesome.MAP_MARKER, ICON_SIZE, COLOR));
+				IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, ICON_SIZE, COLOR));
 		explorerSelector.setToolTipText("Select explorer...");
 		explorerSelector.addActionListener(this);
 		

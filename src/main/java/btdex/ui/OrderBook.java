@@ -141,12 +141,12 @@ public class OrderBook extends JPanel {
 	public static class ButtonCellEditor extends AbstractCellEditor implements TableCellEditor {
 		private static final long serialVersionUID = 1L;
 
-		ExplorerButton but;
+		Component but;
 
 		public Component getTableCellEditorComponent(JTable table,
 				Object value, boolean isSelected, int row, int column) {
 
-			return but = (ExplorerButton) value;
+			return but = (Component) value;
 		}
 
 		public Object getCellEditorValue() {
@@ -232,7 +232,7 @@ public class OrderBook extends JPanel {
 		ROW_HEIGHT = table.getRowHeight()+10;
 		
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
-		expIcon = IconFontSwing.buildIcon(FontAwesome.MAP_MARKER, 12, table.getForeground());
+		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
 		upIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_UP, 18, HistoryPanel.GREEN);
 		downIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_DOWN, 18, HistoryPanel.RED);
 

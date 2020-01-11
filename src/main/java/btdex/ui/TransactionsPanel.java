@@ -70,7 +70,7 @@ public class TransactionsPanel extends JPanel {
 		table.setRowHeight(table.getRowHeight()+10);
 		
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
-		expIcon = IconFontSwing.buildIcon(FontAwesome.MAP_MARKER, 12, table.getForeground());
+		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);

@@ -104,7 +104,7 @@ public class HistoryPanel extends JPanel {
 		this.market = market;
 
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
-		expIcon = IconFontSwing.buildIcon(FontAwesome.MAP_MARKER, 12, table.getForeground());
+		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
 
 		ChartPanel chartPanel = null;
 		chart = ChartFactory.createCandlestickChart(null, null, null, null, true);
