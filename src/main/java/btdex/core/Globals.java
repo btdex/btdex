@@ -18,6 +18,7 @@ import bt.BT;
 import bt.compiler.Compiler;
 import btdex.markets.MarketBTC;
 import btdex.markets.MarketETH;
+import btdex.markets.MarketEUR;
 import btdex.markets.MarketLTC;
 import btdex.markets.MarketTRT;
 import btdex.markets.MarketXMR;
@@ -120,6 +121,7 @@ public class Globals {
 			
 			markets.add(token = new MarketTRT());
 //			markets.add(new MarketNDST());
+			markets.add(new MarketEUR());
 			markets.add(new MarketBTC());
 			markets.add(new MarketETH());
 			markets.add(new MarketLTC());
@@ -234,7 +236,7 @@ public class Globals {
 			if(m == null)
 				break;
 			
-			ArrayList<String> fieldNames = m.getFieldNames();
+			ArrayList<String> fieldNames = m.getFieldKeys();
 			HashMap<String, String> fields = new HashMap<>();
 			for(String key : fieldNames) {
 				fields.put(key, conf.getProperty(PROP_ACCOUNT + i + "." + key, ""));

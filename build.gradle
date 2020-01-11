@@ -33,6 +33,8 @@ dependencies {
 	
 	implementation 'io.github.monero-ecosystem:monero-java:0.2.1'
 	
+	implementation 'fr.marcwrobel:jbanking:1.0'
+	
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
 }

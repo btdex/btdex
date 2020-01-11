@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
+import javax.swing.JComponent;
+import javax.swing.JTextField;
+
 import com.google.gson.JsonObject;
 
 import burst.kit.entity.BurstID;
@@ -84,9 +87,32 @@ public abstract class Market {
 	}
 	
 	/**
-	 * @return the expected field names when selling on this market.
+	 * @return the expected field keys when selling on this market.
 	 */
-	public abstract ArrayList<String> getFieldNames();
+	public abstract ArrayList<String> getFieldKeys();
+	
+	/**
+	 * @param key the field key
+	 * @return the description for the given field key
+	 */
+	public String getFieldDescription(String key) {
+		return key;
+	}
+	
+	public JComponent getFieldEditor(String key, boolean editable, HashMap<String, String> fields) {
+		JTextField textField = new JTextField(10);
+		textField.setEditable(editable);
+		
+		textField.setText(fields.get(key));
+		
+		return textField;
+	}
+	
+	public void setFieldValue(String key, JComponent editor, HashMap<String, String> fields) {
+		if(editor instanceof JTextField) {
+			fields.put(key, ((JTextField)editor).getText());
+		}
+	}
 	
 	/**
 	 * Should validate the given field values, throwing an exception if invalid

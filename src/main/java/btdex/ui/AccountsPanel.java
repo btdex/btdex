@@ -12,6 +12,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -37,6 +38,8 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 
 	JTable table;
 	DefaultTableModel model;
+	
+	private Market market;
 
 	private JButton addButton;
 
@@ -46,7 +49,7 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 
 	private JTextField nameField;
 	private JPanel formPanel;
-	private ArrayList<JTextField> formFields = new ArrayList<>();
+	private HashMap<String, JComponent> formFields = new HashMap<>();
 
 	private JButton cancelButton;
 
@@ -67,7 +70,7 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 
 	static final String[] COLUMN_NAMES = {
 			"MARKET",
-			"NAME",
+			"ACCOUNT",
 	};
 
 	public AccountsPanel(Main main) {
@@ -130,7 +133,7 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 
 		JPanel topPanel = new JPanel(new SpringLayout());
 		topPanel.add(new Desc("Market", marketComboBox), BorderLayout.LINE_START);
-		topPanel.add(new Desc("Account name", nameField = new JTextField()), BorderLayout.CENTER);
+		topPanel.add(new Desc("Account alias (optional)", nameField = new JTextField()), BorderLayout.CENTER);
 		SpringUtilities.makeCompactGrid(topPanel, 1, 2, 0, 0, PAD, PAD);
 		right.add(topPanel);
 
@@ -173,8 +176,8 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		Market market = (Market) marketComboBox.getSelectedItem();
-		ArrayList<String> fieldNames = market.getFieldNames();
+		market = (Market) marketComboBox.getSelectedItem();
+		ArrayList<String> fieldKeys = market.getFieldKeys();
 
 		if(e.getSource() == addButton) {
 			right.setVisible(true);
@@ -194,8 +197,9 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 		if(e.getSource() == okButton) {
 			HashMap<String, String> fields = new HashMap<>();
 
-			for (int i = 0; i < formFields.size(); i++) {
-				fields.put(fieldNames.get(i), formFields.get(i).getText());
+			for (int i = 0; i < fieldKeys.size(); i++) {
+				String key = fieldKeys.get(i);
+				market.setFieldValue(key, formFields.get(key), fields);
 			}
 			try {
 				market.validate(fields);
@@ -218,8 +222,12 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 			table.setEnabled(true);
 		}
 		if(e.getSource() == marketComboBox) {
-			createFields(fieldNames, true);
-			formFields.get(0).requestFocusInWindow();
+			HashMap<String, String> fields = new HashMap<>();
+			for(String key : fieldKeys)
+				fields.put(key, "");
+			createFields(fields, true);
+			nameField.setText("");
+			formFields.get(fieldKeys.get(0)).requestFocusInWindow();
 		}
 
 		if(e.getSource() == removeButton) {
@@ -238,20 +246,19 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 		}
 	}
 	
-	private void createFields(ArrayList<String> fieldNames, boolean editable) {
+	private void createFields(HashMap<String,String> fields, boolean editable) {
 		formPanel.removeAll();
 		formFields.clear();
 
-		for (int i = 0; i < fieldNames.size(); i++) {
-			JLabel l = new JLabel(fieldNames.get(i), JLabel.TRAILING);
+		for (String key : market.getFieldKeys()) {
+			JLabel l = new JLabel(market.getFieldDescription(key), JLabel.TRAILING);
 			formPanel.add(l);
-			JTextField textField = new JTextField(10);
-			textField.setEditable(editable);
-			formFields.add(textField);
-			l.setLabelFor(textField);
-			formPanel.add(textField);
+			JComponent editor = market.getFieldEditor(key, editable, fields);
+			formFields.put(key, editor);
+			l.setLabelFor(editor);
+			formPanel.add(editor);
 		}			
-		SpringUtilities.makeCompactGrid(formPanel, fieldNames.size(), 2, 0, 0, PAD, PAD);
+		SpringUtilities.makeCompactGrid(formPanel, fields.size(), 2, 0, 0, PAD, PAD);
 		validate();
 	}
 
@@ -279,13 +286,7 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 			}
 			nameField.setText(ac.getName());
 			
-			ArrayList<String> fieldNames = new ArrayList<>();
-			fieldNames.addAll(ac.getFields().keySet());
-			createFields(fieldNames, false);
-			
-			for (int i = 0; i < fieldNames.size(); i++) {
-				formFields.get(i).setText(ac.getFields().get(fieldNames.get(i)));
-			}
+			createFields(ac.getFields(), false);
 		}
 	}
 }

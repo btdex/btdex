@@ -58,7 +58,7 @@ public class MarketTRT extends Market {
 	}
 	
 	@Override
-	public ArrayList<String> getFieldNames(){
+	public ArrayList<String> getFieldKeys(){
 		return null;
 	}
 	
