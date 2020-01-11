@@ -302,10 +302,10 @@ public class OrderBook extends JPanel {
 		model.setRowCount(orders.size() + 1);
 		
 		boolean lastPriceAdded = false;
-		AssetTrade trs[] = g.getNS().getAssetTrades(market.getTokenID(), null, 0, 2).blockingGet();
+		AssetTrade trs[] = g.getNS().getAssetTrades(market.getTokenID(), null, 0, 1).blockingGet();
 		AssetTrade lastTrade = trs.length > 0 ? trs[0] : null;
 		boolean lastIsUp = true;
-		if(trs.length > 1 && trs[1].getPrice().longValue() < trs[1].getPrice().longValue())
+		if(trs.length > 1 && trs[0].getPrice().longValue() < trs[1].getPrice().longValue())
 			lastIsUp = false;
 		
 		// Update the contents
