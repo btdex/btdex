@@ -53,6 +53,8 @@ public class Globals {
 	public static final String PROP_ENC_PRIVKEY = "encPrivKey";
 	public static final String PROP_PUBKEY = "pubKey";
 	
+	public static final String PROP_EXPLORER = "explorer";
+	
 	ArrayList<Market> markets = new ArrayList<>();
 	Market token;
 	
@@ -302,6 +304,14 @@ public class Globals {
 		conf.setProperty(PROP_NODE, node);
 
 		NS = BurstNodeService.getInstance(node);
+	}
+	
+	public String getExplorer() {
+		return conf.getProperty(PROP_EXPLORER);
+	}
+	
+	public void setExplorer(String value) {
+		conf.setProperty(PROP_EXPLORER, value);
 	}
 	
 	public Response activate() throws IOException {

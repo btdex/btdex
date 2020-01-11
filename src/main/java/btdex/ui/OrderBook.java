@@ -316,15 +316,16 @@ public class OrderBook extends JPanel {
 				lastPriceRow = row;
 				table.setRowHeight(row, ROW_HEIGHT*2);
 				
-				JButton lastPriceButton = new CopyToClipboardButton(ContractState.format(lastTrade.getPrice().longValue()*market.getFactor()),
-						lastIsUp ? upIcon : downIcon, lastTrade.getAskOrderId().getID(),
-						BUTTON_EDITOR, "Last trade price");
+				JButton lastPriceButton = new ExplorerButton(ContractState.format(lastTrade.getPrice().longValue()*market.getFactor()),
+						lastIsUp ? upIcon : downIcon, ExplorerButton.TYPE_TRANSACTION, lastTrade.getAskOrderId().getID(),
+						BUTTON_EDITOR);
+				lastPriceButton.setToolTipText("Last trade price");
 				lastPriceButton.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
 				model.setValueAt(lastPriceButton, row, COL_PRICE);
 
 				model.setValueAt(null, row, COL_SIZE);
 				model.setValueAt(null, row, COL_TOTAL);
-				model.setValueAt(new CopyToClipboardButton(lastTrade.getAskOrderId().getID(), copyIcon),
+				model.setValueAt(new ExplorerButton(lastTrade.getAskOrderId().getID(), copyIcon),
 						row, COL_CONTRACT);
 				model.setValueAt(null, row, COL_ACCOUNT);
 //				model.setValueAt(null, row, COL_SECURITY);
@@ -346,10 +347,10 @@ public class OrderBook extends JPanel {
 			model.setValueAt(market.format(amountToken), row, COL_SIZE);
 			model.setValueAt(ContractState.format(amountToken*price), row, COL_TOTAL);
 
-			model.setValueAt(new CopyToClipboardButton(o.getId().getID(), copyIcon, BUTTON_EDITOR), row, COL_CONTRACT);
-			model.setValueAt(new CopyToClipboardButton(
+			model.setValueAt(new ExplorerButton(o.getId().getID(), copyIcon, BUTTON_EDITOR), row, COL_CONTRACT);
+			model.setValueAt(new ExplorerButton(
 					o.getAccountAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : o.getAccountAddress().getRawAddress(), copyIcon,
-					o.getAccountAddress().getFullAddress(), BUTTON_EDITOR), row, COL_ACCOUNT);
+					ExplorerButton.TYPE_ADDRESS, o.getAccountAddress().getID(), o.getAccountAddress().getFullAddress(), BUTTON_EDITOR), row, COL_ACCOUNT);
 
 			if(o.getType() == AssetOrder.OrderType.BID) {
 //				model.setValueAt("BUYING " + market, row, COL_SECURITY);
@@ -408,12 +409,12 @@ public class OrderBook extends JPanel {
 			model.setValueAt(s.getAmount(), row, COL_SIZE);
 			model.setValueAt(market.format((s.getRate()*s.getAmountNQT()) / Contract.ONE_BURST),
 					row, COL_TOTAL);
-			model.setValueAt(new CopyToClipboardButton(s.getAddress().getRawAddress(), copyIcon,
-					s.getAddress().getFullAddress(), BUTTON_EDITOR), row, COL_CONTRACT);
+			model.setValueAt(new ExplorerButton(s.getAddress().getRawAddress(), copyIcon,
+					ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(), s.getAddress().getFullAddress(), BUTTON_EDITOR), row, COL_CONTRACT);
 			
-			model.setValueAt(new CopyToClipboardButton(
+			model.setValueAt(new ExplorerButton(
 					s.getCreator().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : s.getCreator().getRawAddress(), copyIcon,
-					s.getCreator().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
+					ExplorerButton.TYPE_ADDRESS, s.getCreator().getID(), s.getCreator().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
 
 //			model.setValueAt(s.getSecurity(), row, COL_SECURITY);
 			

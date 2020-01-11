@@ -205,12 +205,12 @@ public class HistoryPanel extends JPanel {
 					long amount = tr.getQuantity().longValue();
 					long price = tr.getPrice().longValue();
 
-					model.setValueAt(new CopyToClipboardButton(
+					model.setValueAt(new ExplorerButton(
 							tr.getBuyerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getBuyerAddress().getRawAddress(), copyIcon,
-							tr.getBuyerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
-					model.setValueAt(new CopyToClipboardButton(
+							ExplorerButton.TYPE_ADDRESS, tr.getBuyerAddress().getID(), tr.getBuyerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
+					model.setValueAt(new ExplorerButton(
 							tr.getSellerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getSellerAddress().getRawAddress(), copyIcon,
-							tr.getSellerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
+							ExplorerButton.TYPE_ADDRESS, tr.getSellerAddress().getID(), tr.getSellerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
 
 					model.setValueAt(ContractState.format(price*market.getFactor()), row, COL_PRICE);
 					model.setValueAt(market.format(amount), row, COL_AMOUNT);

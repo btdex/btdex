@@ -191,8 +191,9 @@ public class TransactionsPanel extends JPanel {
 
 			model.setValueAt(tx.getBlockId()==null ? "PENDING" : tx.getConfirmations(), row, COL_CONF);
 			model.setValueAt(account==null ? new JLabel() :
-				new CopyToClipboardButton(account.getRawAddress(), copyIcon, account.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
-			model.setValueAt(new CopyToClipboardButton(tx.getId().toString(), copyIcon, OrderBook.BUTTON_EDITOR), row, COL_ID);
+				new ExplorerButton(account.getRawAddress(), copyIcon, ExplorerButton.TYPE_ADDRESS,
+						account.getID(), account.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
+			model.setValueAt(new ExplorerButton(tx.getId().toString(), copyIcon, OrderBook.BUTTON_EDITOR), row, COL_ID);
 
 			model.setValueAt(ContractState.format(amount), row, COL_AMOUNT);
 			model.setValueAt(ContractState.format(tx.getFee().longValue()), row, COL_FEE);
