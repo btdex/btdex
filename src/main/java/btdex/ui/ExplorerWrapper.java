@@ -22,13 +22,16 @@ public class ExplorerWrapper {
 	public static ExplorerWrapper getExplorer(String exp) {
 		if(exp!=null) {
 			switch (exp) {
-			case BURSTCOIN_NETWORK:
-				return burstcoinNetwork();
+			case BURSTCOIN_RO:
+				if(!Globals.getInstance().isTestnet())
+					return burstcoinRo();
 			case BURST_DEVTRUE:
 				return burstDevtrue();
+			case BURSTCOIN_NETWORK:
+				return burstcoinNetwork();
 			}
 		}
-		return burstcoinRo();
+		return burstDevtrue();
 	}
 	
 	public static ExplorerWrapper burstcoinNetwork() {

@@ -563,11 +563,18 @@ public class Main extends JFrame implements ActionListener {
 		}
 		
 		else if (e.getSource() == explorerSelector) {
+			Globals g = Globals.getInstance();
 			
 			JComboBox<ExplorerWrapper> explorerCombo = new JComboBox<ExplorerWrapper>();
-			explorerCombo.addItem(ExplorerWrapper.burstcoinRo());
+			if(!g.isTestnet())
+				explorerCombo.addItem(ExplorerWrapper.burstcoinRo());
 			explorerCombo.addItem(ExplorerWrapper.burstDevtrue());
 			explorerCombo.addItem(ExplorerWrapper.burstcoinNetwork());
+			
+			for (int i = 0; i < explorerCombo.getItemCount(); i++) {
+				if(explorerCombo.getItemAt(i).toString().equals(g.getExplorer()))
+					explorerCombo.setSelectedIndex(i);
+			}
 			
 			int ret = JOptionPane.showConfirmDialog(this, explorerCombo, "Select explorer", JOptionPane.OK_CANCEL_OPTION);
 			
@@ -575,7 +582,6 @@ public class Main extends JFrame implements ActionListener {
 				explorer = (ExplorerWrapper) explorerCombo.getSelectedItem();
 				explorerSelector.setText(explorer.toString());
 				
-				Globals g = Globals.getInstance();
 				g.setExplorer(explorer.getKey());
 				try {
 					g.saveConfs();
