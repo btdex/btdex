@@ -6,6 +6,7 @@ plugins {
   id 'edu.sc.seis.launch4j' version '2.4.6'
   id 'org.gradle.crypto.checksum' version '1.1.0'
   id 'com.palantir.git-version' version '0.12.2'
+  id "edu.sc.seis.macAppBundle" version "2.3.0"
 }
 
 // In this section you declare where to find the dependencies of your project
@@ -69,9 +70,21 @@ createExe {
     jar = "lib/${project.tasks.shadowJar.archiveName}"
 }
 
+createDmg.enabled = false
+macAppBundle {
+  mainClassName = project.mainClassName
+  icon = "${projectDir}/btdex.icns"
+  appStyle = 'Oracle'
+  appName = project.applicationName
+  dmgName = "${->project.name}-mac"
+  runtimeConfigurationName = 'shadow'
+  jarTask = 'shadowJar'
+  jvmVersion = "1.8+"
+}
+
 import org.gradle.crypto.checksum.Checksum
 
-task release(type: Checksum, dependsOn: [shadowJar, createExe]) {
-  files = project.tasks.shadowJar.outputs.files.plus(files('build/launch4j/btdex.exe'))
+task release(type: Checksum, dependsOn: [shadowJar, createExe, createAppZip]) {
+  files = project.tasks.shadowJar.outputs.files.plus(files(['build/launch4j/btdex.exe', 'build/distributions/btdex-mac.zip']))
 }
 
