@@ -23,6 +23,7 @@ import btdex.markets.MarketLTC;
 import btdex.markets.MarketTRT;
 import btdex.markets.MarketXMR;
 import btdex.sc.SellContract;
+import btdex.ui.ExplorerWrapper;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
@@ -307,7 +308,7 @@ public class Globals {
 	}
 	
 	public String getExplorer() {
-		return conf.getProperty(PROP_EXPLORER);
+		return conf.getProperty(PROP_EXPLORER, ExplorerWrapper.BURST_DEVTRUE);
 	}
 	
 	public void setExplorer(String value) {
