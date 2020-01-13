@@ -5,6 +5,7 @@ plugins {
   id 'application'
   id 'edu.sc.seis.launch4j' version '2.4.6'
   id 'edu.sc.seis.macAppBundle' version '2.3.0'
+  id "nebula.ospackage" version "5.3.5"
   id 'org.gradle.crypto.checksum' version '1.1.0'
   id 'com.palantir.git-version' version '0.12.2'
 }
@@ -48,13 +49,18 @@ configurations.all {
 // Define the main class for the application
 mainClassName = 'BTDEX'
 
+description = 'A decentralized exchange system running on the Burst blockchain.'
+
 def details = versionDetails()
-version = details.lastTag
 
 task versionProp()  {
     doFirst {
         new File(sourceSets.main.output.resourcesDir, "/version.properties").text = "version:${details.lastTag}"
     }
+}
+
+shadowJar{
+    archiveName = "${baseName}-${classifier}.${extension}"
 }
 shadowJar.dependsOn versionProp
 
@@ -74,6 +80,7 @@ createExe {
 createDmg.enabled = false
 macAppBundle {
   mainClassName = project.mainClassName
+  version = details.lastTag
   icon = "${projectDir}/btdex.icns"
   appStyle = 'Oracle'
   appName = project.applicationName
@@ -83,9 +90,29 @@ macAppBundle {
   jvmVersion = "1.8+"
 }
 
+task makeDeb(type: Deb, dependsOn: shadowJar) {
+	maintainer 'btdex.trade'
+	version details.lastTag.substring(1)
+    release '1'
+    arch 'all'
+    
+    requires('java8-runtime').or('java9-runtime')
+    
+    into '/opt/btdex'
+    from('btdex.sh'){
+    	fileMode 0555
+    }
+    link('/usr/bin/btdex', '/opt/btdex/btdex.sh')
+    from('btdex.desktop'){
+    	into '/usr/share/applications'
+    }
+    from(new File(sourceSets.main.output.resourcesDir, "/icon.png"))
+    from(project.tasks.shadowJar.outputs.files)
+}
+
 import org.gradle.crypto.checksum.Checksum
 
-task release(type: Checksum, dependsOn: [shadowJar, createExe, createAppZip]) {
+task release(type: Checksum, dependsOn: [shadowJar, createExe, createAppZip, makeDeb]) {
   files = project.tasks.shadowJar.outputs.files.plus(files(['build/launch4j/btdex.exe', 'build/distributions/btdex-mac.zip']))
 }
 
