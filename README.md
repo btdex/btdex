@@ -25,6 +25,9 @@ Run this jar file with Java 8 or more recent (the `xdg-utils` package is require
 
 `java -jar btdex-all-version.jar`
 
+#### Archlinux
+A package is available in [AUR](https://aur.archlinux.org/packages/btdex/).
+
 ## Compile from source
 
 Clone this repository code and run the gradle build (requires Java 8 to build):
