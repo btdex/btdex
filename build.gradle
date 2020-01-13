@@ -97,16 +97,18 @@ task makeDeb(type: Deb, dependsOn: shadowJar) {
     arch 'all'
     
     requires('java8-runtime').or('java9-runtime')
+    requires('xdg-utils')
     
     into '/opt/btdex'
     from('btdex.sh'){
-    	fileMode 0555
+    	fileMode 0755
     }
+    from(new File(sourceSets.main.output.resourcesDir, "/icon.png"))
+    link('/usr/share/pixmaps/btdex.png', '/opt/btdex/icon.png')
     link('/usr/bin/btdex', '/opt/btdex/btdex.sh')
     from('btdex.desktop'){
     	into '/usr/share/applications'
     }
-    from(new File(sourceSets.main.output.resourcesDir, "/icon.png"))
     from(project.tasks.shadowJar.outputs.files)
 }
 
