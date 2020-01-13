@@ -4,9 +4,9 @@ plugins {
   id 'java'
   id 'application'
   id 'edu.sc.seis.launch4j' version '2.4.6'
+  id 'edu.sc.seis.macAppBundle' version '2.3.0'
   id 'org.gradle.crypto.checksum' version '1.1.0'
   id 'com.palantir.git-version' version '0.12.2'
-  id "edu.sc.seis.macAppBundle" version "2.3.0"
 }
 
 // In this section you declare where to find the dependencies of your project
@@ -49,6 +49,7 @@ configurations.all {
 mainClassName = 'BTDEX'
 
 def details = versionDetails()
+version = details.lastTag
 
 task versionProp()  {
     doFirst {
