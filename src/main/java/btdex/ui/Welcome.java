@@ -64,7 +64,7 @@ public class Welcome extends JDialog implements ActionListener {
 						+ "it securely. Anyone who gets your recovery phrase "
 						+ "can take your funds.<br><br>"
 						+ "This installation is secured with a PIN, if "
-						+ "you ever loose this PIN or this computer, "
+						+ "you ever lose this PIN or this computer, "
 						+ "your recovery phrase is your only backup."
 				);
 		introText.setPreferredSize(new Dimension(60, 180));
@@ -174,6 +174,8 @@ public class Welcome extends JDialog implements ActionListener {
 				passphrase.setEditable(false);
 				newPass();
 			}
+			acceptBox.setSelected(recoverBox.isSelected());
+			acceptBox.setEnabled(!recoverBox.isSelected());
 		}
 		if(e.getSource() == calcelButton) {
 			ret = 0;
