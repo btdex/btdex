@@ -18,7 +18,5 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: Build Jar
-      run: ./gradlew shadowJar
-    - name: Build Exe
-      run: ./gradlew createExe
+    - name: Build all
+      run: ./gradlew release
