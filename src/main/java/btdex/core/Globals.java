@@ -181,7 +181,8 @@ public class Globals {
 
 	public void saveConfs() throws Exception {
 		File f = new File(confFile);
-		f.getParentFile().mkdirs();
+		if(f.getParentFile()!=null)
+			f.getParentFile().mkdirs();
 		FileOutputStream fos = new FileOutputStream(f);
 		getInstance().conf.store(fos, "BTDEX configuration file, only edit if you know what you're doing");
 	}
