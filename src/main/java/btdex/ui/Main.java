@@ -90,6 +90,8 @@ public class Main extends JFrame implements ActionListener {
 	private Market token;
 	
 	private long lastUpdated;
+
+	private PulsingIcon pulsingButton;
 	
 	private static Main instance;
 	
@@ -140,7 +142,8 @@ public class Main extends JFrame implements ActionListener {
 		
 		JPanel content = new JPanel(new BorderLayout());
 		JPanel splash = new JPanel(new BorderLayout());
-		splash.add(new JLabel(new ImageIcon(icon)), BorderLayout.CENTER);
+		pulsingButton = new PulsingIcon(new ImageIcon(icon));
+		splash.add(pulsingButton, BorderLayout.CENTER);
 
 		getContentPane().add(content, "content");
 		getContentPane().add(splash, "splash");
@@ -507,6 +510,7 @@ public class Main extends JFrame implements ActionListener {
 				}
 				if(showingSplash) {
 					showingSplash = false;
+					pulsingButton.stopPulsing();
 					cardLayout.first(getContentPane());
 				}
 			}
