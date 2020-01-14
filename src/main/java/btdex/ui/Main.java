@@ -169,8 +169,48 @@ public class Main extends JFrame implements ActionListener {
 				browse("https://github.com/btdex/btdex/releases");
 			}
 		});
-		bottomRight.add(versionButton);
+
+		Icon signoutIcon = IconFontSwing.buildIcon(FontAwesome.SIGN_OUT, ICON_SIZE, COLOR);
+		JButton signoutButton = new JButton(signoutIcon);
+		signoutButton.setToolTipText("Sign out, remove all user info...");
+		signoutButton.setVerticalAlignment(SwingConstants.CENTER);
+		signoutButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int ret = JOptionPane.showConfirmDialog(Main.this,
+						"Sign out and remove all your information?\n"
+						+ "ATTENTION: this cannot be undone.", "Sign out - ATTENTION",
+						JOptionPane.YES_NO_OPTION);
+				if(ret == JOptionPane.YES_OPTION) {
+					try {
+						Globals.getInstance().clearConfs();
+						System.exit(0);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+						Toast.makeText(Main.this, ex.getMessage(), Toast.Style.ERROR).display();
+					}
+				}
+			}
+		});
 		
+		Icon resetPinIcon = IconFontSwing.buildIcon(FontAwesome.LOCK, ICON_SIZE, COLOR);
+		JButton resetPinButton = new JButton(resetPinIcon);
+		resetPinButton.setToolTipText("Reset your pin...");
+		resetPinButton.setVerticalAlignment(SwingConstants.CENTER);
+		resetPinButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Welcome welcome = new Welcome(Main.this, true);
+				
+				welcome.setLocationRelativeTo(Main.this);
+				welcome.setVisible(true);
+			}
+		});
+				
+		bottomRight.add(versionButton);
+		bottomRight.add(resetPinButton);
+		bottomRight.add(signoutButton);
+
 		for(Market m : g.getMarkets())
 			marketComboBox.addItem(m);
 		token = g.getToken();

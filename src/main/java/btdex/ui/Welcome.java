@@ -43,31 +43,40 @@ public class Welcome extends JDialog implements ActionListener {
 
 	private JButton okButton;
 	private JButton calcelButton;
+	private boolean resetPin;
 
 	private int ret;
 
 	public Welcome(JFrame owner) {
+		this(owner, false);
+	}
+	
+	public Welcome(JFrame owner, boolean resetPin) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		
+		this.resetPin = resetPin;
 
-		setTitle("Welcome!");
+		setTitle(resetPin ? "Reset PIN" : "Welcome!");
 		setResizable(false);
 
 		JPanel topPanel = new JPanel(new BorderLayout());
 
 		JPanel panel = new JPanel(new GridLayout(0, 2, 4, 4));
 
-		introText = new JLabel(
-				"<html><h2>You have a new Wallet, read carefully</h2>"
-						+ "You must write down your 12-word recovery phrase "
-						+ "precisely and in the correct order and store "
-						+ "it securely. Anyone who gets your recovery phrase "
-						+ "can take your funds.<br><br>"
-						+ "This installation is secured with a PIN, if "
-						+ "you ever lose this PIN or this computer, "
-						+ "your recovery phrase is your only backup."
-				);
-		introText.setPreferredSize(new Dimension(60, 180));
+		if(!resetPin) {
+			introText = new JLabel(
+					"<html><h2>You have a new Wallet, read carefully</h2>"
+							+ "You must write down your 12-word recovery phrase "
+							+ "precisely and in the correct order and store "
+							+ "it securely. Anyone who gets your recovery phrase "
+							+ "can take your funds.<br><br>"
+							+ "This installation is secured with a PIN, if "
+							+ "you ever lose this PIN or this computer, "
+							+ "your recovery phrase is your only backup."
+					);
+			introText.setPreferredSize(new Dimension(60, 180));
+		}
 
 		passphrase = new JTextArea(2, 40);
 		passphrase.setWrapStyleWord(true);
@@ -77,7 +86,8 @@ public class Welcome extends JDialog implements ActionListener {
 		pin = new JPasswordField(12);
 		pinCheck = new JPasswordField(12);
 
-		topPanel.add(introText, BorderLayout.PAGE_START);
+		if(introText!=null)
+			topPanel.add(introText, BorderLayout.PAGE_START);
 
 		acceptBox = new JCheckBox("I wrote drown my recovery phrase");
 		recoverBox = new JCheckBox("I want to use an existing recovery phrase");
@@ -85,7 +95,9 @@ public class Welcome extends JDialog implements ActionListener {
 		recoverBox.addActionListener(this);
 
 		JPanel recoveryPanel = new JPanel(new BorderLayout());
-		recoveryPanel.setBorder(BorderFactory.createTitledBorder("Your recovery phrase"));
+		recoveryPanel.setBorder(BorderFactory.createTitledBorder(resetPin ?
+				"Enter your recovery phrase to redefine your PIN" :
+				"Your recovery phrase"));
 		recoveryPanel.add(recoverBox, BorderLayout.PAGE_START);
 		recoveryPanel.add(passphrase, BorderLayout.CENTER);
 		recoveryPanel.add(acceptBox, BorderLayout.PAGE_END);
@@ -117,7 +129,17 @@ public class Welcome extends JDialog implements ActionListener {
 		content.add(panel, BorderLayout.CENTER);
 		content.add(buttonPane, BorderLayout.PAGE_END);
 
-		newPass();
+		if(resetPin) {
+			passphrase.setText("");
+			passphrase.setEditable(true);
+			passphrase.requestFocus();
+			
+			recoverBox.setVisible(false);
+			acceptBox.setSelected(true);
+			acceptBox.setVisible(false);
+		}
+		else
+			newPass();
 		pack();
 
 		addWindowListener(new WindowAdapter() {
@@ -183,15 +205,21 @@ public class Welcome extends JDialog implements ActionListener {
 		}
 		if(e.getSource() == okButton) {
 			String error = null;
+			String phrase = passphrase.getText();
+
 			if(!acceptBox.isSelected()) {
 				error = "Write down your recovery phrase first.";
 				acceptBox.requestFocus();
+			}
+			else if(phrase.length()==0) {
+				error = "Your passphrase is empty.";
+				passphrase.requestFocus();				
 			}
 			else if(pin.getPassword() == null || pin.getPassword().length < 4) {
 				error = "Enter a PIN with at least 4 characters.";
 				pin.requestFocus();
 			}
-			else if(!Arrays.equals(pin.getPassword(),pinCheck.getPassword())) {
+			else if(!Arrays.equals(pin.getPassword(), pinCheck.getPassword())) {
 				pin.requestFocus();
 				error = "PINs do not match.";
 			}
@@ -200,13 +228,20 @@ public class Welcome extends JDialog implements ActionListener {
 				Globals g = Globals.getInstance();
 				
 				// no error, so we have a new phrase
-				String phrase = passphrase.getText();
 				byte[] privKey = Globals.BC.getPrivateKey(phrase);
 				byte[] pubKey = Globals.BC.getPublicKey(privKey);
 				
 				try {
-					g.setKeys(pubKey, privKey, pin.getPassword());
-					g.saveConfs();
+					if(resetPin) {
+						if(!Arrays.equals(g.getPubKey(), pubKey)) {
+							error = "Incorrect passphrase.";
+						}
+					}
+
+					if(error == null) {
+						g.setKeys(pubKey, privKey, pin.getPassword());
+						g.saveConfs();
+					}
 				} catch (Exception e1) {
 					error = e1.getMessage();
 				}

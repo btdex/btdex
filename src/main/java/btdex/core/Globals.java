@@ -180,8 +180,15 @@ public class Globals {
 	}
 
 	public void saveConfs() throws Exception {
-		FileOutputStream f = new FileOutputStream(confFile);
-		getInstance().conf.store(f, "BTDEX configuration file, only edit if you know what you're doing");
+		File f = new File(confFile);
+		f.getParentFile().mkdirs();
+		FileOutputStream fos = new FileOutputStream(f);
+		getInstance().conf.store(fos, "BTDEX configuration file, only edit if you know what you're doing");
+	}
+
+	public void clearConfs() throws Exception {
+		File f = new File(confFile);
+		f.delete();
 	}
 
 	public void setKeys(byte []pubKey, byte []privKey, char []pin) throws Exception {
