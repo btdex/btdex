@@ -19,14 +19,21 @@ to a folder you have write rights (it will create a file named `config.propertie
 Double click on `btdex-version.exe` to start the application.
 
 ### Running on Linux
+
+#### Ubuntu and other Debian-based distributions
+
+Just download the `btdex_version_all.deb` [latest release](https://github.com/btdex/btdex/releases) and install it.
+The application `BTDEX` will be available on the system (config file will go to `.config/btdex/` inside your home folder).
+
+#### Archlinux
+A package is available at [AUR](https://aur.archlinux.org/packages/btdex/).
+
+### General method without installing
 Just download the `btdex-all-version.jar` [latest release](https://github.com/btdex/btdex/releases) and copy it
 to a folder you have write rights (it will create a file named `config.properties` with your account details).
 Run this jar file with Java 8 or more recent (the `xdg-utils` package is required to open your browser when necessary):
 
 `java -jar btdex-all-version.jar`
-
-#### Archlinux
-A package is available in [AUR](https://aur.archlinux.org/packages/btdex/).
 
 ## Compile from source
 
