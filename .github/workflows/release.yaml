@@ -96,14 +96,15 @@ jobs:
           asset_name: btdex-mac-${{ steps.get_version.outputs.VERSION }}.zip.sha256
           asset_content_type: text/plain
 
-      - name: Upload Release Asset - Deb
-        id: upload-release-asset-deb
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/distributions/btdex_${{ echo ${{ steps.get_version.outputs.VERSION }} | cut -c 2- }}_all.deb
-          asset_name: btdex_${{ echo ${{ steps.get_version.outputs.VERSION }} | cut -c 2- }}_all.deb
-          asset_content_type: application/vnd.debian.binary-package
+# FIXME: how to cut the 'v' from v0.1.X for the deb package name (should not have the 'v')
+#      - name: Upload Release Asset - Deb
+#        id: upload-release-asset-deb
+#        uses: actions/upload-release-asset@v1.0.1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }}
+#          asset_path: ./build/distributions/btdex_${{ echo ${{ steps.get_version.outputs.VERSION }} | cut -c 2- }}_all.deb
+#          asset_name: btdex_${{ echo ${{ steps.get_version.outputs.VERSION }} | cut -c 2- }}_all.deb
+#          asset_content_type: application/vnd.debian.binary-package
           
