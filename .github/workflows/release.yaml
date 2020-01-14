@@ -95,3 +95,15 @@ jobs:
           asset_path: ./build/checksums/btdex-mac.zip.sha256
           asset_name: btdex-mac-${{ steps.get_version.outputs.VERSION }}.zip.sha256
           asset_content_type: text/plain
+
+      - name: Upload Release Asset - Deb
+        id: upload-release-asset-deb
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/distributions/btdex_${{ steps.get_version.outputs.VERSION:1 }}_all.deb
+          asset_name: btdex_all${{ steps.get_version.outputs.VERSION:1 }}_all.deb
+          asset_content_type: application/vnd.debian.binary-package
+          
