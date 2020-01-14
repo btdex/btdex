@@ -64,7 +64,14 @@ public class DesktopApi {
         }
 
         if (os.isWindows()) {
-            if (runCommand("explorer", "%s", what)) return true;
+        	// On windows use the standard desktop method
+        	try {
+				Desktop.getDesktop().browse(new URI(what));
+				return true;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
         }
 
         return false;
