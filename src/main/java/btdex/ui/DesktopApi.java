@@ -56,8 +56,6 @@ public class DesktopApi {
         EnumOS os = getOs();
 
         if (os.isLinux()) {
-            if (runCommand("kde-open", "%s", what)) return true;
-            if (runCommand("gnome-open", "%s", what)) return true;
             if (runCommand("xdg-open", "%s", what)) return true;
         }
 
@@ -165,7 +163,7 @@ public class DesktopApi {
                     return false;
                 }
             } catch (IllegalThreadStateException itse) {
-                logErr("Process is running.");
+                logOut("Process is running.");
                 return true;
             }
         } catch (IOException e) {
@@ -192,16 +190,16 @@ public class DesktopApi {
     }
 
     private static void logErr(String msg, Throwable t) {
-//        System.err.println(msg);
-//        t.printStackTrace();
+        System.err.println(msg);
+        t.printStackTrace();
     }
 
     private static void logErr(String msg) {
-//        System.err.println(msg);
+        System.err.println(msg);
     }
 
     private static void logOut(String msg) {
-//        System.out.println(msg);
+        System.out.println(msg);
     }
 
     public static enum EnumOS {
