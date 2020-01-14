@@ -175,14 +175,14 @@ public class Main extends JFrame implements ActionListener {
 
 		Icon signoutIcon = IconFontSwing.buildIcon(FontAwesome.SIGN_OUT, ICON_SIZE, COLOR);
 		JButton signoutButton = new JButton(signoutIcon);
-		signoutButton.setToolTipText("Sign out, remove all user info...");
+		signoutButton.setToolTipText("Exit and clear user data...");
 		signoutButton.setVerticalAlignment(SwingConstants.CENTER);
 		signoutButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int ret = JOptionPane.showConfirmDialog(Main.this,
-						"Sign out and remove all your information?\n"
-						+ "ATTENTION: this cannot be undone.", "Sign out - ATTENTION",
+						"Exit and clear all user data?\n"
+						+ "ATTENTION: this cannot be undone.", "Exit and clear",
 						JOptionPane.YES_NO_OPTION);
 				if(ret == JOptionPane.YES_OPTION) {
 					try {
