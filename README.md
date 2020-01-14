@@ -21,12 +21,15 @@ Double click on `btdex-version.exe` to start the application.
 ### Running on Linux
 
 #### Ubuntu and other Debian-based distributions
-
 Just download the `btdex_version_all.deb` [latest release](https://github.com/btdex/btdex/releases) and install it.
 The application `BTDEX` will be available on the system (config file will go to `.config/btdex/` inside your home folder).
 
 #### Archlinux
 A package is available at [AUR](https://aur.archlinux.org/packages/btdex/).
+
+### Running on MacOS
+Just download the `btdex-mac-version.zip` [latest release](https://github.com/btdex/btdex/releases) and uncompress the app.
+You can now run the app as usual (it will create a file named `config.properties` inside your home folder `~/`).
 
 ### General method without installing
 Just download the `btdex-all-version.jar` [latest release](https://github.com/btdex/btdex/releases) and copy it
