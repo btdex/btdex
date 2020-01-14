@@ -103,7 +103,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/distributions/btdex_${${{ steps.get_version.outputs.VERSION }}:1}_all.deb
-          asset_name: btdex_all${${{ steps.get_version.outputs.VERSION }}:1}_all.deb
+          asset_path: ./build/distributions/btdex_$(echo ${{ steps.get_version.outputs.VERSION }} | cut -c 2-)_all.deb
+          asset_name: btdex_$(echo ${{ steps.get_version.outputs.VERSION }} | cut -c 2-)_all.deb
           asset_content_type: application/vnd.debian.binary-package
           
