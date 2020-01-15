@@ -536,7 +536,7 @@ public class Main extends JFrame implements ActionListener {
 			
 			PlaceOrderDialog dlg = new PlaceOrderDialog(this, m, null);
 			
-			if(m.getTokenID()==null) {
+			if(m.getTokenID()==null && !Globals.getInstance().isTestnet()) {
 				Toast.makeText(this, "Cross-chain markets will be open only "
 						+ "after TRT initial distribution is finished.", Toast.Style.ERROR).display();
 				return;
@@ -552,9 +552,11 @@ public class Main extends JFrame implements ActionListener {
 				// not a token market, show TRT in the token field 
 				tokenDesc.setDesc(String.format("Balance (%s)", token));
 				
-				// FIXME: remove this when operational
-				Toast.makeText(this, "Cross-chain markets will be open only "
-						+ "after TRT initial distribution is finished.", Toast.Style.ERROR).display();
+				if(!Globals.getInstance().isTestnet()) {
+					// FIXME: remove this when operational
+					Toast.makeText(this, "Cross-chain markets will be open only "
+							+ "after TRT initial distribution is finished.", Toast.Style.ERROR).display();
+				}
 			}
 			else {
 				// this is a token market, show it on the token field 
