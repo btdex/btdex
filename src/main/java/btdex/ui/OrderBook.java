@@ -2,6 +2,7 @@ package btdex.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -324,6 +325,16 @@ public class OrderBook extends JPanel {
 				lastPriceButton.getMainButton().setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
 				lastPriceButton.getExplorerButton().setVisible(false);
 				model.setValueAt(lastPriceButton, row, COL_PRICE);
+				
+				// Make sure latest price is visible
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						Rectangle rect = table.getCellRect(lastPriceRow, 0, true);
+						rect.grow(0, 60);
+						table.scrollRectToVisible(rect);
+					}
+				});
 
 				model.setValueAt(null, row, COL_SIZE);
 				model.setValueAt(null, row, COL_TOTAL);
