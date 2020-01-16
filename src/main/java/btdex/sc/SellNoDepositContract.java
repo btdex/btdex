@@ -36,8 +36,6 @@ public class SellNoDepositContract extends Contract {
 	
 	Address mediator1;
 	Address mediator2;
-	long offerType;
-	long accountHash;
 	long lockMinutes;
 
 	long state;
