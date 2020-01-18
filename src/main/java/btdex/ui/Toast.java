@@ -63,6 +63,7 @@ public class Toast extends JDialog {
         getContentPane().setBackground(mBackgroundColor);
         
         JLabel label = new JLabel(mText);
+        label.setFont(label.getFont().deriveFont(16.0f));
         label.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         label.setForeground(mForegroundColor);
         add(label);
