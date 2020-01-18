@@ -89,7 +89,7 @@ public class Welcome extends JDialog implements ActionListener {
 		if(introText!=null)
 			topPanel.add(introText, BorderLayout.PAGE_START);
 
-		acceptBox = new JCheckBox("I wrote drown my recovery phrase");
+		acceptBox = new JCheckBox("I wrote down my recovery phrase");
 		recoverBox = new JCheckBox("I want to use an existing recovery phrase");
 
 		recoverBox.addActionListener(this);
