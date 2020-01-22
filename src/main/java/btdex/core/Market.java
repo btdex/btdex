@@ -87,6 +87,13 @@ public abstract class Market {
 	}
 	
 	/**
+	 * @return the number of hours a taker has to make the crypto/fiat payment.
+	 */
+	public int getPaymentTimeout(HashMap<String, String> fields) {
+		return 0;
+	}
+	
+	/**
 	 * @return the expected field keys when selling on this market.
 	 */
 	public abstract ArrayList<String> getFieldKeys();

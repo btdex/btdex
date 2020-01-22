@@ -23,6 +23,7 @@ import btdex.markets.MarketLTC;
 import btdex.markets.MarketTRT;
 import btdex.markets.MarketXMR;
 import btdex.sc.SellContract;
+import btdex.sc.SellNoDepositContract;
 import btdex.ui.ExplorerWrapper;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstAddress;
@@ -86,7 +87,10 @@ public class Globals {
 	private BurstAddress address;
 	private FeeSuggestion suggestedFee;
 
-	public static Compiler contract;
+	static Compiler contract, contractNoDeposit;
+	
+	static byte[] contractCode;
+	static byte[] contractNoDepositCode;
 
 	/** Mediator list to choose randomly from */
 	public static final BurstID[] MEDIATORS = {
@@ -154,6 +158,13 @@ public class Globals {
 			contract = new Compiler(SellContract.class);
 			contract.compile();
 			contract.link();
+			
+			contractNoDeposit = new Compiler(SellNoDepositContract.class);
+			contractNoDeposit.compile();
+			contractNoDeposit.link();
+			
+			contractCode = contract.getCode();
+			contractNoDepositCode = contractNoDeposit.getCode();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -303,6 +314,18 @@ public class Globals {
 
 	public Compiler getContract() {
 		return contract;
+	}
+	
+	public Compiler getContractNoDeposit() {
+		return contractNoDeposit;
+	}
+	
+	public byte[] getContractCode() {
+		return contractCode;
+	}
+	
+	public byte[] getContractNoDepositCode() {
+		return contractNoDepositCode;
 	}
 
 	public BurstNodeService getNS() {

@@ -147,7 +147,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					int value = security.getValue();
 					String desc = String.format("Security deposit %d %%", value);
 					if(value==0)
-						desc = "Security deposit 0.1 %";
+						desc = "No buyer deposit offer";
 
 					securityDesc.setDesc(desc);
 					somethingChanged();
@@ -313,7 +313,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				setVisible(false);
 
 				Toast.makeText((JFrame) this.getOwner(),
-						String.format("Transaction %s broadcasted", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
+						String.format("Transaction %s has been broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
 			}
 			catch (Exception ex) {
 				Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
@@ -330,6 +330,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 		amountValue = null;
 		priceValue = null;
+		
+		Account account = (Account) accountComboBox.getSelectedItem();
 
 		if(priceField.getText().length()==0 || amountField.getText().length()==0)
 			return;
@@ -378,24 +380,54 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 		}
 		else {
-			terms = "You are selling %s BURST for %s at a price of %s %s each.\n\n"
-					+ "A smart contract will hold your %s BURST plus a security deposity of %s. "
-					+ "The taker will deposit %s %s on your account %s.\n\n"
-					+ "There are no trade fees for you, but up to 40 BURST smart contract and transaction fees. "
-					+ "It can take up to 4 blocks for your order to be available. "
-					+ "You need to open BTDEX at least once every 24 h so your %s account can be sent in case your offer was taken. "
-					+ "This order will be open until taken or cancelled.";
+			boolean isNoDeposit = security.getValue() == 0;
 			
-			String deposityStr = "0.1 %";
-			if(security.getValue() > 0)
-				deposityStr = String.format("%d %%", security.getValue());
-			
-			terms = String.format(terms,
-							amountField.getText(), market, priceField.getText(), market,
-							amountField.getText(), deposityStr,
-							total.getText(), market, accountDetails.getText(),
-							market
-							);
+			if(isNoDeposit) {
+				terms = "You are selling BURST for %s at a price of %s %s each.\n\n"
+						+ "A smart contract will hold your %s BURST as security deposity. "
+						+ "A taker have to deposit %s %s on your account '%s' "
+						+ "and after that you will transfer %s BURST to the buyer's account.\n\n"
+						+ "There is a 1%% fee when you withdraw your deposit and up to 40 BURST "
+						+ "smart contract and transaction fees. "
+						+ "It can take up to 4 blocks for your order to be available. "
+						+ "You need to open BTDEX at least once every 24 hours so your account "
+						+ "details can be sent to the buyer in case your offer is taken. \n\n"
+						+ "After your account details are sent to the buyer, he/she "
+						+ "has up to %d hours to complete the %s transfer. "
+						+ "After you receive the %s amount, you have up to 24 hours to finish "
+						+ "the trade by transfering the BURST.\n\n"
+						+ "This order will be open until taken or cancelled. If you do not follow "
+						+ "the protocol, you might lose your security deposit.";
+
+				terms = String.format(terms,
+						market, priceField.getText(), market,
+						amountField.getText(),
+						total.getText(), market, accountDetails.getText(),
+						amountField.getText(),
+						market.getPaymentTimeout(account.getFields()), market, market
+						);
+			}
+			else {
+				terms = "You are selling %s BURST for %s at a price of %s %s each.\n\n"
+						+ "A smart contract will hold your %s BURST plus a security deposity of %d %%. "
+						+ "The taker will deposit %s %s on your account '%s'.\n\n"
+						+ "There are no trading fees for you, but up to 40 BURST smart contract and transaction fees. "
+						+ "It can take up to 4 blocks for your order to be available. "
+						+ "You need to open BTDEX at least once every 24 hours so your account details can be "
+						+ "sent to the buyer in case your offer is taken. \n\n"
+						+ "After your account details are sent to the buyer, he/she "
+						+ "has up to %d hours to complete %s transfer. "
+						+ "After the %s amount is transfered, you have up to 24 hours to signal "
+						+ "the amount was received. "
+						+ "This order will be open until taken or cancelled.";
+
+				terms = String.format(terms,
+						amountField.getText(), market, priceField.getText(), market,
+						amountField.getText(), security.getValue(),
+						total.getText(), market, accountDetails.getText(),
+						market.getPaymentTimeout(account.getFields()), market, market
+						);
+			}
 		}
 		if(!conditions.getText().equals(terms)) {
 			conditions.setText(terms);

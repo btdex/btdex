@@ -144,9 +144,28 @@ public class TransactionsPanel extends JPanel {
 			if(tx.getSender() == g.getAddress())
 				amount = -amount;
 
+			// Types defined at brs/TransactionType.java
 			String type = "Payment";
 			switch (tx.getType()) {
-			case 2:
+			case 1: // TYPE_PAYMENT
+				switch (tx.getSubtype()) {
+				case 1:
+					type = "Alias assingment";
+					break;
+				case 5:
+					type = "Account info";
+					break;
+				case 6:
+					type = "Alias sell";
+					break;
+				case 7:
+					type = "Alias buy";
+					break;
+				default:
+					type = "Message";
+				}
+				break;
+			case 2: // TYPE_MESSAGING
 				switch (tx.getSubtype()) {
 				case 0:
 					type = "Token Issuance";
@@ -170,7 +189,10 @@ public class TransactionsPanel extends JPanel {
 					break;
 				}
 				break;
-			case 22:
+			case 20: // TYPE_MINING
+				type = "Set reward rec.";
+				break;
+			case 22: // TYPE_AUTOMATED_TRANSACTIONS
 				switch (tx.getSubtype()) {
 				case 0:
 					type = "SC Creation";

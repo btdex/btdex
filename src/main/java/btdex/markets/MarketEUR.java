@@ -54,6 +54,19 @@ public class MarketEUR extends Market {
 	}
 	
 	@Override
+	public int getPaymentTimeout(HashMap<String, String> fields) {
+		String method = fields.get(METHOD);
+		switch (method) {
+		case SEPA_INSTANT:
+			return 24;
+		default:
+			break;
+		}
+		// 5 days to complete the payment
+		return 5*24;
+	}
+	
+	@Override
 	public JComponent getFieldEditor(String key, boolean editable, HashMap<String, String> fields) {
 		if(key.equals(METHOD)) {
 			JComboBox<String> combo = new JComboBox<String>();
