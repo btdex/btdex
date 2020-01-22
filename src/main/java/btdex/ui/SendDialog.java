@@ -184,7 +184,7 @@ public class SendDialog extends JDialog implements ActionListener {
 					setVisible(false);
 
 					Toast.makeText((JFrame) this.getOwner(),
-							String.format("Transaction %s broadcasted", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
+							String.format("Transaction %s has been broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
 				}
 				catch (Exception ex) {
 					Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);

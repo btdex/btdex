@@ -161,7 +161,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 				setVisible(false);
 
 				Toast.makeText((JFrame) this.getOwner(),
-						String.format("Transaction %s broadcasted", tb.getTransactionId().toString()),
+						String.format("Transaction %s has been broadcast", tb.getTransactionId().toString()),
 						Toast.Style.SUCCESS).display();
 			}
 			catch (Exception ex) {
