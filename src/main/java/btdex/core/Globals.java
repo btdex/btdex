@@ -195,7 +195,7 @@ public class Globals {
 		if(f.getParentFile()!=null)
 			f.getParentFile().mkdirs();
 		FileOutputStream fos = new FileOutputStream(f);
-		getInstance().conf.store(fos, "BTDEX configuration file, only edit if you know what you're doing");
+		getInstance().conf.store(fos, "BTDEX configuration file, private key is encrypted, only edit if you know what you're doing");
 	}
 
 	public void clearConfs() throws Exception {
