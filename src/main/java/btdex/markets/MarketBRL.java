@@ -114,7 +114,7 @@ public class MarketBRL extends Market {
 			int i = 0;
 			for (String bank : BANK_LIST) {
 				combo.addItem(bank);
-				if(value!=null && value.length() > 3 && bank.startsWith(value.substring(0, 3)))
+				if(value!=null && bank.startsWith(value))
 					combo.setSelectedIndex(i);
 				i++;
 			}
@@ -131,6 +131,11 @@ public class MarketBRL extends Market {
 		if(key.equals(METHOD)) {
 			JComboBox<String> combo = (JComboBox<String>) editor;
 			fields.put(key, combo.getSelectedIndex() == 0 ? METHOD_SAME_BANK : METHOD_TED);
+		}
+		else if(key.equals(BANK)) {
+			JComboBox<String> combo = (JComboBox<String>) editor;
+			// save only the bank number
+			fields.put(key, combo.getSelectedItem().toString().substring(0, 3));
 		}
 		else
 			super.setFieldValue(key, editor, fields);
@@ -209,6 +214,11 @@ public class MarketBRL extends Market {
 
 	@Override
 	public String simpleFormat(HashMap<String, String> fields) {
-		return fields.get(METHOD) + ":" + fields.get(BANK) + ":" + fields.get(ACCOUNT);
+		String bank = null;
+		for (int i = 0; i < BANK_LIST.length; i++) {
+			if(BANK_LIST[i].startsWith(fields.get(BANK)))
+				bank = BANK_LIST[i];
+		}
+		return fields.get(METHOD) + ":" + bank + ":" + fields.get(ACCOUNT);
 	}
 }
