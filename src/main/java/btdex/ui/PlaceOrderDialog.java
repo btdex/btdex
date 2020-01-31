@@ -296,10 +296,10 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				if(isToken) {
 					if(sellToken.isSelected())
 						utx = g.getNS().generatePlaceAskOrderTransaction(g.getPubKey(), market.getTokenID(),
-								amountValue, priceValue, suggestedFee.getStandardFee(), 1440);
+								amountValue, priceValue, suggestedFee.getPriorityFee(), 1440);
 					else
 						utx = g.getNS().generatePlaceBidOrderTransaction(g.getPubKey(), market.getTokenID(),
-								amountValue, priceValue, suggestedFee.getStandardFee(), 1440);
+								amountValue, priceValue, suggestedFee.getPriorityFee(), 1440);
 				}
 				else {
 				}
@@ -376,7 +376,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 							amountField.getText(),
 							market,
 							isSell ? "for" : "with",
-									priceField.getText(), ContractState.format(suggestedFee.getStandardFee().longValue()));
+									priceField.getText(), ContractState.format(suggestedFee.getPriorityFee().longValue()));
 
 		}
 		else {
