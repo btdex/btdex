@@ -31,7 +31,9 @@ public class MarketBRL extends Market {
 			"756 - Bancoob - Sicoob", 
 			"422 - Banco Safra", 
 			"041 - Banrisul", 
-			"004 - Banco do Nordeste", 
+			"004 - Banco do Nordeste",
+			"077 - Banco Inter",
+			"260 - NuBank",
 	};
 
 	public String toString() {
