@@ -16,10 +16,12 @@ import com.google.gson.JsonObject;
 
 import bt.BT;
 import bt.compiler.Compiler;
+import btdex.markets.MarketBRL;
 import btdex.markets.MarketBTC;
 import btdex.markets.MarketETH;
 import btdex.markets.MarketEUR;
 import btdex.markets.MarketLTC;
+import btdex.markets.MarketNDST;
 import btdex.markets.MarketTRT;
 import btdex.markets.MarketXMR;
 import btdex.sc.SellContract;
@@ -126,16 +128,20 @@ public class Globals {
 				}
 			}
 			
+			testnet = Boolean.parseBoolean(conf.getProperty(PROP_TESTNET, "false"));
+			setNode(conf.getProperty(PROP_NODE, isTestnet() ? BT.NODE_TESTNET : BT.NODE_BURSTCOIN_RO));
+			
 			markets.add(token = new MarketTRT());
-//			markets.add(new MarketNDST());
+			if(testnet) {
+				markets.add(new MarketNDST());
+			}
 			markets.add(new MarketEUR());
+			markets.add(new MarketBRL());
 			markets.add(new MarketBTC());
 			markets.add(new MarketETH());
 			markets.add(new MarketLTC());
 			markets.add(new MarketXMR());
 
-			testnet = Boolean.parseBoolean(conf.getProperty(PROP_TESTNET, "false"));
-			setNode(conf.getProperty(PROP_NODE, isTestnet() ? BT.NODE_TESTNET : BT.NODE_BURSTCOIN_RO));
 
 			String publicKeyStr = conf.getProperty(Globals.PROP_PUBKEY);
 			if(publicKeyStr == null || publicKeyStr.length()!=64) {
