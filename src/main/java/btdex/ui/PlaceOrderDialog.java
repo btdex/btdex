@@ -137,7 +137,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					accountComboBox.addItem(ac);
 			}
 			
-			security = new JSlider(0, 20);
+			// Only FIAT can have zero security (on-ramp special contracts)
+			security = new JSlider(market.isFiat() ? 0 : 1, 20);
 
 			Desc securityDesc = new Desc("", security);
 			fieldPanel.add(securityDesc);

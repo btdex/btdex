@@ -50,9 +50,16 @@ public abstract class Market {
 	public BurstID getTokenID() {
 		return null;
 	}
+	
+	/**
+	 * @return true if this market is for a conventional fiat currency.
+	 */
+	public boolean isFiat() {
+		return getTokenID()==null && getID() >= MARKET_USD;
+	}
 
 	/**
-	 * @return a unique ID for the market or 0 if is a BURST token.
+	 * @return a unique ID for the market or 0 if is a BURST token, see {@link #getTokenID()}.
 	 */
 	public abstract long getID();
 	
