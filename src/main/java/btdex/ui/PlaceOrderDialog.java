@@ -384,20 +384,23 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			boolean isNoDeposit = security.getValue() == 0;
 			
 			if(isNoDeposit) {
-				terms = "You are selling BURST for %s at a price of %s %s each.\n\n"
-						+ "A smart contract will hold your %s BURST as security deposity. "
-						+ "A taker have to deposit %s %s on your account '%s' "
-						+ "and after that you will transfer %s BURST to the buyer's account.\n\n"
+				terms = "You are selling BURST for %s at a price of %s %s each with no buyer "
+						+ "security deposit.\n\n"
+						+ "A smart contract will hold 10 times your selling amount of %s BURST as "
+						+ "seller security deposity.\n\n"
+						+ "Any taker (up to 8 simultaneous) have to deposit %s %s on your account '%s' "
+						+ "and after that BTDEX will transfer %s BURST from your account (not from "
+						+ "the smart contract) to the buyer's account.\n\n"
 						+ "There is a 1%% fee when you withdraw your deposit and up to 40 BURST "
 						+ "smart contract and transaction fees. "
 						+ "It can take up to 4 blocks for your order to be available. "
 						+ "You need to open BTDEX at least once every 24 hours so your account "
-						+ "details can be sent to the buyer in case your offer is taken. \n\n"
+						+ "details can be sent to buyers in case your offer is taken. \n\n"
 						+ "After your account details are sent to the buyer, he/she "
 						+ "has up to %d hours to complete the %s transfer. "
 						+ "After you receive the %s amount, you have up to 24 hours to finish "
 						+ "the trade by transfering the BURST.\n\n"
-						+ "This order will be open until taken or cancelled. If you do not follow "
+						+ "This order will be open until cancelled. If you do not follow "
 						+ "the protocol, you might lose your security deposit.";
 
 				terms = String.format(terms,
@@ -411,7 +414,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			else {
 				terms = "You are selling %s BURST for %s at a price of %s %s each.\n\n"
 						+ "A smart contract will hold your %s BURST plus a security deposity of %d %%. "
-						+ "The taker will deposit %s %s on your account '%s'.\n\n"
+						+ "The taker have to deposit %s %s on your account '%s'.\n\n"
 						+ "There are no trading fees for you, but up to 40 BURST smart contract and transaction fees. "
 						+ "It can take up to 4 blocks for your order to be available. "
 						+ "You need to open BTDEX at least once every 24 hours so your account details can be "
