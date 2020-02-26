@@ -41,8 +41,6 @@ public class SellContract extends Contract {
 	
 	Address mediator1;
 	Address mediator2;
-	long offerType;
-	long accountHash;
 
 	long state;
 	long amount;
@@ -59,7 +57,7 @@ public class SellContract extends Contract {
 	/**
 	 * Update the offer settings, must be called by the creator.
 	 * 
-	 * With this method the creator can update the rate, security deposit.
+	 * With this method the creator can update the security deposit.
 	 * The offer status is also changed to **open** if the given security
 	 * deposit is greater than zero. If the creator sets the security
 	 * deposit as zero, the offer is withdrawn and all balance is sent back
@@ -91,13 +89,12 @@ public class SellContract extends Contract {
 	/**
 	 * Take an open offer by sending the expected security deposit.
 	 * 
-	 * The order is actually taken only if the given rate and security values match
+	 * The order is actually taken only if the security and amount values match
 	 * those currently valid for this contract. Besides, the amount along with
 	 * this transaction should be higher or equal the security deposit required.
 	 * If any of these conditions is not met, the order is not taken and the
 	 * amount sent is refunded (minus the activation fee).
 	 * 
-	 * @param rate         the exchange rate per BURST
 	 * @param security     the security deposit of this offer (in planck)
 	 * @param amount       the amount of this offer (in planck)
 	 */
@@ -134,7 +131,7 @@ public class SellContract extends Contract {
 			taker = null;
 			state = STATE_FINISHED;
 
-			// the fee comes from the balance
+			// the fee comes from the remaining balance
 			sendBalance(feeContract);
 		}
 	}
