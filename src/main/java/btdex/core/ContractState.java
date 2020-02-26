@@ -2,6 +2,10 @@ package btdex.core;
 
 import java.util.HashMap;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import bt.BT;
 import bt.Contract;
 import bt.compiler.Compiler;
@@ -10,6 +14,8 @@ import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;
 import burst.kit.entity.response.Transaction;
+import burst.kit.entity.response.TransactionAppendix;
+import burst.kit.entity.response.appendix.PlaintextMessageAppendix;
 
 public class ContractState {
 	
@@ -28,11 +34,13 @@ public class ContractState {
 	long feeContract;
 	
 	long state;
-	long rate;
 	long amount;
-	long security;
-	
+	long security;	
 	long lockMinutes;
+	
+	long rate;
+	int market;
+	String account;
 	
 	long lastTxId;
 	
@@ -224,15 +232,42 @@ public class ContractState {
 			if(tx.getId().getSignedLongId() == lastTxId)
 				break;
 			
+			// we only accept configurations with 2 confirmations or more
+			if(tx.getConfirmations()<2)
+				continue;
+			
 			// order configurations should be set by the creator
 			if(tx.getSender().getSignedLongId() != at.getCreator().getSignedLongId())
 				continue;
 			
-			if(tx.getType() == 2 /* TYPE_MESSAGING */
-					&& tx.getSubtype() == 0 /* SUBTYPE_MESSAGING_ARBITRARY_MESSAGE */) {
+			if(tx.getRecipient().getSignedLongId() == address.getSignedLongId()
+					&& tx.getSender().getBurstID().getSignedLongId() == at.getCreator().getSignedLongId()
+					&& tx.getType() == 2 /* TYPE_MESSAGING */
+					&& tx.getSubtype() == 0 /* SUBTYPE_MESSAGING_ARBITRARY_MESSAGE */
+					&& tx.getAppendages()!=null && tx.getAppendages().length > 0) {
 				
+				TransactionAppendix append = tx.getAppendages()[0];
+				if(append instanceof PlaintextMessageAppendix) {
+					PlaintextMessageAppendix appendMessage = (PlaintextMessageAppendix) append;
+
+					try {
+						String jsonData = appendMessage.getMessage();
+						JsonObject json = JsonParser.parseString(jsonData).getAsJsonObject();
+						JsonElement marketJson = json.get("market");
+						JsonElement rateJson = json.get("rate");
+						JsonElement accountJson = json.get("account");
+						if(marketJson!=null)
+							market = Integer.parseInt(marketJson.getAsString());
+						if(accountJson!=null)
+							account = accountJson.getAsString();
+						if(rateJson!=null)
+							rate = Long.parseLong(rateJson.getAsString());
+					}
+					catch (Exception e) {
+						// we ignore invalid messages
+					}
+				}
 			}
-			
 			lastTxId = tx.getId().getSignedLongId();
 		}
 	}

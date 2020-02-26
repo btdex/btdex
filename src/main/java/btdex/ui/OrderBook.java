@@ -399,8 +399,8 @@ public class OrderBook extends JPanel {
 			if(s.getAmountNQT() > 0
 					&& s.getState() == SellContract.STATE_OPEN
 					&& g.getFeeContract() == s.getFeeContract()
-					&& g.isArbitratorAccepted(s.getMediator1())
-					&& g.isArbitratorAccepted(s.getMediator2()) )
+					&& g.isMediatorAccepted(s.getMediator1())
+					&& g.isMediatorAccepted(s.getMediator2()) )
 				marketContracts.add(s);
 		}
 		

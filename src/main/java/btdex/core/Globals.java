@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Random;
 
 import com.google.gson.JsonObject;
 
@@ -377,8 +378,25 @@ public class Globals {
 	public long getFeeContract() {
 		return feeContract;
 	}
+	
+	public long[] getNewContractData() {
+		long data[] = new long[3];
+		data[0] = feeContract;
+		
+		Random rand = new Random();
+		long mediator1 = MEDIATORS[rand.nextInt(MEDIATORS.length)].getSignedLongId();
+		long mediator2 = MEDIATORS[rand.nextInt(MEDIATORS.length)].getSignedLongId();
+		while(mediator1 == mediator2) {
+			// make sure we have 2 different mediators
+			mediator2 = MEDIATORS[rand.nextInt(MEDIATORS.length)].getSignedLongId();
+		}
+		data[1] = mediator1;
+		data[2] = mediator2;
+		
+		return data;
+	}
 
-	public boolean isArbitratorAccepted(long arb) {
+	public boolean isMediatorAccepted(long arb) {
 		for (BurstID arbi : MEDIATORS) {
 			if(arbi.getSignedLongId() == arb)
 				return true;
