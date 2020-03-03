@@ -49,6 +49,8 @@ public class RegisterContractDialog extends JDialog implements ActionListener {
 	public RegisterContractDialog(JFrame owner) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		
+		setTitle("Register a new Smart Contract");
 
 		conditions = new JTextPane();
 		conditions.setPreferredSize(new Dimension(80, 120));
@@ -93,13 +95,13 @@ public class RegisterContractDialog extends JDialog implements ActionListener {
 		contract = Globals.getInstance().getContract();
 
 		String terms = null;
-		terms = "You are registering a new smart contract for selling BURST.\n"
-				+ "\nThis contract can later be configured to sell BURST at any market.";
+		terms = "You are registering a new smart contract for selling BURST."
+				+ "\n\nThis contract can later be configured to sell BURST at any market."
+				+ " Registering a new contract will cost you %s BURST.";
 		terms = String.format(terms,
 				ContractState.format(suggestedFee.getPriorityFee().longValue() + 
 						BT.getMinRegisteringFee(contract).longValue()
 						));
-
 		pack();
 	}
 

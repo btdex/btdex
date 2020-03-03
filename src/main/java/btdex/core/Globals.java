@@ -96,12 +96,27 @@ public class Globals {
 	static byte[] contractNoDepositCode;
 
 	/** Mediator list to choose randomly from */
-	public static final BurstID[] MEDIATORS = {
-			BC.rsDecode("TMSU-YBH5-RVC7-6J6WJ"),
-			BC.rsDecode("GFP4-TVNR-S7TY-E5KAY"),
-			// TODO: add other mediators here
-
-	};
+	public static BurstID[] MEDIATORS;
+	
+	private void initializeMediators() {
+		if(MEDIATORS!=null)
+			return;
+		
+		if(testnet) {
+			MEDIATORS = new BurstID[]{
+					BC.rsDecode("TMSU-YBH5-RVC7-6J6WJ"),
+					BC.rsDecode("GFP4-TVNR-S7TY-E5KAY"),
+					// TODO: add other mediators here
+			};
+		}
+		else {
+			MEDIATORS = new BurstID[]{
+					BC.rsDecode("TLYF-7EBX-FBLY-DFX86"),
+					BC.rsDecode("P3D9-QX3S-7YHZ-BYLZD"),
+					// TODO: add other mediators here
+			};			
+		}
+	}
 
 	static Globals INSTANCE;
 
@@ -380,6 +395,8 @@ public class Globals {
 	}
 	
 	public long[] getNewContractData() {
+		initializeMediators();
+		
 		long data[] = new long[3];
 		data[0] = feeContract;
 		
@@ -396,12 +413,13 @@ public class Globals {
 		return data;
 	}
 
-	public boolean isMediatorAccepted(long arb) {
-		for (BurstID arbi : MEDIATORS) {
-			if(arbi.getSignedLongId() == arb)
+	public boolean isMediatorAccepted(long mediator) {
+		initializeMediators();
+		
+		for (BurstID m : MEDIATORS) {
+			if(m.getSignedLongId() == mediator)
 				return true;
 		}
 		return false;
 	}
-
 }
