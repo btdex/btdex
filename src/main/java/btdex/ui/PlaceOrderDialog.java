@@ -35,10 +35,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import btdex.core.Account;
-import btdex.core.ContractState;
-import btdex.core.Globals;
-import btdex.core.Market;
+import btdex.core.*;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.FeeSuggestion;
@@ -340,8 +337,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		try {
 			// For token, price is in BURST, others price is on the selected market
 			if(isToken) {
-				Number priceN = Globals.NF.parse(priceField.getText());
-				Number amountN = Globals.NF.parse(amountField.getText());
+				Number priceN = NumberFormatting.NF().parse(priceField.getText());
+				Number amountN = NumberFormatting.NF().parse(amountField.getText());
 
 				priceValue = BurstValue.fromPlanck((long)(priceN.doubleValue()*market.getFactor()));
 				amountValue = BurstValue.fromPlanck((long)(amountN.doubleValue()*market.getFactor()));

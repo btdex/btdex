@@ -43,45 +43,14 @@ public class Globals {
 
 	BurstNodeService NS;
 	public static final BurstCrypto BC = BurstCrypto.getInstance();
-	
-	static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-	
-	static final String FAUCET_TESTNET =
-			"https://burst-account-activator-testnet.ohager.now.sh/api/activate";
-	static final String FAUCET = "https://burst-account-activator.now.sh/api/activate";
 
-	static final String DEF_CONF_FILE = "config.properties";
-
-	public static final String PROP_NODE = "node";
-	public static final String PROP_TESTNET = "testnet";
-	public static final String PROP_ACCOUNT = "account";
-	public static final String PROP_ENC_PRIVKEY = "encPrivKey";
-	public static final String PROP_PUBKEY = "pubKey";
-	
-	public static final String PROP_EXPLORER = "explorer";
-	
 	ArrayList<Market> markets = new ArrayList<>();
 	Market token;
 	
 	// FIXME: set the fee contract
 	public final long feeContract = 222222L;
-	
-	public static final NumberFormat NF = NumberFormat.getInstance(Locale.ENGLISH);
-	public static final NumberFormat NF_FULL = NumberFormat.getInstance(Locale.ENGLISH);
-	static {
-		NF.setMinimumFractionDigits(2);
-		NF.setMaximumFractionDigits(5);
-		
-		NF_FULL.setMinimumFractionDigits(5);
-		NF_FULL.setMaximumFractionDigits(8);
-		
-		DecimalFormatSymbols s = new DecimalFormatSymbols(Locale.ENGLISH);
-		s.setGroupingSeparator('\'');
-		((DecimalFormat)NF).setDecimalFormatSymbols(s);
-		((DecimalFormat)NF_FULL).setDecimalFormatSymbols(s);
-	}
 
-	static String confFile = DEF_CONF_FILE;
+	static String confFile = Constants.DEF_CONF_FILE;
 	Properties conf = new Properties();
 	
 	ArrayList<Account> accounts = new ArrayList<>();
@@ -95,28 +64,6 @@ public class Globals {
 	static byte[] contractCode;
 	static byte[] contractNoDepositCode;
 
-	/** Mediator list to choose randomly from */
-	public static BurstID[] MEDIATORS;
-	
-	private void initializeMediators() {
-		if(MEDIATORS!=null)
-			return;
-		
-		if(testnet) {
-			MEDIATORS = new BurstID[]{
-					BC.rsDecode("TMSU-YBH5-RVC7-6J6WJ"),
-					BC.rsDecode("GFP4-TVNR-S7TY-E5KAY"),
-					// TODO: add other mediators here
-			};
-		}
-		else {
-			MEDIATORS = new BurstID[]{
-					BC.rsDecode("TLYF-7EBX-FBLY-DFX86"),
-					BC.rsDecode("P3D9-QX3S-7YHZ-BYLZD"),
-					// TODO: add other mediators here
-			};			
-		}
-	}
 
 	static Globals INSTANCE;
 
@@ -144,8 +91,8 @@ public class Globals {
 				}
 			}
 			
-			testnet = Boolean.parseBoolean(conf.getProperty(PROP_TESTNET, "false"));
-			setNode(conf.getProperty(PROP_NODE, isTestnet() ? BT.NODE_TESTNET : BT.NODE_BURSTCOIN_RO));
+			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
+			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? BT.NODE_TESTNET : BT.NODE_BURSTCOIN_RO));
 			
 			markets.add(token = new MarketTRT());
 			if(testnet) {
@@ -159,14 +106,14 @@ public class Globals {
 			markets.add(new MarketXMR());
 
 
-			String publicKeyStr = conf.getProperty(Globals.PROP_PUBKEY);
+			String publicKeyStr = conf.getProperty(Constants.PROP_PUBKEY);
 			if(publicKeyStr == null || publicKeyStr.length()!=64) {
 				// no public key or invalid, show the welcome screen
-				conf.remove(PROP_PUBKEY);
+				conf.remove(Constants.PROP_PUBKEY);
 			}
 			else {
 				// get the updated public key and continue
-				publicKeyStr = conf.getProperty(Globals.PROP_PUBKEY);
+				publicKeyStr = conf.getProperty(Constants.PROP_PUBKEY);
 				byte []publicKey = BC.parseHexString(publicKeyStr);
 				address = BC.getBurstAddressFromPublic(publicKey);
 			}
@@ -201,7 +148,7 @@ public class Globals {
 	}
 	
 	public String getNode() {
-		return conf.getProperty(Globals.PROP_NODE);
+		return conf.getProperty(Constants.PROP_NODE);
 	}
 	
 	public void updateSuggestedFee() {
@@ -229,8 +176,8 @@ public class Globals {
 		byte[] pinKey = BC.getSha256().digest(new String(pin).getBytes("UTF-8"));
 		byte[] encPrivKey = Globals.BC.aesEncrypt(privKey, pinKey);
 
-		conf.setProperty(Globals.PROP_PUBKEY, Globals.BC.toHexString(pubKey));
-		conf.setProperty(Globals.PROP_ENC_PRIVKEY, Globals.BC.toHexString(encPrivKey));
+		conf.setProperty(Constants.PROP_PUBKEY, Globals.BC.toHexString(pubKey));
+		conf.setProperty(Constants.PROP_ENC_PRIVKEY, Globals.BC.toHexString(encPrivKey));
 
 		address = BC.getBurstAddressFromPublic(pubKey);
 	}
@@ -238,11 +185,11 @@ public class Globals {
 	public boolean checkPIN(char []pin) {
 		try {
 			byte[] pinKey = BC.getSha256().digest(new String(pin).getBytes("UTF-8"));
-			String encPrivKey = conf.getProperty(Globals.PROP_ENC_PRIVKEY);
+			String encPrivKey = conf.getProperty(Constants.PROP_ENC_PRIVKEY);
 			byte []privKey = BC.aesDecrypt(BC.parseHexString(encPrivKey), pinKey);
 			String pubKey = BC.toHexString(BC.getPublicKey(privKey));
 
-			return pubKey.equals(conf.getProperty(PROP_PUBKEY));
+			return pubKey.equals(conf.getProperty(Constants.PROP_PUBKEY));
 		} catch (Exception e) {
 			return false;
 		}
@@ -250,7 +197,7 @@ public class Globals {
 
 	public byte[] signTransaction(char []pin, byte[]unsigned) throws Exception {
 		byte[] pinKey = BC.getSha256().digest(new String(pin).getBytes("UTF-8"));
-		String encPrivKey = conf.getProperty(Globals.PROP_ENC_PRIVKEY);
+		String encPrivKey = conf.getProperty(Constants.PROP_ENC_PRIVKEY);
 		byte []privKey = BC.aesDecrypt(BC.parseHexString(encPrivKey), pinKey);
 
 		return BC.signTransaction(privKey, unsigned);
@@ -264,11 +211,11 @@ public class Globals {
 		// load the accounts
 		int i = 1;
 		while(true) {
-			String accountMarket = conf.getProperty(PROP_ACCOUNT + i, null);
+			String accountMarket = conf.getProperty(Constants.PROP_ACCOUNT + i, null);
 			if(accountMarket == null || accountMarket.length()==0)
 				break;
 
-			String accountName = conf.getProperty(PROP_ACCOUNT + i + ".name", null);
+			String accountName = conf.getProperty(Constants.PROP_ACCOUNT + i + ".name", null);
 
 			Market m = null;
 			for (int j = 0; j < markets.size(); j++) {
@@ -283,7 +230,7 @@ public class Globals {
 			ArrayList<String> fieldNames = m.getFieldKeys();
 			HashMap<String, String> fields = new HashMap<>();
 			for(String key : fieldNames) {
-				fields.put(key, conf.getProperty(PROP_ACCOUNT + i + "." + key, ""));
+				fields.put(key, conf.getProperty(Constants.PROP_ACCOUNT + i + "." + key, ""));
 			}
 			if(accountName == null)
 				accountName = m.simpleFormat(fields);
@@ -298,16 +245,16 @@ public class Globals {
 		int i = 1;
 		for (; i <= accounts.size(); i++) {
 			Account ac = accounts.get(i-1);
-			conf.setProperty(PROP_ACCOUNT + i, ac.getMarket());
-			conf.setProperty(PROP_ACCOUNT + i + ".name", ac.getName());
+			conf.setProperty(Constants.PROP_ACCOUNT + i, ac.getMarket());
+			conf.setProperty(Constants.PROP_ACCOUNT + i + ".name", ac.getName());
 			
 			HashMap<String, String> fields = ac.getFields();
 			for(String key : fields.keySet()) {
-				conf.setProperty(PROP_ACCOUNT + i + "." + key, fields.get(key));
+				conf.setProperty(Constants.PROP_ACCOUNT + i + "." + key, fields.get(key));
 			}
 		}
 		// null terminated list
-		conf.setProperty(PROP_ACCOUNT + i, "");
+		conf.setProperty(Constants.PROP_ACCOUNT + i, "");
 		
 		try {
 			saveConfs();
@@ -331,7 +278,7 @@ public class Globals {
 	}
 
 	public byte[] getPubKey() {
-		return BC.parseHexString(conf.getProperty(PROP_PUBKEY));
+		return BC.parseHexString(conf.getProperty(Constants.PROP_PUBKEY));
 	}
 
 	public Compiler getContract() {
@@ -355,17 +302,17 @@ public class Globals {
 	}
 
 	public void setNode(String node) {
-		conf.setProperty(PROP_NODE, node);
+		conf.setProperty(Constants.PROP_NODE, node);
 
 		NS = BurstNodeService.getInstance(node);
 	}
 	
 	public String getExplorer() {
-		return conf.getProperty(PROP_EXPLORER, ExplorerWrapper.BURST_DEVTRUE);
+		return conf.getProperty(Constants.PROP_EXPLORER, ExplorerWrapper.BURST_DEVTRUE);
 	}
 	
 	public void setExplorer(String value) {
-		conf.setProperty(PROP_EXPLORER, value);
+		conf.setProperty(Constants.PROP_EXPLORER, value);
 	}
 	
 	public Response activate() throws IOException {
@@ -375,9 +322,9 @@ public class Globals {
 		params.addProperty("account", getAddress().getID());
 		params.addProperty("publickey", BC.toHexString(getPubKey()));
 		
-		RequestBody body = RequestBody.create(JSON, params.toString());
+		RequestBody body = RequestBody.create(Constants.JSON, params.toString());
 		
-		String faucet = isTestnet() ? FAUCET_TESTNET : FAUCET;
+		String faucet = isTestnet() ? Constants.FAUCET_TESTNET : Constants.FAUCET;
 		Request request = new Request.Builder()
 		        .url(faucet)
 		        .post(body)
@@ -395,7 +342,8 @@ public class Globals {
 	}
 	
 	public long[] getNewContractData() {
-		initializeMediators();
+		Mediators mediators = new Mediators(testnet);
+		BurstID[] MEDIATORS = mediators.getMediators();
 		
 		long data[] = new long[3];
 		data[0] = feeContract;
@@ -414,7 +362,8 @@ public class Globals {
 	}
 
 	public boolean isMediatorAccepted(long mediator) {
-		initializeMediators();
+		Mediators mediators = new Mediators(testnet);
+		BurstID[] MEDIATORS = mediators.getMediators();
 		
 		for (BurstID m : MEDIATORS) {
 			if(m.getSignedLongId() == mediator)
