@@ -4,6 +4,7 @@ import bt.BT;
 import bt.Contract;
 import btdex.core.Globals;
 import btdex.core.Market;
+import btdex.core.Mediators;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
@@ -25,8 +26,10 @@ public class PopulateMarket extends BT {
 		long security = 100 * Contract.ONE_BURST;
 
 		BurstID feeContract = BT.getBurstAddressFromPassphrase(BT.PASSPHRASE).getBurstID();
-		BurstID arbitrator1 = Globals.MEDIATORS[0];
-		BurstID arbitrator2 = Globals.MEDIATORS[1];
+		Mediators mediators = new Mediators(true);
+		BurstID arbitrator1 = mediators.getMediators()[0];
+		BurstID arbitrator2 = mediators.getMediators()[1];
+
 		long offerType = Market.MARKET_BTC;
 		long accountHash = 1234;
 

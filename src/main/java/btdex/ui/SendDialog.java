@@ -23,6 +23,7 @@ import javax.swing.event.ChangeListener;
 import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
+import btdex.core.NumberFormatting;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
@@ -66,7 +67,7 @@ public class SendDialog extends JDialog implements ActionListener {
 		pin = new JPasswordField(12);
 		pin.addActionListener(this);
 
-		amount = new JFormattedTextField(Globals.NF_FULL);
+		amount = new JFormattedTextField(NumberFormatting.NF(5, 8));
 		fee = new JSlider(1, N_FEE_SLOTS);
 
 		topPanel.add(new Desc("Recipient", recipient));
@@ -147,7 +148,7 @@ public class SendDialog extends JDialog implements ActionListener {
 			Number amountNumber = null;
 			if(error == null) {
 				try {
-					amountNumber = Globals.NF_FULL.parse(amount.getText());
+					amountNumber = NumberFormatting.NF(5, 8).parse(amount.getText());
 				} catch (ParseException e1) {
 					amount.requestFocus();
 					error = "Invalid amount";

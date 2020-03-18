@@ -63,15 +63,8 @@ public abstract class Market {
 	 */
 	public abstract long getID();
 	
-	private static final NumberFormat NF = NumberFormat.getInstance(Locale.ENGLISH);
-	static {
-		NF.setMinimumFractionDigits(8);
-		NF.setMaximumFractionDigits(8);
-		DecimalFormatSymbols s = new DecimalFormatSymbols(Locale.ENGLISH);
-		s.setGroupingSeparator('\'');
-		((DecimalFormat)NF).setDecimalFormatSymbols(s);
-	}
-	
+	private final NumberFormat NF = NumberFormatting.NF(8, 8);
+
 	/**
 	 * @return the formatted value (assuming value is in SATs)
 	 */

@@ -3,6 +3,7 @@ package btdex;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import btdex.core.Mediators;
 import org.junit.Test;
 
 import bt.BT;
@@ -43,8 +44,9 @@ public class TestInvalidTakeReopenWithdraw extends BT {
         BT.sendAmount(BT.PASSPHRASE, maker, BurstValue.fromPlanck(2 * amount + 3 * security)).blockingGet();
         BT.forgeBlock();
 
-        BurstID mediator1 = Globals.MEDIATORS[0];
-        BurstID mediator2 = Globals.MEDIATORS[1];
+        Mediators mediators = new Mediators(true);
+        BurstID mediator1 = mediators.getMediators()[0];
+        BurstID mediator2 = mediators.getMediators()[1];
         long offerType = Market.MARKET_BTC;
         long state = SellContract.STATE_FINISHED;
         long accountHash = 0;

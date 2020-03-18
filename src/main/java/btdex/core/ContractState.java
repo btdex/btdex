@@ -50,7 +50,7 @@ public class ContractState {
 	
 	public static String format(long valueNQT) {
 		double dvalue = (double)valueNQT / Contract.ONE_BURST;
-		return NumberFormatting.NF().format(dvalue);
+		return NumberFormatting.NF(2, 5).format(dvalue);
 	}
 	
 	public long getMarket() {
@@ -99,7 +99,7 @@ public class ContractState {
 	
 	public String getAmount() {
 		double dvalue = (double)amount / Contract.ONE_BURST;
-		return NumberFormatting.NF().format(dvalue);
+		return NumberFormatting.NF(2, 5).format(dvalue);
 	}
 
 	public long getSecurityNQT() {
@@ -108,7 +108,7 @@ public class ContractState {
 	
 	public String getSecurity() {
 		double dvalue = (double)security / Contract.ONE_BURST;
-		return NumberFormatting.NF().format(dvalue);
+		return NumberFormatting.NF(2, 5).format(dvalue);
 	}
 
 	/**

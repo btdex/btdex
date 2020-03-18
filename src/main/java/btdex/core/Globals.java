@@ -4,12 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Properties;
 import java.util.Random;
 
@@ -33,7 +29,6 @@ import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.service.BurstNodeService;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -41,21 +36,21 @@ import okhttp3.Response;
 
 public class Globals {
 
-	BurstNodeService NS;
+	private BurstNodeService NS;
 	public static final BurstCrypto BC = BurstCrypto.getInstance();
 
-	ArrayList<Market> markets = new ArrayList<>();
-	Market token;
+	private ArrayList<Market> markets = new ArrayList<>();
+	private Market token;
 	
 	// FIXME: set the fee contract
 	public final long feeContract = 222222L;
 
 	static String confFile = Constants.DEF_CONF_FILE;
-	Properties conf = new Properties();
+	private Properties conf = new Properties();
 	
-	ArrayList<Account> accounts = new ArrayList<>();
+	private ArrayList<Account> accounts = new ArrayList<>();
 
-	boolean testnet = false;
+	private boolean testnet = false;
 	private BurstAddress address;
 	private FeeSuggestion suggestedFee;
 
@@ -317,22 +312,22 @@ public class Globals {
 	
 	public Response activate() throws IOException {
 		OkHttpClient client = new OkHttpClient();
-		
+
 		JsonObject params = new JsonObject();
 		params.addProperty("account", getAddress().getID());
 		params.addProperty("publickey", BC.toHexString(getPubKey()));
-		
+
 		RequestBody body = RequestBody.create(Constants.JSON, params.toString());
-		
+
 		String faucet = isTestnet() ? Constants.FAUCET_TESTNET : Constants.FAUCET;
 		Request request = new Request.Builder()
 		        .url(faucet)
 		        .post(body)
 		        .build();
-		
+
 		return client.newCall(request).execute();
 	}
-	
+
 	public boolean isTestnet() {
 		return testnet;
 	}
