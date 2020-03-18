@@ -19,30 +19,30 @@ import burst.kit.entity.response.appendix.PlaintextMessageAppendix;
 
 public class ContractState {
 	
-	enum Type {
+	private enum Type {
 		Invalid, Standard, NoDeposit
 	}
 	
-	BurstAddress address;
-	Type type;
-	AT at;
-	BurstValue balance;
+	private BurstAddress address;
+	private Type type;
+	private AT at;
+	private BurstValue balance;
 	
-	long mediator1;
-	long mediator2;
-	long offerType;
-	long feeContract;
+	private long mediator1;
+	private long mediator2;
+	private long offerType;
+	private long feeContract;
 	
-	long state;
-	long amount;
-	long security;	
-	long lockMinutes;
+	private long state;
+	private long amount;
+	private long security;
+	private long lockMinutes;
 	
-	long rate;
-	int market;
-	String account;
+	private long rate;
+	private int market;
+	private String account;
 	
-	long lastTxId;
+	private long lastTxId;
 	
 	public ContractState(Type type) {
 		this.type = type;
