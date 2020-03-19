@@ -24,6 +24,7 @@ import javax.swing.border.EmptyBorder;
 import bt.BT;
 import bt.compiler.Compiler;
 import btdex.core.ContractState;
+import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.sc.SellContract;
 import burst.kit.crypto.BurstCrypto;
@@ -92,7 +93,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener {
 		content.add(buttonPane, BorderLayout.PAGE_END);
 
 		suggestedFee = Globals.getInstance().getSuggestedFee();
-		contract = Globals.getInstance().getContract();
+		contract = Contracts.getContract();
 
 		String terms = null;
 		terms = "You are registering a new smart contract for selling BURST."
@@ -134,7 +135,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener {
 			try {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-				Compiler contract = g.getContract();
+				Compiler contract = Contracts.getContract();
 				long data[] = g.getNewContractData();
 
 				ByteBuffer dataBuffer = ByteBuffer.allocate(data==null ? 0 : data.length*8);

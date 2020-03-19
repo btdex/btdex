@@ -169,7 +169,7 @@ public class ContractState {
 	}
 	
 	static boolean checkContractCode(AT at) {
-		byte []code = Globals.getInstance().getContractCode();
+		byte []code = Contracts.getContractCode();
 		
 		if(at.getMachineCode().length < code.length)
 			return false;
@@ -182,7 +182,7 @@ public class ContractState {
 	}
 	
 	static boolean checkContractCodeNoDeposit(AT at) {
-		byte []code = Globals.getInstance().getContractNoDepositCode();
+		byte []code = Contracts.getContractNoDepositCode();
 		
 		if(at.getMachineCode().length < code.length)
 			return false;
@@ -209,7 +209,7 @@ public class ContractState {
 		this.balance = at.getBalance();
 		
 		if(type == Type.Standard) {
-			Compiler contract = g.getContract();
+			Compiler contract = Contracts.getContract();
 			this.mediator1 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator1"));
 			this.mediator2 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator2"));
 			this.state = BT.getContractFieldValue(at, contract.getFieldAddress("state"));
@@ -218,7 +218,7 @@ public class ContractState {
 			this.feeContract = BT.getContractFieldValue(at, contract.getFieldAddress("feeContract"));
 		}
 		else if(type == Type.NoDeposit) {
-			Compiler contract = g.getContractNoDeposit();
+			Compiler contract = Contracts.getContractNoDeposit();
 			this.mediator1 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator1"));
 			this.mediator2 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator2"));
 			this.state = BT.getContractFieldValue(at, contract.getFieldAddress("state"));

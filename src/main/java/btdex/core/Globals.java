@@ -13,14 +13,6 @@ import com.google.gson.JsonObject;
 
 import bt.BT;
 import bt.compiler.Compiler;
-import btdex.markets.MarketBRL;
-import btdex.markets.MarketBTC;
-import btdex.markets.MarketETH;
-import btdex.markets.MarketEUR;
-import btdex.markets.MarketLTC;
-import btdex.markets.MarketNDST;
-import btdex.markets.MarketTRT;
-import btdex.markets.MarketXMR;
 import btdex.sc.SellContract;
 import btdex.sc.SellNoDepositContract;
 import btdex.ui.ExplorerWrapper;
@@ -52,10 +44,6 @@ public class Globals {
 	private BurstAddress address;
 	private FeeSuggestion suggestedFee;
 
-	static Compiler contract, contractNoDeposit;
-
-	static byte[] contractCode;
-	static byte[] contractNoDepositCode;
 
 
 	static Globals INSTANCE;
@@ -64,7 +52,6 @@ public class Globals {
 			INSTANCE = new Globals();
 		return INSTANCE;
 	}
-
 	public static void setConfFile(String file) {
 		confFile = file;
 	}
@@ -98,7 +85,7 @@ public class Globals {
 			e.printStackTrace();
 		}
 
-		addContracts();
+		Contracts.addContracts();
 
 	}
 
@@ -116,31 +103,16 @@ public class Globals {
 		}
 	}
 
-	private void addContracts() {
-		try {
-			contract = new Compiler(SellContract.class);
-			contract.compile();
-			contract.link();
 
-			contractNoDeposit = new Compiler(SellNoDepositContract.class);
-			contractNoDeposit.compile();
-			contractNoDeposit.link();
-
-			contractCode = contract.getCode();
-			contractNoDepositCode = contractNoDeposit.getCode();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 
 	public String getNode() {
 		return conf.getProperty(Constants.PROP_NODE);
 	}
-	
+
 	public void updateSuggestedFee() {
 		suggestedFee = getNS().suggestFee().blockingGet();
 	}
-	
+
 	public FeeSuggestion getSuggestedFee() {
 		return suggestedFee;
 	}
@@ -188,11 +160,11 @@ public class Globals {
 
 		return BC.signTransaction(privKey, unsigned);
 	}
-	
+
 	public ArrayList<Account> getAccounts() {
 		return accounts;
 	}
-	
+
 	private void loadAccounts() {
 		// load the accounts
 		int i = 1;
@@ -213,7 +185,7 @@ public class Globals {
 			}
 			if(m == null)
 				break;
-			
+
 			ArrayList<String> fieldNames = m.getFieldKeys();
 			HashMap<String, String> fields = new HashMap<>();
 			for(String key : fieldNames) {
@@ -221,20 +193,20 @@ public class Globals {
 			}
 			if(accountName == null)
 				accountName = m.simpleFormat(fields);
-			
+
 			accounts.add(new Account(accountMarket, accountName, fields));
-			
+
 			i++;
 		}
 	}
-	
+
 	private void saveAccounts() {
 		int i = 1;
 		for (; i <= accounts.size(); i++) {
 			Account ac = accounts.get(i-1);
 			conf.setProperty(Constants.PROP_ACCOUNT + i, ac.getMarket());
 			conf.setProperty(Constants.PROP_ACCOUNT + i + ".name", ac.getName());
-			
+
 			HashMap<String, String> fields = ac.getFields();
 			for(String key : fields.keySet()) {
 				conf.setProperty(Constants.PROP_ACCOUNT + i + "." + key, fields.get(key));
@@ -242,19 +214,19 @@ public class Globals {
 		}
 		// null terminated list
 		conf.setProperty(Constants.PROP_ACCOUNT + i, "");
-		
+
 		try {
 			saveConfs();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void addAccount(Account ac) {
 		accounts.add(ac);
 		saveAccounts();
 	}
-	
+
 	public void removeAccount(int index) {
 		accounts.remove(index);
 		saveAccounts();
@@ -266,22 +238,6 @@ public class Globals {
 
 	public byte[] getPubKey() {
 		return BC.parseHexString(conf.getProperty(Constants.PROP_PUBKEY));
-	}
-
-	public Compiler getContract() {
-		return contract;
-	}
-	
-	public Compiler getContractNoDeposit() {
-		return contractNoDeposit;
-	}
-	
-	public byte[] getContractCode() {
-		return contractCode;
-	}
-	
-	public byte[] getContractNoDepositCode() {
-		return contractNoDepositCode;
 	}
 
 	public BurstNodeService getNS() {
