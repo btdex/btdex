@@ -28,6 +28,7 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
+import btdex.core.Markets;
 import com.bulenkov.darcula.DarculaLaf;
 
 import bt.BT;
@@ -214,9 +215,9 @@ public class Main extends JFrame implements ActionListener {
 		bottomRight.add(resetPinButton);
 		bottomRight.add(signoutButton);
 
-		for(Market m : g.getMarkets())
+		for(Market m : Markets.getMarkets())
 			marketComboBox.addItem(m);
-		token = g.getToken();
+		token = Markets.getToken();
 
 		marketComboBox.addActionListener(this);
 		orderBook = new OrderBook(this, (Market) marketComboBox.getSelectedItem());

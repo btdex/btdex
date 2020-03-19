@@ -39,15 +39,13 @@ public class Globals {
 	private BurstNodeService NS;
 	public static final BurstCrypto BC = BurstCrypto.getInstance();
 
-	private ArrayList<Market> markets = new ArrayList<>();
-	private Market token;
-	
+
 	// FIXME: set the fee contract
 	public final long feeContract = 222222L;
 
 	static String confFile = Constants.DEF_CONF_FILE;
 	private Properties conf = new Properties();
-	
+
 	private ArrayList<Account> accounts = new ArrayList<>();
 
 	private boolean testnet = false;
@@ -55,19 +53,18 @@ public class Globals {
 	private FeeSuggestion suggestedFee;
 
 	static Compiler contract, contractNoDeposit;
-	
+
 	static byte[] contractCode;
 	static byte[] contractNoDepositCode;
 
 
 	static Globals INSTANCE;
-
 	public static Globals getInstance() {
 		if(INSTANCE==null)
 			INSTANCE = new Globals();
 		return INSTANCE;
 	}
-	
+
 	public static void setConfFile(String file) {
 		confFile = file;
 	}
@@ -85,63 +82,57 @@ public class Globals {
 					e.printStackTrace();
 				}
 			}
-			
+
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
 			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? BT.NODE_TESTNET : BT.NODE_BURSTCOIN_RO));
-			
-			markets.add(token = new MarketTRT());
-			if(testnet) {
-				markets.add(new MarketNDST());
-			}
-			markets.add(new MarketEUR());
-			markets.add(new MarketBRL());
-			markets.add(new MarketBTC());
-			markets.add(new MarketETH());
-			markets.add(new MarketLTC());
-			markets.add(new MarketXMR());
 
 
-			String publicKeyStr = conf.getProperty(Constants.PROP_PUBKEY);
-			if(publicKeyStr == null || publicKeyStr.length()!=64) {
-				// no public key or invalid, show the welcome screen
-				conf.remove(Constants.PROP_PUBKEY);
-			}
-			else {
-				// get the updated public key and continue
-				publicKeyStr = conf.getProperty(Constants.PROP_PUBKEY);
-				byte []publicKey = BC.parseHexString(publicKeyStr);
-				address = BC.getBurstAddressFromPublic(publicKey);
-			}
+			Markets.addMarkets(testnet);
+
+
+			checkPublicKey();
+
 			loadAccounts();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
 
+		addContracts();
+
+	}
+
+	private void checkPublicKey() {
+		String publicKeyStr = conf.getProperty(Constants.PROP_PUBKEY);
+		if(publicKeyStr == null || publicKeyStr.length()!=64) {
+			// no public key or invalid, show the welcome screen
+			conf.remove(Constants.PROP_PUBKEY);
+		}
+		else {
+			// get the updated public key and continue
+			publicKeyStr = conf.getProperty(Constants.PROP_PUBKEY);
+			byte []publicKey = BC.parseHexString(publicKeyStr);
+			address = BC.getBurstAddressFromPublic(publicKey);
+		}
+	}
+
+	private void addContracts() {
 		try {
 			contract = new Compiler(SellContract.class);
 			contract.compile();
 			contract.link();
-			
+
 			contractNoDeposit = new Compiler(SellNoDepositContract.class);
 			contractNoDeposit.compile();
 			contractNoDeposit.link();
-			
+
 			contractCode = contract.getCode();
 			contractNoDepositCode = contractNoDeposit.getCode();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
-	public ArrayList<Market> getMarkets(){
-		return markets;
-	}
-	
-	public Market getToken() {
-		return token;
-	}
-	
+
 	public String getNode() {
 		return conf.getProperty(Constants.PROP_NODE);
 	}
@@ -213,6 +204,7 @@ public class Globals {
 			String accountName = conf.getProperty(Constants.PROP_ACCOUNT + i + ".name", null);
 
 			Market m = null;
+			ArrayList<Market> markets = Markets.getMarkets();
 			for (int j = 0; j < markets.size(); j++) {
 				if(markets.get(j).toString().equals(accountMarket)) {
 					m = markets.get(j);

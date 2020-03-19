@@ -30,6 +30,7 @@ import javax.swing.table.JTableHeader;
 import btdex.core.Account;
 import btdex.core.Globals;
 import btdex.core.Market;
+import btdex.core.Markets;
 import layout.SpringUtilities;
 
 public class AccountsPanel extends JPanel implements ActionListener, ListSelectionListener {
@@ -124,7 +125,7 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 		buttonPane.add(removeButton);
 
 		marketComboBox = new JComboBox<Market>();
-		for(Market m : Globals.getInstance().getMarkets()) {
+		for(Market m : Markets.getMarkets()) {
 			if(m.getTokenID()!=null)
 				continue;
 			marketComboBox.addItem(m);
