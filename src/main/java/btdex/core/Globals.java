@@ -12,9 +12,6 @@ import java.util.Random;
 import com.google.gson.JsonObject;
 
 import bt.BT;
-import bt.compiler.Compiler;
-import btdex.sc.SellContract;
-import btdex.sc.SellNoDepositContract;
 import btdex.ui.ExplorerWrapper;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstAddress;
@@ -304,14 +301,4 @@ public class Globals {
 		return data;
 	}
 
-	public boolean isMediatorAccepted(long mediator) {
-		Mediators mediators = new Mediators(testnet);
-		BurstID[] MEDIATORS = mediators.getMediators();
-		
-		for (BurstID m : MEDIATORS) {
-			if(m.getSignedLongId() == mediator)
-				return true;
-		}
-		return false;
-	}
 }

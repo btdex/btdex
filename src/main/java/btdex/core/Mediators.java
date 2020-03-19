@@ -25,4 +25,12 @@ public class Mediators {
     public BurstID[] getMediators() {
         return mediators;
     }
+
+    public boolean isMediatorAccepted(long mediator) {
+        for (BurstID m : mediators) {
+            if(m.getSignedLongId() == mediator)
+                return true;
+        }
+        return false;
+    }
 }
