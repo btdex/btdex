@@ -29,9 +29,6 @@ public class Globals {
 	public static final BurstCrypto BC = BurstCrypto.getInstance();
 
 
-	// FIXME: set the fee contract
-	public final long feeContract = 222222L;
-
 	static String confFile = Constants.DEF_CONF_FILE;
 	private Properties conf = new Properties();
 
@@ -276,17 +273,14 @@ public class Globals {
 	public boolean isTestnet() {
 		return testnet;
 	}
-	
-	public long getFeeContract() {
-		return feeContract;
-	}
+
 	
 	public long[] getNewContractData() {
 		Mediators mediators = new Mediators(testnet);
 		BurstID[] MEDIATORS = mediators.getMediators();
 		
 		long data[] = new long[3];
-		data[0] = feeContract;
+		data[0] = Constants.FEE_CONTRACT;
 		
 		Random rand = new Random();
 		long mediator1 = MEDIATORS[rand.nextInt(MEDIATORS.length)].getSignedLongId();

@@ -3,6 +3,7 @@ package btdex;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import btdex.core.Constants;
 import btdex.core.Mediators;
 import org.junit.Test;
 
@@ -39,7 +40,7 @@ public class TestInvalidTakeTake extends BT {
         // Create a maker address and send some coins
         String makerPass = Long.toString(System.currentTimeMillis());
         BurstAddress maker = BT.getBurstAddressFromPassphrase(makerPass);
-        long feeContract = Globals.getInstance().getFeeContract();
+        long feeContract = Constants.FEE_CONTRACT;
 
         BT.sendAmount(BT.PASSPHRASE, maker, BurstValue.fromPlanck(2 * amount + 3 * security)).blockingGet();
         BT.forgeBlock();

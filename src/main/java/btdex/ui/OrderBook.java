@@ -26,10 +26,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 import bt.Contract;
-import btdex.core.ContractState;
-import btdex.core.Globals;
-import btdex.core.Market;
-import btdex.core.Mediators;
+import btdex.core.*;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
@@ -399,7 +396,7 @@ public class OrderBook extends JPanel {
 			// FIXME: add more validity tests here
 			if(s.getAmountNQT() > 0
 					&& s.getState() == SellContract.STATE_OPEN
-					&& g.getFeeContract() == s.getFeeContract()
+					&& Constants.FEE_CONTRACT == s.getFeeContract()
 					&& m.isMediatorAccepted(s.getMediator1())
 					&& m.isMediatorAccepted(s.getMediator2()) )
 				marketContracts.add(s);
