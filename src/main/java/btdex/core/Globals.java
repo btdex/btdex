@@ -28,7 +28,6 @@ public class Globals {
 	private BurstNodeService NS;
 	public static final BurstCrypto BC = BurstCrypto.getInstance();
 
-
 	static String confFile = Constants.DEF_CONF_FILE;
 	private Properties conf = new Properties();
 
@@ -38,9 +37,8 @@ public class Globals {
 	private BurstAddress address;
 	private FeeSuggestion suggestedFee;
 
-
-
 	static Globals INSTANCE;
+
 	public static Globals getInstance() {
 		if(INSTANCE==null)
 			INSTANCE = new Globals();
@@ -67,9 +65,7 @@ public class Globals {
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
 			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? BT.NODE_TESTNET : BT.NODE_BURSTCOIN_RO));
 
-
 			Markets.addMarkets(testnet);
-
 
 			checkPublicKey();
 
@@ -80,7 +76,6 @@ public class Globals {
 		}
 
 		Contracts.addContracts();
-
 	}
 
 	private void checkPublicKey() {
@@ -96,8 +91,6 @@ public class Globals {
 			address = BC.getBurstAddressFromPublic(publicKey);
 		}
 	}
-
-
 
 	public String getNode() {
 		return conf.getProperty(Constants.PROP_NODE);
