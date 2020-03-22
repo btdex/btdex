@@ -48,12 +48,11 @@ public class TestInvalidTakeTake extends BT {
         Mediators mediators = new Mediators(true);
         BurstID mediator1 = mediators.getMediators()[0];
         BurstID mediator2 = mediators.getMediators()[1];
-        long offerType = Market.MARKET_BTC;
+
         long state = SellContract.STATE_FINISHED;
         long accountHash = 0;
 
-        long data[] = { feeContract, mediator1.getSignedLongId(), mediator2.getSignedLongId(),
-        		offerType, accountHash};
+        long data[] = { feeContract, mediator1.getSignedLongId(), mediator2.getSignedLongId(), accountHash};
 
         bt.compiler.Compiler compiled = BT.compileContract(SellContract.class);
         String name = SellContract.class.getSimpleName() + System.currentTimeMillis();
@@ -67,12 +66,11 @@ public class TestInvalidTakeTake extends BT {
         long med1_chain = BT.getContractFieldValue(contract, compiled.getField("mediator1").getAddress());
         long med2_chain = BT.getContractFieldValue(contract, compiled.getField("mediator2").getAddress());
 
-        long offerType_chain = BT.getContractFieldValue(contract, compiled.getField("offerType").getAddress());
         long state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
 
         assertEquals(mediator1.getSignedLongId(), med1_chain);
         assertEquals(mediator2.getSignedLongId(), med2_chain);
-        assertEquals(offerType, offerType_chain);
+
         assertEquals(state, state_chain);
 
         // Initialize the offer

@@ -3,13 +3,15 @@ package btdex;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import btdex.core.Account;
 import btdex.core.Constants;
 import btdex.core.Mediators;
+import burst.kit.entity.response.http.AccountResponse;
+import burst.kit.service.BurstNodeService;
 import org.junit.Test;
 
 import bt.BT;
 import bt.Contract;
-import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstAddress;
@@ -36,6 +38,7 @@ public class TestTakeRetake extends BT {
         long amount = 10000 * Contract.ONE_BURST;
 
         long security = 100 * Contract.ONE_BURST;
+        BurstNodeService bns = BT.getNode();
 
         // Create a maker address and send some coins
         String makerPass = Long.toString(System.currentTimeMillis());
@@ -45,15 +48,17 @@ public class TestTakeRetake extends BT {
         BT.sendAmount(BT.PASSPHRASE, maker, BurstValue.fromPlanck(2 * amount + 3 * security)).blockingGet();
         BT.forgeBlock();
 
+        assertEquals("Contract creator didn't get funds",
+                bns.getAccount(maker).blockingGet().getBalance(),
+                BurstValue.fromPlanck(2 * amount + 3 * security));
+
         Mediators mediators = new Mediators(true);
         BurstID mediator1 = mediators.getMediators()[0];
         BurstID mediator2 = mediators.getMediators()[1];
-        long offerType = Market.MARKET_BTC;
         long state = SellContract.STATE_FINISHED;
         long accountHash = 0;
 
-        long data[] = { feeContract, mediator1.getSignedLongId(), mediator2.getSignedLongId(),
-        		offerType, accountHash};
+        long data[] = { feeContract, mediator1.getSignedLongId(), mediator2.getSignedLongId(), accountHash};
 
         bt.compiler.Compiler compiled = BT.compileContract(SellContract.class);
         String name = SellContract.class.getSimpleName() + System.currentTimeMillis();
@@ -62,18 +67,17 @@ public class TestTakeRetake extends BT {
         BT.forgeBlock();
 
         AT contract = BT.findContract(maker, name);
-        System.out.println(contract.getId().getID());
+        System.out.println("Created contract id " + contract.getId().getID());
 
         long med1_chain = BT.getContractFieldValue(contract, compiled.getField("mediator1").getAddress());
         long med2_chain = BT.getContractFieldValue(contract, compiled.getField("mediator2").getAddress());
 
-        long offerType_chain = BT.getContractFieldValue(contract, compiled.getField("offerType").getAddress());
         long state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
 
-        assertEquals(mediator1.getSignedLongId(), med1_chain);
-        assertEquals(mediator2.getSignedLongId(), med2_chain);
-        assertEquals(offerType, offerType_chain);
-        assertEquals(state, state_chain);
+        assertEquals("Mediator1 not equal", mediator1.getSignedLongId(), med1_chain);
+        assertEquals("Mediator2 not equal", mediator2.getSignedLongId(), med2_chain);
+
+        assertEquals("State not equal", state, state_chain);
 
         // Initialize the offer
         long sent = amount + security + SellContract.ACTIVATION_FEE;
@@ -82,7 +86,6 @@ public class TestTakeRetake extends BT {
                 security).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
-
         // should now be open
         state = SellContract.STATE_OPEN;
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
