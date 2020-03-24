@@ -1,20 +1,22 @@
 package btdex;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import btdex.core.Mediators;
 import burst.kit.entity.BurstID;
 import burst.kit.service.BurstNodeService;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
 
 import bt.BT;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;
-import org.junit.runners.MethodSorters;
+
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
@@ -25,7 +27,7 @@ import java.io.IOException;
  * @author jjos
  */
 
-@FixMethodOrder(MethodSorters.JVM)  //calls tests in sequence
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class TestTakeRetake extends BT {
     private static bt.compiler.Compiler compiled;
     private static AT contract;
@@ -44,6 +46,7 @@ public class TestTakeRetake extends BT {
     private static BurstNodeService bns = BT.getNode();
 
     @Test
+    @Order(1)
     public void initSC() throws IOException {
         CreateSC sc = new CreateSC(SellContract.class, 10000, 100);
         makerPass = Long.toString(System.currentTimeMillis());
@@ -60,6 +63,7 @@ public class TestTakeRetake extends BT {
     }
 
     @Test
+    @Order(2)
     public void testMediators() {
         Mediators mediators = new Mediators(true);
         BurstID mediator1 = mediators.getMediators()[0];
@@ -67,15 +71,16 @@ public class TestTakeRetake extends BT {
         long med1_chain = BT.getContractFieldValue(contract, compiled.getField("mediator1").getAddress());
         long med2_chain = BT.getContractFieldValue(contract, compiled.getField("mediator2").getAddress());
 
-        assertEquals("Mediator1 not equal", mediator1.getSignedLongId(), med1_chain);
-        assertEquals("Mediator2 not equal", mediator2.getSignedLongId(), med2_chain);
+        assertEquals(mediator1.getSignedLongId(), med1_chain, "Mediator1 not equal");
+        assertEquals(mediator2.getSignedLongId(), med2_chain, "Mediator2 not equal");
     }
 
     @Test
+    @Order(3)
     public void testStateFinished(){
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
         state = SellContract.STATE_FINISHED;
-        assertEquals("State not equal", state, state_chain);
+        assertEquals(state, state_chain, "State not equal");
     }
 
     private long accBalance(String pass) {
@@ -83,6 +88,7 @@ public class TestTakeRetake extends BT {
     }
 
     @Test
+    @Order(4)
     public void testOfferInit(){
         //fund maker if needed
         while(accBalance(makerPass) < sent){
@@ -107,10 +113,11 @@ public class TestTakeRetake extends BT {
 
         balance = BT.getContractBalance(contract).longValue();
         System.out.println("balance " + balance );
-        assertTrue("not enough balance", balance > amount + security);
+        assertTrue(balance > amount + security, "not enough balance");
     }
 
     @Test
+    @Order(5)
     public void initTaker() {
         takerPass = Long.toString(System.currentTimeMillis());
         taker = BT.getBurstAddressFromPassphrase(takerPass);
@@ -123,6 +130,7 @@ public class TestTakeRetake extends BT {
     }
 
     @Test
+    @Order(6)
     public void testOfferTake() {
         // Take the offer
         BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
@@ -142,13 +150,15 @@ public class TestTakeRetake extends BT {
     }
 
     @Test
+    @Order(7)
     public void testContractsBalanceAfterOfferTake() {
         balance = BT.getContractBalance(contract).longValue();
-        assertTrue("not enough balance", balance > amount + security * 2);
+        assertTrue(balance > amount + security * 2, "not enough balance");
         System.out.println("Contract fees to take: " + BurstValue.fromPlanck(sent - balance));
     }
 
     @Test
+    @Order(8)
     public void testMakerSignal() {
         // Maker signals the payment was received (off-chain)
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("reportComplete"),
@@ -161,11 +171,12 @@ public class TestTakeRetake extends BT {
         assertEquals(SellContract.STATE_FINISHED, state_chain);
 
         balance = BT.getContractBalance(contract).longValue();
-        assertTrue("not enough balance", balance == 0);
-        assertTrue("taker have not received", accBalance(takerPass) > amount);
+        assertTrue(balance == 0, "not enough balance");
+        assertTrue(accBalance(takerPass) > amount, "taker have not received");
     }
 
     @Test
+    @Order(9)
     public void testReopen(){
         //fund maker if needed
         while(accBalance(makerPass) < amount + security + SellContract.ACTIVATION_FEE){
@@ -190,6 +201,7 @@ public class TestTakeRetake extends BT {
     }
 
     @Test
+    @Order(10)
     public void testTakeOfferAgain() {
         // Take the offer again
         BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
@@ -207,6 +219,7 @@ public class TestTakeRetake extends BT {
     }
 
     @Test
+    @Order(11)
     public void testPaymentReceived() {
         // Maker signals the payment was received (off-chain)
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("reportComplete"),
@@ -220,8 +233,9 @@ public class TestTakeRetake extends BT {
     }
 
     @Test
+    @Order(12)
     public void testFinalContractsBalance() {
         balance = BT.getContractBalance(contract).longValue();
-        assertTrue("not enough balance", balance == 0);
+        assertTrue(balance == 0, "not enough balance");
     }
  }
