@@ -5,8 +5,8 @@ plugins {
   id 'application'
   id 'edu.sc.seis.launch4j' version '2.4.6'
   id 'edu.sc.seis.macAppBundle' version '2.3.0'
-  id "nebula.ospackage" version "5.3.5"
-  id 'org.gradle.crypto.checksum' version '1.1.0'
+  id "nebula.ospackage" version "8.2.0"
+  id 'org.gradle.crypto.checksum' version '1.2.0'
   id 'com.palantir.git-version' version '0.12.2'
 }
 
@@ -36,11 +36,21 @@ dependencies {
 	implementation 'io.github.monero-ecosystem:monero-java:0.2.1'
 	
 	implementation 'fr.marcwrobel:jbanking:1.0'
-	
-    // Use JUnit test framework
-    testImplementation 'junit:junit:4.12'
-}
+    // Gson
+    implementation 'com.google.code.gson:gson:2.8.6'
 
+    // RxJava
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.15'
+
+    implementation("com.squareup.okhttp3:okhttp:4.4.0")
+
+    // Use JUnit test framework
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.1")
+}
+test {
+    useJUnitPlatform()
+}
 // If we want to refresh our libraries (get a new snapshot)
 configurations.all {
     // resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
