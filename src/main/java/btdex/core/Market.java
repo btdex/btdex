@@ -1,11 +1,8 @@
 package btdex.core;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Locale;
 
 import javax.swing.JComponent;
 import javax.swing.JTextField;

@@ -145,7 +145,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener {
 				}
 
 				byte[] creationBytes = BurstCrypto.getInstance().getATCreationBytes((short) 1,
-						contract.getCode(), dataBuffer.array(), contract.getDataPages(), 1, 1,
+						contract.getCode(), dataBuffer.array(), (short)contract.getDataPages(), (short)1, (short)1,
 						BurstValue.fromPlanck(SellContract.ACTIVATION_FEE));
 
 				Single<TransactionBroadcast> tx = g.getNS().generateCreateATTransaction(g.getPubKey(), suggestedFee.getPriorityFee(),

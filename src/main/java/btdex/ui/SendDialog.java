@@ -71,8 +71,7 @@ public class SendDialog extends JDialog implements ActionListener {
 		fee = new JSlider(1, N_FEE_SLOTS);
 
 		topPanel.add(new Desc("Recipient", recipient));
-		if(token==null)
-			topPanel.add(new Desc("Message", message));
+		topPanel.add(new Desc("Message", message));
 		message.setToolTipText("Leave empty for no message");
 
 		panel.add(new Desc(String.format("Amount (%s)", token==null ? "BURST" : token), amount));
@@ -167,9 +166,9 @@ public class SendDialog extends JDialog implements ActionListener {
 					// all set, lets make the transfer
 					Single<byte[]> utx = null;
 					if(token!=null) {
-						utx = g.getNS().generateTransferAssetTransaction(g.getPubKey(), BurstAddress.fromId(recID),
+						utx = g.getNS().generateTransferAssetTransactionWithMessage(g.getPubKey(), BurstAddress.fromId(recID),
 								token.getTokenID(), BurstValue.fromPlanck((long)(amountNumber.doubleValue()*token.getFactor())),
-								BurstValue.fromPlanck(feePlanck), 1440);						
+								BurstValue.fromPlanck(feePlanck), 1440, msg);
 					}
 					else {
 						utx = g.getNS().generateTransactionWithMessage(BurstAddress.fromId(recID), g.getPubKey(),
