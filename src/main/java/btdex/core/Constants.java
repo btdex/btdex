@@ -24,5 +24,9 @@ public class Constants {
 
     // FIXME: set the fee contract
     public static final long FEE_CONTRACT = 222222L;
+    
+    public static final String BURST_SYMBOL = "\u0243";
+
+    public static final String BURST_TICKER = "BURST";
 
 }

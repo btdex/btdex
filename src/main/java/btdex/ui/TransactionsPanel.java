@@ -12,10 +12,16 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
+import btdex.core.Constants;
 import btdex.core.ContractState;
 import btdex.core.Globals;
+import btdex.core.Market;
+import btdex.core.Markets;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.response.Transaction;
+import burst.kit.entity.response.attachment.AskOrderPlacementAttachment;
+import burst.kit.entity.response.attachment.AssetTransferAttachment;
+import burst.kit.entity.response.attachment.BidOrderPlacementAttachment;
 import burst.kit.entity.response.http.BRSError;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
@@ -40,7 +46,7 @@ public class TransactionsPanel extends JPanel {
 			"TRANSACTION ID",
 			"TIME",
 			"TYPE",
-			"AMOUNT (BURST)",
+			"AMOUNT",
 			"FEE (BURST)",
 			"ACCOUNT",
 			"CONF.",
@@ -143,6 +149,8 @@ public class TransactionsPanel extends JPanel {
 
 			if(tx.getSender() == g.getAddress())
 				amount = -amount;
+			
+			String amountFormatted = Constants.BURST_SYMBOL + " " + ContractState.format(amount);
 
 			// Types defined at brs/TransactionType.java
 			String type = "Payment";
@@ -172,12 +180,44 @@ public class TransactionsPanel extends JPanel {
 					break;
 				case 1:
 					type = "Token Transfer";
+					if(tx.getAttachment() instanceof AssetTransferAttachment) {
+						AssetTransferAttachment assetTx = (AssetTransferAttachment) tx.getAttachment();
+						for(Market market : Markets.getMarkets()) {
+							if(market.getTokenID()!=null && market.getTokenID().getID().equals(assetTx.getAsset())) {
+								long tokenAmount = Long.parseLong(assetTx.getQuantityQNT());
+								if(tx.getSender() == g.getAddress())
+									tokenAmount = -tokenAmount;
+								amountFormatted = market.format(tokenAmount) + " " + market.toString();
+								break;
+							}
+						}
+					}
 					break;
 				case 2:
 					type = "Ask Offer";
+					if(tx.getAttachment() instanceof AskOrderPlacementAttachment) {
+						AskOrderPlacementAttachment order = (AskOrderPlacementAttachment) tx.getAttachment();
+						for(Market market : Markets.getMarkets()) {
+							if(market.getTokenID()!=null && market.getTokenID().getID().equals(order.getAsset())) {
+								long tokenAmount = Long.parseLong(order.getQuantityQNT());
+								amountFormatted = market.format(tokenAmount) + " " + market.toString();
+								break;
+							}
+						}
+					}
 					break;
 				case 3:
 					type = "Bid Offer";
+					if(tx.getAttachment() instanceof BidOrderPlacementAttachment) {
+						BidOrderPlacementAttachment order = (BidOrderPlacementAttachment) tx.getAttachment();
+						for(Market market : Markets.getMarkets()) {
+							if(market.getTokenID()!=null && market.getTokenID().getID().equals(order.getAsset())) {
+								long tokenAmount = Long.parseLong(order.getQuantityQNT());
+								amountFormatted = market.format(tokenAmount) + " " + market.toString();
+								break;
+							}
+						}
+					}
 					break;
 				case 4:
 					type = "Cancel Ask";
@@ -218,7 +258,7 @@ public class TransactionsPanel extends JPanel {
 						account.getID(), account.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
 			model.setValueAt(new ExplorerButton(tx.getId().toString(), copyIcon, expIcon, OrderBook.BUTTON_EDITOR), row, COL_ID);
 
-			model.setValueAt(ContractState.format(amount), row, COL_AMOUNT);
+			model.setValueAt(amountFormatted, row, COL_AMOUNT);
 			model.setValueAt(ContractState.format(tx.getFee().longValue()), row, COL_FEE);
 			model.setValueAt(type, row, COL_TYPE);
 			model.setValueAt(HistoryPanel.DATE_FORMAT.format(tx.getTimestamp().getAsDate()), row, COL_TIME);
