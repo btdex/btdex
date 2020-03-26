@@ -19,30 +19,30 @@ import burst.kit.entity.response.appendix.PlaintextMessageAppendix;
 
 public class ContractState {
 	
-	enum Type {
+	private enum Type {
 		Invalid, Standard, NoDeposit
 	}
 	
-	BurstAddress address;
-	Type type;
-	AT at;
-	BurstValue balance;
+	private BurstAddress address;
+	private Type type;
+	private AT at;
+	private BurstValue balance;
 	
-	long mediator1;
-	long mediator2;
-	long offerType;
-	long feeContract;
+	private long mediator1;
+	private long mediator2;
+	private long offerType;
+	private long feeContract;
 	
-	long state;
-	long amount;
-	long security;	
-	long lockMinutes;
+	private long state;
+	private long amount;
+	private long security;
+	private long lockMinutes;
 	
-	long rate;
-	int market;
-	String account;
+	private long rate;
+	private int market;
+	private String account;
 	
-	long lastTxId;
+	private long lastTxId;
 	
 	public ContractState(Type type) {
 		this.type = type;
@@ -50,7 +50,7 @@ public class ContractState {
 	
 	public static String format(long valueNQT) {
 		double dvalue = (double)valueNQT / Contract.ONE_BURST;
-		return Globals.NF.format(dvalue);
+		return NumberFormatting.NF(2, 5).format(dvalue);
 	}
 	
 	public long getMarket() {
@@ -99,7 +99,7 @@ public class ContractState {
 	
 	public String getAmount() {
 		double dvalue = (double)amount / Contract.ONE_BURST;
-		return Globals.NF.format(dvalue);
+		return NumberFormatting.NF(2, 5).format(dvalue);
 	}
 
 	public long getSecurityNQT() {
@@ -108,7 +108,7 @@ public class ContractState {
 	
 	public String getSecurity() {
 		double dvalue = (double)security / Contract.ONE_BURST;
-		return Globals.NF.format(dvalue);
+		return NumberFormatting.NF(2, 5).format(dvalue);
 	}
 
 	/**
@@ -169,7 +169,7 @@ public class ContractState {
 	}
 	
 	static boolean checkContractCode(AT at) {
-		byte []code = Globals.getInstance().getContractCode();
+		byte []code = Contracts.getContractCode();
 		
 		if(at.getMachineCode().length < code.length)
 			return false;
@@ -182,7 +182,7 @@ public class ContractState {
 	}
 	
 	static boolean checkContractCodeNoDeposit(AT at) {
-		byte []code = Globals.getInstance().getContractNoDepositCode();
+		byte []code = Contracts.getContractNoDepositCode();
 		
 		if(at.getMachineCode().length < code.length)
 			return false;
@@ -209,7 +209,7 @@ public class ContractState {
 		this.balance = at.getBalance();
 		
 		if(type == Type.Standard) {
-			Compiler contract = g.getContract();
+			Compiler contract = Contracts.getContract();
 			this.mediator1 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator1"));
 			this.mediator2 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator2"));
 			this.state = BT.getContractFieldValue(at, contract.getFieldAddress("state"));
@@ -218,7 +218,7 @@ public class ContractState {
 			this.feeContract = BT.getContractFieldValue(at, contract.getFieldAddress("feeContract"));
 		}
 		else if(type == Type.NoDeposit) {
-			Compiler contract = g.getContractNoDeposit();
+			Compiler contract = Contracts.getContractNoDeposit();
 			this.mediator1 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator1"));
 			this.mediator2 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator2"));
 			this.state = BT.getContractFieldValue(at, contract.getFieldAddress("state"));

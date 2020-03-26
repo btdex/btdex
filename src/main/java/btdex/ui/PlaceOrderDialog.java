@@ -35,10 +35,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import btdex.core.Account;
-import btdex.core.ContractState;
-import btdex.core.Globals;
-import btdex.core.Market;
+import btdex.core.*;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.FeeSuggestion;
@@ -96,8 +93,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 		JPanel fieldPanel = new JPanel(new GridLayout(0, 2, 4, 4));
 
-		amountField = new JFormattedTextField(Globals.NF_FULL);
-		priceField = new JFormattedTextField(isToken ? market.getNumberFormat() : Globals.NF_FULL);
+		amountField = new JFormattedTextField(NumberFormatting.NF(5, 8));
+		priceField = new JFormattedTextField(isToken ? market.getNumberFormat() : NumberFormatting.NF(5, 8));
 		total = new JTextField(16);
 		total.setEditable(false);
 
@@ -340,18 +337,18 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		try {
 			// For token, price is in BURST, others price is on the selected market
 			if(isToken) {
-				Number priceN = Globals.NF.parse(priceField.getText());
-				Number amountN = Globals.NF.parse(amountField.getText());
+				Number priceN = NumberFormatting.NF(2, 5).parse(priceField.getText());
+				Number amountN = NumberFormatting.NF(2, 5).parse(amountField.getText());
 
 				priceValue = BurstValue.fromPlanck((long)(priceN.doubleValue()*market.getFactor()));
 				amountValue = BurstValue.fromPlanck((long)(amountN.doubleValue()*market.getFactor()));
 
 				double totalValue = priceN.doubleValue()*amountN.doubleValue();
-				total.setText(Globals.NF_FULL.format(totalValue));
+				total.setText(NumberFormatting.NF(5, 8).format(totalValue));
 			}
 			else {
 				Number priceN = market.getNumberFormat().parse(priceField.getText());
-				Number amountN = Globals.NF_FULL.parse(amountField.getText());
+				Number amountN = NumberFormatting.NF(5, 8).parse(amountField.getText());
 
 				priceValue = BurstValue.fromPlanck((long)(priceN.doubleValue()*market.getFactor()));
 				amountValue = BurstValue.fromPlanck((long)(amountN.doubleValue()*Market.BURST_TO_PLANCK));

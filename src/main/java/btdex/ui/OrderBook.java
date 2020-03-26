@@ -26,9 +26,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 import bt.Contract;
-import btdex.core.ContractState;
-import btdex.core.Globals;
-import btdex.core.Market;
+import btdex.core.*;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
@@ -387,7 +385,7 @@ public class OrderBook extends JPanel {
 		mostRecentID = ContractState.addContracts(contractsMap, mostRecentID);
 
 		Globals g = Globals.getInstance();
-
+		Mediators m = new Mediators(g.isTestnet());
 		marketContracts.clear();
 		for(ContractState s : contractsMap.values()) {
 			// if not the right market, do not update
@@ -398,9 +396,9 @@ public class OrderBook extends JPanel {
 			// FIXME: add more validity tests here
 			if(s.getAmountNQT() > 0
 					&& s.getState() == SellContract.STATE_OPEN
-					&& g.getFeeContract() == s.getFeeContract()
-					&& g.isMediatorAccepted(s.getMediator1())
-					&& g.isMediatorAccepted(s.getMediator2()) )
+					&& Constants.FEE_CONTRACT == s.getFeeContract()
+					&& m.isMediatorAccepted(s.getMediator1())
+					&& m.isMediatorAccepted(s.getMediator2()) )
 				marketContracts.add(s);
 		}
 		

@@ -3,9 +3,9 @@ package btdex.core;
 import java.util.HashMap;
 
 public class Account {
-	String market;
-	String name;
-	HashMap<String, String> fields;
+	private String market;
+	private	String name;
+	private HashMap<String, String> fields;
 	
 	public Account(String market, String name, HashMap<String, String> fields) {
 		this.market = market;
