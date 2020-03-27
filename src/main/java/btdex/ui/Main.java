@@ -172,18 +172,28 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 		
-		if(icon!=null) {
-			JButton iconButton = new JButton(new ImageIcon(icon.getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_SMOOTH)));
-			bottomRight.add(iconButton, BorderLayout.LINE_END);
-			
-			iconButton.setToolTipText("Opens the BTDEX website");
-			iconButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					browse("https://btdex.trade");
-				}
-			});
-		}
+		Icon heartIcon = IconFontSwing.buildIcon(FontAwesome.HEART, ICON_SIZE, COLOR);
+		JButton webButton = new JButton(heartIcon);
+		bottomRight.add(webButton, BorderLayout.LINE_END);
+		webButton.setToolTipText("Opens the BTDEX website");
+		webButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				browse("https://btdex.trade");
+			}
+		});
+
+		Icon discordIcon = IconFontSwing.buildIcon(FontAwesome.COMMENTS, ICON_SIZE, COLOR);
+		JButton discordButton = new JButton(discordIcon);
+		bottomRight.add(discordButton, BorderLayout.LINE_END);
+		discordButton.setToolTipText("Chat on BTDEX discord channel...");
+		discordButton.setVerticalAlignment(SwingConstants.CENTER);
+		discordButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				browse("https://discord.gg/VQ6sFAY");
+			}
+		});
 
 		Icon signoutIcon = IconFontSwing.buildIcon(FontAwesome.SIGN_OUT, ICON_SIZE, COLOR);
 		JButton signoutButton = new JButton(signoutIcon);
