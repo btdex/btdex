@@ -20,14 +20,13 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import btdex.core.ContractState;
+import btdex.core.Constants;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
@@ -39,9 +38,7 @@ public class SendDialog extends JDialog implements ActionListener {
 	JTextField amount;
 	JPasswordField pin;
 	JSlider fee;
-
-	public static final int N_FEE_SLOTS = 1020;
-	public static final int FEE_QUANT = 735000;
+	BurstValue selectedFee;
 
 	private JButton okButton;
 
@@ -68,7 +65,7 @@ public class SendDialog extends JDialog implements ActionListener {
 		pin.addActionListener(this);
 
 		amount = new JFormattedTextField(NumberFormatting.NF(5, 8));
-		fee = new JSlider(1, N_FEE_SLOTS);
+		fee = new JSlider(1, 4);
 
 		topPanel.add(new Desc("Recipient", recipient));
 		topPanel.add(new Desc("Message", message));
@@ -79,11 +76,28 @@ public class SendDialog extends JDialog implements ActionListener {
 		panel.add(feeDesc);
 		fee.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent evt) {
-				int value = fee.getValue() * FEE_QUANT;
-				feeDesc.setDesc(String.format("Fee (%s) BURST", ContractState.format(value)));
+				String feeType;
+				switch (fee.getValue()) {
+				case 1:
+					feeType = "minimum";
+					selectedFee = BurstValue.fromPlanck(Constants.FEE_QUANT);
+					break;
+				case 2:
+					feeType = "cheap";
+					selectedFee = Globals.getInstance().getSuggestedFee().getCheapFee();
+					break;
+				case 3:
+					feeType = "standard";
+					selectedFee = Globals.getInstance().getSuggestedFee().getStandardFee();
+					break;
+				default:
+					feeType = "priority";
+					selectedFee = Globals.getInstance().getSuggestedFee().getPriorityFee();
+					break;
+				}
+				feeDesc.setDesc(String.format("Fee (%s %s)", feeType, selectedFee.toFormattedString()));
 			}
 		});
-		fee.getModel().setValue(10);
 
 		// Create a button
 		JPanel buttonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -109,9 +123,7 @@ public class SendDialog extends JDialog implements ActionListener {
 
 		pack();
 
-		FeeSuggestion suggested = Globals.getInstance().getSuggestedFee();
-		int feeInt = (int)suggested.getStandardFee().longValue()/FEE_QUANT;
-		fee.getModel().setValue(feeInt);
+		fee.getModel().setValue(4);
 	}
 
 	@Override
@@ -158,8 +170,6 @@ public class SendDialog extends JDialog implements ActionListener {
 				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(okButton);
 			}
 			else {
-				long feePlanck = FEE_QUANT * fee.getValue();
-
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
 				try {
@@ -168,12 +178,12 @@ public class SendDialog extends JDialog implements ActionListener {
 					if(token!=null) {
 						utx = g.getNS().generateTransferAssetTransactionWithMessage(g.getPubKey(), BurstAddress.fromId(recID),
 								token.getTokenID(), BurstValue.fromPlanck((long)(amountNumber.doubleValue()*token.getFactor())),
-								BurstValue.fromPlanck(feePlanck), 1440, msg);
+								selectedFee, 1440, msg);
 					}
 					else {
 						utx = g.getNS().generateTransactionWithMessage(BurstAddress.fromId(recID), g.getPubKey(),
 							BurstValue.fromBurst(amountNumber.doubleValue()),
-							BurstValue.fromPlanck(feePlanck), 1440, msg);
+							selectedFee, 1440, msg);
 					}
 
 					Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
