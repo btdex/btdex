@@ -74,6 +74,7 @@ public class TransactionsPanel extends JPanel {
 
 		table = new JTable(model = new MyTableModel());
 		table.setRowHeight(table.getRowHeight()+10);
+		table.setRowSelectionAllowed(false);
 		
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
 		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());

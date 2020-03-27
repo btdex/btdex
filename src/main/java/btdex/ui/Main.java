@@ -50,7 +50,7 @@ public class Main extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 	
-	public static final int ICON_SIZE = 26;
+	public static final int ICON_SIZE = 24;
 	
 	Image icon;
 
