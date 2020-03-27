@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 //fails in "fresh" IDE IntelliJ, later passes
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -78,10 +78,37 @@ public class TestMakerTakerAgree {
         assertEquals(amountToTaker, sc.getContractFieldValue("disputeCreatorAmountToTaker"));
         assertEquals(amountToMaker, sc.getContractFieldValue("disputeTakerAmountToCreator"));
         assertEquals(amountToTaker, sc.getContractFieldValue("disputeTakerAmountToTaker"));
-        System.out.println(sc.getContractFieldValue("disputeCreatorAmountToCreator"));
-        System.out.println(sc.getContractFieldValue("disputeCreatorAmountToTaker"));
-        System.out.println(sc.getContractFieldValue("disputeTakerAmountToCreator"));
-        System.out.println(sc.getContractFieldValue("disputeTakerAmountToTaker"));
+
+    }
+
+    @Test
+    @Order(5)
+    public void testTakeOffer() {
+        sc.takeOffer();
+
+        state = SellContract.STATE_WAITING_PAYMT;
+        assertEquals(state, state&sc.getContractFieldValue("state"));
+    }
+
+    @Test
+    @Order(6)
+    public void testTakerDisputeAgain() {
+        long takerBalance = sc.getTakerBalance();
+        sc.dispute(sc.getTaker(), amountToMaker, amountToTaker);
+
+        BT.forgeBlock();
+        BT.forgeBlock();
+
+        state = SellContract.STATE_TAKER_DISPUTE;
+        long state_other = SellContract.STATE_BOTH_DISPUTE;
+        assertEquals(state, state&sc.getContractFieldValue("state"));
+        assertNotEquals(state_other,state_other&sc.getContractFieldValue("state"));
+        assertEquals(amountToMaker, sc.getContractFieldValue("disputeCreatorAmountToCreator"));
+        assertEquals(amountToTaker, sc.getContractFieldValue("disputeCreatorAmountToTaker"));
+        assertEquals(amountToMaker, sc.getContractFieldValue("disputeTakerAmountToCreator"));
+        assertEquals(amountToTaker, sc.getContractFieldValue("disputeTakerAmountToTaker"));
+        assertTrue(sc.getSCbalance() > 0, "SC balance 0");
+        assertTrue(sc.getTakerBalance() < takerBalance, "Taker balance bad");
     }
 
 }
