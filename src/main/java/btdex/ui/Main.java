@@ -50,7 +50,7 @@ public class Main extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 	
-	public static final int ICON_SIZE = 22;
+	public static final int ICON_SIZE = 26;
 	
 	Image icon;
 
@@ -71,8 +71,6 @@ public class Main extends JFrame implements ActionListener {
 	
 	private JLabel balanceLabel;
 	private JLabel lockedBalanceLabel;
-
-	private JButton createOfferButton;
 
 	private JComboBox<Market> marketComboBox;
 
@@ -173,6 +171,19 @@ public class Main extends JFrame implements ActionListener {
 				browse("https://github.com/btdex/btdex/releases");
 			}
 		});
+		
+		if(icon!=null) {
+			JButton iconButton = new JButton(new ImageIcon(icon.getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_SMOOTH)));
+			bottomRight.add(iconButton, BorderLayout.LINE_END);
+			
+			iconButton.setToolTipText("Opens the BTDEX website");
+			iconButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					browse("https://btdex.trade");
+				}
+			});
+		}
 
 		Icon signoutIcon = IconFontSwing.buildIcon(FontAwesome.SIGN_OUT, ICON_SIZE, COLOR);
 		JButton signoutButton = new JButton(signoutIcon);
@@ -241,23 +252,14 @@ public class Main extends JFrame implements ActionListener {
 		settingsButton.setVisible(false);
 
 		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.PAPER_PLANE, ICON_SIZE, COLOR);
-		Icon createOfferIcon = IconFontSwing.buildIcon(FontAwesome.CART_PLUS, ICON_SIZE, COLOR);
 
 		sendButton = new JButton(sendIcon);
 		sendButton.setToolTipText("Send BURST...");
 		sendButton.addActionListener(this);
 
-		createOfferButton = new JButton(createOfferIcon);
-		createOfferButton.setToolTipText("Create a new offer...");
-		createOfferButton.addActionListener(this);
-
 		sendButtonToken = new JButton(sendIcon);
 		sendButtonToken.setToolTipText(String.format("Send %s...", token.toString()));
 		sendButtonToken.addActionListener(this);
-
-//		createOfferButtonBTDEX = new JButton(createOfferIcon);
-//		createOfferButtonBTDEX.setToolTipText("Create a new BTDEX sell offer...");
-//		createOfferButtonBTDEX.addActionListener(this);
 
 		content.add(tabbedPane, BorderLayout.CENTER);
 		tabbedPane.setFont(largeFont);
@@ -277,19 +279,6 @@ public class Main extends JFrame implements ActionListener {
 		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.LINK, ICON_SIZE, COLOR);
 		tabbedPane.addTab("TRANSACTIONS", transactionsIcon, transactionsPanel);
 		
-		if(icon!=null) {
-			JButton iconButton = new JButton(new ImageIcon(icon.getScaledInstance(64, 64, Image.SCALE_SMOOTH)));
-			topAll.add(iconButton, BorderLayout.LINE_END);
-			
-			iconButton.setToolTipText("Opens the BTDEX website");
-			iconButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					browse("https://btdex.trade");
-				}
-			});
-		}
-
 		top.add(new Desc("Market", marketComboBox));
 		top.add(new Desc("Your Burst address", copyAddButton));
 		
@@ -300,7 +289,6 @@ public class Main extends JFrame implements ActionListener {
 		lockedBalanceLabel.setToolTipText("Amount locked in orders");
 		top.add(new Desc("Balance (BURST)", balanceLabel, lockedBalanceLabel));
 		top.add(new Desc("  ", sendButton));
-		top.add(new Desc("  ", createOfferButton));
 
 		balanceLabelToken = new JLabel("0");
 		balanceLabelToken.setToolTipText("Available balance");
@@ -309,7 +297,6 @@ public class Main extends JFrame implements ActionListener {
 		balanceLabelTokenPending.setToolTipText("Amount locked in orders or rewards pending");
 		top.add(tokenDesc = new Desc(String.format("Balance (%s)", token), balanceLabelToken, balanceLabelTokenPending));
 		top.add(new Desc("  ", sendButtonToken));
-//		top.add(new Desc("  ", createOfferButtonBTDEX));
 
 		
 		top.add(new Desc("  ", settingsButton));
@@ -533,19 +520,7 @@ public class Main extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Market m = (Market) marketComboBox.getSelectedItem();
-		if(e.getSource() == createOfferButton) {
-			
-			PlaceOrderDialog dlg = new PlaceOrderDialog(this, m, null);
-			
-			if(m.getTokenID()==null && !Globals.getInstance().isTestnet()) {
-				Toast.makeText(this, "Cross-chain markets will be open only "
-						+ "after TRT initial distribution is finished.", Toast.Style.ERROR).display();
-				return;
-			}
-			dlg.setLocationRelativeTo(Main.this);
-			dlg.setVisible(true);
-		}
-		else if (e.getSource() == marketComboBox) {
+		if (e.getSource() == marketComboBox) {
 			orderBook.setMarket(m);
 			historyPanel.setMarket(m);
 			
