@@ -2,6 +2,7 @@ package btdex.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -43,6 +44,7 @@ public class OrderBook extends JPanel {
 	DefaultTableModel model;
 	Icon copyIcon, expIcon, upIcon, downIcon;
 	JCheckBox listOnlyMine;
+	JLabel lastPrice;
 	int lastPriceRow;
 	
 	int ROW_HEIGHT;
@@ -110,8 +112,7 @@ public class OrderBook extends JPanel {
 
 		@Override
 		public TableCellRenderer getCellRenderer(int row, int column) {
-			if(column == COL_ACTION || column == COL_CONTRACT || column == COL_ACCOUNT
-					|| row == lastPriceRow)
+			if(column == COL_ACTION || column == COL_CONTRACT || column == COL_ACCOUNT)
 				return BUTTON_RENDERER;
 			
 			return super.getCellRenderer(row, column);
@@ -229,6 +230,7 @@ public class OrderBook extends JPanel {
 
 		table = new MyTable(model = new MyTableModel());
 		ROW_HEIGHT = table.getRowHeight()+10;
+		table.setRowHeight(ROW_HEIGHT);
 		
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
 		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
@@ -253,8 +255,12 @@ public class OrderBook extends JPanel {
 
 		table.getColumnModel().getColumn(COL_CONTRACT).setPreferredWidth(200);
 		table.getColumnModel().getColumn(COL_ACCOUNT).setPreferredWidth(200);
+		
+		JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		top.add(new Desc("Last price", lastPrice = new JLabel()));
+		top.add(new Desc(" ", listOnlyMine));
 
-		add(listOnlyMine, BorderLayout.PAGE_START);
+		add(top, BorderLayout.PAGE_START);
 		add(scrollPane, BorderLayout.CENTER);
 	}
 
@@ -308,21 +314,20 @@ public class OrderBook extends JPanel {
 		if(trs.length > 1 && trs[0].getPrice().longValue() < trs[1].getPrice().longValue())
 			lastIsUp = false;
 		
+		if(lastTrade != null) {
+			// set the last price label
+			String priceLabel = ContractState.format(lastTrade.getPrice().longValue()*market.getFactor()) + " BURST";
+			lastPrice.setText(priceLabel);
+			lastPrice.setIcon(lastIsUp ? upIcon : downIcon);
+			lastPrice.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
+		}
+		
 		// Update the contents
 		for (int i = 0, row = 0; i < orders.size(); i++, row++) {
 			AssetOrder o = orders.get(i);
 			
 			if(lastPriceAdded == false && o.getType() == AssetOrder.OrderType.BID) {
 				lastPriceRow = row;
-				table.setRowHeight(row, ROW_HEIGHT*2);
-				
-				ExplorerButton lastPriceButton = new ExplorerButton(ContractState.format(lastTrade.getPrice().longValue()*market.getFactor()),
-						lastIsUp ? upIcon : downIcon, null, ExplorerButton.TYPE_TRANSACTION, lastTrade.getAskOrderId().getID(),
-						BUTTON_EDITOR);
-				lastPriceButton.getMainButton().setToolTipText("Last trade price");
-				lastPriceButton.getMainButton().setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
-				lastPriceButton.getExplorerButton().setVisible(false);
-				model.setValueAt(lastPriceButton, row, COL_PRICE);
 				
 				// Make sure latest price is visible
 				SwingUtilities.invokeLater(new Runnable() {
@@ -334,18 +339,13 @@ public class OrderBook extends JPanel {
 					}
 				});
 
-				model.setValueAt(null, row, COL_SIZE);
-				model.setValueAt(null, row, COL_TOTAL);
-				model.setValueAt(new ExplorerButton(lastTrade.getAskOrderId().getID(), copyIcon, expIcon),
-						row, COL_CONTRACT);
-				model.setValueAt(null, row, COL_ACCOUNT);
-//				model.setValueAt(null, row, COL_SECURITY);
-				model.setValueAt(null, row, COL_ACTION);
+				for (int col = 0; col < model.getColumnCount(); col++) {
+					model.setValueAt(null, row, col);
+				}
 				
 				row++;
 				lastPriceAdded = true;
 			}
-			table.setRowHeight(row, ROW_HEIGHT);
 
 			// price always come in Burst, so no problem in this division using long's
 			long price = o.getPrice().longValue();
