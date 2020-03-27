@@ -365,16 +365,16 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		if(isToken) {
 			boolean isSell = sellToken.isSelected();
 
-			terms = "You are %s up to %s %s %s BURST at a price of %s BURST each.\n\n"
+			terms = "You are placing a %s limit order for up to %s %s at a price of %s BURST each.\n\n"
 					+ "This order can be partially filled and will be open until filled or cancelled. "
 					+ "No trading fees apply, only a one time %s BURST transaction fee.";
 
 			terms = String.format(terms,
-					isSell ? "selling" : "buying",
+					isSell ? "sell" : "buy",
 							amountField.getText(),
 							market,
-							isSell ? "for" : "with",
-									priceField.getText(), ContractState.format(suggestedFee.getPriorityFee().longValue()));
+							priceField.getText(),
+							ContractState.format(suggestedFee.getPriorityFee().longValue()));
 
 		}
 		else {
