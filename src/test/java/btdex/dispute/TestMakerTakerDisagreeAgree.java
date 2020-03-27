@@ -2,6 +2,7 @@ package btdex.dispute;
 
 import bt.BT;
 import btdex.sc.SellContract;
+import burst.kit.entity.BurstValue;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -11,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 //fails in "fresh" IDE IntelliJ, later passes
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class TestMakerTakerDisagree {
+public class TestMakerTakerDisagreeAgree {
     private static InitSC sc;
     private static long state;
     private static long disputeCreatorAmountToCreator = 10000;
@@ -69,6 +70,7 @@ public class TestMakerTakerDisagree {
     @Test
     @Order(3)
     public void testMakerAgree() {
+        long takerBalance = sc.getTakerBalance();
         sc.dispute(sc.getMaker(), 0, disputeTakerAmountToTaker);
         BT.forgeBlock();
         BT.forgeBlock();
@@ -80,20 +82,7 @@ public class TestMakerTakerDisagree {
         assertEquals(disputeTakerAmountToTaker, sc.getContractFieldValue("disputeTakerAmountToTaker"));
         assertEquals(0, sc.getContractFieldValue("disputeTakerAmountToCreator"));
         assertEquals(0, sc.getSCbalance());
+        assertTrue(takerBalance < sc.getTakerBalance());
     }
-   /* @Test
-    @Order(4)
-    public void testReopen() {
-        sc.initOffer();
-        BT.forgeBlock();
-
-        state = SellContract.STATE_OPEN;
-        assertEquals(state, sc.getContractFieldValue("state"));
-        assertEquals(disputeCreatorAmountToCreator, sc.getContractFieldValue("disputeCreatorAmountToCreator"));
-        assertEquals(disputeTakerAmountToTaker, sc.getContractFieldValue("disputeCreatorAmountToTaker"));
-        assertEquals(disputeCreatorAmountToCreator, sc.getContractFieldValue("disputeTakerAmountToCreator"));
-        assertEquals(disputeTakerAmountToTaker, sc.getContractFieldValue("disputeTakerAmountToTaker"));
-
-    }*/
 
 }

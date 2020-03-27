@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 //Not sure why test fails sometimes then you run them in "fresh" IDE
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class testMediator {
+public class TestMediator {
     private static InitSC sc;
     private static long state;
     private static long amountToMaker = 0;

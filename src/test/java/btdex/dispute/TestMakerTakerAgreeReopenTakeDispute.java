@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 //fails in "fresh" IDE IntelliJ, later passes
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class TestMakerTakerAgree {
+public class TestMakerTakerAgreeReopenTakeDispute {
     private static InitSC sc;
     private static long state;
     private static long amountToMaker = 10000;

@@ -23,7 +23,7 @@ public class TestTakerDisputeWithdraw {
     public void initSC() {
         sc = new InitSC();
 
-        long state = SellContract.STATE_WAITING_PAYMT;
+        state = SellContract.STATE_WAITING_PAYMT;
         long state_chain = sc.getContractFieldValue("state");
 
         if(state_chain == -1){
