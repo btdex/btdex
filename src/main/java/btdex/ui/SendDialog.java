@@ -21,6 +21,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import btdex.core.Constants;
+import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
@@ -95,7 +96,8 @@ public class SendDialog extends JDialog implements ActionListener {
 					selectedFee = Globals.getInstance().getSuggestedFee().getPriorityFee();
 					break;
 				}
-				feeDesc.setDesc(String.format("Fee (%s %s)", feeType, selectedFee.toFormattedString()));
+				feeDesc.setDesc(String.format("Fee (%s %s BURST)", feeType,
+						ContractState.format(selectedFee.longValue())));
 			}
 		});
 
