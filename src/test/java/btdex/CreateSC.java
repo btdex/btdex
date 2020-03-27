@@ -2,16 +2,18 @@ package btdex;
 
 import bt.BT;
 import bt.compiler.Compiler;
+import btdex.core.Constants;
 import btdex.core.Mediators;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
+import burst.kit.entity.response.TransactionBroadcast;
 
 
 import java.io.IOException;
 
 public class CreateSC {
-    private long feeContract = TestVariables.T_FEE_CONTRACT;
+    private long feeContract = Constants.FEE_CONTRACT;
 
     private BurstID mediator1;
     private BurstID mediator2;
@@ -36,14 +38,18 @@ public class CreateSC {
     public String registerSC(String passphrase){
         //Get some BURST for fee(block reward) and write acc to chain
         BT.forgeBlock(passphrase);
+        String name = register(passphrase);
+        BT.forgeBlock(passphrase);
+        return name;
+    }
 
+    private String register(String passphrase) {
         long data[] = { feeContract, mediator1.getSignedLongId(), mediator2.getSignedLongId(), accountHash};
 
         String name = sc.getSimpleName() + System.currentTimeMillis();
-        BT.registerContract(passphrase, compiled.getCode(), compiled.getDataPages(),
+        TransactionBroadcast tb = BT.registerContract(passphrase, compiled.getCode(), compiled.getDataPages(),
                 name, name, data, BurstValue.fromPlanck(SellContract.ACTIVATION_FEE),
                 BT.getMinRegisteringFee(compiled), 1000).blockingGet();
-        BT.forgeBlock(passphrase);
         return name;
     }
 

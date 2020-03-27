@@ -26,7 +26,7 @@ import java.io.IOException;
  * 
  * @author jjos
  */
-
+//Not sure why test fails sometimes then you run them in "fresh" IDE
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class TestTakeRetake extends BT {
     private static bt.compiler.Compiler compiled;
