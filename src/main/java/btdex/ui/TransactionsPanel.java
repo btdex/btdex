@@ -147,7 +147,7 @@ public class TransactionsPanel extends JPanel {
 			BurstAddress account = null;
 			long amount = tx.getAmount().longValue();
 
-			String amountFormatted = Constants.BURST_SYMBOL + " " + ContractState.format(amount);
+			String amountFormatted = ContractState.format(amount) + " " + Constants.BURST_TICKER;
 			if(tx.getSender().getSignedLongId() == g.getAddress().getSignedLongId())
 				amountFormatted = "- " + amountFormatted;
 
