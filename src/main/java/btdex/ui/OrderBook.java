@@ -6,8 +6,8 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.Icon;
@@ -26,13 +26,11 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 import bt.Contract;
-import btdex.core.Constants;
 import btdex.core.ContractState;
+import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
-import btdex.core.Mediators;
 import btdex.sc.SellContract;
-import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.AssetTrade;
@@ -53,8 +51,6 @@ public class OrderBook extends JPanel {
 	
 	int ROW_HEIGHT;
 
-	HashMap<BurstAddress, ContractState> contractsMap = new HashMap<>();
-	BurstID mostRecentID;
 	ArrayList<ContractState> marketContracts = new ArrayList<>();
 
 	public static final int COL_CONTRACT = 0;
@@ -427,23 +423,18 @@ public class OrderBook extends JPanel {
 	}
 
 	private void updateContracts() {
-		mostRecentID = ContractState.addContracts(contractsMap, mostRecentID);
-
 		Globals g = Globals.getInstance();
-		Mediators m = new Mediators(g.isTestnet());
+		
+		Collection<ContractState> allContracts = Contracts.updateContracts();
 		marketContracts.clear();
-		for(ContractState s : contractsMap.values()) {
-			// if not the right market, do not update
+		
+		for(ContractState s : allContracts) {
+			// only contracts for this market
 			if(s.getMarket() != market.getID())
 				continue;
 			
-			s.update();
 			// FIXME: add more validity tests here
-			if(s.getAmountNQT() > 0
-					&& s.getState() == SellContract.STATE_OPEN
-					&& Constants.FEE_CONTRACT == s.getFeeContract()
-					&& m.isMediatorAccepted(s.getMediator1())
-					&& m.isMediatorAccepted(s.getMediator2()) )
+			if(s.getAmountNQT() > 0	&& s.getState() == SellContract.STATE_OPEN)
 				marketContracts.add(s);
 		}
 		
@@ -461,7 +452,11 @@ public class OrderBook extends JPanel {
 		for (int row = 0; row < marketContracts.size(); row++) {			
 			ContractState s = marketContracts.get(row);
 			
-			model.setValueAt(market.format(s.getRate()), row, COL_PRICE);
+			String priceFormated = market.format(s.getRate());
+			JButton b = new JButton(priceFormated); // new ActionButton(priceFormated, null, false);
+			b.setBackground(HistoryPanel.GREEN);
+			model.setValueAt(b, row, ASK_COLS[COL_PRICE]);
+			
 			model.setValueAt(s.getAmount(), row, COL_SIZE);
 			model.setValueAt(market.format((s.getRate()*s.getAmountNQT()) / Contract.ONE_BURST),
 					row, COL_TOTAL);
@@ -475,10 +470,7 @@ public class OrderBook extends JPanel {
 //			model.setValueAt(s.getSecurity(), row, COL_SECURITY);
 			
 			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId())
-				model.setValueAt(new ActionButton("CANCEL", s, true), row, COL_CONTRACT);
-			else
-				model.setValueAt(new ActionButton("BUY BURST", s, false), row, COL_CONTRACT);
-			
+				model.setValueAt(new ActionButton("CANCEL", s, true), row, COL_CONTRACT);	
 		}
 	}
 }

@@ -206,7 +206,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 		suggestedFee = Globals.getInstance().getSuggestedFee();
 		
-		if(order != null) {
+		if(isToken && order != null) {
 			// taking this order
 			if(order.getType() == AssetOrder.OrderType.BID)
 				sellToken.setSelected(true);
