@@ -19,7 +19,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.burst-apps-team:burstkit4j:734c9f83bf'
+    //implementation 'com.github.burst-apps-team:burstkit4j:734c9f83bf'
+    implementation 'com.github.jjos2372:burstkit4j:fe9160eced'
     //implementation 'com.github.jjos2372:burstkit4j:f1364a8ded'
     //implementation 'com.github.jjos2372:blocktalk:-SNAPSHOT'
     implementation 'com.github.jjos2372:blocktalk:415d8a8f78'
@@ -36,13 +37,6 @@ dependencies {
 	implementation 'io.github.monero-ecosystem:monero-java:0.2.1'
 	
 	implementation 'fr.marcwrobel:jbanking:1.0'
-    // Gson
-    implementation 'com.google.code.gson:gson:2.8.6'
-
-    // RxJava
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.15'
-
-    implementation("com.squareup.okhttp3:okhttp:4.4.0")
 
     // Use JUnit test framework
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.1")
