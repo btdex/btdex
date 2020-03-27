@@ -219,8 +219,16 @@ public class OrderBook extends JPanel {
 	public void setMarket(Market m) {
 		this.market = m;
 		
-		buyButton.setText("BUY " + m);
-		sellButton.setText("SELL " + m);
+		if(m.getTokenID() != null) {
+			buyButton.setText("BUY " + m);
+			sellButton.setText("SELL " + m);
+		}
+		else {
+			buyButton.setText("BUY BURST");
+			sellButton.setText("SELL BURST");
+		}
+		lastPrice.setIcon(null);
+		lastPrice.setText(" ");
 
 		// update the column headers
 		for (int c = 0; c < columnNames.length; c++) {
