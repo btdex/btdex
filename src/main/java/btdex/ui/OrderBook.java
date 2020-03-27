@@ -86,17 +86,6 @@ public class OrderBook extends JPanel {
 	public static final ButtonCellRenderer BUTTON_RENDERER = new ButtonCellRenderer();
 	public static final ButtonCellEditor BUTTON_EDITOR = new ButtonCellEditor();
 	
-	public static final DefaultTableCellRenderer BID_PRICE_RENDERER;
-	public static final DefaultTableCellRenderer ASK_PRICE_RENDERER;
-	static {
-		BID_PRICE_RENDERER = new DefaultTableCellRenderer();
-		BID_PRICE_RENDERER.setForeground(HistoryPanel.GREEN);
-		BID_PRICE_RENDERER.setHorizontalAlignment(JLabel.CENTER);
-		ASK_PRICE_RENDERER = new DefaultTableCellRenderer();
-		ASK_PRICE_RENDERER.setForeground(HistoryPanel.RED);
-		ASK_PRICE_RENDERER.setHorizontalAlignment(JLabel.CENTER);
-	}
-
 	class MyTableModel extends DefaultTableModel {
 		private static final long serialVersionUID = 1L;
 
@@ -121,7 +110,8 @@ public class OrderBook extends JPanel {
 		}
 
 		public boolean isCellEditable(int row, int col) {
-			return col == BID_COLS[COL_CONTRACT] || col == ASK_COLS[COL_CONTRACT];
+			return col == BID_COLS[COL_CONTRACT] || col == ASK_COLS[COL_CONTRACT]
+					|| col == BID_COLS[COL_PRICE] || col == ASK_COLS[COL_PRICE];
 		}
 	}
 	
@@ -134,20 +124,17 @@ public class OrderBook extends JPanel {
 
 		@Override
 		public TableCellRenderer getCellRenderer(int row, int col) {
-			if(col == BID_COLS[COL_CONTRACT] || col == ASK_COLS[COL_CONTRACT])
+			if(col == BID_COLS[COL_CONTRACT] || col == ASK_COLS[COL_CONTRACT]
+					|| col == BID_COLS[COL_PRICE] || col == ASK_COLS[COL_PRICE])
 				return BUTTON_RENDERER;
-			
-			if(col == BID_COLS[COL_PRICE])
-				return BID_PRICE_RENDERER;
-			if(col == ASK_COLS[COL_PRICE])
-				return ASK_PRICE_RENDERER;
 			
 			return super.getCellRenderer(row, col);
 		}
 		
 		@Override
 		public TableCellEditor getCellEditor(int row, int col) {
-			if(col == BID_COLS[COL_CONTRACT] || col == ASK_COLS[COL_CONTRACT])
+			if(col == BID_COLS[COL_CONTRACT] || col == ASK_COLS[COL_CONTRACT]
+					|| col == BID_COLS[COL_PRICE] || col == ASK_COLS[COL_PRICE])
 				return BUTTON_EDITOR;
 			
 			return super.getCellEditor(row, col);
@@ -410,7 +397,11 @@ public class OrderBook extends JPanel {
 			if(price == 0 || amountToken == 0)
 				continue;
 
-			model.setValueAt(ContractState.format(price*market.getFactor()), row, cols[COL_PRICE]);
+			String priceFormated = ContractState.format(price*market.getFactor());
+			JButton b = new ActionButton(priceFormated, o, false);
+			b.setBackground(o.getType() == AssetOrder.OrderType.ASK ? HistoryPanel.RED : HistoryPanel.GREEN);
+			model.setValueAt(b, row, cols[COL_PRICE]);
+			
 			model.setValueAt(market.format(amountToken), row, cols[COL_SIZE]);
 			model.setValueAt(ContractState.format(amountToken*price), row, cols[COL_TOTAL]);
 
