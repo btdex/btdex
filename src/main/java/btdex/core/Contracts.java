@@ -101,11 +101,11 @@ public class Contracts {
 		return contractsMap.values();
 	}
 	
-	public ContractState getFreeContract() {
+	public static ContractState getFreeContract() {
 		return freeContract;
 	}
 	
-	public ContractState getFreeNoDepositContract() {
+	public static ContractState getFreeNoDepositContract() {
 		return freeNoDepositContract;
 	}
 }

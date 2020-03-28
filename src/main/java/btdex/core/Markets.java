@@ -10,9 +10,9 @@ public class Markets {
 
     public static void addMarkets(Boolean testnet) {
         markets.add(token = new MarketTRT());
-        if(testnet) {
-            markets.add(new MarketNDST());
-        }
+//        if(testnet) {
+//            markets.add(new MarketNDST());
+//        }
 //        markets.add(new MarketEUR());
 //        markets.add(new MarketBRL());
         markets.add(new MarketBTC());

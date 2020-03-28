@@ -274,7 +274,6 @@ public class Globals {
 
 	
 	public long[] getNewContractData() {
-		Mediators mediators = new Mediators(testnet);
 		BurstID[] MEDIATORS = mediators.getMediators();
 		
 		long data[] = new long[3];

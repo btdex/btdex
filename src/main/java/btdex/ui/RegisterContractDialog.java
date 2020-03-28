@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.nio.ByteBuffer;
@@ -29,7 +30,6 @@ import btdex.core.Globals;
 import btdex.sc.SellContract;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
@@ -44,14 +44,13 @@ public class RegisterContractDialog extends JDialog implements ActionListener {
 	private JButton okButton;
 	private JButton calcelButton;
 
-	private FeeSuggestion suggestedFee;
 	private Compiler contract;
 
-	public RegisterContractDialog(JFrame owner) {
+	public RegisterContractDialog(Window owner) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
-		setTitle("Register a new Smart Contract");
+		setTitle("Register Smart Contract");
 
 		conditions = new JTextPane();
 		conditions.setPreferredSize(new Dimension(80, 120));
@@ -92,17 +91,19 @@ public class RegisterContractDialog extends JDialog implements ActionListener {
 		content.add(centerPanel, BorderLayout.CENTER);
 		content.add(buttonPane, BorderLayout.PAGE_END);
 
-		suggestedFee = Globals.getInstance().getSuggestedFee();
 		contract = Contracts.getContract();
 
 		String terms = null;
 		terms = "You are registering a new smart contract for selling BURST."
 				+ "\n\nThis contract can later be configured to sell BURST at any market."
-				+ " Registering a new contract will cost you %s BURST.";
+				+ "\n\nRegistering a new contract will cost you %s BURST."
+				+ " Your new contract will be available in a few minutes, as soon"
+				+ " as this transaction confirms.";
 		terms = String.format(terms,
-				ContractState.format(suggestedFee.getPriorityFee().longValue() + 
-						BT.getMinRegisteringFee(contract).longValue()
-						));
+				ContractState.format(BT.getMinRegisteringFee(contract).longValue()));
+		conditions.setText(terms);
+		conditions.setCaretPosition(0);
+		
 		pack();
 	}
 
@@ -148,7 +149,8 @@ public class RegisterContractDialog extends JDialog implements ActionListener {
 						contract.getCode(), dataBuffer.array(), (short)contract.getDataPages(), (short)1, (short)1,
 						BurstValue.fromPlanck(SellContract.ACTIVATION_FEE));
 
-				Single<TransactionBroadcast> tx = g.getNS().generateCreateATTransaction(g.getPubKey(), suggestedFee.getPriorityFee(),
+				Single<TransactionBroadcast> tx = g.getNS().generateCreateATTransaction(g.getPubKey(),
+						BT.getMinRegisteringFee(contract),
 						1000, "BTDEX", "BTDEX sell contract", creationBytes)
 						.flatMap(unsignedTransactionBytes -> {
 							byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);

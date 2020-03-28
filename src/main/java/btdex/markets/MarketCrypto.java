@@ -33,7 +33,7 @@ public abstract class MarketCrypto extends Market {
 	
 	@Override
 	public int getPaymentTimeout(HashMap<String, String> fields) {
-		return 24;
+		return 2;
 	}
 	
 	@Override
