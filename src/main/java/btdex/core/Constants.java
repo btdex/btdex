@@ -33,5 +33,8 @@ public class Constants {
     public static final String BURST_TICKER = "BURST";
     
 	public static final int FEE_QUANT = 735000;
+	
+	// Deadline in minutes to be used on transactions
+	public static final int BURST_DEADLINE = 1440;
 
 }

@@ -180,12 +180,12 @@ public class SendDialog extends JDialog implements ActionListener {
 					if(token!=null) {
 						utx = g.getNS().generateTransferAssetTransactionWithMessage(g.getPubKey(), BurstAddress.fromId(recID),
 								token.getTokenID(), BurstValue.fromPlanck((long)(amountNumber.doubleValue()*token.getFactor())),
-								selectedFee, 1440, msg);
+								selectedFee, Constants.BURST_DEADLINE, msg);
 					}
 					else {
 						utx = g.getNS().generateTransactionWithMessage(BurstAddress.fromId(recID), g.getPubKey(),
 							BurstValue.fromBurst(amountNumber.doubleValue()),
-							selectedFee, 1440, msg);
+							selectedFee, Constants.BURST_DEADLINE, msg);
 					}
 
 					Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
