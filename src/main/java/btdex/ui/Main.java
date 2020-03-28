@@ -28,16 +28,19 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import btdex.core.Markets;
 import com.bulenkov.darcula.DarculaLaf;
 
 import bt.BT;
+import btdex.core.Constants;
 import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
+import btdex.core.Markets;
+import burst.kit.entity.BurstID;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.AssetBalance;
 import burst.kit.entity.response.AssetOrder;
+import burst.kit.entity.response.Block;
 import burst.kit.entity.response.http.BRSError;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
@@ -334,14 +337,6 @@ public class Main extends JFrame implements ActionListener {
 		showingSplash = true;
 		setVisible(true);
 		
-		// The testnet pre-release warning note
-		if(g.isTestnet()) {
-			JOptionPane.showMessageDialog(Main.this,
-					"You selected to run on TESTNET.\n"
-					+ "Make sure you are connected to a testnet node!\n", "TESTNET version",
-					JOptionPane.INFORMATION_MESSAGE);
-		}
-
 		if(g.getAddress()==null) {			
 			// no public key or invalid, show the welcome screen
 			Welcome welcome = new Welcome(this);
@@ -445,6 +440,19 @@ public class Main extends JFrame implements ActionListener {
 				long balance = 0, locked = 0;
 				try {
 					Globals g = Globals.getInstance();
+					
+					// Check if the node has the expected block
+					if(g.isTestnet()) {
+						Block checkBlock = g.getNS().getBlock(BurstID.fromLong(Constants.CHECK_BLOCK_TESTNET)).blockingGet();
+						if(checkBlock.getHeight() != Constants.CHECK_HEIGHT_TESTNET) {
+							String error = g.getNode() + " is not a valid testnet node!";
+							Toast.makeText(Main.this, error, Toast.Style.ERROR).display();
+
+							nodeSelector.setIcon(ICON_DISCONNECTED);
+							statusLabel.setText(error);
+						}
+					}
+					
 					try {
 						Account ac = g.getNS().getAccount(g.getAddress()).blockingGet();
 						balance = ac.getBalance().longValue();
