@@ -234,7 +234,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				return;
 			}
 
-			if(Contracts.getFreeContract() == null) {
+			if(Contracts.getFreeContract() == null && !isToken) {
 				int ret = JOptionPane.showConfirmDialog(getParent(), "You don't have a smart contract available.\nRegister a new one?",
 						"Register Smart Contract", JOptionPane.YES_NO_OPTION);
 				if(ret == JOptionPane.YES_OPTION) {
