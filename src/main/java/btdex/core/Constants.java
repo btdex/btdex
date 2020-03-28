@@ -16,6 +16,9 @@ public class Constants {
     public static final String FAUCET_TESTNET =
             "https://burst-account-activator-testnet.ohager.now.sh/api/activate";
     public static final String FAUCET = "https://burst-account-activator.now.sh/api/activate";
+    
+    public static final String CHECK_BLOCK_TESTNET = "12645549025663958301";
+    public static final int CHECK_HEIGHT_TESTNET = 150_000;    
 
     public static final String DEF_CONF_FILE = "config.properties";
 
