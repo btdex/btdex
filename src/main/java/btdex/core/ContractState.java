@@ -52,11 +52,6 @@ public class ContractState {
 		return type;
 	}
 	
-	public static String format(long valueNQT) {
-		double dvalue = (double)valueNQT / Contract.ONE_BURST;
-		return NumberFormatting.BURST.format(dvalue);
-	}
-	
 	public long getMarket() {
 		return offerType & Market.MARKET_MASK;
 	}

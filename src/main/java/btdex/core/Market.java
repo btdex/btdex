@@ -65,10 +65,10 @@ public abstract class Market {
 	 */
 	public String format(long value) {
 		double dvalue = (double)value/BTC_TO_SAT;
-		return NumberFormatting.FULL.format(dvalue);
+		return getNumberFormat().format(dvalue);
 	}
 	
-	public NumberFormat getNumberFormat() {
+	public NumberFormatting getNumberFormat() {
 		return NumberFormatting.FULL;
 	}
 	

@@ -103,8 +103,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 		JPanel fieldPanel = new JPanel(new GridLayout(0, 2, 4, 4));
 
-		amountField = new JFormattedTextField(NumberFormatting.BURST);
-		priceField = new JFormattedTextField(isToken ? market.getNumberFormat() : NumberFormatting.BURST);
+		amountField = new JFormattedTextField(isToken ? market.getNumberFormat() : NumberFormatting.BURST);
+		priceField = new JFormattedTextField(isToken ? NumberFormatting.BURST : market.getNumberFormat());
 		total = new JTextField(16);
 		total.setEditable(false);
 
@@ -223,7 +223,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			else
 				buyToken.setSelected(true);
 			
-			priceField.setText(ContractState.format(order.getPrice().longValue()*market.getFactor()));
+			priceField.setText(NumberFormatting.BURST.format(order.getPrice().longValue()*market.getFactor()));
 			amountField.setText(market.format(order.getQuantity().longValue()));
 			somethingChanged();
 		}
@@ -422,7 +422,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 							amountField.getText(),
 							market,
 							priceField.getText(),
-							ContractState.format(suggestedFee.getPriorityFee().longValue()));
+							NumberFormatting.BURST.format(suggestedFee.getPriorityFee().longValue()));
 
 		}
 		else {
@@ -471,7 +471,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						amountField.getText(), priceField.getText(), market,
 						amountField.getText(), security.getValue(), total.getText(),
 						market, accountDetails.getText(),
-						ContractState.format(SellContract.ACTIVATION_FEE + 2*suggestedFee.getPriorityFee().longValue()),
+						NumberFormatting.BURST.format(SellContract.ACTIVATION_FEE + 2*suggestedFee.getPriorityFee().longValue()),
 						market.getPaymentTimeout(account.getFields()), market, market
 						);
 			}

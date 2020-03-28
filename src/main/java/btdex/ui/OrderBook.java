@@ -30,6 +30,7 @@ import btdex.core.ContractState;
 import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
+import btdex.core.NumberFormatting;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.response.AssetOrder;
@@ -379,7 +380,7 @@ public class OrderBook extends JPanel {
 		
 		if(lastTrade != null) {
 			// set the last price label
-			String priceLabel = ContractState.format(lastTrade.getPrice().longValue()*market.getFactor()) + " BURST";
+			String priceLabel = NumberFormatting.BURST.format(lastTrade.getPrice().longValue()*market.getFactor()) + " BURST";
 			lastPrice.setText(priceLabel);
 			lastPrice.setIcon(lastIsUp ? upIcon : downIcon);
 			lastPrice.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
@@ -401,13 +402,13 @@ public class OrderBook extends JPanel {
 			if(price == 0 || amountToken == 0)
 				continue;
 
-			String priceFormated = ContractState.format(price*market.getFactor());
+			String priceFormated = NumberFormatting.BURST.format(price*market.getFactor());
 			JButton b = new ActionButton(priceFormated, o, false);
 			b.setBackground(o.getType() == AssetOrder.OrderType.ASK ? HistoryPanel.RED : HistoryPanel.GREEN);
 			model.setValueAt(b, row, cols[COL_PRICE]);
 			
 			model.setValueAt(market.format(amountToken), row, cols[COL_SIZE]);
-			model.setValueAt(ContractState.format(amountToken*price), row, cols[COL_TOTAL]);
+			model.setValueAt(NumberFormatting.BURST.format(amountToken*price), row, cols[COL_TOTAL]);
 
 			model.setValueAt(new ExplorerButton(o.getId().getID(), copyIcon, expIcon, BUTTON_EDITOR), row, cols[COL_CONTRACT]);
 
