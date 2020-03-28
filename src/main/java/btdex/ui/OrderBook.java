@@ -44,7 +44,7 @@ public class OrderBook extends JPanel {
 
 	JTable table;
 	DefaultTableModel model;
-	Icon copyIcon, expIcon, upIcon, downIcon, cancelIcon, editIcon;
+	Icon copyIcon, expIcon, upIcon, downIcon, cancelIcon, editIcon, withdrawIcon;
 	JCheckBox listOnlyMine;
 	JLabel lastPrice;
 	JButton buyButton, sellButton;
@@ -70,11 +70,11 @@ public class OrderBook extends JPanel {
 			"CONTRACT",
 			"TOTAL",
 			"SIZE",
-			"DEPOSIT",
+			"DEPOSIT (BURST)",
 			"PRICE",
 
 			"PRICE",
-			"DEPOSIT",
+			"DEPOSIT (BURST)",
 			"SIZE",
 			"TOTAL",
 			"CONTRACT",
@@ -138,6 +138,8 @@ public class OrderBook extends JPanel {
 			
 			return super.getCellEditor(row, col);
 		}
+		
+		
 	}
 
 	public static class ButtonCellRenderer extends DefaultTableCellRenderer	{
@@ -281,8 +283,9 @@ public class OrderBook extends JPanel {
 		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
 		upIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_UP, 18, HistoryPanel.GREEN);
 		downIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_DOWN, 18, HistoryPanel.RED);
-		cancelIcon = IconFontSwing.buildIcon(FontAwesome.TRASH, 12, table.getForeground());
+		cancelIcon = IconFontSwing.buildIcon(FontAwesome.TIMES, 12, table.getForeground());
 		editIcon = IconFontSwing.buildIcon(FontAwesome.PENCIL, 12, table.getForeground());
+		withdrawIcon = IconFontSwing.buildIcon(FontAwesome.RECYCLE, 12, table.getForeground());
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
@@ -438,7 +441,13 @@ public class OrderBook extends JPanel {
 			model.setValueAt(market.format(amountToken), row, cols[COL_SIZE]);
 			model.setValueAt(NumberFormatting.BURST.format(amountToken*price), row, cols[COL_TOTAL]);
 
-			model.setValueAt(new ExplorerButton(o.getId().getID(), copyIcon, expIcon, BUTTON_EDITOR), row, cols[COL_CONTRACT]);
+			ExplorerButton exp = new ExplorerButton(o.getId().getID(), copyIcon, expIcon, BUTTON_EDITOR);
+			if(o.getAccountAddress().getSignedLongId() == Globals.getInstance().getAddress().getSignedLongId()) {
+				JButton cancel = new ActionButton("", o, true);
+				cancel.setIcon(cancelIcon);
+				exp.add(cancel, BorderLayout.WEST);
+			}
+			model.setValueAt(exp, row, cols[COL_CONTRACT]);
 		}
 		// fill with null all the remaining rows
 		for (; row < model.getRowCount(); row++) {
@@ -493,12 +502,21 @@ public class OrderBook extends JPanel {
 			b.setBackground(HistoryPanel.RED);
 			model.setValueAt(b, row, ASK_COLS[COL_PRICE]);
 			
+			model.setValueAt(s.getSecurity(), row, ASK_COLS[COL_SECURITY]);
+			
 			model.setValueAt(s.getAmount(), row, ASK_COLS[COL_SIZE]);
 			model.setValueAt(market.format((s.getRate()*s.getAmountNQT()) / Contract.ONE_BURST),
 					row, ASK_COLS[COL_TOTAL]);
-			model.setValueAt(new ExplorerButton(s.getAddress().getRawAddress(), copyIcon, expIcon,
-					ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(), s.getAddress().getFullAddress(), BUTTON_EDITOR),
-					row, ASK_COLS[COL_CONTRACT]);
+			ExplorerButton exp = new ExplorerButton(s.getAddress().getRawAddress(), copyIcon, expIcon,
+					ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(), s.getAddress().getFullAddress(), BUTTON_EDITOR); 
+			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId()
+					&& s.getBalance().longValue() > 0) {
+				ActionButton withDrawButton = new ActionButton("", s, true);
+				withDrawButton.setToolTipText("Withdraw the amount on this contract.");
+				withDrawButton.setIcon(cancelIcon);
+				exp.add(withDrawButton, BorderLayout.WEST);
+			}
+			model.setValueAt(exp, row, ASK_COLS[COL_CONTRACT]);
 			
 //			model.setValueAt(new ExplorerButton(
 //					s.getCreator().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : s.getCreator().getRawAddress(), copyIcon, expIcon,
