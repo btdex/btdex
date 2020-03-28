@@ -2,7 +2,6 @@ package btdex;
 
 import bt.BT;
 import bt.compiler.Compiler;
-import btdex.core.Constants;
 import btdex.core.Mediators;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstID;
