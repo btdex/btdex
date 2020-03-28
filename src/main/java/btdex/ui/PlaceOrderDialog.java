@@ -227,15 +227,25 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 	@Override
 	public void setVisible(boolean b) {
-		if(accountComboBox.getItemCount()==0 && !isToken) {
-			JOptionPane.showMessageDialog(this, "You need to register a " + market + " account first.",
-					"Error", JOptionPane.ERROR_MESSAGE);
-			dispose();
+		if(b == true) {
+			if(accountComboBox.getItemCount()==0 && !isToken) {
+				JOptionPane.showMessageDialog(getParent(), "You need to register a " + market + " account first.",
+						"Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 
-			// TODO open the settings dialog here
-			return;
+			if(Contracts.getFreeContract() == null) {
+				int ret = JOptionPane.showConfirmDialog(getParent(), "You don't have a smart contract available.\nRegister a new one?",
+						"Register Smart Contract", JOptionPane.YES_NO_OPTION);
+				if(ret == JOptionPane.YES_OPTION) {
+					// No available contract, show the option to register a contract first
+					RegisterContractDialog dlg = new RegisterContractDialog(getOwner());
+					dlg.setLocationRelativeTo(getOwner());
+					dlg.setVisible(true);
+				}			
+				return;
+			}
 		}
-
 		super.setVisible(b);
 	}
 
@@ -390,40 +400,36 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						+ "the smart contract) to the buyer's account.\n\n"
 						+ "There is a 1%% fee when you withdraw your deposit and up to 40 BURST "
 						+ "smart contract and transaction fees. "
-						+ "It can take up to 4 blocks for your order to be available. "
-						+ "You need to open BTDEX at least once every 24 hours so your account "
-						+ "details can be sent to buyers in case your offer is taken. \n\n"
-						+ "After your account details are sent to the buyer, he/she "
-						+ "has up to %d hours to complete the %s transfer. "
+						+ "It takes 2 blocks after this transaction confirms for your order to be available. "
+						+ "\n\nThe buyer has up to %d hours to complete the %s transfer after taking your offer. "
 						+ "After you receive the %s amount, you have up to 24 hours to finish "
-						+ "the trade by transfering the BURST.\n\n"
+						+ "the trade by signaling you received the %s.\n\n"
 						+ "This order will be open until cancelled. If you do not follow "
-						+ "the protocol, you might lose your security deposit.";
+						+ "this protocol, you might lose your security deposit.";
 
 				terms = String.format(terms,
 						market, priceField.getText(), market,
 						amountField.getText(),
 						total.getText(), market, accountDetails.getText(),
 						amountField.getText(),
-						market.getPaymentTimeout(account.getFields()), market, market
+						market.getPaymentTimeout(account.getFields()), market, market, market
 						);
 			}
 			else {
-				terms = "You are selling %s BURST for %s at a price of %s %s each.\n\n"
+				terms = "You are selling %s BURST at a price of %s %s each.\n\n"
 						+ "A smart contract will hold your %s BURST plus a security deposity of %d %%. "
 						+ "The taker have to deposit %s %s on your account '%s'.\n\n"
 						+ "There are no trading fees for you, but up to 40 BURST smart contract and transaction fees. "
-						+ "It can take up to 4 blocks for your order to be available. "
-						+ "You need to open BTDEX at least once every 24 hours so your account details can be "
-						+ "sent to the buyer in case your offer is taken. \n\n"
-						+ "After your account details are sent to the buyer, he/she "
-						+ "has up to %d hours to complete %s transfer. "
-						+ "After the %s amount is transfered, you have up to 24 hours to signal "
+						+ "Your offer will be available 2 blocks after this transaction confirms.\n\n"
+						+ "When your offer is taken, the buyer "
+						+ "has up to %d hours to complete the %s transfer. "
+						+ "After the %s amount is confirmed on your address, you have up to 24 hours to signal "
 						+ "the amount was received. "
-						+ "This order will be open until taken or cancelled.";
+						+ "This order will be open until taken or cancelled. If you do not follow "
+						+ "this protocol, you might lose your security deposit.";
 
 				terms = String.format(terms,
-						amountField.getText(), market, priceField.getText(), market,
+						amountField.getText(), priceField.getText(), market,
 						amountField.getText(), security.getValue(),
 						total.getText(), market, accountDetails.getText(),
 						market.getPaymentTimeout(account.getFields()), market, market

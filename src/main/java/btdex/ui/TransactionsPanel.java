@@ -236,6 +236,7 @@ public class TransactionsPanel extends JPanel {
 				switch (tx.getSubtype()) {
 				case 0:
 					type = "SC Creation";
+					amountFormatted = "";
 					break;
 				case 1:
 					type = "SC Payment";

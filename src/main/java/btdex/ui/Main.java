@@ -33,6 +33,7 @@ import com.bulenkov.darcula.DarculaLaf;
 import bt.BT;
 import btdex.core.Constants;
 import btdex.core.ContractState;
+import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.Markets;
@@ -398,7 +399,7 @@ public class Main extends JFrame implements ActionListener {
 		statusLabel.setText(g.getNode());
 
 		if(!newAccount)
-			Toast.makeText(this, "Getting info from node...", 8000, Toast.Style.SUCCESS).display();
+			Toast.makeText(this, "Getting info from node...", 4000, Toast.Style.SUCCESS).display();
 		update();
 		Thread updateThread = new UpdateThread();
 		updateThread.start();
@@ -499,6 +500,12 @@ public class Main extends JFrame implements ActionListener {
 						tokenLocked += o.getQuantity().longValue();
 					}
 					tokenBalance -= tokenLocked;
+					
+					if(showingSplash) {
+						// run a first update on all contracts as it can take longer
+						Toast.makeText(Main.this, "Reading smart contract data...", 8000, Toast.Style.SUCCESS).display();
+						Contracts.updateContracts();
+					}
 					
 					balanceLabelToken.setText(token.format(tokenBalance));
 					balanceLabelTokenPending.setText("+ " + token.format(tokenLocked) + " locked");
