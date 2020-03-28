@@ -1,13 +1,12 @@
-
 plugins {
-  id 'com.github.johnrengelman.shadow' version '4.0.4'
-  id 'java'
-  id 'application'
-  id 'edu.sc.seis.launch4j' version '2.4.6'
-  id 'edu.sc.seis.macAppBundle' version '2.3.0'
-  id "nebula.ospackage" version "8.2.0"
-  id 'org.gradle.crypto.checksum' version '1.2.0'
-  id 'com.palantir.git-version' version '0.12.2'
+    id 'com.github.johnrengelman.shadow' version '4.0.4'
+    id 'java'
+    id 'application'
+    id 'edu.sc.seis.launch4j' version '2.4.6'
+    id 'edu.sc.seis.macAppBundle' version '2.3.0'
+    id "nebula.ospackage" version "8.2.0"
+    id 'org.gradle.crypto.checksum' version '1.2.0'
+    id 'com.palantir.git-version' version '0.12.2'
 }
 
 // In this section you declare where to find the dependencies of your project
@@ -25,25 +24,22 @@ dependencies {
     //implementation 'com.github.jjos2372:blocktalk:-SNAPSHOT'
     implementation 'com.github.jjos2372:blocktalk:ef53dae747'
 
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.15'
+    implementation 'com.squareup.okhttp3:okhttp:4.4.0'
+
     implementation 'com.github.jiconfont:jiconfont-swing:1.0.0'
     implementation 'com.github.jiconfont:jiconfont-font_awesome:4.7.0.1'
-    
-	implementation 'com.bulenkov:darcula:2018.2'
-	
-	implementation 'io.github.novacrypto:BIP39:2019.01.27'
-	
-	implementation 'jfree:jfreechart:1.0.13'
-	
-	implementation 'io.github.monero-ecosystem:monero-java:0.2.1'
-	
-	implementation 'fr.marcwrobel:jbanking:1.0'
-    // Gson
-    implementation 'com.google.code.gson:gson:2.8.6'
 
-    // RxJava
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.15'
+    implementation 'com.bulenkov:darcula:2018.2'
 
-    implementation("com.squareup.okhttp3:okhttp:4.4.0")
+    implementation 'io.github.novacrypto:BIP39:2019.01.27'
+
+    implementation 'jfree:jfreechart:1.0.13'
+
+    implementation 'io.github.monero-ecosystem:monero-java:0.2.1'
+
+    implementation 'fr.marcwrobel:jbanking:1.0'
 
     // Use JUnit test framework
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.1")
@@ -82,7 +78,7 @@ createExe {
     copyright = 'BTDEX'
     companyName = 'https://btdex.trade'
     textVersion = details.lastTag
-    
+
     mainClassName = project.mainClassName
     copyConfigurable = project.tasks.shadowJar.outputs.files
     jar = "lib/${project.tasks.shadowJar.archiveName}"
@@ -90,40 +86,40 @@ createExe {
 
 createDmg.enabled = false
 macAppBundle {
-  mainClassName = project.mainClassName
-  version = details.lastTag
-  icon = "${projectDir}/dist/btdex.icns"
-  appStyle = 'Oracle'
-  appName = project.applicationName
-  dmgName = "${->project.name}-mac"
-  runtimeConfigurationName = 'shadow'
-  jarTask = 'shadowJar'
-  jvmVersion = "1.8+"
+    mainClassName = project.mainClassName
+    version = details.lastTag
+    icon = "${projectDir}/dist/btdex.icns"
+    appStyle = 'Oracle'
+    appName = project.applicationName
+    dmgName = "${->project.name}-mac"
+    runtimeConfigurationName = 'shadow'
+    jarTask = 'shadowJar'
+    jvmVersion = "1.8+"
 }
 
 task makeDeb(type: Deb, dependsOn: shadowJar) {
-	maintainer 'btdex.trade'
+    maintainer 'btdex.trade'
     license	'GPL-3+'
-	version details.lastTag.substring(1)
+    version details.lastTag.substring(1)
     release '1'
     arch 'all'
-    
+
     requires('java8-runtime').or('java9-runtime')
     requires('xdg-utils')
-    
+
     from('dist/copyright'){
-    	into '/usr/share/doc/btdex'
+        into '/usr/share/doc/btdex'
     }
-    
+
     into '/opt/btdex'
     from('dist/btdex.sh'){
-    	fileMode 0755
+        fileMode 0755
     }
     from(new File(sourceSets.main.output.resourcesDir, "/icon.png"))
     link('/usr/share/pixmaps/btdex.png', '/opt/btdex/icon.png')
     link('/usr/bin/btdex', '/opt/btdex/btdex.sh')
     from('dist/btdex.desktop'){
-    	into '/usr/share/applications'
+        into '/usr/share/applications'
     }
     from(project.tasks.shadowJar.outputs.files)
 }
@@ -131,6 +127,5 @@ task makeDeb(type: Deb, dependsOn: shadowJar) {
 import org.gradle.crypto.checksum.Checksum
 
 task release(type: Checksum, dependsOn: [shadowJar, createExe, createAppZip, makeDeb]) {
-  files = project.tasks.shadowJar.outputs.files.plus(files(['build/launch4j/btdex.exe', 'build/distributions/btdex-mac.zip']))
+    files = project.tasks.shadowJar.outputs.files.plus(files(['build/launch4j/btdex.exe', 'build/distributions/btdex-mac.zip']))
 }
-
