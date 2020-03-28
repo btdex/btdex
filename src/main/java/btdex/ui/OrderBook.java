@@ -63,6 +63,9 @@ public class OrderBook extends JPanel {
 	public static final int[] BID_COLS = {0, 1, 2, 3, 4};
 	public static final int[] ASK_COLS = {9, 8, 7, 6, 5};
 	
+	private static final int COL_WIDE = 200;
+	private static final int COL_REGULAR = 75;
+	
 	String[] columnNames = {
 			"CONTRACT",
 			"TOTAL",
@@ -219,6 +222,12 @@ public class OrderBook extends JPanel {
 			buyButton.setText("BUY " + m);
 			sellButton.setText("SELL " + m);
 			
+			// show back the bid cols
+			for (int i = 0; i < BID_COLS.length; i++) {
+				table.getColumnModel().getColumn(i).setMaxWidth(Integer.MAX_VALUE);
+				table.getColumnModel().getColumn(i).setPreferredWidth(COL_REGULAR);
+			}			
+			table.getColumnModel().getColumn(BID_COLS[COL_CONTRACT]).setPreferredWidth(COL_WIDE);
 			table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setMaxWidth(0);
 			table.getColumnModel().getColumn(BID_COLS[COL_SECURITY]).setMaxWidth(0);
 		}
@@ -226,10 +235,11 @@ public class OrderBook extends JPanel {
 			buyButton.setText("BUY BURST");
 			sellButton.setText("SELL BURST");
 
-			table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setMaxWidth(200);
-			table.getColumnModel().getColumn(BID_COLS[COL_SECURITY]).setMaxWidth(200);
-			table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setPreferredWidth(100);
-			table.getColumnModel().getColumn(BID_COLS[COL_SECURITY]).setPreferredWidth(100);
+			for (int i = 0; i < BID_COLS.length; i++) {
+				table.getColumnModel().getColumn(i).setMaxWidth(0);
+			}
+			table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setMaxWidth(Integer.MAX_VALUE);
+			table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setPreferredWidth(COL_REGULAR);
 		}
 		lastPrice.setIcon(null);
 		lastPrice.setText(" ");
@@ -262,9 +272,10 @@ public class OrderBook extends JPanel {
 		table.setRowHeight(ROW_HEIGHT);
 		table.setRowSelectionAllowed(false);
 
-		// Allowing to hide this columns
-		table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setMinWidth(0);
-		table.getColumnModel().getColumn(BID_COLS[COL_SECURITY]).setMinWidth(0);
+		// Allowing to hide columns
+		for (int i = 0; i < columnNames.length; i++) {
+			table.getColumnModel().getColumn(i).setMinWidth(0);			
+		}
 		
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
 		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
@@ -280,7 +291,8 @@ public class OrderBook extends JPanel {
 		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
 		centerRenderer.setHorizontalAlignment( JLabel.CENTER );
 		for (int i = 0; i < table.getColumnCount(); i++) {
-			table.getColumnModel().getColumn(i).setCellRenderer( centerRenderer );			
+			table.getColumnModel().getColumn(i).setCellRenderer( centerRenderer );
+			table.getColumnModel().getColumn(i).setPreferredWidth(COL_REGULAR);
 		}
 		JTableHeader jtableHeader = table.getTableHeader();
 		DefaultTableCellRenderer rend = (DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer();
@@ -289,9 +301,8 @@ public class OrderBook extends JPanel {
 
 		table.setAutoCreateColumnsFromModel(false);
 
-		table.getColumnModel().getColumn(BID_COLS[COL_CONTRACT]).setPreferredWidth(200);
-		table.getColumnModel().getColumn(ASK_COLS[COL_CONTRACT]).setPreferredWidth(200);
-//		table.getColumnModel().getColumn(COL_ACCOUNT).setPreferredWidth(200);
+		table.getColumnModel().getColumn(BID_COLS[COL_CONTRACT]).setPreferredWidth(COL_WIDE);
+		table.getColumnModel().getColumn(ASK_COLS[COL_CONTRACT]).setPreferredWidth(COL_WIDE);
 		
 		JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		top.add(new Desc("Last price", lastPrice = new JLabel()));
