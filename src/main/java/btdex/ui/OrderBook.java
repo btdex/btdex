@@ -259,7 +259,7 @@ public class OrderBook extends JPanel {
 		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
 		upIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_UP, 18, HistoryPanel.GREEN);
 		downIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_DOWN, 18, HistoryPanel.RED);
-		cancelIcon = IconFontSwing.buildIcon(FontAwesome.TRASH, 12, HistoryPanel.RED);
+		cancelIcon = IconFontSwing.buildIcon(FontAwesome.TRASH, 12, table.getForeground());
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
