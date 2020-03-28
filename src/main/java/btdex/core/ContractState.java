@@ -54,7 +54,7 @@ public class ContractState {
 	
 	public static String format(long valueNQT) {
 		double dvalue = (double)valueNQT / Contract.ONE_BURST;
-		return NumberFormatting.NF(2, 5).format(dvalue);
+		return NumberFormatting.BURST.format(dvalue);
 	}
 	
 	public long getMarket() {
@@ -101,9 +101,13 @@ public class ContractState {
 		return feeContract;
 	}
 	
+	public long getActivationFee() {
+		return at.getMinimumActivation().longValue();
+	}
+	
 	public String getAmount() {
 		double dvalue = (double)amount / Contract.ONE_BURST;
-		return NumberFormatting.NF(2, 5).format(dvalue);
+		return NumberFormatting.BURST.format(dvalue);
 	}
 
 	public long getSecurityNQT() {
@@ -112,7 +116,7 @@ public class ContractState {
 	
 	public String getSecurity() {
 		double dvalue = (double)security / Contract.ONE_BURST;
-		return NumberFormatting.NF(2, 5).format(dvalue);
+		return NumberFormatting.BURST.format(dvalue);
 	}
 
 	/**
@@ -249,6 +253,9 @@ public class ContractState {
 						JsonElement marketJson = json.get("market");
 						JsonElement rateJson = json.get("rate");
 						JsonElement accountJson = json.get("account");
+						market = -1;
+						account = null;
+						rate = -1;
 						if(marketJson!=null)
 							market = Integer.parseInt(marketJson.getAsString());
 						if(accountJson!=null)

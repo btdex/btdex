@@ -65,7 +65,7 @@ public class SendDialog extends JDialog implements ActionListener {
 		pin = new JPasswordField(12);
 		pin.addActionListener(this);
 
-		amount = new JFormattedTextField(NumberFormatting.NF(5, 8));
+		amount = new JFormattedTextField(token==null ? NumberFormatting.BURST : token.getNumberFormat());
 		fee = new JSlider(1, 4);
 
 		topPanel.add(new Desc("Recipient", recipient));
@@ -161,7 +161,7 @@ public class SendDialog extends JDialog implements ActionListener {
 			Number amountNumber = null;
 			if(error == null) {
 				try {
-					amountNumber = NumberFormatting.NF(5, 8).parse(amount.getText());
+					amountNumber = NumberFormatting.parse(amount.getText());
 				} catch (ParseException e1) {
 					amount.requestFocus();
 					error = "Invalid amount";

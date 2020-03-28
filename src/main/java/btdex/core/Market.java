@@ -60,18 +60,16 @@ public abstract class Market {
 	 */
 	public abstract long getID();
 	
-	private final NumberFormat NF = NumberFormatting.NF(8, 8);
-
 	/**
 	 * @return the formatted value (assuming value is in SATs)
 	 */
 	public String format(long value) {
 		double dvalue = (double)value/BTC_TO_SAT;
-		return NF.format(dvalue);
+		return NumberFormatting.FULL.format(dvalue);
 	}
 	
 	public NumberFormat getNumberFormat() {
-		return NF;
+		return NumberFormatting.FULL;
 	}
 	
 	/**
