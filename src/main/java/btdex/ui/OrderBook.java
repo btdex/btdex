@@ -44,7 +44,7 @@ public class OrderBook extends JPanel {
 
 	JTable table;
 	DefaultTableModel model;
-	Icon copyIcon, expIcon, upIcon, downIcon;
+	Icon copyIcon, expIcon, upIcon, downIcon, cancelIcon;
 	JCheckBox listOnlyMine;
 	JLabel lastPrice;
 	JButton buyButton, sellButton;
@@ -259,6 +259,7 @@ public class OrderBook extends JPanel {
 		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
 		upIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_UP, 18, HistoryPanel.GREEN);
 		downIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_DOWN, 18, HistoryPanel.RED);
+		cancelIcon = IconFontSwing.buildIcon(FontAwesome.TRASH, 12, HistoryPanel.RED);
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
@@ -404,6 +405,10 @@ public class OrderBook extends JPanel {
 
 			String priceFormated = NumberFormatting.BURST.format(price*market.getFactor());
 			JButton b = new ActionButton(priceFormated, o, false);
+			if(o.getAccountAddress().getSignedLongId() == Globals.getInstance().getAddress().getSignedLongId()) {
+				b = new ActionButton(priceFormated, o, true);
+				b.setIcon(cancelIcon);
+			}
 			b.setBackground(o.getType() == AssetOrder.OrderType.ASK ? HistoryPanel.RED : HistoryPanel.GREEN);
 			model.setValueAt(b, row, cols[COL_PRICE]);
 			
@@ -411,9 +416,6 @@ public class OrderBook extends JPanel {
 			model.setValueAt(NumberFormatting.BURST.format(amountToken*price), row, cols[COL_TOTAL]);
 
 			model.setValueAt(new ExplorerButton(o.getId().getID(), copyIcon, expIcon, BUTTON_EDITOR), row, cols[COL_CONTRACT]);
-
-			if(o.getAccountAddress().getSignedLongId() == Globals.getInstance().getAddress().getSignedLongId())
-				model.setValueAt(new ActionButton("CANCEL", o, true), row, cols[COL_CONTRACT]);
 		}
 		// fill with null all the remaining rows
 		for (; row < model.getRowCount(); row++) {

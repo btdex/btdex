@@ -27,6 +27,10 @@ public class NumberFormatting {
         return new NumberFormatting(nf);
     }
     
+    public NumberFormat getFormat() {
+    	return nf;
+    }
+    
 	public String format(long valueNQT) {
 		double dvalue = (double)valueNQT / Contract.ONE_BURST;
 		return nf.format(dvalue);

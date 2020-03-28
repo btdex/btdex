@@ -35,6 +35,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import bt.BT;
@@ -103,8 +104,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 		JPanel fieldPanel = new JPanel(new GridLayout(0, 2, 4, 4));
 
-		amountField = new JFormattedTextField(isToken ? market.getNumberFormat() : NumberFormatting.BURST);
-		priceField = new JFormattedTextField(isToken ? NumberFormatting.BURST : market.getNumberFormat());
+		amountField = new JFormattedTextField(isToken ? market.getNumberFormat().getFormat() : NumberFormatting.BURST.getFormat());
+		priceField = new JFormattedTextField(isToken ? NumberFormatting.BURST.getFormat() : market.getNumberFormat().getFormat());
 		total = new JTextField(16);
 		total.setEditable(false);
 
@@ -345,9 +346,11 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					messageJson.addProperty("rate", String.valueOf(priceValue.longValue()));
 					messageJson.addProperty("account", accountDetails.getText());
 					
+					String messageString = Constants.GSON.toJson(messageJson);
+					
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 							null, suggestedFee.getPriorityFee(),
-							Constants.BURST_DEADLINE, messageJson.getAsString());
+							Constants.BURST_DEADLINE, messageString);
 				}
 
 				Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
@@ -362,6 +365,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						String.format("Transaction %s has been broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
 			}
 			catch (Exception ex) {
+				ex.printStackTrace();
 				Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
 			}
 			setCursor(Cursor.getDefaultCursor());

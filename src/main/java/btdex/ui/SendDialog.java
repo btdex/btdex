@@ -64,7 +64,7 @@ public class SendDialog extends JDialog implements ActionListener {
 		pin = new JPasswordField(12);
 		pin.addActionListener(this);
 
-		amount = new JFormattedTextField(token==null ? NumberFormatting.BURST : token.getNumberFormat());
+		amount = new JFormattedTextField(token==null ? NumberFormatting.BURST.getFormat() : token.getNumberFormat().getFormat());
 		fee = new JSlider(1, 4);
 
 		topPanel.add(new Desc("Recipient", recipient));
