@@ -28,5 +28,7 @@ public class Constants {
     public static final String BURST_SYMBOL = "\u0243";
 
     public static final String BURST_TICKER = "BURST";
+    
+	public static final int FEE_QUANT = 735000;
 
 }

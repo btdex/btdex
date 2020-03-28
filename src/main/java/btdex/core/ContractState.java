@@ -19,7 +19,7 @@ import burst.kit.entity.response.appendix.PlaintextMessageAppendix;
 
 public class ContractState {
 	
-	private enum Type {
+	enum Type {
 		Invalid, Standard, NoDeposit
 	}
 	
@@ -46,6 +46,10 @@ public class ContractState {
 	
 	public ContractState(Type type) {
 		this.type = type;
+	}
+	
+	public Type getType() {
+		return type;
 	}
 	
 	public static String format(long valueNQT) {
@@ -123,6 +127,7 @@ public class ContractState {
 	 */
 	public static BurstID addContracts(HashMap<BurstAddress, ContractState> map, BurstID mostRecent){
 		Globals g = Globals.getInstance();
+		BT.setNodeInstance(g.getNS());
 		
 		BurstAddress[] atIDs = g.getNS().getAtIds().blockingGet();
 		
@@ -152,47 +157,40 @@ public class ContractState {
 			Type type = Type.Invalid;
 			
 			// check the code (should match perfectly)
-			if(checkContractCode(at))
+			if(Contracts.checkContractCode(at))
 				type = Type.Standard;
-			else if(checkContractCodeNoDeposit(at))
+			else if(Contracts.checkContractCodeNoDeposit(at))
 				type = Type.NoDeposit;
 			
 			if(type!=Type.Invalid) {
 				ContractState s = new ContractState(type);
 				
-				s.updateState(at);
-				map.put(ad, s);
+				// Check some immutable variables
+				if(type == Type.Standard) {
+					Compiler contract = Contracts.getContract();
+					s.mediator1 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator1"));
+					s.mediator2 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator2"));
+					s.feeContract = BT.getContractFieldValue(at, contract.getFieldAddress("feeContract"));
+				}
+				else if(type == Type.NoDeposit) {
+					Compiler contract = Contracts.getContractNoDeposit();
+					s.mediator1 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator1"));
+					s.mediator2 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator2"));
+					s.feeContract = BT.getContractFieldValue(at, contract.getFieldAddress("feeContract"));
+				}
+				
+				// Check if the immutable variables are valid
+				if(g.getMediators().isMediatorAccepted(s.getMediator1())
+						&& g.getMediators().isMediatorAccepted(s.getMediator2())
+						&& Constants.FEE_CONTRACT == s.getFeeContract()){
+					s.updateState(at);
+					map.put(ad, s);
+				}
 			}
 		}
 		
 		return first;
-	}
-	
-	static boolean checkContractCode(AT at) {
-		byte []code = Contracts.getContractCode();
-		
-		if(at.getMachineCode().length < code.length)
-			return false;
-		
-		for (int i = 0; i < code.length; i++) {
-			if(at.getMachineCode()[i] != code[i])
-				return false;
-		}
-		return true;
-	}
-	
-	static boolean checkContractCodeNoDeposit(AT at) {
-		byte []code = Contracts.getContractNoDepositCode();
-		
-		if(at.getMachineCode().length < code.length)
-			return false;
-		
-		for (int i = 0; i < code.length; i++) {
-			if(at.getMachineCode()[i] != code[i])
-				return false;
-		}
-		return true;
-	}
+	}	
 	
 	public void update() {
 		updateState(at);
@@ -208,22 +206,17 @@ public class ContractState {
 		this.address = at.getId();
 		this.balance = at.getBalance();
 		
+		// update variables that can change over time
 		if(type == Type.Standard) {
 			Compiler contract = Contracts.getContract();
-			this.mediator1 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator1"));
-			this.mediator2 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator2"));
 			this.state = BT.getContractFieldValue(at, contract.getFieldAddress("state"));
 			this.amount = BT.getContractFieldValue(at, contract.getFieldAddress("amount"));
 			this.security = BT.getContractFieldValue(at, contract.getFieldAddress("security"));
-			this.feeContract = BT.getContractFieldValue(at, contract.getFieldAddress("feeContract"));
 		}
 		else if(type == Type.NoDeposit) {
 			Compiler contract = Contracts.getContractNoDeposit();
-			this.mediator1 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator1"));
-			this.mediator2 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator2"));
 			this.state = BT.getContractFieldValue(at, contract.getFieldAddress("state"));
 			this.lockMinutes = BT.getContractFieldValue(at, contract.getFieldAddress("lockMinutes"));
-			this.feeContract = BT.getContractFieldValue(at, contract.getFieldAddress("feeContract"));
 		}
 		
 		// check rate, type, etc. from transaction
@@ -262,13 +255,15 @@ public class ContractState {
 							account = accountJson.getAsString();
 						if(rateJson!=null)
 							rate = Long.parseLong(rateJson.getAsString());
+						
+						// set this as the accepted last TxId
+						lastTxId = tx.getId().getSignedLongId();
 					}
 					catch (Exception e) {
 						// we ignore invalid messages
 					}
 				}
 			}
-			lastTxId = tx.getId().getSignedLongId();
 		}
 	}
 }

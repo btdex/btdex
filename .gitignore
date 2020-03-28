@@ -8,3 +8,9 @@ bin
 /config.properties
 .idea
 
+/logo/
+.idea
+/.vscode
+/.settings
+.project
+.classpath

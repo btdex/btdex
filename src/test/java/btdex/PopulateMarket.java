@@ -2,7 +2,6 @@ package btdex;
 
 import bt.BT;
 import bt.Contract;
-import btdex.core.Market;
 import btdex.core.Mediators;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstID;
@@ -11,7 +10,8 @@ import burst.kit.entity.response.AT;
 
 
 /**
- * Add some orders to a market.
+ * We assume a localhost testnet with 0 seconds mock mining is available for the
+ * tests to work.
  * 
  * @author jjos
  */
@@ -27,16 +27,12 @@ public class PopulateMarket extends BT {
 
 		BurstID feeContract = BT.getBurstAddressFromPassphrase(BT.PASSPHRASE).getBurstID();
 		Mediators mediators = new Mediators(true);
-		BurstID arbitrator1 = mediators.getMediators()[0];
-		BurstID arbitrator2 = mediators.getMediators()[1];
-
-		long offerType = Market.MARKET_BTC;
-		long accountHash = 1234;
+		BurstID mediator1 = mediators.getMediators()[0];
+		BurstID mediator2 = mediators.getMediators()[1];
 
 		long data[] = {
 				feeContract.getSignedLongId(),
-				arbitrator1.getSignedLongId(), arbitrator2.getSignedLongId(),
-				offerType, accountHash
+				mediator1.getSignedLongId(), mediator2.getSignedLongId(),
 		};
 
 		bt.compiler.Compiler compiled = BT.compileContract(SellContract.class);

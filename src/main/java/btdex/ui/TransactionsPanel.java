@@ -74,6 +74,7 @@ public class TransactionsPanel extends JPanel {
 
 		table = new JTable(model = new MyTableModel());
 		table.setRowHeight(table.getRowHeight()+10);
+		table.setRowSelectionAllowed(false);
 		
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
 		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
@@ -147,10 +148,9 @@ public class TransactionsPanel extends JPanel {
 			BurstAddress account = null;
 			long amount = tx.getAmount().longValue();
 
-			if(tx.getSender() == g.getAddress())
-				amount = -amount;
-			
-			String amountFormatted = Constants.BURST_SYMBOL + " " + ContractState.format(amount);
+			String amountFormatted = ContractState.format(amount) + " " + Constants.BURST_TICKER;
+			if(tx.getSender().getSignedLongId() == g.getAddress().getSignedLongId())
+				amountFormatted = "- " + amountFormatted;
 
 			// Types defined at brs/TransactionType.java
 			String type = "Payment";
@@ -185,9 +185,9 @@ public class TransactionsPanel extends JPanel {
 						for(Market market : Markets.getMarkets()) {
 							if(market.getTokenID()!=null && market.getTokenID().getID().equals(assetTx.getAsset())) {
 								long tokenAmount = Long.parseLong(assetTx.getQuantityQNT());
-								if(tx.getSender() == g.getAddress())
-									tokenAmount = -tokenAmount;
 								amountFormatted = market.format(tokenAmount) + " " + market.toString();
+								if(tx.getSender().getSignedLongId() == g.getAddress().getSignedLongId())
+									amountFormatted = "- " + amountFormatted;
 								break;
 							}
 						}

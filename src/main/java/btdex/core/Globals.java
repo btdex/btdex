@@ -36,6 +36,8 @@ public class Globals {
 	private boolean testnet = false;
 	private BurstAddress address;
 	private FeeSuggestion suggestedFee;
+	
+	private Mediators mediators;
 
 	static Globals INSTANCE;
 
@@ -66,6 +68,7 @@ public class Globals {
 			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? BT.NODE_TESTNET : BT.NODE_BURSTCOIN_RO));
 
 			Markets.addMarkets(testnet);
+			mediators = new Mediators(testnet);
 
 			checkPublicKey();
 
@@ -74,8 +77,10 @@ public class Globals {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-
-		Contracts.addContracts();
+	}
+	
+	public Mediators getMediators() {
+		return mediators;
 	}
 
 	private void checkPublicKey() {

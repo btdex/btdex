@@ -13,8 +13,8 @@ public class Markets {
         if(testnet) {
             markets.add(new MarketNDST());
         }
-        markets.add(new MarketEUR());
-        markets.add(new MarketBRL());
+//        markets.add(new MarketEUR());
+//        markets.add(new MarketBRL());
         markets.add(new MarketBTC());
         markets.add(new MarketETH());
         markets.add(new MarketLTC());
