@@ -26,10 +26,11 @@ public class InitSC{
     private String mediatorTwoPass = BT.PASSPHRASE2;
     private long amount;
 
+    private long feeContract;
+
     private long security;
     private long sent;
     private static BurstNodeService bns = BT.getNode();
-
     public InitSC() {
         try {
             CreateSC sc = new CreateSC(SellContract.class, 10000, 100);
@@ -42,6 +43,7 @@ public class InitSC{
             Mediators md = new Mediators(true);
             mediatorOne = BurstAddress.fromId(md.getMediators()[0]);
             mediatorTwo = BurstAddress.fromId(md.getMediators()[1]);
+            feeContract = sc.getFeeContract();
             initOffer();
             //init taker
             takerPass = Long.toString(System.currentTimeMillis());
@@ -58,6 +60,7 @@ public class InitSC{
     private long accBalance(String pass) {
         return (bns.getAccount(BT.getBurstAddressFromPassphrase(pass)).blockingGet()).getBalance().longValue();
     }
+
     public void initOffer(){
         //fund maker if needed
         while(accBalance(makerPass) < sent){
@@ -71,7 +74,6 @@ public class InitSC{
                 security).blockingGet();
         BT.forgeBlock();
     }
-
     public void takeOffer() {
         //fund taker if needed
         while (accBalance(takerPass) < security + SellContract.ACTIVATION_FEE) {
@@ -146,6 +148,10 @@ public class InitSC{
 
     public BurstAddress getMediatorTwo() {
         return mediatorTwo;
+    }
+
+    public long getFeeContract() {
+        return feeContract;
     }
 
 }

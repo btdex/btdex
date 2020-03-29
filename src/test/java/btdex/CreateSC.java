@@ -8,7 +8,6 @@ import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.TransactionBroadcast;
 
-
 import java.io.IOException;
 
 public class CreateSC {
@@ -18,11 +17,11 @@ public class CreateSC {
     private BurstID mediator2;
 
     private BurstValue amount;
+
     private Class sc;
     private BurstValue security;
     private long accountHash = 0;
     private bt.compiler.Compiler compiled;
-
     public CreateSC(Class sc, double amount, double security) throws IOException {
         Mediators mediators = new Mediators(true);
         this.mediator1 = mediators.getMediators()[0];
@@ -62,5 +61,9 @@ public class CreateSC {
 
     public Compiler getCompiled() {
         return compiled;
+    }
+
+    public long getFeeContract() {
+        return feeContract;
     }
 }

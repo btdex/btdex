@@ -38,6 +38,14 @@ public class TestMediator {
 
     @Test
     @Order(2)
+    public void testMediatorAndFeeFields(){
+        assertEquals(sc.getMediatorOne().getSignedLongId(), sc.getContractFieldValue("mediator1"));
+        assertEquals(sc.getMediatorTwo().getSignedLongId(), sc.getContractFieldValue("mediator2"));
+        assertEquals(sc.getFeeContract(), sc.getContractFieldValue("feeContract"));
+    }
+
+    @Test
+    @Order(3)
     public void testInvalidMediatorDispute() {
         //fund acc
         BT.forgeBlock(BT.PASSPHRASE);
@@ -51,7 +59,7 @@ public class TestMediator {
         assertEquals(0, sc.getContractFieldValue("disputeTakerAmountToTaker"));
     }
     @Test
-    @Order(3)
+    @Order(4)
     public void testInvalidMediatorDisputeAgain() {
         //fund acc
         BT.forgeBlock(BT.PASSPHRASE2);
@@ -65,7 +73,7 @@ public class TestMediator {
         assertEquals(0, sc.getContractFieldValue("disputeTakerAmountToTaker"));
     }
     @Test
-    @Order(4)
+    @Order(5)
     public void testInvalidMediatorDisputeTogether() {
         sc.dispute(sc.getMediatorOne(), amountToMaker, amountToTaker);
         sc.dispute(sc.getMediatorTwo(), amountToMaker, amountToTaker);
@@ -79,7 +87,7 @@ public class TestMediator {
     }
 
     @Test
-    @Order(5)
+    @Order(6)
     public void testTakerDispute() {
         sc.dispute(sc.getTaker(), amountToMaker, amountToTaker);
         BT.forgeBlock();
@@ -94,7 +102,7 @@ public class TestMediator {
     }
 
     @Test
-    @Order(6)
+    @Order(7)
     public void testValidMediatorDispute() {
         long takerBalance = sc.getTakerBalance();
         sc.dispute(sc.getMediatorOne(), amountToMaker, amountToTaker);
