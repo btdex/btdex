@@ -1,6 +1,5 @@
 package btdex.core;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -20,6 +19,7 @@ public abstract class Market {
 	public static long MARKET_LTC            = 0x000000002;
 	public static long MARKET_ETH            = 0x000000003;
 	public static long MARKET_XMR            = 0x000000004;
+	public static long MARKET_DOGE           = 0x000000005;
 
 	// TODO: fill with other cryptos here
 	

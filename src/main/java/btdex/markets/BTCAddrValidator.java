@@ -9,6 +9,9 @@ import java.util.Arrays;
  * Code from https://raw.githubusercontent.com/timqi/btc_address_validator/master/BTCAddrValidator.java
  */
 public class BTCAddrValidator {
+	
+  public static final int[] BTC_HEADERS = {0, 5};
+  public static final int[] DOGE_HEADERS = {0x1e, 0x16};
 
   public static void main(String[] args) {
 
@@ -29,6 +32,14 @@ public class BTCAddrValidator {
     assert validate("34QjytsE8GVRbUBvYNheftqJ5CHfDHvQRD") == true;
     assert validate("3GsAUrD4dnCqtaTTUzzsQWoymHNkEFrgGF") == true;
     assert validate("3NagLCvw8fLwtoUrK7s2mJPy9k6hoyWvTU") == true;
+    
+    
+    assert validate("DBXu2kgc3xtvCUWFcxFE3r9hEYgmuaaCyD", DOGE_HEADERS) == true;
+    assert validate("DU7XJ1xeE1Xg8cRJmNvxLRjePAqmgFHebR", DOGE_HEADERS) == true;
+    assert validate("DQpqATKHvJvMtZyEyz9eTEbj4S3tWJdaak", DOGE_HEADERS) == true;
+    assert validate("DQqpATKHvJvMtZyEyz9eTEbj4S3tWJdaak", DOGE_HEADERS) == false;
+    assert validate("DU7XJ1xeE1X8gcRJmNvxLRjePAqmgFHebR", DOGE_HEADERS) == false;
+    
     System.out.println("Test all passed");
   }
 
@@ -63,6 +74,16 @@ public class BTCAddrValidator {
     return false;
   }
 
+  public static boolean validate(String addr, int[]headers) {
+	    try {
+	      int addressHeader = getAddressHeader(addr);
+	      return (addressHeader == headers[0] || addressHeader == headers[1]);
+	    } catch (Exception x) {
+//	      x.printStackTrace();
+	    }
+	    return false;
+	  }
+  
   private static int getAddressHeader(String address) throws IOException {
     byte[] tmp = decodeChecked(address);
     return tmp[0] & 0xFF;

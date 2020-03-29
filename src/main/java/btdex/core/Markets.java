@@ -19,6 +19,7 @@ public class Markets {
         markets.add(new MarketETH());
         markets.add(new MarketLTC());
         markets.add(new MarketXMR());
+        markets.add(new MarketDOGE());
     }
 
     public static ArrayList<Market> getMarkets(){
