@@ -234,8 +234,9 @@ public class ContractState {
 			
 			if(tx.getRecipient().getSignedLongId() == address.getSignedLongId()
 					&& tx.getSender().getBurstID().getSignedLongId() == at.getCreator().getSignedLongId()
-					&& tx.getType() == 2 /* TYPE_MESSAGING */
-					&& tx.getSubtype() == 0 /* SUBTYPE_MESSAGING_ARBITRARY_MESSAGE */
+					// FIXME: we are using payments to configure the orders by now
+					//&& tx.getType() == 2 /* TYPE_MESSAGING */
+					//&& tx.getSubtype() == 0 /* SUBTYPE_MESSAGING_ARBITRARY_MESSAGE */
 					&& tx.getAppendages()!=null && tx.getAppendages().length > 0) {
 				
 				TransactionAppendix append = tx.getAppendages()[0];
@@ -260,6 +261,9 @@ public class ContractState {
 						
 						// set this as the accepted last TxId
 						lastTxId = tx.getId().getSignedLongId();
+						
+						// done, only the more recent (2 confirmations) matters
+						break;
 					}
 					catch (Exception e) {
 						// we ignore invalid messages
