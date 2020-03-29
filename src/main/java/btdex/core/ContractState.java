@@ -53,7 +53,7 @@ public class ContractState {
 	}
 	
 	public long getMarket() {
-		return offerType & Market.MARKET_MASK;
+		return market;
 	}
 	
 	public BurstAddress getAddress() {
