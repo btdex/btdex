@@ -56,7 +56,7 @@ public class Main extends JFrame implements ActionListener {
 	
 	public static final int ICON_SIZE = 24;
 	
-	Image icon;
+	Image icon, iconMono;
 
 	CardLayout cardLayout;
 	boolean showingSplash;
@@ -111,6 +111,7 @@ public class Main extends JFrame implements ActionListener {
 		try {
 			icon = ImageIO.read(Main.class.getResourceAsStream("/icon.png"));
 			setIconImage(icon);
+			iconMono = ImageIO.read(Main.class.getResourceAsStream("/icon-mono.png"));
 			
 			Properties versionProp = new Properties();
 			versionProp.load(Main.class.getResourceAsStream("/version.properties"));
@@ -176,8 +177,10 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 		
-		Icon heartIcon = IconFontSwing.buildIcon(FontAwesome.HEART, ICON_SIZE, COLOR);
-		JButton webButton = new JButton(heartIcon);
+		Icon iconBtdex = IconFontSwing.buildIcon(FontAwesome.HEART, ICON_SIZE, COLOR);
+		if(iconMono!=null)
+			iconBtdex = new ImageIcon(iconMono);
+		JButton webButton = new JButton(iconBtdex);
 		bottomRight.add(webButton, BorderLayout.LINE_END);
 		webButton.setToolTipText("Opens the BTDEX website");
 		webButton.addActionListener(new ActionListener() {
