@@ -3,6 +3,7 @@ package btdex.core;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Random;
 
 import bt.compiler.Compiler;
 import btdex.sc.SellContract;
@@ -53,7 +54,7 @@ public class Contracts {
         return contractNoDepositCode;
     }
     
-	static boolean checkContractCode(AT at) {
+	public static boolean checkContractCode(AT at) {
 		byte []code = getContractCode();
 		
 		if(at.getMachineCode().length < code.length)
@@ -66,7 +67,7 @@ public class Contracts {
 		return true;
 	}
 	
-	static boolean checkContractCodeNoDeposit(AT at) {
+	public static boolean checkContractCodeNoDeposit(AT at) {
 		byte []code = getContractNoDepositCode();
 		
 		if(at.getMachineCode().length < code.length)
@@ -99,6 +100,26 @@ public class Contracts {
 				freeNoDepositContract = s;
 		}
 		return contractsMap.values();
+	}
+
+	public static long[] getNewContractData(Boolean testnet) {
+		Mediators mediators = new Mediators(testnet);
+		BurstID[] MEDIATORS = mediators.getMediators();
+
+		long data[] = new long[3];
+		data[0] = Constants.FEE_CONTRACT;
+
+		Random rand = new Random();
+		long mediator1 = MEDIATORS[rand.nextInt(MEDIATORS.length)].getSignedLongId();
+		long mediator2 = MEDIATORS[rand.nextInt(MEDIATORS.length)].getSignedLongId();
+		while(mediator1 == mediator2) {
+			// make sure we have 2 different mediators
+			mediator2 = MEDIATORS[rand.nextInt(MEDIATORS.length)].getSignedLongId();
+		}
+		data[1] = mediator1;
+		data[2] = mediator2;
+
+		return data;
 	}
 	
 	public static ContractState getFreeContract() {

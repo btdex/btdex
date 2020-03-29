@@ -137,7 +137,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
 				Compiler contract = Contracts.getContract();
-				long data[] = g.getNewContractData();
+				long data[] = Contracts.getNewContractData(g.isTestnet());
 
 				ByteBuffer dataBuffer = ByteBuffer.allocate(data==null ? 0 : data.length*8);
 				dataBuffer.order(ByteOrder.LITTLE_ENDIAN);
