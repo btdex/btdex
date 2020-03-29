@@ -149,7 +149,7 @@ public class TransactionsPanel extends JPanel {
 			long amount = tx.getAmount().longValue();
 
 			String amountFormatted = NumberFormatting.BURST.format(amount) + " " + Constants.BURST_TICKER;
-			if(tx.getSender().getSignedLongId() == g.getAddress().getSignedLongId())
+			if(tx.getSender().getSignedLongId() == g.getAddress().getSignedLongId() && amount > 0L)
 				amountFormatted = "- " + amountFormatted;
 
 			// Types defined at brs/TransactionType.java
