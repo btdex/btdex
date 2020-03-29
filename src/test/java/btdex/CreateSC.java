@@ -11,7 +11,7 @@ import burst.kit.entity.response.TransactionBroadcast;
 import java.io.IOException;
 
 public class CreateSC {
-    private long feeContract = BT.getBurstAddressFromPassphrase(BT.PASSPHRASE).getBurstID().getSignedLongId();
+    private long feeContract = BT.getBurstAddressFromPassphrase(BT.PASSPHRASE3).getBurstID().getSignedLongId();
 
     private BurstID mediator1;
     private BurstID mediator2;

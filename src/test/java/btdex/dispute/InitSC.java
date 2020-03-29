@@ -142,6 +142,10 @@ public class InitSC{
         return bns.getAccount(taker).blockingGet().getBalance().longValue();
     }
 
+    public long getFeeContractBalance() {
+        return bns.getAccount(BurstAddress.fromId(feeContract)).blockingGet().getBalance().longValue();
+    }
+
     public BurstAddress getMediatorOne() {
         return mediatorOne;
     }

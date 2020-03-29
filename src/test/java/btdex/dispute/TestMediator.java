@@ -104,12 +104,14 @@ public class TestMediator {
     @Test
     @Order(7)
     public void testValidMediatorDispute() {
+        long feeContractBalance = sc.getFeeContractBalance();
         long takerBalance = sc.getTakerBalance();
         sc.dispute(sc.getMediatorOne(), amountToMaker, amountToTaker);
 
         state = SellContract.STATE_FINISHED;
         assertEquals(state, sc.getContractFieldValue("state"));
         assertTrue(sc.getTakerBalance() > takerBalance);
+        assertTrue(sc.getFeeContractBalance() > feeContractBalance, "FeeContract do not got fee");
     }
 
 }

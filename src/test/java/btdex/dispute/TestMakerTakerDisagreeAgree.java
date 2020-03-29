@@ -70,6 +70,7 @@ public class TestMakerTakerDisagreeAgree {
     @Test
     @Order(3)
     public void testMakerAgree() {
+        long feeContractBalance = sc.getFeeContractBalance();
         long takerBalance = sc.getTakerBalance();
         sc.dispute(sc.getMaker(), 0, disputeTakerAmountToTaker);
         BT.forgeBlock();
@@ -83,6 +84,7 @@ public class TestMakerTakerDisagreeAgree {
         assertEquals(0, sc.getContractFieldValue("disputeTakerAmountToCreator"));
         assertEquals(0, sc.getSCbalance());
         assertTrue(takerBalance < sc.getTakerBalance());
+        assertTrue(sc.getFeeContractBalance() > feeContractBalance, "FeeContract do not got fee");
     }
 
 }

@@ -55,6 +55,7 @@ public class TestMakerDisputeWithdraw {
     @Test
     @Order(3)
     public void testWithdraw() {
+        long feeContractBalance = sc.getFeeContractBalance();
         long makerBalance = sc.getMakerBalance();
         long takerBalance = sc.getTakerBalance();
         sc.withdraw();
@@ -66,5 +67,6 @@ public class TestMakerDisputeWithdraw {
         assertTrue(sc.getSCbalance() > 0);
         assertTrue(takerBalance == sc.getTakerBalance());
         assertTrue(sc.getMakerBalance() < makerBalance);
+        assertTrue(sc.getFeeContractBalance() == feeContractBalance, "FeeContract got transaction");
     }
 }
