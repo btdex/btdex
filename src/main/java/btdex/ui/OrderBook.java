@@ -343,7 +343,7 @@ public class OrderBook extends JPanel {
 	}
 
 	public void update() {
-		if(market.getTokenID()==null) {
+		if(market.getTokenID()==null && Globals.getInstance().isTestnet()) {
 			updateContracts();
 		}
 		else

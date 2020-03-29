@@ -239,6 +239,11 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	@Override
 	public void setVisible(boolean b) {
 		if(b == true) {
+			if(!Globals.getInstance().isTestnet() && !isToken) {
+				JOptionPane.showMessageDialog(getParent(), "Cross-chain markets not open yet.",
+						"Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 			if(accountComboBox.getItemCount()==0 && !isToken) {
 				JOptionPane.showMessageDialog(getParent(), "You need to register a " + market + " account first.",
 						"Error", JOptionPane.ERROR_MESSAGE);

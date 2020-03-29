@@ -501,7 +501,7 @@ public class Main extends JFrame implements ActionListener {
 					}
 					tokenBalance -= tokenLocked;
 					
-					if(showingSplash) {
+					if(showingSplash && g.isTestnet()) {
 						// run a first update on all contracts as it can take longer
 						Toast.makeText(Main.this, "Reading smart contract data...", 8000, Toast.Style.SUCCESS).display();
 						Contracts.updateContracts();
