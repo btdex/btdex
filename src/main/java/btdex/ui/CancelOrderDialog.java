@@ -17,9 +17,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 
+import bt.BT;
+import btdex.core.Constants;
+import btdex.core.ContractState;
+import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
+import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.entity.response.TransactionBroadcast;
@@ -30,6 +35,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 
 	Market market;
 	AssetOrder order;
+	ContractState state;
 
 	JTextPane conditions;
 	JCheckBox acceptBox;
@@ -43,15 +49,17 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 
 	private FeeSuggestion suggestedFee;
 
-	public CancelOrderDialog(JFrame owner, Market market, AssetOrder order) {
+	public CancelOrderDialog(JFrame owner, Market market, AssetOrder order, ContractState state) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		setTitle(String.format("Cancel Order", market.toString()));
+		
+		setTitle(order!= null ? "Cancel Order" : "Withdraw Contract");
 
 		isToken = market.getTokenID()!=null;
 
 		this.market = market;
 		this.order = order;
+		this.state = state;
 
 		conditions = new JTextPane();
 		conditions.setPreferredSize(new Dimension(80, 120));
@@ -95,18 +103,30 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 		suggestedFee = Globals.getInstance().getNS().suggestFee().blockingGet();
 		
 		
+		String terms;
 		if(isToken) {
 			boolean isSell = !(order.getType() == AssetOrder.OrderType.BID);
 
-			String terms = "You are cancelling your %s %s order %s.\n\n"
+			terms = "You are cancelling your %s %s order %s.\n\n"
 					+ "The cancel order is executed by means of a transaction, "
 					+ "fee will be %s BURST.";
 
 			terms = String.format(terms,
 					isSell ? "sell" : "buy", market, order.getId(),
-							NumberFormatting.BURST.format(suggestedFee.getStandardFee().longValue()));
-			conditions.setText(terms);
+							NumberFormatting.BURST.format(suggestedFee.getPriorityFee().longValue()));
 		}
+		else {
+			terms = "You are withdrawing %s BURST from your smart contract %s.\n\n"
+					+ "This action requires the smart contract to run and "
+					+ "will cost you %s BURST.";
+
+			terms = String.format(terms,
+					state.getBalance().toUnformattedString(), state.getAddress().getFullAddress(),
+					NumberFormatting.BURST.format(state.getActivationFee() + suggestedFee.getPriorityFee().longValue()));			
+		}
+		
+		conditions.setText(terms);
+		conditions.setCaretPosition(0);
 		
 		pack();
 	}
@@ -143,12 +163,20 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 				if(isToken) {
 					if(order.getType() == AssetOrder.OrderType.BID)
 						utx = g.getNS().generateCancelBidOrderTransaction(g.getPubKey(), order.getId(),
-								suggestedFee.getStandardFee(), 1440);
+								suggestedFee.getPriorityFee(), 1440);
 					else
 						utx = g.getNS().generateCancelAskOrderTransaction(g.getPubKey(), order.getId(),
-							suggestedFee.getStandardFee(), 1440);
+							suggestedFee.getPriorityFee(), 1440);
 				}
 				else {
+					// update the security to zero to withdraw all funds
+					byte[] message = BT.callMethodMessage(Contracts.getContract().getMethod("update"), 0L);
+					
+					BurstValue amountToSend = BurstValue.fromPlanck(state.getActivationFee());
+
+					utx = g.getNS().generateTransactionWithMessage(state.getAddress(), g.getPubKey(),
+							amountToSend, suggestedFee.getPriorityFee(),
+							Constants.BURST_DEADLINE, message);
 				}
 				
 				Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
