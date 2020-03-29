@@ -54,6 +54,7 @@ public class TestMakerTakerAgreeReopenTakeDispute {
     @Test
     @Order(3)
     public void testTakerDispute() {
+        long feeContractBalance = sc.getFeeContractBalance();
         sc.dispute(sc.getTaker(), amountToMaker, amountToTaker);
         BT.forgeBlock();
         BT.forgeBlock();
@@ -64,6 +65,7 @@ public class TestMakerTakerAgreeReopenTakeDispute {
         assertEquals(amountToTaker, sc.getContractFieldValue("disputeCreatorAmountToTaker"));
         assertEquals(amountToMaker, sc.getContractFieldValue("disputeTakerAmountToCreator"));
         assertEquals(amountToTaker, sc.getContractFieldValue("disputeTakerAmountToTaker"));
+        assertTrue(sc.getFeeContractBalance() > feeContractBalance, "FeeContract do not got fee");
     }
 
     @Test

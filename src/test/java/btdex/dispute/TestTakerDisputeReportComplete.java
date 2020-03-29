@@ -70,6 +70,7 @@ public class TestTakerDisputeReportComplete {
     @Test
     @Order(4)
     public void testValidReportComplete() {
+        long feeContractBalance = sc.getFeeContractBalance();
         long makerBalance = sc.getMakerBalance();
         long takerBalance = sc.getTakerBalance();
         sc.complete(sc.getMaker());
@@ -81,6 +82,7 @@ public class TestTakerDisputeReportComplete {
         assertEquals(0, sc.getSCbalance());
         //taker gets more, because SellContract.ACTIVATION_FEE not used all
         assertTrue(takerBalance + sc.getAmount() < sc.getTakerBalance());
-        assertTrue(sc.getMakerBalance() > makerBalance, "Maker received security payment");
+        assertTrue(sc.getMakerBalance() > makerBalance, "Maker do not received security payment");
+        assertTrue(sc.getFeeContractBalance() > feeContractBalance, "FeeContract do not got fee");
     }
 }
