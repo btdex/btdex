@@ -201,7 +201,7 @@ public class OrderBook extends JPanel {
 					JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
 					
 					if(cancel) {
-						CancelOrderDialog dlg = new CancelOrderDialog(f, market, order);
+						CancelOrderDialog dlg = new CancelOrderDialog(f, market, order, contract);
 						dlg.setLocationRelativeTo(OrderBook.this);
 						dlg.setVisible(true);
 					}
@@ -465,7 +465,8 @@ public class OrderBook extends JPanel {
 		
 		for(ContractState s : allContracts) {
 			// add your own contracts but not yet configured if they have balance (so you can withdraw)
-			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId() && s.getMarket() == 0) {
+			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId() && s.getMarket() == 0
+					&& s.getBalance().longValue() > 0L) {
 				marketContracts.add(s);
 				continue;
 			}
