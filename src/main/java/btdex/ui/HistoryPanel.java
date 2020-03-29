@@ -29,9 +29,9 @@ import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.data.xy.DefaultOHLCDataset;
 import org.jfree.data.xy.OHLCDataItem;
 
-import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
+import btdex.core.NumberFormatting;
 import burst.kit.entity.response.AssetTrade;
 import burst.kit.entity.response.http.BRSError;
 import jiconfont.icons.font_awesome.FontAwesome;
@@ -217,7 +217,7 @@ public class HistoryPanel extends JPanel {
 							tr.getSellerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getSellerAddress().getRawAddress(), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, tr.getSellerAddress().getID(), tr.getSellerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
 
-					model.setValueAt(ContractState.format(price*market.getFactor()), row, COL_PRICE);
+					model.setValueAt(NumberFormatting.BURST.format(price*market.getFactor()), row, COL_PRICE);
 					model.setValueAt(market.format(amount), row, COL_AMOUNT);
 					model.setValueAt(DATE_FORMAT.format(tr.getTimestamp().getAsDate()), row, COL_TIME);
 

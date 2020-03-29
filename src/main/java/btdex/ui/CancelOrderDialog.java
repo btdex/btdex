@@ -17,9 +17,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 
-import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
+import btdex.core.NumberFormatting;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.entity.response.TransactionBroadcast;
@@ -98,13 +98,13 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 		if(isToken) {
 			boolean isSell = !(order.getType() == AssetOrder.OrderType.BID);
 
-			String terms = "You are cancelling the %s %s order %s.\n\n"
+			String terms = "You are cancelling your %s %s order %s.\n\n"
 					+ "The cancel order is executed by means of a transaction, "
 					+ "fee will be %s BURST.";
 
 			terms = String.format(terms,
 					isSell ? "sell" : "buy", market, order.getId(),
-							ContractState.format(suggestedFee.getStandardFee().longValue()));
+							NumberFormatting.BURST.format(suggestedFee.getStandardFee().longValue()));
 			conditions.setText(terms);
 		}
 		

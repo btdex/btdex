@@ -24,9 +24,9 @@ import javax.swing.border.EmptyBorder;
 
 import bt.BT;
 import bt.compiler.Compiler;
-import btdex.core.ContractState;
 import btdex.core.Contracts;
 import btdex.core.Globals;
+import btdex.core.NumberFormatting;
 import btdex.sc.SellContract;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstValue;
@@ -100,7 +100,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener {
 				+ " Your new contract will be available in a few minutes, as soon"
 				+ " as this transaction confirms.";
 		terms = String.format(terms,
-				ContractState.format(BT.getMinRegisteringFee(contract).longValue()));
+				NumberFormatting.BURST.format(BT.getMinRegisteringFee(contract).longValue()));
 		conditions.setText(terms);
 		conditions.setCaretPosition(0);
 		

@@ -22,7 +22,7 @@ dependencies {
     implementation 'com.github.jjos2372:burstkit4j:fe9160eced'
     //implementation 'com.github.jjos2372:burstkit4j:f1364a8ded'
     //implementation 'com.github.jjos2372:blocktalk:-SNAPSHOT'
-    implementation 'com.github.jjos2372:blocktalk:ef53dae747'
+    implementation 'com.github.jjos2372:blocktalk:695e26775b'
 
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.15'

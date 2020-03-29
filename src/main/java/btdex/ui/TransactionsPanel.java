@@ -13,10 +13,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
 import btdex.core.Constants;
-import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.Markets;
+import btdex.core.NumberFormatting;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.response.Transaction;
 import burst.kit.entity.response.attachment.AskOrderPlacementAttachment;
@@ -148,7 +148,7 @@ public class TransactionsPanel extends JPanel {
 			BurstAddress account = null;
 			long amount = tx.getAmount().longValue();
 
-			String amountFormatted = ContractState.format(amount) + " " + Constants.BURST_TICKER;
+			String amountFormatted = NumberFormatting.BURST.format(amount) + " " + Constants.BURST_TICKER;
 			if(tx.getSender().getSignedLongId() == g.getAddress().getSignedLongId())
 				amountFormatted = "- " + amountFormatted;
 
@@ -260,7 +260,7 @@ public class TransactionsPanel extends JPanel {
 			model.setValueAt(new ExplorerButton(tx.getId().toString(), copyIcon, expIcon, OrderBook.BUTTON_EDITOR), row, COL_ID);
 
 			model.setValueAt(amountFormatted, row, COL_AMOUNT);
-			model.setValueAt(ContractState.format(tx.getFee().longValue()), row, COL_FEE);
+			model.setValueAt(tx.getFee().toUnformattedString(), row, COL_FEE);
 			model.setValueAt(type, row, COL_TYPE);
 			model.setValueAt(HistoryPanel.DATE_FORMAT.format(tx.getTimestamp().getAsDate()), row, COL_TIME);
 		}

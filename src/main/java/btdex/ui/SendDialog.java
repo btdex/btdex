@@ -21,7 +21,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import btdex.core.Constants;
-import btdex.core.ContractState;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
@@ -65,7 +64,7 @@ public class SendDialog extends JDialog implements ActionListener {
 		pin = new JPasswordField(12);
 		pin.addActionListener(this);
 
-		amount = new JFormattedTextField(NumberFormatting.NF(5, 8));
+		amount = new JFormattedTextField(token==null ? NumberFormatting.BURST.getFormat() : token.getNumberFormat().getFormat());
 		fee = new JSlider(1, 4);
 
 		topPanel.add(new Desc("Recipient", recipient));
@@ -97,7 +96,7 @@ public class SendDialog extends JDialog implements ActionListener {
 					break;
 				}
 				feeDesc.setDesc(String.format("Fee (%s %s BURST)", feeType,
-						ContractState.format(selectedFee.longValue())));
+						selectedFee.toUnformattedString()));
 			}
 		});
 
@@ -161,7 +160,7 @@ public class SendDialog extends JDialog implements ActionListener {
 			Number amountNumber = null;
 			if(error == null) {
 				try {
-					amountNumber = NumberFormatting.NF(5, 8).parse(amount.getText());
+					amountNumber = NumberFormatting.parse(amount.getText());
 				} catch (ParseException e1) {
 					amount.requestFocus();
 					error = "Invalid amount";
@@ -180,12 +179,12 @@ public class SendDialog extends JDialog implements ActionListener {
 					if(token!=null) {
 						utx = g.getNS().generateTransferAssetTransactionWithMessage(g.getPubKey(), BurstAddress.fromId(recID),
 								token.getTokenID(), BurstValue.fromPlanck((long)(amountNumber.doubleValue()*token.getFactor())),
-								selectedFee, 1440, msg);
+								selectedFee, Constants.BURST_DEADLINE, msg);
 					}
 					else {
 						utx = g.getNS().generateTransactionWithMessage(BurstAddress.fromId(recID), g.getPubKey(),
 							BurstValue.fromBurst(amountNumber.doubleValue()),
-							selectedFee, 1440, msg);
+							selectedFee, Constants.BURST_DEADLINE, msg);
 					}
 
 					Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {

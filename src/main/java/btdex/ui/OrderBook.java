@@ -30,6 +30,7 @@ import btdex.core.ContractState;
 import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
+import btdex.core.NumberFormatting;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.response.AssetOrder;
@@ -43,7 +44,7 @@ public class OrderBook extends JPanel {
 
 	JTable table;
 	DefaultTableModel model;
-	Icon copyIcon, expIcon, upIcon, downIcon;
+	Icon copyIcon, expIcon, upIcon, downIcon, cancelIcon, editIcon, withdrawIcon;
 	JCheckBox listOnlyMine;
 	JLabel lastPrice;
 	JButton buyButton, sellButton;
@@ -56,22 +57,24 @@ public class OrderBook extends JPanel {
 	public static final int COL_CONTRACT = 0;
 	public static final int COL_TOTAL = 1;
 	public static final int COL_SIZE = 2;
-	public static final int COL_PRICE = 3;
+	public static final int COL_SECURITY = 3;
+	public static final int COL_PRICE = 4;
 	
-	public static final int[] BID_COLS = {0, 1, 2, 3};
-	public static final int[] ASK_COLS = {7, 6, 5, 4};
-
-//	public static final int COL_ACCOUNT = 5;
-//	public static final int COL_SECURITY = 3;
-//	public static final int COL_ACTION = 3;
-
+	public static final int[] BID_COLS = {0, 1, 2, 3, 4};
+	public static final int[] ASK_COLS = {9, 8, 7, 6, 5};
+	
+	private static final int COL_WIDE = 200;
+	private static final int COL_REGULAR = 75;
+	
 	String[] columnNames = {
 			"CONTRACT",
 			"TOTAL",
 			"SIZE",
+			"DEPOSIT (BURST)",
 			"PRICE",
 
 			"PRICE",
+			"DEPOSIT (BURST)",
 			"SIZE",
 			"TOTAL",
 			"CONTRACT",
@@ -100,8 +103,8 @@ public class OrderBook extends JPanel {
 				colName += " (" + (isToken ? market : "BURST") + ")";
 			if((col == BID_COLS[COL_CONTRACT] || col==ASK_COLS[COL_CONTRACT]) && isToken)
 				colName = "ORDER";
-//			if(col == COL_SECURITY && isToken)
-//				colName = "TYPE";
+			if(isToken && (col == BID_COLS[COL_SECURITY] || col == ASK_COLS[COL_SECURITY]))
+				colName = "";
 			return colName;
 		}
 
@@ -135,6 +138,8 @@ public class OrderBook extends JPanel {
 			
 			return super.getCellEditor(row, col);
 		}
+		
+		
 	}
 
 	public static class ButtonCellRenderer extends DefaultTableCellRenderer	{
@@ -218,10 +223,25 @@ public class OrderBook extends JPanel {
 		if(m.getTokenID() != null) {
 			buyButton.setText("BUY " + m);
 			sellButton.setText("SELL " + m);
+			
+			// show back the bid cols
+			for (int i = 0; i < BID_COLS.length; i++) {
+				table.getColumnModel().getColumn(i).setMaxWidth(Integer.MAX_VALUE);
+				table.getColumnModel().getColumn(i).setPreferredWidth(COL_REGULAR);
+			}			
+			table.getColumnModel().getColumn(BID_COLS[COL_CONTRACT]).setPreferredWidth(COL_WIDE);
+			table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setMaxWidth(0);
+			table.getColumnModel().getColumn(BID_COLS[COL_SECURITY]).setMaxWidth(0);
 		}
 		else {
 			buyButton.setText("BUY BURST");
 			sellButton.setText("SELL BURST");
+
+			for (int i = 0; i < BID_COLS.length; i++) {
+				table.getColumnModel().getColumn(i).setMaxWidth(0);
+			}
+			table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setMaxWidth(Integer.MAX_VALUE);
+			table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setPreferredWidth(COL_REGULAR);
 		}
 		lastPrice.setIcon(null);
 		lastPrice.setText(" ");
@@ -253,11 +273,19 @@ public class OrderBook extends JPanel {
 		ROW_HEIGHT = table.getRowHeight()+10;
 		table.setRowHeight(ROW_HEIGHT);
 		table.setRowSelectionAllowed(false);
+
+		// Allowing to hide columns
+		for (int i = 0; i < columnNames.length; i++) {
+			table.getColumnModel().getColumn(i).setMinWidth(0);			
+		}
 		
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
 		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
 		upIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_UP, 18, HistoryPanel.GREEN);
 		downIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_DOWN, 18, HistoryPanel.RED);
+		cancelIcon = IconFontSwing.buildIcon(FontAwesome.TIMES, 12, table.getForeground());
+		editIcon = IconFontSwing.buildIcon(FontAwesome.PENCIL, 12, table.getForeground());
+		withdrawIcon = IconFontSwing.buildIcon(FontAwesome.RECYCLE, 12, table.getForeground());
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
@@ -266,7 +294,8 @@ public class OrderBook extends JPanel {
 		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
 		centerRenderer.setHorizontalAlignment( JLabel.CENTER );
 		for (int i = 0; i < table.getColumnCount(); i++) {
-			table.getColumnModel().getColumn(i).setCellRenderer( centerRenderer );			
+			table.getColumnModel().getColumn(i).setCellRenderer( centerRenderer );
+			table.getColumnModel().getColumn(i).setPreferredWidth(COL_REGULAR);
 		}
 		JTableHeader jtableHeader = table.getTableHeader();
 		DefaultTableCellRenderer rend = (DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer();
@@ -275,9 +304,8 @@ public class OrderBook extends JPanel {
 
 		table.setAutoCreateColumnsFromModel(false);
 
-		table.getColumnModel().getColumn(BID_COLS[COL_CONTRACT]).setPreferredWidth(200);
-		table.getColumnModel().getColumn(ASK_COLS[COL_CONTRACT]).setPreferredWidth(200);
-//		table.getColumnModel().getColumn(COL_ACCOUNT).setPreferredWidth(200);
+		table.getColumnModel().getColumn(BID_COLS[COL_CONTRACT]).setPreferredWidth(COL_WIDE);
+		table.getColumnModel().getColumn(ASK_COLS[COL_CONTRACT]).setPreferredWidth(COL_WIDE);
 		
 		JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		top.add(new Desc("Last price", lastPrice = new JLabel()));
@@ -379,7 +407,7 @@ public class OrderBook extends JPanel {
 		
 		if(lastTrade != null) {
 			// set the last price label
-			String priceLabel = ContractState.format(lastTrade.getPrice().longValue()*market.getFactor()) + " BURST";
+			String priceLabel = NumberFormatting.BURST.format(lastTrade.getPrice().longValue()*market.getFactor()) + " BURST";
 			lastPrice.setText(priceLabel);
 			lastPrice.setIcon(lastIsUp ? upIcon : downIcon);
 			lastPrice.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
@@ -401,18 +429,25 @@ public class OrderBook extends JPanel {
 			if(price == 0 || amountToken == 0)
 				continue;
 
-			String priceFormated = ContractState.format(price*market.getFactor());
+			String priceFormated = NumberFormatting.BURST.format(price*market.getFactor());
 			JButton b = new ActionButton(priceFormated, o, false);
+			if(o.getAccountAddress().getSignedLongId() == Globals.getInstance().getAddress().getSignedLongId()) {
+				b = new ActionButton(priceFormated, o, true);
+				b.setIcon(cancelIcon);
+			}
 			b.setBackground(o.getType() == AssetOrder.OrderType.ASK ? HistoryPanel.RED : HistoryPanel.GREEN);
 			model.setValueAt(b, row, cols[COL_PRICE]);
 			
 			model.setValueAt(market.format(amountToken), row, cols[COL_SIZE]);
-			model.setValueAt(ContractState.format(amountToken*price), row, cols[COL_TOTAL]);
+			model.setValueAt(NumberFormatting.BURST.format(amountToken*price), row, cols[COL_TOTAL]);
 
-			model.setValueAt(new ExplorerButton(o.getId().getID(), copyIcon, expIcon, BUTTON_EDITOR), row, cols[COL_CONTRACT]);
-
-			if(o.getAccountAddress().getSignedLongId() == Globals.getInstance().getAddress().getSignedLongId())
-				model.setValueAt(new ActionButton("CANCEL", o, true), row, cols[COL_CONTRACT]);
+			ExplorerButton exp = new ExplorerButton(o.getId().getID(), copyIcon, expIcon, BUTTON_EDITOR);
+			if(o.getAccountAddress().getSignedLongId() == Globals.getInstance().getAddress().getSignedLongId()) {
+				JButton cancel = new ActionButton("", o, true);
+				cancel.setIcon(cancelIcon);
+				exp.add(cancel, BorderLayout.WEST);
+			}
+			model.setValueAt(exp, row, cols[COL_CONTRACT]);
 		}
 		// fill with null all the remaining rows
 		for (; row < model.getRowCount(); row++) {
@@ -429,6 +464,12 @@ public class OrderBook extends JPanel {
 		marketContracts.clear();
 		
 		for(ContractState s : allContracts) {
+			// add your own contracts but not yet configured if they have balance (so you can withdraw)
+			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId() && s.getMarket() == 0) {
+				marketContracts.add(s);
+				continue;
+			}
+			
 			// only contracts for this market
 			if(s.getMarket() != market.getID())
 				continue;
@@ -454,23 +495,34 @@ public class OrderBook extends JPanel {
 			
 			String priceFormated = market.format(s.getRate());
 			JButton b = new JButton(priceFormated); // new ActionButton(priceFormated, null, false);
-			b.setBackground(HistoryPanel.GREEN);
+			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId()) {
+				b = new ActionButton(priceFormated, s, true);
+				b.setIcon(editIcon);
+			}
+			b.setBackground(HistoryPanel.RED);
 			model.setValueAt(b, row, ASK_COLS[COL_PRICE]);
 			
-			model.setValueAt(s.getAmount(), row, COL_SIZE);
+			model.setValueAt(s.getSecurity(), row, ASK_COLS[COL_SECURITY]);
+			
+			model.setValueAt(s.getAmount(), row, ASK_COLS[COL_SIZE]);
 			model.setValueAt(market.format((s.getRate()*s.getAmountNQT()) / Contract.ONE_BURST),
-					row, COL_TOTAL);
-			model.setValueAt(new ExplorerButton(s.getAddress().getRawAddress(), copyIcon, expIcon,
-					ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(), s.getAddress().getFullAddress(), BUTTON_EDITOR), row, COL_CONTRACT);
+					row, ASK_COLS[COL_TOTAL]);
+			ExplorerButton exp = new ExplorerButton(s.getAddress().getRawAddress(), copyIcon, expIcon,
+					ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(), s.getAddress().getFullAddress(), BUTTON_EDITOR); 
+			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId()
+					&& s.getBalance().longValue() > 0) {
+				ActionButton withDrawButton = new ActionButton("", s, true);
+				withDrawButton.setToolTipText("Withdraw the amount on this contract.");
+				withDrawButton.setIcon(cancelIcon);
+				exp.add(withDrawButton, BorderLayout.WEST);
+			}
+			model.setValueAt(exp, row, ASK_COLS[COL_CONTRACT]);
 			
 //			model.setValueAt(new ExplorerButton(
 //					s.getCreator().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : s.getCreator().getRawAddress(), copyIcon, expIcon,
 //					ExplorerButton.TYPE_ADDRESS, s.getCreator().getID(), s.getCreator().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
 
-//			model.setValueAt(s.getSecurity(), row, COL_SECURITY);
-			
-			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId())
-				model.setValueAt(new ActionButton("CANCEL", s, true), row, COL_CONTRACT);	
+//			model.setValueAt(s.getSecurity(), row, COL_SECURITY);			
 		}
 	}
 }

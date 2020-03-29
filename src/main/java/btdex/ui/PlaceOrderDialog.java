@@ -35,7 +35,18 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import btdex.core.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
+import bt.BT;
+import btdex.core.Account;
+import btdex.core.Constants;
+import btdex.core.ContractState;
+import btdex.core.Contracts;
+import btdex.core.Globals;
+import btdex.core.Market;
+import btdex.core.NumberFormatting;
+import btdex.sc.SellContract;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.FeeSuggestion;
@@ -93,8 +104,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 		JPanel fieldPanel = new JPanel(new GridLayout(0, 2, 4, 4));
 
-		amountField = new JFormattedTextField(NumberFormatting.NF(5, 8));
-		priceField = new JFormattedTextField(isToken ? market.getNumberFormat() : NumberFormatting.NF(5, 8));
+		amountField = new JFormattedTextField(isToken ? market.getNumberFormat().getFormat() : NumberFormatting.BURST.getFormat());
+		priceField = new JFormattedTextField(isToken ? NumberFormatting.BURST.getFormat() : market.getNumberFormat().getFormat());
 		total = new JTextField(16);
 		total.setEditable(false);
 
@@ -213,7 +224,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			else
 				buyToken.setSelected(true);
 			
-			priceField.setText(ContractState.format(order.getPrice().longValue()*market.getFactor()));
+			priceField.setText(NumberFormatting.BURST.format(order.getPrice().longValue()*market.getFactor()));
 			amountField.setText(market.format(order.getQuantity().longValue()));
 			somethingChanged();
 		}
@@ -235,7 +246,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			}
 
 			if(Contracts.getFreeContract() == null && !isToken) {
-				int ret = JOptionPane.showConfirmDialog(getParent(), "You don't have a smart contract available.\nRegister a new one?",
+				int ret = JOptionPane.showConfirmDialog(getParent(),
+						"You don't have a smart contract available.\nRegister a new one?",
 						"Register Smart Contract", JOptionPane.YES_NO_OPTION);
 				if(ret == JOptionPane.YES_OPTION) {
 					// No available contract, show the option to register a contract first
@@ -304,12 +316,41 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				if(isToken) {
 					if(sellToken.isSelected())
 						utx = g.getNS().generatePlaceAskOrderTransaction(g.getPubKey(), market.getTokenID(),
-								amountValue, priceValue, suggestedFee.getPriorityFee(), 1440);
+								amountValue, priceValue, suggestedFee.getPriorityFee(), Constants.BURST_DEADLINE);
 					else
 						utx = g.getNS().generatePlaceBidOrderTransaction(g.getPubKey(), market.getTokenID(),
-								amountValue, priceValue, suggestedFee.getPriorityFee(), 1440);
+								amountValue, priceValue, suggestedFee.getPriorityFee(), Constants.BURST_DEADLINE);
 				}
 				else {
+					ContractState contract = Contracts.getFreeContract();
+					
+					// send the update transaction with the amount + security deposit
+					long securityAmount = amountValue.longValue() * security.getValue() / 100;
+					byte[] message = BT.callMethodMessage(Contracts.getContract().getMethod("update"), securityAmount);
+					
+					BurstValue amountToSend = amountValue.add(BurstValue.fromPlanck(securityAmount + contract.getActivationFee()));
+
+					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
+							amountToSend, suggestedFee.getPriorityFee(),
+							Constants.BURST_DEADLINE, message);
+					
+					Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
+						byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
+						return g.getNS().broadcastTransaction(signedTransactionBytes);
+					});
+					tx.blockingGet();
+					
+					// now the configuration message
+					JsonObject messageJson = new JsonObject();
+					messageJson.addProperty("market", String.valueOf(market.getID()));
+					messageJson.addProperty("rate", String.valueOf(priceValue.longValue()));
+					messageJson.addProperty("account", accountDetails.getText());
+					
+					String messageString = Constants.GSON.toJson(messageJson);
+					
+					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
+							null, suggestedFee.getPriorityFee(),
+							Constants.BURST_DEADLINE, messageString);
 				}
 
 				Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
@@ -324,6 +365,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						String.format("Transaction %s has been broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
 			}
 			catch (Exception ex) {
+				ex.printStackTrace();
 				Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
 			}
 			setCursor(Cursor.getDefaultCursor());
@@ -347,18 +389,18 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		try {
 			// For token, price is in BURST, others price is on the selected market
 			if(isToken) {
-				Number priceN = NumberFormatting.NF(2, 5).parse(priceField.getText());
-				Number amountN = NumberFormatting.NF(2, 5).parse(amountField.getText());
+				Number priceN = NumberFormatting.parse(priceField.getText());
+				Number amountN = NumberFormatting.parse(amountField.getText());
 
 				priceValue = BurstValue.fromPlanck((long)(priceN.doubleValue()*market.getFactor()));
 				amountValue = BurstValue.fromPlanck((long)(amountN.doubleValue()*market.getFactor()));
 
 				double totalValue = priceN.doubleValue()*amountN.doubleValue();
-				total.setText(NumberFormatting.NF(5, 8).format(totalValue));
+				total.setText(NumberFormatting.BURST.format(totalValue));
 			}
 			else {
 				Number priceN = market.getNumberFormat().parse(priceField.getText());
-				Number amountN = NumberFormatting.NF(5, 8).parse(amountField.getText());
+				Number amountN = NumberFormatting.parse(amountField.getText());
 
 				priceValue = BurstValue.fromPlanck((long)(priceN.doubleValue()*market.getFactor()));
 				amountValue = BurstValue.fromPlanck((long)(amountN.doubleValue()*Market.BURST_TO_PLANCK));
@@ -384,7 +426,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 							amountField.getText(),
 							market,
 							priceField.getText(),
-							ContractState.format(suggestedFee.getPriorityFee().longValue()));
+							NumberFormatting.BURST.format(suggestedFee.getPriorityFee().longValue()));
 
 		}
 		else {
@@ -418,20 +460,22 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			else {
 				terms = "You are selling %s BURST at a price of %s %s each.\n\n"
 						+ "A smart contract will hold your %s BURST plus a security deposity of %d %%. "
-						+ "The taker have to deposit %s %s on your account '%s'.\n\n"
-						+ "There are no trading fees for you, but up to 40 BURST smart contract and transaction fees. "
+						+ "The taker have to deposit %s %s on your address '%s'.\n\n"
+						+ "There are no trading fees for you, but %s BURST smart contract and transaction fees. "
 						+ "Your offer will be available 2 blocks after this transaction confirms.\n\n"
 						+ "When your offer is taken, the buyer "
 						+ "has up to %d hours to complete the %s transfer. "
 						+ "After the %s amount is confirmed on your address, you have up to 24 hours to signal "
-						+ "the amount was received. "
+						+ "the amount was received.\n\n"
 						+ "This order will be open until taken or cancelled. If you do not follow "
-						+ "this protocol, you might lose your security deposit.";
+						+ "this protocol, you might lose your security deposit. "
+						+ "The mediation system protects you in case of trade disputes.";
 
 				terms = String.format(terms,
 						amountField.getText(), priceField.getText(), market,
-						amountField.getText(), security.getValue(),
-						total.getText(), market, accountDetails.getText(),
+						amountField.getText(), security.getValue(), total.getText(),
+						market, accountDetails.getText(),
+						NumberFormatting.BURST.format(SellContract.ACTIVATION_FEE + 2*suggestedFee.getPriorityFee().longValue()),
 						market.getPaymentTimeout(account.getFields()), market, market
 						);
 			}

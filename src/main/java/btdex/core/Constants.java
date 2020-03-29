@@ -1,5 +1,7 @@
 package btdex.core;
 
+import com.google.gson.Gson;
+
 import okhttp3.MediaType;
 
 public class Constants {
@@ -12,6 +14,8 @@ public class Constants {
     public static final String PROP_EXPLORER = "explorer";
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    
+    public static final Gson GSON = new Gson();
 
     public static final String FAUCET_TESTNET =
             "https://burst-account-activator-testnet.ohager.now.sh/api/activate";
@@ -33,5 +37,8 @@ public class Constants {
     public static final String BURST_TICKER = "BURST";
     
 	public static final int FEE_QUANT = 735000;
+	
+	// Deadline in minutes to be used on transactions
+	public static final int BURST_DEADLINE = 1440;
 
 }

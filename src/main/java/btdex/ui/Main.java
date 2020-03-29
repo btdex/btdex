@@ -32,11 +32,11 @@ import com.bulenkov.darcula.DarculaLaf;
 
 import bt.BT;
 import btdex.core.Constants;
-import btdex.core.ContractState;
 import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.Markets;
+import btdex.core.NumberFormatting;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.AssetBalance;
@@ -471,8 +471,8 @@ public class Main extends JFrame implements ActionListener {
 						else
 							throw e;
 					}
-					balanceLabel.setText(ContractState.format(balance));
-					lockedBalanceLabel.setText("+" + ContractState.format(locked) + " locked");
+					balanceLabel.setText(NumberFormatting.BURST.format(balance));
+					lockedBalanceLabel.setText("+" + NumberFormatting.BURST.format(locked) + " locked");
 					
 					g.updateSuggestedFee();
 					
