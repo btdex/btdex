@@ -35,7 +35,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import bt.BT;
@@ -353,8 +352,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					
 					String messageString = Constants.GSON.toJson(messageJson);
 					
+					// FIXME: sending 1 planck while we do not have the send message method available
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
-							null, suggestedFee.getPriorityFee(),
+							BurstValue.fromPlanck(1L), suggestedFee.getPriorityFee(),
 							Constants.BURST_DEADLINE, messageString);
 				}
 
