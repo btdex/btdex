@@ -53,7 +53,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
-		setTitle(order!= null ? "Cancel Order" : "Withdraw Contract");
+		setTitle("Cancel Order");
 
 		isToken = market.getTokenID()!=null;
 
@@ -116,12 +116,14 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 							NumberFormatting.BURST.format(suggestedFee.getPriorityFee().longValue()));
 		}
 		else {
-			terms = "You are withdrawing %s BURST from your smart contract %s.\n\n"
-					+ "This action requires the smart contract to run and "
+			terms = "You are cancelling your sell BURST order on smart contract %s.\n\n"
+					+ "The smart contract balance of %s BURST will be transfered back "
+					+ "to your account. However, this action requires the smart contract to run and "
 					+ "will cost you %s BURST.";
 
 			terms = String.format(terms,
-					state.getBalance().toUnformattedString(), state.getAddress().getFullAddress(),
+					state.getAddress().getFullAddress(),
+					state.getBalance().toUnformattedString(),
 					NumberFormatting.BURST.format(state.getActivationFee() + suggestedFee.getPriorityFee().longValue()));			
 		}
 		

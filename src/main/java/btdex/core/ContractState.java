@@ -225,7 +225,7 @@ public class ContractState {
 				break;
 			
 			// we only accept configurations with 2 confirmations or more
-			if(tx.getConfirmations()<2)
+			if(tx.getConfirmations() < Constants.PRICE_NCONF)
 				continue;
 			
 			// order configurations should be set by the creator

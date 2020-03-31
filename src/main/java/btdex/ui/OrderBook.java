@@ -205,8 +205,8 @@ public class OrderBook extends JPanel {
 						dlg.setLocationRelativeTo(OrderBook.this);
 						dlg.setVisible(true);
 					}
-					else if(order != null) {
-						PlaceOrderDialog dlg = new PlaceOrderDialog(f, market, order);
+					else {
+						PlaceOrderDialog dlg = new PlaceOrderDialog(f, market, order, contract);
 						dlg.setLocationRelativeTo(OrderBook.this);
 						dlg.setVisible(true);
 					}
@@ -321,7 +321,7 @@ public class OrderBook extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
-				PlaceOrderDialog dlg = new PlaceOrderDialog(f, market, firstAsk);
+				PlaceOrderDialog dlg = new PlaceOrderDialog(f, market, firstAsk, null);
 				dlg.setLocationRelativeTo(OrderBook.this);
 				dlg.setVisible(true);
 			}
@@ -330,7 +330,7 @@ public class OrderBook extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
-				PlaceOrderDialog dlg = new PlaceOrderDialog(f, market, firstBid);
+				PlaceOrderDialog dlg = new PlaceOrderDialog(f, market, firstBid, null);
 				dlg.setLocationRelativeTo(OrderBook.this);
 				dlg.setVisible(true);				
 			}
@@ -497,7 +497,7 @@ public class OrderBook extends JPanel {
 			String priceFormated = market.format(s.getRate());
 			JButton b = new JButton(priceFormated); // new ActionButton(priceFormated, null, false);
 			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId()) {
-				b = new ActionButton(priceFormated, s, true);
+				b = new ActionButton(priceFormated, s, false);
 				b.setIcon(editIcon);
 			}
 			b.setBackground(HistoryPanel.RED);

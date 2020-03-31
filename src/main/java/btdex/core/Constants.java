@@ -36,6 +36,9 @@ public class Constants {
 
     public static final String BURST_TICKER = "BURST";
     
+    // Number of confirmations needed for SC update to be taken into account
+    public static final int PRICE_NCONF = 1;
+    
 	public static final int FEE_QUANT = 735000;
 	
 	// Deadline in minutes to be used on transactions

@@ -62,6 +62,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	JTextField amountField, priceField, total;
 	JSlider security;
 
+	ContractState contract;
+
 	JTextPane conditions;
 	JCheckBox acceptBox;
 
@@ -70,7 +72,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	private JButton okButton;
 	private JButton calcelButton;
 
-	private boolean isToken;
+	private boolean isToken, isUpdate;
 
 	private JToggleButton buyToken;
 	private JToggleButton sellToken;
@@ -79,16 +81,23 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 	private BurstValue amountValue, priceValue;
 
-	public PlaceOrderDialog(JFrame owner, Market market, AssetOrder order) {
+	public PlaceOrderDialog(JFrame owner, Market market, AssetOrder order, ContractState contract) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
+		this.contract = contract;
+
 		isToken = market.getTokenID()!=null;
+		isUpdate = contract !=null && contract.getState()==SellContract.STATE_OPEN &&
+				contract.getCreator().getSignedLongId() == Globals.getInstance().getAddress().getSignedLongId();
 
 		if(isToken)
 			setTitle(String.format("Exchange %s for BURST", market.toString()));
-		else
+		else {
 			setTitle(String.format("Sell BURST for %s", market.toString()));
+			if(isUpdate)
+				setTitle(String.format("Update sell BURST for %s", market.toString()));
+		}
 
 		this.market = market;
 
@@ -116,7 +125,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		if(isToken) {
 			buyToken = new JRadioButton(String.format("Buy %s with BURST", market), true);
 			sellToken = new JRadioButton(String.format("Sell %s for BURST", market));
-			
+
 			buyToken.setBackground(HistoryPanel.GREEN);
 			sellToken.setBackground(HistoryPanel.RED);
 			buyToken.setForeground(Color.WHITE);
@@ -143,7 +152,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				if(ac.getMarket().equals(market.toString()))
 					accountComboBox.addItem(ac);
 			}
-			
+
 			// Only FIAT can have zero security (on-ramp special contracts)
 			security = new JSlider(market.isFiat() ? 0 : 1, 20);
 
@@ -157,11 +166,25 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					if(value==0)
 						desc = "No buyer deposit offer";
 
+					if(isUpdate)
+						desc = "Security deposit";
+					
 					securityDesc.setDesc(desc);
 					somethingChanged();
 				}
 			});
 			security.getModel().setValue(5);
+
+			if(isUpdate) {
+				// These cannot be changed
+				amountField.setEnabled(false);
+				security.setEnabled(false);
+				int securityValue = (int)(contract.getSecurityNQT()*100/contract.getAmountNQT());
+				security.getModel().setValue(securityValue);
+
+				priceField.setText(market.format(contract.getRate()));
+				amountField.setText(NumberFormatting.BURST.format(contract.getAmountNQT()));
+			}
 		}
 		conditions = new JTextPane();
 		//		conditions.setContentType("text/html");
@@ -215,14 +238,14 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		content.add(buttonPane, BorderLayout.PAGE_END);
 
 		suggestedFee = Globals.getInstance().getSuggestedFee();
-		
+
 		if(isToken && order != null) {
 			// taking this order
 			if(order.getType() == AssetOrder.OrderType.BID)
 				sellToken.setSelected(true);
 			else
 				buyToken.setSelected(true);
-			
+
 			priceField.setText(NumberFormatting.BURST.format(order.getPrice().longValue()*market.getFactor()));
 			amountField.setText(market.format(order.getQuantity().longValue()));
 			somethingChanged();
@@ -249,7 +272,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				return;
 			}
 
-			if(Contracts.getFreeContract() == null && !isToken) {
+			if(contract==null && Contracts.getFreeContract() == null && !isToken) {
 				int ret = JOptionPane.showConfirmDialog(getParent(),
 						"You don't have a smart contract available.\nRegister a new one?",
 						"Register Smart Contract", JOptionPane.YES_NO_OPTION);
@@ -270,7 +293,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		if(e.getSource() == calcelButton) {
 			setVisible(false);
 		}
-		
+
 		if(e.getSource() == accountComboBox) {
 			Account ac = (Account) accountComboBox.getSelectedItem();
 			String details = market.simpleFormat(ac.getFields());
@@ -301,7 +324,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				error = "You must accept the terms first";
 				acceptBox.requestFocus();
 			}
-			
+
 			if(error == null && !g.checkPIN(pin.getPassword())) {
 				error = "Invalid PIN";
 				pin.requestFocus();
@@ -326,32 +349,35 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 								amountValue, priceValue, suggestedFee.getPriorityFee(), Constants.BURST_DEADLINE);
 				}
 				else {
-					ContractState contract = Contracts.getFreeContract();
-					
-					// send the update transaction with the amount + security deposit
-					long securityAmount = amountValue.longValue() * security.getValue() / 100;
-					byte[] message = BT.callMethodMessage(Contracts.getContract().getMethod("update"), securityAmount);
-					
-					BurstValue amountToSend = amountValue.add(BurstValue.fromPlanck(securityAmount + contract.getActivationFee()));
+					if(contract == null) {
+						// configure a new contract and place the deposit
+						contract = Contracts.getFreeContract();
 
-					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
-							amountToSend, suggestedFee.getPriorityFee(),
-							Constants.BURST_DEADLINE, message);
-					
-					Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
-						byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
-						return g.getNS().broadcastTransaction(signedTransactionBytes);
-					});
-					tx.blockingGet();
-					
+						// send the update transaction with the amount + security deposit
+						long securityAmount = amountValue.longValue() * security.getValue() / 100;
+						byte[] message = BT.callMethodMessage(Contracts.getContract().getMethod("update"), securityAmount);
+
+						BurstValue amountToSend = amountValue.add(BurstValue.fromPlanck(securityAmount + contract.getActivationFee()));
+
+						utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
+								amountToSend, suggestedFee.getPriorityFee(),
+								Constants.BURST_DEADLINE, message);
+
+						Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
+							byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
+							return g.getNS().broadcastTransaction(signedTransactionBytes);
+						});
+						tx.blockingGet();
+					}
+
 					// now the configuration message
 					JsonObject messageJson = new JsonObject();
 					messageJson.addProperty("market", String.valueOf(market.getID()));
 					messageJson.addProperty("rate", String.valueOf(priceValue.longValue()));
 					messageJson.addProperty("account", accountDetails.getText());
-					
+
 					String messageString = Constants.GSON.toJson(messageJson);
-					
+
 					// FIXME: sending 1 planck while we do not have the send message method available
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 							BurstValue.fromPlanck(1L), suggestedFee.getPriorityFee(),
@@ -380,12 +406,12 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	private void somethingChanged(){
 		if(acceptBox == null)
 			return;
-		
+
 		acceptBox.setSelected(false);
 
 		amountValue = null;
 		priceValue = null;
-		
+
 		Account account = (Account) accountComboBox.getSelectedItem();
 
 		if(priceField.getText().length()==0 || amountField.getText().length()==0)
@@ -436,7 +462,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		}
 		else {
 			boolean isNoDeposit = security.getValue() == 0;
-			
+
 			if(isNoDeposit) {
 				terms = "You are selling BURST for %s at a price of %s %s each with no buyer "
 						+ "security deposit.\n\n"
@@ -463,27 +489,49 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						);
 			}
 			else {
-				terms = "You are selling %s BURST at a price of %s %s each.\n\n"
-						+ "A smart contract will hold your %s BURST plus a security deposity of %d %%. "
-						+ "The taker have to deposit %s %s on your address '%s'.\n\n"
-						+ "There are no trading fees for you, but %s BURST smart contract and transaction fees. "
-						+ "Your offer will be available 2 blocks after this transaction confirms.\n\n"
-						+ "When your offer is taken, the buyer "
-						+ "has up to %d hours to complete the %s transfer. "
-						+ "After the %s amount is confirmed on your address, you have up to 24 hours to signal "
-						+ "the amount was received.\n\n"
-						+ "This order will be open until taken or cancelled. If you do not follow "
-						+ "this protocol, you might lose your security deposit. "
-						+ "The mediation system protects you in case of trade disputes.";
+				if(isUpdate)
+					terms = "You are updating your sell %s BURST order to a price of %s %s each.\n\n"
+							+ "A smart contract is holding your %s BURST plus a security deposity of %s BURST. "
+							+ "The taker have to make the same security deposit on this smart contract "
+							+ "and must transfer %s %s to your address '%s'.\n\n"
+							+ "This update transaction will cost you %s BURST. "
+							+ "Your updated conditions will be effective after this transaction confirms.\n\n"
+							+ "When your offer is taken, the buyer "
+							+ "has up to %d hours to complete the %s transfer. "
+							+ "After the %s amount is confirmed on your address, you have up to 24 hours to signal "
+							+ "the amount was received.\n\n"
+							+ "This order will be open until taken or cancelled. If you do not follow "
+							+ "this protocol, you might lose your security deposit. "
+							+ "The mediation system protects you in case of trade disputes.";
+				else
+					terms = "You are selling %s BURST at a price of %s %s each.\n\n"
+							+ "A smart contract will hold your %s BURST plus a security deposity of %s BURST. "
+							+ "The taker have to make the same security deposit on this smart contract "
+							+ "and must transfer %s %s to your address '%s'.\n\n"
+							+ "There are no trading fees for you, but %s BURST smart contract and transaction fees. "
+							+ "Your offer will be available 2 blocks after this transaction confirms.\n\n"
+							+ "When your offer is taken, the buyer "
+							+ "has up to %d hours to complete the %s transfer. "
+							+ "After the %s amount is confirmed on your address, you have up to 24 hours to signal "
+							+ "the amount was received.\n\n"
+							+ "This order will be open until taken or cancelled. If you do not follow "
+							+ "this protocol, you might lose your security deposit. "
+							+ "The mediation system protects you in case of trade disputes.";
 
 				terms = String.format(terms,
 						amountField.getText(), priceField.getText(), market,
-						amountField.getText(), security.getValue(), total.getText(),
+						amountField.getText(),
+						isUpdate ? contract.getSecurity() :
+							NumberFormatting.BURST.format(security.getValue()*amountValue.longValue()/100),
+						total.getText(),
 						market, accountDetails.getText(),
-						NumberFormatting.BURST.format(SellContract.ACTIVATION_FEE + 2*suggestedFee.getPriorityFee().longValue()),
+						NumberFormatting.BURST.format(
+								isUpdate ? suggestedFee.getPriorityFee().longValue() :
+									SellContract.ACTIVATION_FEE + 2*suggestedFee.getPriorityFee().longValue()),
 						market.getPaymentTimeout(account.getFields()), market, market
 						);
 			}
+
 		}
 		if(!conditions.getText().equals(terms)) {
 			conditions.setText(terms);
