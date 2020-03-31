@@ -191,7 +191,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		//		conditions.setEditable(false);
 		//		conditions.setLineWrap(true);
 		//		conditions.setWrapStyleWord(true);
-		conditions.setPreferredSize(new Dimension(80, 120));
+		conditions.setPreferredSize(new Dimension(80, 140));
 
 		acceptBox = new JCheckBox("I accept the terms and conditions");
 
