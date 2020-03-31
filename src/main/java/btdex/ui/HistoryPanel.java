@@ -173,7 +173,7 @@ public class HistoryPanel extends JPanel {
 			chart.getXYPlot().setDataset(null);
 	}
 
-	public void update() {
+	public synchronized void update() {
 		Globals g = Globals.getInstance();
 
 		boolean isToken = market.getTokenID()!=null;
