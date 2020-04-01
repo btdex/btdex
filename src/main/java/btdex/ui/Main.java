@@ -71,7 +71,7 @@ public class Main extends JFrame implements ActionListener {
 	JButton nodeSelector, explorerSelector;
 	ExplorerWrapper explorer;
 	
-	Icon ICON_CONNECTED, ICON_DISCONNECTED;
+	Icon ICON_CONNECTED, ICON_DISCONNECTED, ICON_TESTNET;
 	
 	private JLabel balanceLabel;
 	private JLabel lockedBalanceLabel;
@@ -255,6 +255,7 @@ public class Main extends JFrame implements ActionListener {
 		accountsPanel = new AccountsPanel(this);
 		
 		ICON_CONNECTED = IconFontSwing.buildIcon(FontAwesome.WIFI, ICON_SIZE, COLOR);
+		ICON_TESTNET = IconFontSwing.buildIcon(FontAwesome.FLASK, ICON_SIZE, COLOR);
 		ICON_DISCONNECTED = IconFontSwing.buildIcon(FontAwesome.EXCLAMATION, ICON_SIZE, COLOR);
 
 		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, ICON_SIZE, COLOR);
@@ -514,7 +515,7 @@ public class Main extends JFrame implements ActionListener {
 					balanceLabelTokenPending.setText("+ " + token.format(tokenLocked) + " locked");
 
 					statusLabel.setText("");
-					nodeSelector.setIcon(ICON_CONNECTED);
+					nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 				}
 				catch (RuntimeException rex) {
 					rex.printStackTrace();
