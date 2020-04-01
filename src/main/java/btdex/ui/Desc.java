@@ -6,7 +6,7 @@ import java.awt.Component;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-class Desc extends JPanel {
+public class Desc extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
 	JLabel label;

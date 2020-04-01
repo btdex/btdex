@@ -190,7 +190,7 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 
-		Icon discordIcon = IconFontSwing.buildIcon(FontAwesome.COMMENTS, ICON_SIZE, COLOR);
+		Icon discordIcon = IconFontSwing.buildIcon(FontAwesome.COMMENTS_O, ICON_SIZE, COLOR);
 		JButton discordButton = new JButton(discordIcon);
 		bottomRight.add(discordButton, BorderLayout.LINE_END);
 		discordButton.setToolTipText("Chat on BTDEX discord channel...");
@@ -293,6 +293,9 @@ public class Main extends JFrame implements ActionListener {
 			Icon accountIcon = IconFontSwing.buildIcon(FontAwesome.USER_CIRCLE, ICON_SIZE, COLOR);
 			tabbedPane.addTab("ACCOUNTS", accountIcon, accountsPanel);
 		}
+		
+		Icon chatIcon = IconFontSwing.buildIcon(FontAwesome.COMMENTS, ICON_SIZE, COLOR);
+		tabbedPane.addTab("CHAT", chatIcon, new ChatPanel());
 
 		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.LINK, ICON_SIZE, COLOR);
 		tabbedPane.addTab("TRANSACTIONS", transactionsIcon, transactionsPanel);
