@@ -490,12 +490,14 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			}
 			else {
 				if(isUpdate)
-					terms = "You are updating your sell %s BURST order to a price of %s %s each.\n\n"
-							+ "A smart contract is holding your %s BURST plus a security deposity of %s BURST. "
-							+ "The taker have to make the same security deposit on this smart contract "
-							+ "and must transfer %s %s to your address '%s'.\n\n"
+					terms = "You are updating your sell order of %s BURST to a price of %s %s each "
+							+ "to be received on '%s'.\n\n"
 							+ "This update transaction will cost you %s BURST. "
 							+ "Your updated conditions will be effective after this transaction confirms.\n\n"
+							+ "A smart contract is currently holding %s BURST of yours plus a "
+							+ "security deposity of %s BURST. "
+							+ "A taker have to make this same security deposit on the smart contract "
+							+ "and must transfer %s %s to your address '%s'.\n\n"
 							+ "When your offer is taken, the buyer "
 							+ "has up to %d hours to complete the %s transfer. "
 							+ "After the %s amount is confirmed on your address, you have up to 24 hours to signal "
@@ -504,12 +506,13 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 							+ "this protocol, you might lose your security deposit. "
 							+ "The mediation system protects you in case of trade disputes.";
 				else
-					terms = "You are selling %s BURST at a price of %s %s each.\n\n"
+					terms = "You are selling %s BURST at a price of %s %s each "
+							+ "to be received on '%s'.\n\n"
+							+ "There are no trading fees for you, but %s BURST smart contract and transaction fees. "
+							+ "Your offer will be available 2 blocks after this transaction confirms.\n\n"
 							+ "A smart contract will hold your %s BURST plus a security deposity of %s BURST. "
 							+ "The taker have to make the same security deposit on this smart contract "
 							+ "and must transfer %s %s to your address '%s'.\n\n"
-							+ "There are no trading fees for you, but %s BURST smart contract and transaction fees. "
-							+ "Your offer will be available 2 blocks after this transaction confirms.\n\n"
 							+ "When your offer is taken, the buyer "
 							+ "has up to %d hours to complete the %s transfer. "
 							+ "After the %s amount is confirmed on your address, you have up to 24 hours to signal "
@@ -520,14 +523,15 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 				terms = String.format(terms,
 						amountField.getText(), priceField.getText(), market,
+						accountDetails.getText(),
+						NumberFormatting.BURST.format(
+								isUpdate ? suggestedFee.getPriorityFee().longValue() :
+									SellContract.ACTIVATION_FEE + 2*suggestedFee.getPriorityFee().longValue()),
 						amountField.getText(),
 						isUpdate ? contract.getSecurity() :
 							NumberFormatting.BURST.format(security.getValue()*amountValue.longValue()/100),
 						total.getText(),
 						market, accountDetails.getText(),
-						NumberFormatting.BURST.format(
-								isUpdate ? suggestedFee.getPriorityFee().longValue() :
-									SellContract.ACTIVATION_FEE + 2*suggestedFee.getPriorityFee().longValue()),
 						market.getPaymentTimeout(account.getFields()), market, market
 						);
 			}
