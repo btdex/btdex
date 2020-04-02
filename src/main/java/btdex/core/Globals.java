@@ -132,6 +132,10 @@ public class Globals {
 		address = BC.getBurstAddressFromPublic(pubKey);
 	}
 
+	/**
+	 * @param pin
+	 * @return true for a correct pin, false otherwise
+	 */
 	public boolean checkPIN(char []pin) {
 		try {
 			byte[] pinKey = BC.getSha256().digest(new String(pin).getBytes("UTF-8"));
