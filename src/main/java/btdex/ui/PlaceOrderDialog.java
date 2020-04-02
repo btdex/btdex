@@ -67,7 +67,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	JTextPane conditions;
 	JCheckBox acceptBox;
 
-	JPasswordField pin;
+	JPasswordField pinField;
 
 	private JButton okButton;
 	private JButton calcelButton;
@@ -198,8 +198,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		// Create a button
 		JPanel buttonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-		pin = new JPasswordField(12);
-		pin.addActionListener(this);
+		pinField = new JPasswordField(12);
+		pinField.addActionListener(this);
 
 		calcelButton = new JButton("Cancel");
 		okButton = new JButton("OK");
@@ -207,7 +207,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		calcelButton.addActionListener(this);
 		okButton.addActionListener(this);
 
-		buttonPane.add(new Desc("PIN", pin));
+		buttonPane.add(new Desc("PIN", pinField));
 		buttonPane.add(new Desc(" ", calcelButton));
 		buttonPane.add(new Desc(" ", okButton));
 
@@ -305,7 +305,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			somethingChanged();
 		}
 
-		if(e.getSource() == okButton || e.getSource() == pin) {
+		if(e.getSource() == okButton || e.getSource() == pinField) {
 			String error = null;
 			Globals g = Globals.getInstance();
 
@@ -325,9 +325,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				acceptBox.requestFocus();
 			}
 
-			if(error == null && !g.checkPIN(pin.getPassword())) {
+			if(error == null && !g.checkPIN(pinField.getPassword())) {
 				error = "Invalid PIN";
-				pin.requestFocus();
+				pinField.requestFocus();
 			}
 
 			if(error!=null) {
@@ -364,7 +364,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 								Constants.BURST_DEADLINE, message);
 
 						Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
-							byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
+							byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
 							return g.getNS().broadcastTransaction(signedTransactionBytes);
 						});
 						tx.blockingGet();
@@ -385,7 +385,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				}
 
 				Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
-					byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
+					byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
 					return g.getNS().broadcastTransaction(signedTransactionBytes);
 				});
 				TransactionBroadcast tb = tx.blockingGet();
