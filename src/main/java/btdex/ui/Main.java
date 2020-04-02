@@ -203,6 +203,18 @@ public class Main extends JFrame implements ActionListener {
 				browse("https://discord.gg/VQ6sFAY");
 			}
 		});
+		
+		Icon githubIcon = IconFontSwing.buildIcon(FontAwesomeBrands.GITHUB, ICON_SIZE, COLOR);
+		JButton githubButton = new JButton(githubIcon);
+		bottomRight.add(githubButton, BorderLayout.LINE_END);
+		githubButton.setToolTipText("Check the source code...");
+		githubButton.setVerticalAlignment(SwingConstants.CENTER);
+		githubButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				browse("https://github.com/btdex/btdex");
+			}
+		});
 
 		Icon signoutIcon = IconFontSwing.buildIcon(FontAwesome.SIGN_OUT, ICON_SIZE, COLOR);
 		JButton signoutButton = new JButton(signoutIcon);
@@ -296,7 +308,7 @@ public class Main extends JFrame implements ActionListener {
 			tabbedPane.addTab("ACCOUNTS", accountIcon, accountsPanel);
 		}
 		
-		Icon chatIcon = IconFontSwing.buildIcon(FontAwesome.COMMENTS, ICON_SIZE, COLOR);
+		Icon chatIcon = IconFontSwing.buildIcon(FontAwesome.COMMENT, ICON_SIZE, COLOR);
 		tabbedPane.addTab("CHAT", chatIcon, new ChatPanel());
 
 		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.LINK, ICON_SIZE, COLOR);
