@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -19,16 +20,19 @@ import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.html.HTMLDocument;
 
 import org.apache.commons.text.StringEscapeUtils;
 
+import btdex.core.Globals;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
 
-public class ChatPanel extends JPanel implements ActionListener {
+public class ChatPanel extends JPanel implements ActionListener, ListSelectionListener {
 	private static final long serialVersionUID = 144264934272036916L;
 	
 	private static final int MAX_LENGTH = 280;
@@ -67,6 +71,9 @@ public class ChatPanel extends JPanel implements ActionListener {
 
     private JTextField inputField;
     private JTextPane displayField;
+    
+    private JPasswordField pinField;
+    private char []pin;
 
 	private JList<String> addressList;
 
@@ -84,18 +91,24 @@ public class ChatPanel extends JPanel implements ActionListener {
 		addressList.setPreferredSize(new Dimension(300, 300));
 		addressPanel.add(addressList, BorderLayout.CENTER);		
 		add(addressPanel, BorderLayout.LINE_START);
+		addressList.addListSelectionListener(this);
+		
+		pinField = new JPasswordField(12);
+		pinField.addActionListener(this);
 
     	JPanel panelSendMessage = new JPanel(new BorderLayout());
         inputField = new JTextField();
-        inputField.setToolTipText("Enter your chat content then enter to send");
+        inputField.setToolTipText("Enter your message");
         panelSendMessage.add(new Desc("Enter your message", inputField), BorderLayout.CENTER);
         inputField.addActionListener(this);
+        inputField.setEnabled(false);
 
         btnSend = new JButton("");
-		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.PAPER_PLANE_O, 16, btnSend.getForeground());
+		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.PAPER_PLANE_O, 24, btnSend.getForeground());
         btnSend.setIcon(sendIcon);
         btnSend.setToolTipText("Send your message");
         btnSend.addActionListener(this);
+        btnSend.setEnabled(false);
         panelSendMessage.add(new Desc(" ", btnSend), BorderLayout.EAST);
 
         displayField = new JTextPane();
@@ -113,11 +126,6 @@ public class ChatPanel extends JPanel implements ActionListener {
         panelCenter.add(scrollPane, BorderLayout.CENTER);
         panelCenter.add(panelSendMessage, BorderLayout.SOUTH);
 
-		appendFriendMessage("Message from friend");
-		appendMeMyMessage("Message from me");
-		appendFriendMessage("Another from friend");
-		appendMeMyMessage("Another from me, but this is a very long message, very very very long message");
-
         setSize(280, 400);
     }
 
@@ -134,6 +142,13 @@ public class ChatPanel extends JPanel implements ActionListener {
     		appendMeMyMessage(inputField.getText());
     		inputField.setText("");
     		inputField.requestFocus();
+    	}
+    	if(e.getSource() == pinField) {
+    		pin = pinField.getPassword();
+    		if(!Globals.getInstance().checkPIN(pin)) {
+				Toast.makeText(Main.getInstance(), "Invalid PIN", Toast.Style.ERROR).display(pinField);
+				return;
+    		}
     	}
     }
 
@@ -193,5 +208,10 @@ public class ChatPanel extends JPanel implements ActionListener {
 		f.pack();
 		f.setLocationRelativeTo(null);
 		f.setVisible(true);
+	}
+
+	@Override
+	public void valueChanged(ListSelectionEvent e) {
+		
 	}
 }
