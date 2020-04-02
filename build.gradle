@@ -29,7 +29,8 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.4.0'
 
     implementation 'com.github.jiconfont:jiconfont-swing:1.0.0'
-    implementation 'com.github.jiconfont:jiconfont-font_awesome:4.7.0.1'
+    //implementation 'com.github.jiconfont:jiconfont-font_awesome:4.7.0.1'
+    implementation 'com.github.meisenla:jiconfont-font_awesome:8be36e8ba9'
 
     implementation 'com.bulenkov:darcula:2018.2'
     implementation 'org.apache.commons:commons-text:1.8'
