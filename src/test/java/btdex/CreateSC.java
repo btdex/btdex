@@ -4,11 +4,13 @@ import bt.BT;
 import bt.compiler.Compiler;
 import btdex.core.Mediators;
 import btdex.sc.SellContract;
+import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.TransactionBroadcast;
 
 import java.io.IOException;
+import java.util.Random;
 
 public class CreateSC {
     private long feeContract = BT.getBurstAddressFromPassphrase(BT.PASSPHRASE3).getBurstID().getSignedLongId();
@@ -16,22 +18,50 @@ public class CreateSC {
     private BurstID mediator1;
     private BurstID mediator2;
 
+    private String mediatorOnePassword;
+    private String mediatorTwoPassword;
+
     private BurstValue amount;
 
+    private Random rand = new Random();
+
     private Class sc;
+
     private BurstValue security;
+
     private long accountHash = 0;
     private bt.compiler.Compiler compiled;
     public CreateSC(Class sc, double amount, double security) throws IOException {
         Mediators mediators = new Mediators(true);
-        this.mediator1 = mediators.getMediators()[0];
-        this.mediator2 = mediators.getMediators()[1];
+        BurstID[] mediatorsID = mediators.getMediators();
+        this.mediator1 = mediatorsID[rand.nextInt(mediatorsID.length)];
+        this.mediator2 = mediatorsID[rand.nextInt(mediatorsID.length)];
+        while(mediator1 == mediator2) {
+            // make sure we have 2 different mediators
+            mediator2 = mediatorsID[rand.nextInt(mediatorsID.length)];
+        }
+        mediatorOnePassword = getMediatorPassword(mediator1);
+        mediatorTwoPassword = getMediatorPassword(mediator2);
+
         this.amount = BurstValue.fromBurst(amount);
         this.security = BurstValue.fromBurst(security);
         this.compiled = BT.compileContract(sc);
         this.sc = sc;
     }
 
+    private String getMediatorPassword(BurstID mediatorID) {
+        BurstAddress mediator = BurstAddress.fromId(mediatorID);
+
+        if(mediator.equals(BT.getBurstAddressFromPassphrase(BT.PASSPHRASE)))
+            return BT.PASSPHRASE;
+        else if(mediator.equals(BT.getBurstAddressFromPassphrase(BT.PASSPHRASE2)))
+            return BT.PASSPHRASE2;
+        else if(mediator.equals(BT.getBurstAddressFromPassphrase(BT.PASSPHRASE4)))
+            return BT.PASSPHRASE4;
+        else if(mediator.equals(BT.getBurstAddressFromPassphrase(BT.PASSPHRASE5)))
+            return BT.PASSPHRASE5;
+        else return null;
+    }
 
     public String registerSC(String passphrase){
         //Get some BURST for fee(block reward) and write acc to chain
@@ -65,5 +95,21 @@ public class CreateSC {
 
     public long getFeeContract() {
         return feeContract;
+    }
+
+    public BurstID getMediator1() {
+        return mediator1;
+    }
+
+    public BurstID getMediator2() {
+        return mediator2;
+    }
+
+    public String getMediatorOnePassword() {
+        return mediatorOnePassword;
+    }
+
+    public String getMediatorTwoPassword() {
+        return mediatorTwoPassword;
     }
 }

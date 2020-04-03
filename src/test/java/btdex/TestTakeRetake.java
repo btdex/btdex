@@ -44,11 +44,12 @@ public class TestTakeRetake extends BT {
     private static String takerPass;
     private static BurstAddress taker;
     private static BurstNodeService bns = BT.getNode();
+    private static CreateSC sc;
 
     @Test
     @Order(1)
     public void initSC() throws IOException {
-        CreateSC sc = new CreateSC(SellContract.class, 10000, 100);
+        sc = new CreateSC(SellContract.class, 10000, 100);
         makerPass = Long.toString(System.currentTimeMillis());
         String name = sc.registerSC(makerPass);
 
@@ -65,9 +66,8 @@ public class TestTakeRetake extends BT {
     @Test
     @Order(2)
     public void testMediators() {
-        Mediators mediators = new Mediators(true);
-        BurstID mediator1 = mediators.getMediators()[0];
-        BurstID mediator2 = mediators.getMediators()[1];
+        BurstID mediator1 = sc.getMediator1();
+        BurstID mediator2 = sc.getMediator2();
         long med1_chain = BT.getContractFieldValue(contract, compiled.getField("mediator1").getAddress());
         long med2_chain = BT.getContractFieldValue(contract, compiled.getField("mediator2").getAddress());
 
