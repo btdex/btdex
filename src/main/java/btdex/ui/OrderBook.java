@@ -506,7 +506,9 @@ public class OrderBook extends JPanel {
 			model.setValueAt(s.getSecurity(), row, ASK_COLS[COL_SECURITY]);
 			
 			model.setValueAt(s.getAmount(), row, ASK_COLS[COL_SIZE]);
-			model.setValueAt(market.format((s.getRate()*s.getAmountNQT()) / Contract.ONE_BURST),
+			double amount = ((double)s.getRate())*s.getAmountNQT();
+			amount /= Contract.ONE_BURST;
+			model.setValueAt(market.format((long)amount),
 					row, ASK_COLS[COL_TOTAL]);
 			ExplorerButton exp = new ExplorerButton(s.getAddress().getRawAddress(), copyIcon, expIcon,
 					ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(), s.getAddress().getFullAddress(), BUTTON_EDITOR); 
