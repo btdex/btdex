@@ -171,6 +171,7 @@ public class TransactionsPanel extends JPanel {
 					break;
 				default:
 					type = "Message";
+					amountFormatted = "";
 				}
 				break;
 			case 2: // TYPE_MESSAGING

@@ -377,10 +377,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					messageJson.addProperty("account", accountDetails.getText());
 
 					String messageString = Constants.GSON.toJson(messageJson);
-
-					// FIXME: sending 1 planck while we do not have the send message method available
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
-							BurstValue.fromPlanck(1L), suggestedFee.getPriorityFee(),
+							suggestedFee.getPriorityFee(),
 							Constants.BURST_DEADLINE, messageString);
 				}
 
