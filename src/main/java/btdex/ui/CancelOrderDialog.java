@@ -1,6 +1,7 @@
 package btdex.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -159,6 +160,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 			}
 
 			// all set, lets cancel the order
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
 				Single<byte[]> utx = null;
 
@@ -198,6 +200,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 				ex.printStackTrace();
 				Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
 			}
+			setCursor(Cursor.getDefaultCursor());
 		}
 	}
 }
