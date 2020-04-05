@@ -88,6 +88,10 @@ public class ContractState {
 	public long getState() {
 		return state;
 	}
+	
+	public boolean hasStateFlag(long flag) {
+		return (state & flag) == flag;
+	}
 
 	public long getRate() {
 		return rate;

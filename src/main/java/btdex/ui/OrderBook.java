@@ -479,7 +479,8 @@ public class OrderBook extends JPanel {
 			// FIXME: add more validity tests here
 			if(s.getAmountNQT() > 0	&& s.getRate() > 0 && s.getMarketAccount() != null &&
 					(s.getState() == SellContract.STATE_OPEN
-					|| (s.getState()!= SellContract.STATE_FINISHED && s.getTaker() == g.getAddress().getSignedLongId())) )
+					|| (s.getState()!= SellContract.STATE_FINISHED && s.getTaker() == g.getAddress().getSignedLongId())
+					|| (s.getState()!= SellContract.STATE_FINISHED && s.getCreator().equals(g.getAddress())) ) )
 				marketContracts.add(s);
 		}
 		
@@ -498,12 +499,17 @@ public class OrderBook extends JPanel {
 			ContractState s = marketContracts.get(row);
 			
 			String priceFormated = market.format(s.getRate());
-			JButton b = new ActionButton(priceFormated, s, false);
-			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId()) {
-				b.setIcon(editIcon);
+			Icon icon = s.getCreator().equals(g.getAddress()) ? editIcon : takeIcon;
+			if(s.getTaker() == g.getAddress().getSignedLongId() && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
+				priceFormated = "DEPOSIT " + market;
+				icon = null;
 			}
-			else
-				b.setIcon(takeIcon);
+			else if(s.getCreator().equals(g.getAddress()) && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
+				priceFormated = String.format("SIGNAL %s RECEIVED", market);
+				icon = null;
+			}
+			JButton b = new ActionButton(priceFormated, s, false);
+			b.setIcon(icon);
 			b.setBackground(HistoryPanel.RED);
 			model.setValueAt(b, row, ASK_COLS[COL_PRICE]);
 			
@@ -517,7 +523,7 @@ public class OrderBook extends JPanel {
 			ExplorerButton exp = new ExplorerButton(s.getAddress().getRawAddress(), copyIcon, expIcon,
 					ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(), s.getAddress().getFullAddress(), BUTTON_EDITOR); 
 			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId()
-					&& s.getBalance().longValue() > 0) {
+					&& s.getBalance().longValue() > 0 && s.getState() < SellContract.STATE_WAITING_PAYMT) {
 				ActionButton withDrawButton = new ActionButton("", s, true);
 				withDrawButton.setToolTipText("Withdraw the amount on this contract.");
 				withDrawButton.setIcon(cancelIcon);
