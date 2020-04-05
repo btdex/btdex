@@ -85,7 +85,10 @@ public class SellNoDepositContract extends Contract {
 
 	@Override
 	public void txReceived() {
-		// We ignore any messages other than the above functions
+		// The creator opens the contract by sending an amount without any message
+		if(state == STATE_FINISHED && getCurrentTxSender().equals(getCreator())) {
+			state = STATE_OPEN;
+		}
 	}
 
 	public static void main(String[] args) {
