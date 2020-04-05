@@ -7,8 +7,10 @@ import btdex.sc.SellContract;
 import btdex.sc.SellNoDepositContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
+import burst.kit.entity.BurstTimestamp;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;
+import burst.kit.entity.response.TransactionBroadcast;
 import burst.kit.service.BurstNodeService;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -39,7 +41,7 @@ public class TestCreationWithdraw {
     @Test
     @Order(1)
     public void initSC() throws IOException {
-        sc = new CreateNoDepositSC(1);
+        sc = new CreateNoDepositSC(10);
         makerPass = Long.toString(System.currentTimeMillis());
         sc.registerSC(makerPass);
 
@@ -68,7 +70,7 @@ public class TestCreationWithdraw {
     @Order(3)
     public void testState(){
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
-        state = SellNoDepositContract.STATE_FINISHED; //must be open?
+        state = SellNoDepositContract.STATE_FINISHED;
         assertEquals(state, state_chain, "State not equal");
     }
 
@@ -78,21 +80,84 @@ public class TestCreationWithdraw {
 
     @Test
     @Order(4)
-    public void sendCoin(){
-        BurstValue send = BurstValue.fromBurst(100);
-        BT.sendAmount(makerPass, contract.getId(), send, BurstValue.fromBurst(0.1)).blockingGet();
+    public void sendInvalidCoin(){
+        BurstValue send = BurstValue.fromBurst(200);
+        BT.sendAmount(BT.PASSPHRASE, contract.getId(), send, BurstValue.fromBurst(0.1)).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
         long SCbalance = BT.getContractBalance(contract).longValue();
-        System.out.println("Sending coins, used by SC: " + BurstValue.fromPlanck(send.longValue() - SCbalance));
+        System.out.println("Sending invalid coins, used by SC: " + BurstValue.fromPlanck(send.longValue() - SCbalance));
+        state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
+        state = SellNoDepositContract.STATE_FINISHED;
+        assertEquals(state, state_chain, "State not equal");
 
     }
 
     @Test
     @Order(5)
+    public void sendCoin(){
+        long SCbalanceBefore = BT.getContractBalance(contract).longValue();
+        BurstValue send = BurstValue.fromBurst(100);
+        BT.sendAmount(makerPass, contract.getId(), send, BurstValue.fromBurst(0.1)).blockingGet();
+        BT.forgeBlock();
+        BT.forgeBlock();
+        long SCbalance = BT.getContractBalance(contract).longValue();
+        System.out.println("Sending coins, used by SC: " + BurstValue.fromPlanck(SCbalanceBefore + send.longValue() - SCbalance));
+
+    }
+
+    @Test
+    @Order(6)
     public void testStateAgain(){
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
-        state = SellNoDepositContract.STATE_FINISHED; //must be open?
+        state = SellNoDepositContract.STATE_OPEN;
         assertEquals(state, state_chain, "State not equal");
     }
+
+    @Test
+    @Order(7)
+    public void withdrawSignal() {
+        long SCbalanceBefore = BT.getContractBalance(contract).longValue();
+
+        TransactionBroadcast tr = BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
+                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000).blockingGet();
+        BurstID id = tr.getTransactionId();
+        BurstTimestamp timestamp = bns.getTransaction(id).blockingGet().getTimestamp();
+        System.out.println("Timestamp: " + timestamp);
+        BT.forgeBlock();
+        BT.forgeBlock();
+        state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
+        state = SellNoDepositContract.STATE_WITHDRAW_REQUESTED;
+        assertEquals(state, state_chain, "State not equal");
+        long SCbalance = BT.getContractBalance(contract).longValue();
+        System.out.println("Withdraw signal, used by SC: " + BurstValue.fromPlanck(SCbalanceBefore + SellContract.ACTIVATION_FEE - SCbalance));
+    }
+
+    @Test
+    @Order(8)
+    public void getTime(){
+        state_chain = BT.getContractFieldValue(contract, compiled.getField("lockMinutes").getAddress());
+        System.out.println(state_chain);
+    }
+
+    @Test
+    @Order(9)
+    public void withdrawSignalToEarly() {
+        long SCbalanceBefore = BT.getContractBalance(contract).longValue();
+        TransactionBroadcast tr = BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
+                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000).blockingGet();
+        BurstID id = tr.getTransactionId();
+        BurstTimestamp timestamp = bns.getTransaction(id).blockingGet().getTimestamp();
+        System.out.println("Timestamp: " + timestamp);
+        BT.forgeBlock();
+        BT.forgeBlock();
+        state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
+        state = SellNoDepositContract.STATE_WITHDRAW_REQUESTED;
+        //assertEquals(state, state_chain, "State not equal");
+        long SCbalance = BT.getContractBalance(contract).longValue();
+        System.out.println("SC balance before: " + SCbalanceBefore);
+        System.out.println("SC balance after: " + SCbalance);
+    }
+
+
 }

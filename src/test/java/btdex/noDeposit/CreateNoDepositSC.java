@@ -89,7 +89,6 @@ public class CreateNoDepositSC {
         return BT.getContractFieldValue(contract, addr);
     }
 
-
     public String getName() {
         return name;
     }
