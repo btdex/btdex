@@ -117,6 +117,16 @@ public abstract class Market {
 	}
 	
 	/**
+	 * Should parse the given account fields for this market (not needed for tokens).
+	 * 
+	 * @param accountFields
+	 * @return the account for the given fields or null if invalid
+	 */
+	public Account parseAccount(String accountFields) {
+		return null;
+	}
+	
+	/**
 	 * Should validate the given field values, throwing an exception if invalid
 	 * 
 	 * @param fields
