@@ -33,13 +33,9 @@ public class CreateSC {
     private bt.compiler.Compiler compiled;
     public CreateSC(Class sc, double amount, double security) throws IOException {
         Mediators mediators = new Mediators(true);
-        BurstID[] mediatorsID = mediators.getMediators();
-        this.mediator1 = mediatorsID[rand.nextInt(mediatorsID.length)];
-        this.mediator2 = mediatorsID[rand.nextInt(mediatorsID.length)];
-        while(mediator1 == mediator2) {
-            // make sure we have 2 different mediators
-            mediator2 = mediatorsID[rand.nextInt(mediatorsID.length)];
-        }
+        BurstID[] mediatorsID = mediators.getTwoRandomMediators();
+        mediator1 = mediatorsID[0];
+        mediator2 = mediatorsID[1];
         mediatorOnePassword = getMediatorPassword(mediator1);
         mediatorTwoPassword = getMediatorPassword(mediator2);
 
