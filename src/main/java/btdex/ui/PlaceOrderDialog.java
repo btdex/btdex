@@ -103,7 +103,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		if(isToken)
 			setTitle(String.format("Exchange %s for BURST", market.toString()));
 		else {
-			setTitle(String.format((contract.getCreator().equals(g.getAddress()) ?
+			setTitle(String.format((contract==null || contract.getCreator().equals(g.getAddress()) ?
 					"Sell Burst for %s" : "Buy BURST with %s"), market.toString()));
 			
 			if(isTaken && contract.getCreator().equals(g.getAddress()))
@@ -342,7 +342,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			String error = null;
 			Globals g = Globals.getInstance();
 
-			if(contract.hasStateFlag(SellContract.STATE_WAITING_PAYMT) && contract.getTaker() == g.getAddress().getSignedLongId()) {
+			if(contract!=null && contract.hasStateFlag(SellContract.STATE_WAITING_PAYMT) && contract.getTaker() == g.getAddress().getSignedLongId()) {
 				// nothing to do, as this only shows the market address to deposit
 				setVisible(false);
 			}

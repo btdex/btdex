@@ -80,8 +80,7 @@ public class OrderBook extends JPanel {
 			"CONTRACT",
 	};
 
-	Market market = null;
-	private boolean marketChanged;
+	Market market = null, newMarket;
 
 	public static final ButtonCellRenderer BUTTON_RENDERER = new ButtonCellRenderer();
 	public static final ButtonCellEditor BUTTON_EDITOR = new ButtonCellEditor();
@@ -219,8 +218,7 @@ public class OrderBook extends JPanel {
 	}
 
 	public void setMarket(Market m) {
-		this.market = m;
-		this.marketChanged = true;		
+		newMarket = m;		
 	}
 
 	public OrderBook(Main main, Market m) {
@@ -235,7 +233,7 @@ public class OrderBook extends JPanel {
 				main.update();
 			}
 		});
-
+		
 		market = m;
 
 		table = new MyTable(model = new MyTableModel());
@@ -309,11 +307,14 @@ public class OrderBook extends JPanel {
 		add(top, BorderLayout.PAGE_START);
 		add(scrollPane, BorderLayout.CENTER);
 
+		market = null;
 		setMarket(m);
 	}
 
 	public void update() {
-		if(marketChanged) {
+		if(newMarket != market) {
+			market = newMarket;
+			
 			model.setRowCount(0);
 			model.fireTableDataChanged();
 			
@@ -349,7 +350,6 @@ public class OrderBook extends JPanel {
 			}
 			table.getTableHeader().repaint();
 		}
-		marketChanged = false;
 
 		if(market.getTokenID()==null) {
 			updateContracts();
