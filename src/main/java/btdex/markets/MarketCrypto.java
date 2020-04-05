@@ -3,6 +3,7 @@ package btdex.markets;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import btdex.core.Account;
 import btdex.core.Market;
 
 /**
@@ -47,5 +48,24 @@ public abstract class MarketCrypto extends Market {
 	@Override
 	public String simpleFormat(HashMap<String, String> fields) {
 		return fields.get(ADDRESS);
+	}
+	
+	@Override
+	public Account parseAccount(String accountFields) {
+		String fieldsArray[] = accountFields.split(":");
+		
+		if(fieldsArray.length!=1)
+			return null;
+		
+		HashMap<String, String> fields = new HashMap<>();
+		fields.put(ADDRESS, fieldsArray[0]);
+		try {
+			validate(fields);
+		}
+		catch (Exception e) {
+			return null;
+		}
+		Account ret = new Account(this.toString(), null, fields);
+		return ret;
 	}
 }

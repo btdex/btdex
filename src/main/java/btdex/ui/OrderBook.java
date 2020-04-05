@@ -44,7 +44,7 @@ public class OrderBook extends JPanel {
 
 	JTable table;
 	DefaultTableModel model;
-	Icon copyIcon, expIcon, upIcon, downIcon, cancelIcon, editIcon, withdrawIcon;
+	Icon copyIcon, expIcon, upIcon, downIcon, cancelIcon, editIcon, takeIcon, withdrawIcon;
 	JCheckBox listOnlyMine;
 	JLabel lastPrice;
 	JButton buyButton, sellButton;
@@ -285,6 +285,7 @@ public class OrderBook extends JPanel {
 		downIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_DOWN, 18, HistoryPanel.RED);
 		cancelIcon = IconFontSwing.buildIcon(FontAwesome.TIMES, 12, table.getForeground());
 		editIcon = IconFontSwing.buildIcon(FontAwesome.PENCIL, 12, table.getForeground());
+		takeIcon = IconFontSwing.buildIcon(FontAwesome.HANDSHAKE_O, 12, table.getForeground());
 		withdrawIcon = IconFontSwing.buildIcon(FontAwesome.RECYCLE, 12, table.getForeground());
 
 		JScrollPane scrollPane = new JScrollPane(table);
@@ -476,7 +477,8 @@ public class OrderBook extends JPanel {
 				continue;
 			
 			// FIXME: add more validity tests here
-			if(s.getAmountNQT() > 0	&& s.getState() == SellContract.STATE_OPEN)
+			if(s.getAmountNQT() > 0	&& s.getState() == SellContract.STATE_OPEN && s.getRate() > 0 &&
+					s.getAccount() != null)
 				marketContracts.add(s);
 		}
 		
@@ -495,11 +497,12 @@ public class OrderBook extends JPanel {
 			ContractState s = marketContracts.get(row);
 			
 			String priceFormated = market.format(s.getRate());
-			JButton b = new JButton(priceFormated); // new ActionButton(priceFormated, null, false);
+			JButton b = new ActionButton(priceFormated, s, false);
 			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId()) {
-				b = new ActionButton(priceFormated, s, false);
 				b.setIcon(editIcon);
 			}
+			else
+				b.setIcon(takeIcon);
 			b.setBackground(HistoryPanel.RED);
 			model.setValueAt(b, row, ASK_COLS[COL_PRICE]);
 			

@@ -40,7 +40,7 @@ public class ContractState {
 	
 	private long rate;
 	private int market;
-	private String account;
+	private Account account;
 	
 	private long lastTxId;
 	
@@ -54,6 +54,10 @@ public class ContractState {
 	
 	public long getMarket() {
 		return market;
+	}
+	
+	public Account getAccount() {
+		return account;
 	}
 	
 	public BurstAddress getAddress() {
@@ -249,14 +253,22 @@ public class ContractState {
 						JsonElement rateJson = json.get("rate");
 						JsonElement accountJson = json.get("account");
 						market = -1;
-						account = null;
+						String accountFields = null;
 						rate = -1;
 						if(marketJson!=null)
 							market = Integer.parseInt(marketJson.getAsString());
 						if(accountJson!=null)
-							account = accountJson.getAsString();
+							accountFields = accountJson.getAsString();
 						if(rateJson!=null)
 							rate = Long.parseLong(rateJson.getAsString());
+						
+						// parse the account fields
+						for(Market m : Markets.getMarkets()) {
+							if(m.getID() == market) {
+								account = m.parseAccount(accountFields);
+								break;
+							}
+						}
 						
 						// set this as the accepted last TxId
 						lastTxId = tx.getId().getSignedLongId();
