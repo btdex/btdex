@@ -282,7 +282,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			acceptBox.setVisible(false);
 			cancelButton.setVisible(false);
 			pinDesc.setVisible(false);
-			disputeButton.setVisible(true);
+		}
+		if(isTaken) {
+			disputeButton.setVisible(true);			
 		}
 
 		somethingChanged();
@@ -406,7 +408,16 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						tx.blockingGet();
 					}
 
-					if(isTake) {
+					if(isTaken && contract.getCreator().equals(g.getAddress())) {
+						// we are signaling that we have received
+						byte[] message = BT.callMethodMessage(Contracts.getContract().getMethod("reportComplete"));
+						BurstValue amountToSend = BurstValue.fromPlanck(contract.getActivationFee());
+
+						utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
+								amountToSend, suggestedFee.getPriorityFee(),
+								Constants.BURST_DEADLINE, message);						
+					}
+					else if(isTake) {
 						// send the take transaction with the amount + security deposit
 						byte[] message = BT.callMethodMessage(Contracts.getContract().getMethod("take"),
 								contract.getSecurityNQT(), contract.getAmountNQT());
@@ -542,16 +553,20 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						terms = "You are signaling that you have received %s %s on the address '%s'.\n\n"
 								+ "A smart contract is currently holding %s BURST plus your "
 								+ "security deposity of %s BURST. "
-								+ "After the %s %s amount is confirmed on the seller's address, you will receive "
-								+ "the BURST amount plus your security deposit back in up to 24 hours.\n\n"
+								+ "You have up to 24 h after this offer was taken to make this confirmation. "
+								+ "By confirming you have received, the BURST amount will be transfered "
+								+ "to the buyer and your security deposit will be transfered back to you. "
+								+ "This confirmation transaction will cost you %s BURST.\n\n"
+								+ "If you have not received your %s, you can open a dispute. "
 								+ "If you do not follow this protocol, you might lose your security deposit. "
 								+ "The mediation system protects you in case of trade disputes.";
 						terms = String.format(terms,
 								totalField.getText(), market,
 								market.simpleFormat(contract.getMarketAccount().getFields()),
-								market.getPaymentTimeout(account.getFields()),
 								amountField.getText(), contract.getSecurity(),
-								totalField.getText(), market
+								NumberFormatting.BURST.format(suggestedFee.getPriorityFee().longValue() +
+										contract.getActivationFee()),
+								market
 								);
 					}
 					else {
