@@ -36,11 +36,12 @@ public class ContractState {
 	private long state;
 	private long amount;
 	private long security;
+	private long taker;
 	private long lockMinutes;
 	
 	private long rate;
 	private int market;
-	private Account account;
+	private Account marketAccount;
 	
 	private long lastTxId;
 	
@@ -56,8 +57,8 @@ public class ContractState {
 		return market;
 	}
 	
-	public Account getAccount() {
-		return account;
+	public Account getMarketAccount() {
+		return marketAccount;
 	}
 	
 	public BurstAddress getAddress() {
@@ -111,6 +112,10 @@ public class ContractState {
 
 	public long getSecurityNQT() {
 		return security;
+	}
+	
+	public long getTaker() {
+		return taker;
 	}
 	
 	public String getSecurity() {
@@ -215,6 +220,7 @@ public class ContractState {
 			this.state = BT.getContractFieldValue(at, contract.getFieldAddress("state"));
 			this.amount = BT.getContractFieldValue(at, contract.getFieldAddress("amount"));
 			this.security = BT.getContractFieldValue(at, contract.getFieldAddress("security"));
+			this.taker = BT.getContractFieldValue(at, contract.getFieldAddress("taker"));
 		}
 		else if(type == Type.NoDeposit) {
 			Compiler contract = Contracts.getContractNoDeposit();
@@ -265,7 +271,7 @@ public class ContractState {
 						// parse the account fields
 						for(Market m : Markets.getMarkets()) {
 							if(m.getID() == market) {
-								account = m.parseAccount(accountFields);
+								marketAccount = m.parseAccount(accountFields);
 								break;
 							}
 						}
