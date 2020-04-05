@@ -234,9 +234,8 @@ public class ContractState {
 			
 			if(tx.getRecipient().getSignedLongId() == address.getSignedLongId()
 					&& tx.getSender().getBurstID().getSignedLongId() == at.getCreator().getSignedLongId()
-					// FIXME: we are using payments to configure the orders by now
-					//&& tx.getType() == 2 /* TYPE_MESSAGING */
-					//&& tx.getSubtype() == 0 /* SUBTYPE_MESSAGING_ARBITRARY_MESSAGE */
+					&& tx.getType() == 1 /* TYPE_MESSAGING */
+					&& tx.getSubtype() == 0 /* SUBTYPE_MESSAGING_ARBITRARY_MESSAGE */
 					&& tx.getAppendages()!=null && tx.getAppendages().length > 0) {
 				
 				TransactionAppendix append = tx.getAppendages()[0];
