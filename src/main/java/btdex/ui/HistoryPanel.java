@@ -50,6 +50,8 @@ public class HistoryPanel extends JPanel {
 	public static final Color GREEN = Color.decode("#29BF76");
 	
 	Market market = null;
+	private boolean marketChanged;
+
 	private JFreeChart chart;
 
 	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss yyyy-MM-dd");
@@ -161,20 +163,26 @@ public class HistoryPanel extends JPanel {
 
 	public void setMarket(Market m) {
 		this.market = m;
-
-		// update the column headers
-		for (int c = 0; c < columnNames.length; c++) {
-			table.getColumnModel().getColumn(c).setHeaderValue(model.getColumnName(c));
-		}
-		model.setRowCount(0);
-		model.fireTableDataChanged();
-
-		if(chart!=null)
-			chart.getXYPlot().setDataset(null);
+		this.marketChanged = true;
 	}
 
 	public synchronized void update() {
 		Globals g = Globals.getInstance();
+		
+		if(marketChanged) {
+			model.setRowCount(0);
+			model.fireTableDataChanged();
+			
+			// update the column headers
+			for (int c = 0; c < columnNames.length; c++) {
+				table.getColumnModel().getColumn(c).setHeaderValue(model.getColumnName(c));
+			}
+			table.getTableHeader().repaint();
+			
+			if(chart!=null)
+				chart.getXYPlot().setDataset(null);
+		}
+		marketChanged = false;
 
 		boolean isToken = market.getTokenID()!=null;
 		boolean myHistory = listOnlyMine.isSelected();
