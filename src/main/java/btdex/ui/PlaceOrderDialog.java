@@ -119,7 +119,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		amountField.getDocument().addDocumentListener(this);
 		priceField.getDocument().addDocumentListener(this);
 
-		fieldPanel.setBorder(BorderFactory.createTitledBorder("Offer configuration"));
+		fieldPanel.setBorder(BorderFactory.createTitledBorder("Offer details"));
 
 		if(isToken) {
 			buyToken = new JRadioButton(String.format("Buy %s with BURST", market), true);
@@ -314,14 +314,14 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			String error = null;
 			Globals g = Globals.getInstance();
 
-			if(accountComboBox.getSelectedIndex() < 0 && !isToken) {
+			if(accountComboBox.getSelectedIndex() < 0 && !isToken && !isTake) {
 				error = "You need to register an account first";
 			}
 
-			if(error == null && priceValue == null) {
+			if(error == null && (priceValue == null || priceValue.longValue() <= 0)) {
 				error = "Invalid price";
 			}
-			if(error == null && amountValue == null) {
+			if(error == null && (amountValue == null || amountValue.longValue() <= 0)) {
 				error = "Invalid amount";
 			}
 
@@ -375,16 +375,29 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						tx.blockingGet();
 					}
 
-					// now the configuration message
-					JsonObject messageJson = new JsonObject();
-					messageJson.addProperty("market", String.valueOf(market.getID()));
-					messageJson.addProperty("rate", String.valueOf(priceValue.longValue()));
-					messageJson.addProperty("account", accountDetails.getText());
+					if(isTake) {
+						// send the take transaction with the amount + security deposit
+						byte[] message = BT.callMethodMessage(Contracts.getContract().getMethod("take"),
+								contract.getSecurityNQT(), contract.getAmountNQT());
 
-					String messageString = Constants.GSON.toJson(messageJson);
-					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
-							suggestedFee.getPriorityFee(),
-							Constants.BURST_DEADLINE, messageString);
+						BurstValue amountToSend = BurstValue.fromPlanck(contract.getSecurityNQT() + contract.getActivationFee());
+
+						utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
+								amountToSend, suggestedFee.getPriorityFee(),
+								Constants.BURST_DEADLINE, message);
+					}
+					else {
+						// now the configuration message
+						JsonObject messageJson = new JsonObject();
+						messageJson.addProperty("market", String.valueOf(market.getID()));
+						messageJson.addProperty("rate", String.valueOf(priceValue.longValue()));
+						messageJson.addProperty("account", accountDetails.getText());
+
+						String messageString = Constants.GSON.toJson(messageJson);
+						utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
+								suggestedFee.getPriorityFee(),
+								Constants.BURST_DEADLINE, messageString);
+					}
 				}
 
 				Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
@@ -415,7 +428,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		amountValue = null;
 		priceValue = null;
 
-		Account account = isTake ? contract.getAccount() : (Account) accountComboBox.getSelectedItem();
+		Account account = isTake ? contract.getMarketAccount() : (Account) accountComboBox.getSelectedItem();
 
 		if(priceField.getText().length()==0 || amountField.getText().length()==0)
 			return;
@@ -493,21 +506,21 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			}
 			else {
 				if(isTake) {
-					terms = "You are buying %s BURST for a price of %s %s each with 0.25%% trading fee "
-							+ "plus %s BURST on smart contract and transaction fees.\n\n"
+					terms = "You are buying %s BURST for a price of %s %s each with 0.25%% trading fee.\n\n"
 							+ "A smart contract is currently holding %s BURST plus a "
 							+ "security deposity of %s BURST. "
 							+ "By taking this offer you are now making same security deposit on the smart contract "
-							+ "and must transfer %s %s within %s hours after this transaction confirms.\n\n"
+							+ "plus %s BURST on smart contract and transaction fees. "
+							+ "You MUST transfer %s %s within %s hours after this transaction confirms.\n\n"
 							+ "After the %s amount is confirmed on the seller's address, you will receive "
 							+ "the BURST amount plus your security deposit back in up to 24 hours.\n\n"
 							+ "If you do not follow this protocol, you might lose your security deposit. "
 							+ "The mediation system protects you in case of trade disputes.";
 					terms = String.format(terms,
 							amountField.getText(), priceField.getText(), market,
+							amountField.getText(),contract.getSecurity(),
 							NumberFormatting.BURST.format(suggestedFee.getPriorityFee().longValue() +
 									contract.getActivationFee()),
-							amountField.getText(),contract.getSecurity(),
 							totalField.getText(), market, market.getPaymentTimeout(account.getFields()),
 							market
 							);

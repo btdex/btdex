@@ -477,8 +477,9 @@ public class OrderBook extends JPanel {
 				continue;
 			
 			// FIXME: add more validity tests here
-			if(s.getAmountNQT() > 0	&& s.getState() == SellContract.STATE_OPEN && s.getRate() > 0 &&
-					s.getAccount() != null)
+			if(s.getAmountNQT() > 0	&& s.getRate() > 0 && s.getMarketAccount() != null &&
+					(s.getState() == SellContract.STATE_OPEN
+					|| (s.getState()!= SellContract.STATE_FINISHED && s.getTaker() == g.getAddress().getSignedLongId())) )
 				marketContracts.add(s);
 		}
 		
