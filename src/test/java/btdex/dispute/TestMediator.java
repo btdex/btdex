@@ -48,7 +48,7 @@ public class TestMediator {
     @Order(3)
     public void testInvalidMediatorDispute() {
         //fund acc
-        BT.forgeBlock(BT.PASSPHRASE);
+        BT.forgeBlock(sc.getMediatorOnePass());
         sc.dispute(sc.getMediatorOne(), amountToMaker, amountToTaker);
 
         state = SellContract.STATE_WAITING_PAYMT;
@@ -62,7 +62,7 @@ public class TestMediator {
     @Order(4)
     public void testInvalidMediatorDisputeAgain() {
         //fund acc
-        BT.forgeBlock(BT.PASSPHRASE2);
+        BT.forgeBlock(sc.getMediatorTwoPass());
         sc.dispute(sc.getMediatorTwo(), amountToMaker, amountToTaker);
 
         state = SellContract.STATE_WAITING_PAYMT;

@@ -20,12 +20,12 @@ public class InitSC{
     private AT contract;
 
     private BurstAddress mediatorOne;
-
     private BurstAddress mediatorTwo;
-    private String mediatorOnePass = BT.PASSPHRASE;
-    private String mediatorTwoPass = BT.PASSPHRASE2;
-    private long amount;
 
+    private String mediatorOnePass;
+    private String mediatorTwoPass;
+
+    private long amount;
     private long feeContract;
 
     private long security;
@@ -40,9 +40,10 @@ public class InitSC{
             security = sc.getSecurity();
             sent = amount + security + SellContract.ACTIVATION_FEE;
             compiled = sc.getCompiled();
-            Mediators md = new Mediators(true);
-            mediatorOne = BurstAddress.fromId(md.getMediators()[0]);
-            mediatorTwo = BurstAddress.fromId(md.getMediators()[1]);
+            mediatorOne = BurstAddress.fromId(sc.getMediator1());
+            mediatorTwo = BurstAddress.fromId(sc.getMediator2());
+            mediatorOnePass = sc.getMediatorOnePassword();
+            mediatorTwoPass = sc.getMediatorTwoPassword();
             feeContract = sc.getFeeContract();
             initOffer();
             //init taker
@@ -56,7 +57,6 @@ public class InitSC{
             System.out.println("Something went wrong. " + e);
         }
     }
-
     private long accBalance(String pass) {
         return (bns.getAccount(BT.getBurstAddressFromPassphrase(pass)).blockingGet()).getBalance().longValue();
     }
@@ -74,6 +74,7 @@ public class InitSC{
                 security).blockingGet();
         BT.forgeBlock();
     }
+
     public void takeOffer() {
         //fund taker if needed
         while (accBalance(takerPass) < security + SellContract.ACTIVATION_FEE) {
@@ -87,7 +88,6 @@ public class InitSC{
         BT.forgeBlock();
         BT.forgeBlock();
     }
-
     public long getContractFieldValue(String field) {
         AT contract = BT.findContract(maker, name);
         if(contract == null) return -1;
@@ -152,6 +152,14 @@ public class InitSC{
 
     public BurstAddress getMediatorTwo() {
         return mediatorTwo;
+    }
+
+    public String getMediatorOnePass() {
+        return mediatorOnePass;
+    }
+
+    public String getMediatorTwoPass() {
+        return mediatorTwoPass;
     }
 
     public long getFeeContract() {

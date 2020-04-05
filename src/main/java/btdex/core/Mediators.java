@@ -3,6 +3,8 @@ package btdex.core;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstID;
 
+import java.util.Random;
+
 public class Mediators {
     private BurstID[] mediators;
 
@@ -24,6 +26,18 @@ public class Mediators {
 
     public BurstID[] getMediators() {
         return mediators;
+    }
+
+    public BurstID[] getTwoRandomMediators() {
+        Random rand = new Random();
+        BurstID[] randomMediators = new BurstID[2];
+        randomMediators[0] = mediators[rand.nextInt(mediators.length)];
+        randomMediators[1] = mediators[rand.nextInt(mediators.length)];
+        while(randomMediators[0] == randomMediators[1]) {
+            // make sure we have 2 different mediators
+            randomMediators[1] = mediators[rand.nextInt(mediators.length)];
+        }
+        return randomMediators;
     }
 
     public boolean isMediatorAccepted(long mediator) {

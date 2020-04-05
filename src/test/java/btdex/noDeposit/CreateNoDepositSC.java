@@ -1,18 +1,22 @@
-package btdex;
+package btdex.noDeposit;
 
 import bt.BT;
 import bt.compiler.Compiler;
 import btdex.core.Mediators;
 import btdex.sc.SellContract;
+import btdex.sc.SellNoDepositContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
+import burst.kit.entity.response.AT;
 import burst.kit.entity.response.TransactionBroadcast;
+import burst.kit.service.BurstNodeService;
 
 import java.io.IOException;
 import java.util.Random;
 
-public class CreateSC {
+
+public class CreateNoDepositSC {
     private long feeContract = BT.getBurstAddressFromPassphrase(BT.PASSPHRASE3).getBurstID().getSignedLongId();
 
     private BurstID mediator1;
@@ -21,17 +25,18 @@ public class CreateSC {
     private String mediatorOnePassword;
     private String mediatorTwoPassword;
 
-    private BurstValue amount;
+    private long lockMinutes;
 
-    private Random rand = new Random();
+    private String name;
 
-    private Class sc;
+    private BurstAddress maker;
 
-    private BurstValue security;
-
-    private long accountHash = 0;
+    private Class sc = SellNoDepositContract.class;
     private bt.compiler.Compiler compiled;
-    public CreateSC(Class sc, double amount, double security) throws IOException {
+
+    private BurstNodeService bns = BT.getNode();
+
+    public CreateNoDepositSC(long lockMinutes) throws IOException{
         Mediators mediators = new Mediators(true);
         BurstID[] mediatorsID = mediators.getTwoRandomMediators();
         mediator1 = mediatorsID[0];
@@ -39,12 +44,9 @@ public class CreateSC {
         mediatorOnePassword = getMediatorPassword(mediator1);
         mediatorTwoPassword = getMediatorPassword(mediator2);
 
-        this.amount = BurstValue.fromBurst(amount);
-        this.security = BurstValue.fromBurst(security);
+        this.lockMinutes = lockMinutes;
         this.compiled = BT.compileContract(sc);
-        this.sc = sc;
     }
-
     private String getMediatorPassword(BurstID mediatorID) {
         BurstAddress mediator = BurstAddress.fromId(mediatorID);
 
@@ -58,31 +60,41 @@ public class CreateSC {
             return BT.PASSPHRASE5;
         else return null;
     }
-
-    public String registerSC(String passphrase){
+    public void registerSC(String passphrase){
         //Get some BURST for fee(block reward) and write acc to chain
         BT.forgeBlock(passphrase);
-        String name = register(passphrase);
+        register(passphrase);
         BT.forgeBlock(passphrase);
-        return name;
     }
 
-    private String register(String passphrase) {
-        long data[] = { feeContract, mediator1.getSignedLongId(), mediator2.getSignedLongId(), accountHash};
-
-        String name = sc.getSimpleName() + System.currentTimeMillis();
+    private void register(String passphrase) {
+        long data[] = { feeContract, mediator1.getSignedLongId(), mediator2.getSignedLongId(), lockMinutes};
+        String name = sc.getSimpleName() + System.currentTimeMillis() % 200;
+        System.out.println(name);
         TransactionBroadcast tb = BT.registerContract(passphrase, compiled.getCode(), compiled.getDataPages(),
-                name, name, data, BurstValue.fromPlanck(SellContract.ACTIVATION_FEE),
+                name, name, data, BurstValue.fromPlanck(SellNoDepositContract.ACTIVATION_FEE),
                 BT.getMinRegisteringFee(compiled), 1000).blockingGet();
+        this.name = name;
+        this.maker = BT.getBurstAddressFromPassphrase(passphrase);
+    }
+
+
+    public long getContractFieldValue(String field) {
+        AT contract = BT.findContract(maker, name);
+        if(contract == null) return -1;
+
+        int addr = compiled.getFieldAddress(field);
+        if(addr == -1) return -2;
+
+        return BT.getContractFieldValue(contract, addr);
+    }
+
+    public String getName() {
         return name;
     }
 
-    public long getAmount() {
-        return amount.longValue();
-    }
-
-    public long getSecurity() {
-        return security.longValue();
+    public long getFeeContractBalance() {
+        return bns.getAccount(BurstAddress.fromId(feeContract)).blockingGet().getBalance().longValue();
     }
 
     public Compiler getCompiled() {
@@ -108,4 +120,14 @@ public class CreateSC {
     public String getMediatorTwoPassword() {
         return mediatorTwoPassword;
     }
+
+    public long getLockMinutes() {
+        return lockMinutes;
+    }
+
+    public BurstAddress getMaker() {
+        return maker;
+    }
+
+
 }
