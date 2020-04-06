@@ -261,16 +261,37 @@ public class ContractState {
 		
 		hasPending = false;
 		
-		// check rate, type, etc. from transaction
+		// check rate, type, etc. from transaction history
 		Transaction[] txs = g.getNS().getAccountTransactions(this.address).blockingGet();
-		processTransactions(txs);
+		int takeBlock = findTakeBlock(txs);
+		processTransactions(txs, takeBlock);
 		
 		// check if there is unconfirmed transactions
 		txs = g.getNS().getUnconfirmedTransactions(this.address).blockingGet();
-		processTransactions(txs);
+		processTransactions(txs, takeBlock);
 	}
 	
-	private void processTransactions(Transaction[] txs) {
+	private int findTakeBlock(Transaction[] txs) {
+		int blockHeightLimit = 0;
+		if(this.state > SellContract.STATE_TAKEN) {
+			// We need to find out what is the block of the take transaction (price definition should be after that)
+			for(Transaction tx : txs) {
+				if(tx.getSender().getSignedLongId() == this.taker &&
+						tx.getAppendages()!=null && tx.getAppendages().length==1 &&
+						tx.getAppendages()[0] instanceof PlaintextMessageAppendix) {
+					PlaintextMessageAppendix msg = (PlaintextMessageAppendix) tx.getAppendages()[0];
+					if(!msg.isText() && msg.getMessage().startsWith("abcd")) {
+						// should be a hexadecimal message
+						blockHeightLimit = tx.getBlockHeight() - Constants.PRICE_NCONF;
+						break;
+					}
+				}
+			}
+		}
+		return blockHeightLimit;
+	}
+	
+	private void processTransactions(Transaction[] txs, int blockHeightLimit) {
 		Globals g = Globals.getInstance();
 
 		for(Transaction tx : txs) {
@@ -279,7 +300,8 @@ public class ContractState {
 			
 			// We only accept configurations with 2 confirmations or more
 			// but also get pending info from the user
-			if(tx.getConfirmations() < Constants.PRICE_NCONF) {
+			if(tx.getConfirmations() < Constants.PRICE_NCONF
+					|| (blockHeightLimit > 0 && tx.getBlockHeight() > blockHeightLimit) ) {
 				if(tx.getSender().equals(g.getAddress())) {
 					hasPending = true;
 				}
@@ -326,10 +348,12 @@ public class ContractState {
 						}
 						
 						// set this as the accepted last TxId
-						lastTxId = tx.getId().getSignedLongId();
+						if(tx.getConfirmations() >= Constants.PRICE_NCONF) {
+							lastTxId = tx.getId().getSignedLongId();
 						
-						// done, only the more recent (2 confirmations) matters
-						break;
+							// done, only the more recent (2 confirmations) matters
+							break;
+						}
 					}
 					catch (Exception e) {
 						// we ignore invalid messages
