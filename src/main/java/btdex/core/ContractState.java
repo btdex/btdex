@@ -260,11 +260,15 @@ public class ContractState {
 		}
 		
 		hasPending = false;
-		
-		// check rate, type, etc. from transaction history
-		Transaction[] txs = g.getNS().getAccountTransactions(this.address).blockingGet();
-		int takeBlock = findTakeBlock(txs);
-		processTransactions(txs, takeBlock);
+		Transaction[] txs = null;
+		int takeBlock = 0;
+
+		//if(state != SellContract.STATE_FINISHED) {
+			// check rate, type, etc. from transaction history
+			txs = g.getNS().getAccountTransactions(this.address).blockingGet();
+			takeBlock = findTakeBlock(txs);
+			processTransactions(txs, takeBlock);
+		//}
 		
 		// check if there is unconfirmed transactions
 		txs = g.getNS().getUnconfirmedTransactions(this.address).blockingGet();
@@ -272,7 +276,7 @@ public class ContractState {
 	}
 	
 	private int findTakeBlock(Transaction[] txs) {
-		int blockHeightLimit = 0;
+		int takeBlock = 0;
 		if(this.state > SellContract.STATE_TAKEN) {
 			// We need to find out what is the block of the take transaction (price definition should be after that)
 			for(Transaction tx : txs) {
@@ -280,15 +284,15 @@ public class ContractState {
 						tx.getAppendages()!=null && tx.getAppendages().length==1 &&
 						tx.getAppendages()[0] instanceof PlaintextMessageAppendix) {
 					PlaintextMessageAppendix msg = (PlaintextMessageAppendix) tx.getAppendages()[0];
-					if(!msg.isText() && msg.getMessage().startsWith("abcd")) {
+					if(!msg.isText() && msg.getMessage().startsWith(Contracts.getContractUpdateHash())) {
 						// should be a hexadecimal message
-						blockHeightLimit = tx.getBlockHeight() - Constants.PRICE_NCONF;
+						takeBlock = tx.getBlockHeight() - Constants.PRICE_NCONF;
 						break;
 					}
 				}
 			}
 		}
-		return blockHeightLimit;
+		return takeBlock;
 	}
 	
 	private void processTransactions(Transaction[] txs, int blockHeightLimit) {
