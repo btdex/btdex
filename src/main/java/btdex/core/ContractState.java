@@ -263,12 +263,12 @@ public class ContractState {
 		Transaction[] txs = null;
 		int takeBlock = 0;
 
-		//if(state != SellContract.STATE_FINISHED) {
+		if(state != SellContract.STATE_FINISHED) {
 			// check rate, type, etc. from transaction history
 			txs = g.getNS().getAccountTransactions(this.address).blockingGet();
 			takeBlock = findTakeBlock(txs);
 			processTransactions(txs, takeBlock);
-		//}
+		}
 		
 		// check if there is unconfirmed transactions
 		txs = g.getNS().getUnconfirmedTransactions(this.address).blockingGet();
