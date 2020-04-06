@@ -195,6 +195,7 @@ public class ContractState {
 			
 			if(type!=Type.Invalid) {
 				ContractState s = new ContractState(type);
+				s.at = at;
 				
 				// Check some immutable variables
 				if(type == Type.Standard) {
@@ -211,8 +212,7 @@ public class ContractState {
 				}
 				
 				// Check if the immutable variables are valid
-				if(g.getMediators().isMediatorAccepted(s.getMediator1())
-						&& g.getMediators().isMediatorAccepted(s.getMediator2())
+				if(g.getMediators().areMediatorsAccepted(s)
 						&& Constants.FEE_CONTRACT == s.getFeeContract()){
 					s.updateState(at);
 					map.put(ad, s);
