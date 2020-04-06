@@ -2,7 +2,6 @@ package btdex.dispute;
 
 import bt.BT;
 import btdex.CreateSC;
-import btdex.core.Mediators;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstValue;
@@ -31,6 +30,7 @@ public class InitSC{
     private long security;
     private long sent;
     private static BurstNodeService bns = BT.getNode();
+
     public InitSC() {
         try {
             CreateSC sc = new CreateSC(SellContract.class, 10000, 100);
@@ -88,6 +88,7 @@ public class InitSC{
         BT.forgeBlock();
         BT.forgeBlock();
     }
+
     public long getContractFieldValue(String field) {
         AT contract = BT.findContract(maker, name);
         if(contract == null) return -1;

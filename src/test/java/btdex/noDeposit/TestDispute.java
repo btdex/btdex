@@ -60,6 +60,7 @@ public class TestDispute {
         state = SellNoDepositContract.STATE_OPEN;
         assertEquals(state, state_chain, "State not equal");
     }
+
     @Test
     @Order(3)
     public void dispute() {

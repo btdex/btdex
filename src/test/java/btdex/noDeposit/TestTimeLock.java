@@ -65,6 +65,7 @@ public class TestTimeLock {
                 BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000).blockingGet();
         BT.forgeBlock(); //3
         BT.forgeBlock(); //4
+
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
         state = SellNoDepositContract.STATE_WITHDRAW_REQUESTED;
         assertEquals(state, state_chain, "State not equal");
@@ -83,6 +84,7 @@ public class TestTimeLock {
                 BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
+
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
         state = SellNoDepositContract.STATE_WITHDRAW_REQUESTED;
         assertEquals(state, state_chain, "State not equal");
@@ -101,6 +103,7 @@ public class TestTimeLock {
                 BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
+
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
         state = SellNoDepositContract.STATE_OPEN;
         assertEquals(state, state_chain, "State not equal");
