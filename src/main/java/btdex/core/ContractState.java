@@ -265,11 +265,9 @@ public class ContractState {
 		Transaction[] txs = g.getNS().getAccountTransactions(this.address).blockingGet();
 		processTransactions(txs);
 		
-		// check if there is unconfirmed transactions from creator
-		if(at.getCreator().equals(g.getAddress())) {
-			txs = g.getNS().getUnconfirmedTransactions(this.address).blockingGet();
-			processTransactions(txs);
-		}
+		// check if there is unconfirmed transactions
+		txs = g.getNS().getUnconfirmedTransactions(this.address).blockingGet();
+		processTransactions(txs);
 	}
 	
 	private void processTransactions(Transaction[] txs) {
