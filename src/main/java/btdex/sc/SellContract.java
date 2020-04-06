@@ -22,6 +22,8 @@ import bt.ui.EmulatorWindow;
 public class SellContract extends Contract {
 
 	public static final long ACTIVATION_FEE = 21 * ONE_BURST;
+	public static final long NEW_OFFER_FEE = 1680000000L;
+	public static final long REUSE_OFFER_FEE = 1480000000L;
 
 	public static final long STATE_FINISHED = 0x0000000000000000;
 	public static final long STATE_OPEN = 0x0000000000000001;

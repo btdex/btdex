@@ -56,7 +56,7 @@ public class Toast extends JDialog {
             }
         });
         
-//        setAlwaysOnTop(true);
+        setAlwaysOnTop(true);
         setUndecorated(true);
         setFocusableWindowState(false);
         setModalityType(ModalityType.MODELESS);
