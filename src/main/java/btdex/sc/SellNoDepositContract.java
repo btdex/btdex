@@ -25,7 +25,7 @@ import bt.ui.EmulatorWindow;
  */
 public class SellNoDepositContract extends Contract {
 
-	public static final long ACTIVATION_FEE = 20 * ONE_BURST;
+	public static final long ACTIVATION_FEE = 16 * ONE_BURST;
 
 	public static final long STATE_FINISHED = 0x0000000000000000;
 	public static final long STATE_OPEN = 0x0000000000000001;

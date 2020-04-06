@@ -13,8 +13,6 @@ import burst.kit.entity.response.TransactionBroadcast;
 import burst.kit.service.BurstNodeService;
 
 import java.io.IOException;
-import java.util.Random;
-
 
 public class CreateNoDepositSC {
     private long feeContract = BT.getBurstAddressFromPassphrase(BT.PASSPHRASE3).getBurstID().getSignedLongId();
@@ -101,10 +99,6 @@ public class CreateNoDepositSC {
         return compiled;
     }
 
-    public long getFeeContract() {
-        return feeContract;
-    }
-
     public BurstID getMediator1() {
         return mediator1;
     }
@@ -120,14 +114,5 @@ public class CreateNoDepositSC {
     public String getMediatorTwoPassword() {
         return mediatorTwoPassword;
     }
-
-    public long getLockMinutes() {
-        return lockMinutes;
-    }
-
-    public BurstAddress getMaker() {
-        return maker;
-    }
-
 
 }
