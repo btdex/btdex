@@ -576,8 +576,7 @@ public class Main extends JFrame implements ActionListener {
 				
 				if(!Globals.getInstance().isTestnet()) {
 					// FIXME: remove this when operational
-					Toast.makeText(this, "Cross-chain markets will be open only "
-							+ "after TRT initial distribution is finished.", Toast.Style.ERROR).display();
+					Toast.makeText(this, "Cross-chain markets currently only on testnet.", Toast.Style.ERROR).display();
 				}
 			}
 			else {

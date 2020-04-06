@@ -126,11 +126,6 @@ public class ChatPanel extends JPanel implements ActionListener, ListSelectionLi
         panelCenter.add(scrollPane, BorderLayout.CENTER);
         panelCenter.add(panelSendMessage, BorderLayout.SOUTH);
         
-		appendFriendMessage("Message from friend");
-		appendMeMyMessage("Message from me");
-		appendFriendMessage("Another from friend");
-		appendMeMyMessage("Another from me, but this is a very long message, very very very long message");
-
         setSize(280, 400);
     }
 

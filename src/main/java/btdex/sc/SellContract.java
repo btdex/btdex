@@ -28,7 +28,6 @@ public class SellContract extends Contract {
 
 	public static final long STATE_TAKEN = 0x0000000000000010;
 	public static final long STATE_WAITING_PAYMT = 0x0000000000000020;
-	public static final long STATE_PAYMT_REPORTED = 0x0000000000000040;
 
 	public static final long STATE_DISPUTE = 0x0000000000000100;
 	public static final long STATE_CREATOR_DISPUTE = 0x0000000000000200;

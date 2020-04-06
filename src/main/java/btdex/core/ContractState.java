@@ -1,5 +1,7 @@
 package btdex.core;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.HashMap;
 
 import com.google.gson.JsonElement;
@@ -87,6 +89,10 @@ public class ContractState {
 
 	public long getState() {
 		return state;
+	}
+	
+	public boolean hasStateFlag(long flag) {
+		return (state & flag) == flag;
 	}
 
 	public long getRate() {
@@ -176,15 +182,15 @@ public class ContractState {
 				// Check some immutable variables
 				if(type == Type.Standard) {
 					Compiler contract = Contracts.getContract();
-					s.mediator1 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator1"));
-					s.mediator2 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator2"));
-					s.feeContract = BT.getContractFieldValue(at, contract.getFieldAddress("feeContract"));
+					s.mediator1 = getContractFieldValue(at, contract.getFieldAddress("mediator1"));
+					s.mediator2 = getContractFieldValue(at, contract.getFieldAddress("mediator2"));
+					s.feeContract = getContractFieldValue(at, contract.getFieldAddress("feeContract"));
 				}
 				else if(type == Type.NoDeposit) {
 					Compiler contract = Contracts.getContractNoDeposit();
-					s.mediator1 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator1"));
-					s.mediator2 = BT.getContractFieldValue(at, contract.getFieldAddress("mediator2"));
-					s.feeContract = BT.getContractFieldValue(at, contract.getFieldAddress("feeContract"));
+					s.mediator1 = getContractFieldValue(at, contract.getFieldAddress("mediator1"));
+					s.mediator2 = getContractFieldValue(at, contract.getFieldAddress("mediator2"));
+					s.feeContract = getContractFieldValue(at, contract.getFieldAddress("feeContract"));
 				}
 				
 				// Check if the immutable variables are valid
@@ -201,9 +207,17 @@ public class ContractState {
 	}	
 	
 	public void update() {
-		updateState(at);
+		updateState(null);
 	}
 	
+    private static long getContractFieldValue(AT contract, int address) {
+        byte[] data = contract.getMachineData();
+        ByteBuffer b = ByteBuffer.wrap(data);
+        b.order(ByteOrder.LITTLE_ENDIAN);
+
+        return b.getLong(address * 8);
+    }
+    
 	void updateState(AT at) {
 		Globals g = Globals.getInstance();
 		
@@ -217,15 +231,15 @@ public class ContractState {
 		// update variables that can change over time
 		if(type == Type.Standard) {
 			Compiler contract = Contracts.getContract();
-			this.state = BT.getContractFieldValue(at, contract.getFieldAddress("state"));
-			this.amount = BT.getContractFieldValue(at, contract.getFieldAddress("amount"));
-			this.security = BT.getContractFieldValue(at, contract.getFieldAddress("security"));
-			this.taker = BT.getContractFieldValue(at, contract.getFieldAddress("taker"));
+			this.state = getContractFieldValue(at, contract.getFieldAddress("state"));
+			this.amount = getContractFieldValue(at, contract.getFieldAddress("amount"));
+			this.security = getContractFieldValue(at, contract.getFieldAddress("security"));
+			this.taker = getContractFieldValue(at, contract.getFieldAddress("taker"));
 		}
 		else if(type == Type.NoDeposit) {
 			Compiler contract = Contracts.getContractNoDeposit();
-			this.state = BT.getContractFieldValue(at, contract.getFieldAddress("state"));
-			this.lockMinutes = BT.getContractFieldValue(at, contract.getFieldAddress("lockMinutes"));
+			this.state = getContractFieldValue(at, contract.getFieldAddress("state"));
+			this.lockMinutes = getContractFieldValue(at, contract.getFieldAddress("lockMinutes"));
 		}
 		
 		// check rate, type, etc. from transaction

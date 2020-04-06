@@ -49,7 +49,8 @@ public class HistoryPanel extends JPanel {
 	public static final Color RED = Color.decode("#BE474A");
 	public static final Color GREEN = Color.decode("#29BF76");
 	
-	Market market = null;
+	Market market = null, newMarket;
+
 	private JFreeChart chart;
 
 	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss yyyy-MM-dd");
@@ -103,7 +104,7 @@ public class HistoryPanel extends JPanel {
 		table.setRowHeight(table.getRowHeight()+10);
 		table.setPreferredScrollableViewportSize(new Dimension(200, 200));
 
-		this.market = market;
+		setMarket(market);
 
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
 		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
@@ -160,21 +161,26 @@ public class HistoryPanel extends JPanel {
 	}
 
 	public void setMarket(Market m) {
-		this.market = m;
-
-		// update the column headers
-		for (int c = 0; c < columnNames.length; c++) {
-			table.getColumnModel().getColumn(c).setHeaderValue(model.getColumnName(c));
-		}
-		model.setRowCount(0);
-		model.fireTableDataChanged();
-
-		if(chart!=null)
-			chart.getXYPlot().setDataset(null);
+		newMarket = m;
 	}
 
 	public synchronized void update() {
 		Globals g = Globals.getInstance();
+		
+		if(newMarket != market) {
+			market = newMarket;
+			model.setRowCount(0);
+			model.fireTableDataChanged();
+			
+			// update the column headers
+			for (int c = 0; c < columnNames.length; c++) {
+				table.getColumnModel().getColumn(c).setHeaderValue(model.getColumnName(c));
+			}
+			table.getTableHeader().repaint();
+			
+			if(chart!=null)
+				chart.getXYPlot().setDataset(null);
+		}
 
 		boolean isToken = market.getTokenID()!=null;
 		boolean myHistory = listOnlyMine.isSelected();
