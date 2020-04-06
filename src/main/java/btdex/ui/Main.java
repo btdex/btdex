@@ -537,10 +537,11 @@ public class Main extends JFrame implements ActionListener {
 				catch (RuntimeException rex) {
 					rex.printStackTrace();
 					
-					Toast.makeText(Main.this, rex.getMessage(), Toast.Style.ERROR).display();
+					// Avoid making the window pop up on connectivity problems
+					// Toast.makeText(Main.this, rex.getMessage(), Toast.Style.ERROR).display();
 
 					nodeSelector.setIcon(ICON_DISCONNECTED);
-					statusLabel.setText(rex.getMessage());
+					statusLabel.setText("Error: " + rex.getMessage());
 				}
 				if(showingSplash) {
 					showingSplash = false;
