@@ -304,6 +304,11 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						"Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
+			if(contract!=null && contract.hasPending()) {
+				JOptionPane.showMessageDialog(getParent(), "Please wait the pending transaction confirm first.",
+						"Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 
 			if(contract==null && Contracts.getFreeContract() == null && !isToken) {
 				int ret = JOptionPane.showConfirmDialog(getParent(),
@@ -395,7 +400,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						long securityAmount = amountValue.longValue() * security.getValue() / 100;
 						byte[] message = BT.callMethodMessage(Contracts.getContract().getMethod("update"), securityAmount);
 
-						BurstValue amountToSend = amountValue.add(BurstValue.fromPlanck(securityAmount + contract.getActivationFee()));
+						BurstValue amountToSend = amountValue.add(BurstValue.fromPlanck(securityAmount + contract.getNewOfferFee()));
 
 						utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 								amountToSend, suggestedFee.getPriorityFee(),
@@ -609,6 +614,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 							);
 				}
 				else {
+					ContractState contract = Contracts.getFreeContract();
 					if(isUpdate)
 						terms = "You are updating your sell order of %s BURST to a price of %s %s each "
 								+ "to be received on '%s'.\n\n"
@@ -646,9 +652,10 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 							accountDetails.getText(),
 							NumberFormatting.BURST.format(
 									isUpdate ? suggestedFee.getPriorityFee().longValue() :
-										SellContract.ACTIVATION_FEE + 2*suggestedFee.getPriorityFee().longValue()),
+										contract == null ? SellContract.NEW_OFFER_FEE : contract.getNewOfferFee()
+												+ 2*suggestedFee.getPriorityFee().longValue()),
 							amountField.getText(),
-							isUpdate ? contract.getSecurity() :
+							isUpdate && contract!=null ? contract.getSecurity() :
 								NumberFormatting.BURST.format(security.getValue()*amountValue.longValue()/100),
 								totalField.getText(),
 								market, accountDetails.getText(),

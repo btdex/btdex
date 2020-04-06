@@ -92,11 +92,11 @@ public class Contracts {
 			
 			if(s.getType() == ContractState.Type.Standard &&
 					s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId() && 
-					s.getState() == SellContract.STATE_FINISHED)
+					s.getState() == SellContract.STATE_FINISHED && !s.hasPending())
 				freeContract = s;
 			if(s.getType() == ContractState.Type.NoDeposit &&
 					s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId() &&
-					s.getState() == SellNoDepositContract.STATE_FINISHED)
+					s.getState() == SellNoDepositContract.STATE_FINISHED && !s.hasPending())
 				freeNoDepositContract = s;
 		}
 		return contractsMap.values();

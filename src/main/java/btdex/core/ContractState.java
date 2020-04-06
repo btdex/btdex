@@ -11,6 +11,7 @@ import com.google.gson.JsonParser;
 import bt.BT;
 import bt.Contract;
 import bt.compiler.Compiler;
+import btdex.sc.SellContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
@@ -40,6 +41,8 @@ public class ContractState {
 	private long security;
 	private long taker;
 	private long lockMinutes;
+	
+	private boolean hasPending;
 	
 	private long rate;
 	private int market;
@@ -109,6 +112,20 @@ public class ContractState {
 	
 	public long getActivationFee() {
 		return at.getMinimumActivation().longValue();
+	}
+	
+	public long getNewOfferFee() {
+		if(type == Type.Standard) {
+			return at.isFrozen() ?
+					SellContract.REUSE_OFFER_FEE :
+						SellContract.NEW_OFFER_FEE;
+		}
+
+		return getActivationFee();
+	}
+	
+	public boolean hasPending() {
+		return hasPending;
 	}
 	
 	public String getAmount() {
@@ -242,15 +259,35 @@ public class ContractState {
 			this.lockMinutes = getContractFieldValue(at, contract.getFieldAddress("lockMinutes"));
 		}
 		
+		hasPending = false;
+		
 		// check rate, type, etc. from transaction
 		Transaction[] txs = g.getNS().getAccountTransactions(this.address).blockingGet();
+		processTransactions(txs);
+		
+		// check if there is unconfirmed transactions from creator
+		if(at.getCreator().equals(g.getAddress())) {
+			txs = g.getNS().getUnconfirmedTransactions(this.address).blockingGet();
+			processTransactions(txs);
+		}
+	}
+	
+	private void processTransactions(Transaction[] txs) {
+		Globals g = Globals.getInstance();
+
 		for(Transaction tx : txs) {
 			if(tx.getId().getSignedLongId() == lastTxId)
 				break;
 			
-			// we only accept configurations with 2 confirmations or more
-			if(tx.getConfirmations() < Constants.PRICE_NCONF)
-				continue;
+			// We only accept configurations with 2 confirmations or more
+			// but also get pending info from the user
+			if(tx.getConfirmations() < Constants.PRICE_NCONF) {
+				if(tx.getSender().equals(g.getAddress())) {
+					hasPending = true;
+				}
+				else
+					continue;
+			}
 			
 			// order configurations should be set by the creator
 			if(tx.getSender().getSignedLongId() != at.getCreator().getSignedLongId())

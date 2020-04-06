@@ -484,7 +484,8 @@ public class OrderBook extends JPanel {
 				continue;
 
 			// FIXME: add more validity tests here
-			if(s.getAmountNQT() > 0	&& s.getRate() > 0 && s.getMarketAccount() != null &&
+			if(s.hasPending() ||
+					s.getAmountNQT() > 0	&& s.getRate() > 0 && s.getMarketAccount() != null &&
 					(s.getState() == SellContract.STATE_OPEN
 					|| (s.getState()!= SellContract.STATE_FINISHED && s.getTaker() == g.getAddress().getSignedLongId())
 					|| (s.getState()!= SellContract.STATE_FINISHED && s.getCreator().equals(g.getAddress())) ) )
@@ -507,7 +508,11 @@ public class OrderBook extends JPanel {
 
 			String priceFormated = market.format(s.getRate());
 			Icon icon = s.getCreator().equals(g.getAddress()) ? editIcon : takeIcon;
-			if(s.getTaker() == g.getAddress().getSignedLongId() && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
+			if(s.hasPending()) {
+				priceFormated = "PENDING... ";
+				icon = null;				
+			}
+			else if(s.getTaker() == g.getAddress().getSignedLongId() && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
 				priceFormated = "DEPOSIT " + market;
 				icon = null;
 			}
@@ -530,7 +535,8 @@ public class OrderBook extends JPanel {
 			ExplorerButton exp = new ExplorerButton(s.getAddress().getRawAddress(), copyIcon, expIcon,
 					ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(), s.getAddress().getFullAddress(), BUTTON_EDITOR); 
 			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId()
-					&& s.getBalance().longValue() > 0 && s.getState() < SellContract.STATE_WAITING_PAYMT) {
+					&& s.getBalance().longValue() > 0 && s.getState() < SellContract.STATE_WAITING_PAYMT
+					&& !s.hasPending()) {
 				ActionButton withDrawButton = new ActionButton("", s, true);
 				withDrawButton.setToolTipText("Withdraw the amount on this contract.");
 				withDrawButton.setIcon(cancelIcon);
