@@ -468,7 +468,7 @@ public class OrderBook extends JPanel {
 	private void updateContracts() {
 		Globals g = Globals.getInstance();
 
-		Collection<ContractState> allContracts = Contracts.updateContracts();
+		Collection<ContractState> allContracts = Contracts.getContracts();
 		marketContracts.clear();
 
 		for(ContractState s : allContracts) {
