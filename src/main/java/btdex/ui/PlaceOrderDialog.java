@@ -48,7 +48,6 @@ import btdex.core.NumberFormatting;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AssetOrder;
-import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
@@ -78,7 +77,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	private JToggleButton buyToken;
 	private JToggleButton sellToken;
 
-	private FeeSuggestion suggestedFee;
+	private BurstValue suggestedFee;
 
 	private BurstValue amountValue, priceValue;
 
@@ -259,7 +258,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		content.add(centerPanel, BorderLayout.CENTER);
 		content.add(buttonPane, BorderLayout.PAGE_END);
 
-		suggestedFee = Globals.getInstance().getSuggestedFee();
+		suggestedFee = Globals.getInstance().getSuggestedFee().getPriorityFee();
 
 		if(isToken && order != null) {
 			// taking this order
@@ -383,15 +382,18 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
 				Single<byte[]> utx = null;
+				Single<TransactionBroadcast> updateTx = null;
+				
 				if(isToken) {
 					if(sellToken.isSelected())
 						utx = g.getNS().generatePlaceAskOrderTransaction(g.getPubKey(), market.getTokenID(),
-								amountValue, priceValue, suggestedFee.getPriorityFee(), Constants.BURST_DEADLINE);
+								amountValue, priceValue, suggestedFee, Constants.BURST_DEADLINE);
 					else
 						utx = g.getNS().generatePlaceBidOrderTransaction(g.getPubKey(), market.getTokenID(),
-								amountValue, priceValue, suggestedFee.getPriorityFee(), Constants.BURST_DEADLINE);
+								amountValue, priceValue, suggestedFee, Constants.BURST_DEADLINE);
 				}
 				else {
+					BurstValue configureFee = suggestedFee;
 					if(contract == null) {
 						// configure a new contract and place the deposit
 						contract = Contracts.getFreeContract();
@@ -403,14 +405,16 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						BurstValue amountToSend = amountValue.add(BurstValue.fromPlanck(securityAmount + contract.getNewOfferFee()));
 
 						utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
-								amountToSend, suggestedFee.getPriorityFee(),
+								amountToSend, suggestedFee,
 								Constants.BURST_DEADLINE, message);
 
-						Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
+						updateTx = utx.flatMap(unsignedTransactionBytes -> {
 							byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
 							return g.getNS().broadcastTransaction(signedTransactionBytes);
 						});
-						tx.blockingGet();
+						
+						// make sure the price setting goes first setting an extra priority for it
+						configureFee = suggestedFee.add(BurstValue.fromPlanck(Constants.FEE_EXTRA_PRIORITY));
 					}
 
 					if(isTaken && contract.getCreator().equals(g.getAddress())) {
@@ -419,7 +423,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						BurstValue amountToSend = BurstValue.fromPlanck(contract.getActivationFee());
 
 						utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
-								amountToSend, suggestedFee.getPriorityFee(),
+								amountToSend, suggestedFee,
 								Constants.BURST_DEADLINE, message);						
 					}
 					else if(isTake) {
@@ -430,7 +434,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						BurstValue amountToSend = BurstValue.fromPlanck(contract.getSecurityNQT() + contract.getActivationFee());
 
 						utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
-								amountToSend, suggestedFee.getPriorityFee(),
+								amountToSend, suggestedFee,
 								Constants.BURST_DEADLINE, message);
 					}
 					else {
@@ -442,9 +446,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 						String messageString = Constants.GSON.toJson(messageJson);
 						utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
-								suggestedFee.getPriorityFee(),
+								configureFee,
 								Constants.BURST_DEADLINE, messageString);
-					}
+					}					
 				}
 
 				Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
@@ -453,6 +457,12 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				});
 				TransactionBroadcast tb = tx.blockingGet();
 				tb.getTransactionId();
+				
+				// Send the update transaction only if the price setting was already sent
+				if(updateTx!=null) {
+					updateTx.blockingGet();
+				}
+				
 				setVisible(false);
 
 				Toast.makeText((JFrame) this.getOwner(),
@@ -520,7 +530,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 							amountField.getText(),
 							market,
 							priceField.getText(),
-							NumberFormatting.BURST.format(suggestedFee.getPriorityFee().longValue()));
+							NumberFormatting.BURST.format(suggestedFee.longValue()));
 
 		}
 		else {
@@ -569,7 +579,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 								totalField.getText(), market,
 								market.simpleFormat(contract.getMarketAccount().getFields()),
 								amountField.getText(), contract.getSecurity(),
-								NumberFormatting.BURST.format(suggestedFee.getPriorityFee().longValue() +
+								NumberFormatting.BURST.format(suggestedFee.longValue() +
 										contract.getActivationFee()),
 								market
 								);
@@ -607,7 +617,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					terms = String.format(terms,
 							amountField.getText(), priceField.getText(), market,
 							amountField.getText(), contract.getSecurity(),
-							NumberFormatting.BURST.format(suggestedFee.getPriorityFee().longValue() +
+							NumberFormatting.BURST.format(suggestedFee.longValue() +
 									contract.getActivationFee()),
 							totalField.getText(), market, market.getPaymentTimeout(account.getFields()),
 							market
@@ -651,9 +661,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 							amountField.getText(), priceField.getText(), market,
 							accountDetails.getText(),
 							NumberFormatting.BURST.format(
-									isUpdate ? suggestedFee.getPriorityFee().longValue() :
+									isUpdate ? suggestedFee.longValue() :
 										contract == null ? SellContract.NEW_OFFER_FEE : contract.getNewOfferFee()
-												+ 2*suggestedFee.getPriorityFee().longValue()),
+												+ 2*suggestedFee.longValue() + Constants.FEE_EXTRA_PRIORITY),
 							amountField.getText(),
 							isUpdate && contract!=null ? contract.getSecurity() :
 								NumberFormatting.BURST.format(security.getValue()*amountValue.longValue()/100),

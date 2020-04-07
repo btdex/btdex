@@ -1,11 +1,16 @@
 package btdex.core;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Random;
 
+import org.bouncycastle.util.encoders.Hex;
+
 import bt.compiler.Compiler;
+import bt.compiler.Method;
 import btdex.sc.SellContract;
 import btdex.sc.SellNoDepositContract;
 import burst.kit.entity.BurstAddress;
@@ -16,6 +21,8 @@ public class Contracts {
     private static Compiler contract, contractNoDeposit;
     private static byte[] contractCode;
     private static byte[] contractNoDepositCode;
+    
+    private static String contractUpdateHash;
     
 	private static HashMap<BurstAddress, ContractState> contractsMap = new HashMap<>();
 	private static BurstID mostRecentID;
@@ -33,6 +40,14 @@ public class Contracts {
 
             contractCode = contract.getCode();
             contractNoDepositCode = contractNoDeposit.getCode();
+            
+            // get the update method hash
+        	ByteBuffer b = ByteBuffer.allocate(8);
+            b.order(ByteOrder.LITTLE_ENDIAN);
+            Method m = contract.getMethod("update");
+            b.putLong(m.getHash());
+            contractUpdateHash = Hex.toHexString(b.array());
+            
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -52,6 +67,10 @@ public class Contracts {
 
     public static byte[] getContractNoDepositCode() {
         return contractNoDepositCode;
+    }
+    
+    public static String getContractUpdateHash() {
+    	return contractUpdateHash;
     }
     
 	public static boolean checkContractCode(AT at) {

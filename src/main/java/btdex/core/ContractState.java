@@ -195,6 +195,7 @@ public class ContractState {
 			
 			if(type!=Type.Invalid) {
 				ContractState s = new ContractState(type);
+				s.at = at;
 				
 				// Check some immutable variables
 				if(type == Type.Standard) {
@@ -211,8 +212,7 @@ public class ContractState {
 				}
 				
 				// Check if the immutable variables are valid
-				if(g.getMediators().isMediatorAccepted(s.getMediator1())
-						&& g.getMediators().isMediatorAccepted(s.getMediator2())
+				if(g.getMediators().areMediatorsAccepted(s)
 						&& Constants.FEE_CONTRACT == s.getFeeContract()){
 					s.updateState(at);
 					map.put(ad, s);
@@ -260,19 +260,42 @@ public class ContractState {
 		}
 		
 		hasPending = false;
-		
-		// check rate, type, etc. from transaction
-		Transaction[] txs = g.getNS().getAccountTransactions(this.address).blockingGet();
-		processTransactions(txs);
-		
-		// check if there is unconfirmed transactions from creator
-		if(at.getCreator().equals(g.getAddress())) {
-			txs = g.getNS().getUnconfirmedTransactions(this.address).blockingGet();
-			processTransactions(txs);
+		Transaction[] txs = null;
+		int takeBlock = 0;
+
+		if(state != SellContract.STATE_FINISHED) {
+			// check rate, type, etc. from transaction history
+			txs = g.getNS().getAccountTransactions(this.address).blockingGet();
+			takeBlock = findTakeBlock(txs);
+			processTransactions(txs, takeBlock);
 		}
+		
+		// check if there is unconfirmed transactions
+		txs = g.getNS().getUnconfirmedTransactions(this.address).blockingGet();
+		processTransactions(txs, takeBlock);
 	}
 	
-	private void processTransactions(Transaction[] txs) {
+	private int findTakeBlock(Transaction[] txs) {
+		int takeBlock = 0;
+		if(this.state > SellContract.STATE_TAKEN) {
+			// We need to find out what is the block of the take transaction (price definition should be after that)
+			for(Transaction tx : txs) {
+				if(tx.getSender().getSignedLongId() == this.taker &&
+						tx.getAppendages()!=null && tx.getAppendages().length==1 &&
+						tx.getAppendages()[0] instanceof PlaintextMessageAppendix) {
+					PlaintextMessageAppendix msg = (PlaintextMessageAppendix) tx.getAppendages()[0];
+					if(!msg.isText() && msg.getMessage().startsWith(Contracts.getContractUpdateHash())) {
+						// should be a hexadecimal message
+						takeBlock = tx.getBlockHeight() - Constants.PRICE_NCONF;
+						break;
+					}
+				}
+			}
+		}
+		return takeBlock;
+	}
+	
+	private void processTransactions(Transaction[] txs, int blockHeightLimit) {
 		Globals g = Globals.getInstance();
 
 		for(Transaction tx : txs) {
@@ -281,7 +304,8 @@ public class ContractState {
 			
 			// We only accept configurations with 2 confirmations or more
 			// but also get pending info from the user
-			if(tx.getConfirmations() < Constants.PRICE_NCONF) {
+			if(tx.getConfirmations() < Constants.PRICE_NCONF
+					|| (blockHeightLimit > 0 && tx.getBlockHeight() > blockHeightLimit) ) {
 				if(tx.getSender().equals(g.getAddress())) {
 					hasPending = true;
 				}
@@ -328,10 +352,12 @@ public class ContractState {
 						}
 						
 						// set this as the accepted last TxId
-						lastTxId = tx.getId().getSignedLongId();
+						if(tx.getConfirmations() >= Constants.PRICE_NCONF) {
+							lastTxId = tx.getId().getSignedLongId();
 						
-						// done, only the more recent (2 confirmations) matters
-						break;
+							// done, only the more recent (2 confirmations) matters
+							break;
+						}
 					}
 					catch (Exception e) {
 						// we ignore invalid messages
