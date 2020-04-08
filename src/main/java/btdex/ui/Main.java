@@ -123,7 +123,10 @@ public class Main extends JFrame implements ActionListener {
 			ex.printStackTrace();
 		}
 		
-		try {
+		// TODO try again later this other theme, now bugs with tooltip, long text buttons, etc.
+		// LafManager.install(new DarculaTheme()); //Specify the used theme.
+		// LafManager.getUserProperties().put(DarkTooltipUI.KEY_STYLE, DarkTooltipUI.VARIANT_PLAIN);
+		try {			
 			DarculaLaf laf = new DarculaLaf();
 			UIManager.setLookAndFeel(laf);
 		} catch (UnsupportedLookAndFeelException e) {
@@ -361,7 +364,7 @@ public class Main extends JFrame implements ActionListener {
 		bottom.add(statusLabel);
 
 		pack();
-		setMinimumSize(new Dimension(1200, 600));
+		setMinimumSize(new Dimension(1280, 600));
 		setLocationRelativeTo(null);
 		cardLayout.last(getContentPane());
 		showingSplash = true;
