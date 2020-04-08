@@ -25,6 +25,7 @@ import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
+import static btdex.locale.Translation.tr;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.FeeSuggestion;
@@ -54,7 +55,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
-		setTitle("Cancel Order");
+		setTitle(tr("canc_cancel_order"));
 
 		isToken = market.getTokenID()!=null;
 
@@ -66,7 +67,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 		conditions.setPreferredSize(new Dimension(80, 120));
 		conditions.setEditable(false);
 
-		acceptBox = new JCheckBox("I accept the terms and conditions");
+		acceptBox = new JCheckBox(tr("dlg_accept_terms"));
 
 		// Create a button
 		JPanel buttonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -74,13 +75,13 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 		pin = new JPasswordField(12);
 		pin.addActionListener(this);
 
-		calcelButton = new JButton("Cancel");
-		okButton = new JButton("OK");
+		calcelButton = new JButton(tr("dlg_cancel"));
+		okButton = new JButton(tr("dlg_ok"));
 
 		calcelButton.addActionListener(this);
 		okButton.addActionListener(this);
 
-		buttonPane.add(new Desc("PIN", pin));
+		buttonPane.add(new Desc(tr("dlg_pin"), pin));
 		buttonPane.add(new Desc(" ", calcelButton));
 		buttonPane.add(new Desc(" ", okButton));
 
@@ -90,7 +91,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 		content.setBorder(new EmptyBorder(4, 4, 4, 4));
 
 		JPanel conditionsPanel = new JPanel(new BorderLayout());
-		conditionsPanel.setBorder(BorderFactory.createTitledBorder("Terms and conditions"));
+		conditionsPanel.setBorder(BorderFactory.createTitledBorder(tr("dlg_terms_and_conditions")));
 		conditionsPanel.add(new JScrollPane(conditions), BorderLayout.CENTER);
 
 		conditionsPanel.add(acceptBox, BorderLayout.PAGE_END);
@@ -108,21 +109,12 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 		if(isToken) {
 			boolean isSell = !(order.getType() == AssetOrder.OrderType.BID);
 
-			terms = "You are cancelling your %s %s order %s.\n\n"
-					+ "The cancel order is executed by means of a transaction, "
-					+ "fee will be %s BURST.";
-
-			terms = String.format(terms,
-					isSell ? "sell" : "buy", market, order.getId(),
+			terms = tr("canc_terms_token",
+					isSell ? tr("token_sell") : tr("token_buy"), market, order.getId(),
 							NumberFormatting.BURST.format(suggestedFee.getPriorityFee().longValue()));
 		}
 		else {
-			terms = "You are cancelling your sell BURST order on smart contract %s.\n\n"
-					+ "The smart contract balance of %s BURST will be transfered back "
-					+ "to your account. However, this action requires the smart contract to run and "
-					+ "will cost you %s BURST.";
-
-			terms = String.format(terms,
+			terms = tr("canc_terms",
 					state.getAddress().getFullAddress(),
 					state.getBalance().toUnformattedString(),
 					NumberFormatting.BURST.format(state.getActivationFee() + suggestedFee.getPriorityFee().longValue()));			
@@ -145,12 +137,12 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 			Globals g = Globals.getInstance();
 
 			if(error == null && !acceptBox.isSelected()) {
-				error = "You must accept the terms first";
+				error = tr("dlg_accept_first");
 				acceptBox.requestFocus();
 			}
 			
 			if(error == null && !g.checkPIN(pin.getPassword())) {
-				error = "Invalid PIN";
+				error = tr("dlg_invalid_pin");
 				pin.requestFocus();
 			}
 
@@ -193,7 +185,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 				setVisible(false);
 
 				Toast.makeText((JFrame) this.getOwner(),
-						String.format("Transaction %s has been broadcast", tb.getTransactionId().toString()),
+						tr("send_tx_broadcast", tb.getTransactionId().toString()),
 						Toast.Style.SUCCESS).display();
 			}
 			catch (Exception ex) {
