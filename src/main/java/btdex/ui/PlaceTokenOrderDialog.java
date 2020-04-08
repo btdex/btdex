@@ -108,7 +108,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		//		conditions.setWrapStyleWord(true);
 		conditions.setPreferredSize(new Dimension(80, 140));
 
-		acceptBox = new JCheckBox(tr("token_accept_terms"));
+		acceptBox = new JCheckBox(tr("dlg_accept_terms"));
 
 		// Create a button
 		JPanel buttonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -132,7 +132,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		content.setBorder(new EmptyBorder(4, 4, 4, 4));
 
 		JPanel conditionsPanel = new JPanel(new BorderLayout());
-		conditionsPanel.setBorder(BorderFactory.createTitledBorder(tr("token_terms_and_conditions")));
+		conditionsPanel.setBorder(BorderFactory.createTitledBorder(tr("dlg_terms_and_conditions")));
 		JScrollPane scroll = new JScrollPane(conditions);
 		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -188,7 +188,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			}
 
 			if(error == null && !acceptBox.isSelected()) {
-				error = tr("token_accept_first");
+				error = tr("dlg_accept_first");
 				acceptBox.requestFocus();
 			}
 

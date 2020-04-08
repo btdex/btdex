@@ -32,6 +32,7 @@ import btdex.core.Constants;
 import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.NumberFormatting;
+import static btdex.locale.Translation.tr;
 import btdex.sc.SellContract;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstValue;
@@ -57,16 +58,16 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-		setTitle("Register Smart Contracts");
+		setTitle(tr("reg_register"));
 
 		conditions = new JTextPane();
 		conditions.setPreferredSize(new Dimension(80, 120));
-		acceptBox = new JCheckBox("I accept the terms and conditions");
+		acceptBox = new JCheckBox(tr("dlg_accept_terms"));
 
 		// The number of contracts to register
 		SpinnerNumberModel numModel = new SpinnerNumberModel(2, 1, 10, 1);
 		numOfContractsSpinner = new JSpinner(numModel);
-		JPanel numOfContractsPanel = new Desc("Number of contracts", numOfContractsSpinner);
+		JPanel numOfContractsPanel = new Desc(tr("reg_num_contracts"), numOfContractsSpinner);
 		numOfContractsSpinner.addChangeListener(this);
 
 		// Create a button
@@ -75,13 +76,13 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 		pin = new JPasswordField(12);
 		pin.addActionListener(this);
 
-		cancelButton = new JButton("Cancel");
-		okButton = new JButton("OK");
+		cancelButton = new JButton(tr("dlg_cancel"));
+		okButton = new JButton(tr("dlg_ok"));
 
 		cancelButton.addActionListener(this);
 		okButton.addActionListener(this);
 
-		buttonPane.add(new Desc("PIN", pin));
+		buttonPane.add(new Desc(tr("dlg_pin"), pin));
 		buttonPane.add(new Desc(" ", cancelButton));
 		buttonPane.add(new Desc(" ", okButton));
 
@@ -89,7 +90,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 		content.setBorder(new EmptyBorder(4, 4, 4, 4));
 
 		JPanel conditionsPanel = new JPanel(new BorderLayout());
-		conditionsPanel.setBorder(BorderFactory.createTitledBorder("Terms and conditions"));
+		conditionsPanel.setBorder(BorderFactory.createTitledBorder(tr("dlg_terms_and_conditions")));
 		JScrollPane scroll = new JScrollPane(conditions);
 		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -121,12 +122,12 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 			Globals g = Globals.getInstance();
 
 			if(error == null && !acceptBox.isSelected()) {
-				error = "You must accept the terms first";
+				error = tr("dlg_accept_first");
 				acceptBox.requestFocus();
 			}
 
 			if(error == null && !g.checkPIN(pin.getPassword())) {
-				error = "Invalid PIN";
+				error = tr("dlg_invalid_pin");
 				pin.requestFocus();
 			}
 
@@ -168,7 +169,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 					setVisible(false);
 
 					Toast.makeText((JFrame) this.getOwner(),
-							String.format("Transaction %s has been broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();	
+							tr("send_tx_broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();	
 				}
 			}
 			catch (Exception ex) {
@@ -182,11 +183,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 	public void stateChanged(ChangeEvent evt) {
 		Integer ncontracts = Integer.parseInt(numOfContractsSpinner.getValue().toString());
 		String terms = null;
-		terms = "You are registering %s new smart contracts for selling BURST at a cost of %s BURST each.\n\n"
-				+ "These contracts can be configured later to sell BURST at any market. "
-				+ "Your new contracts will be available in a few minutes, as soon "
-				+ "as the registration transactions confirm.";
-		terms = String.format(terms, ncontracts,
+		terms = tr("reg_terms", ncontracts,
 				NumberFormatting.BURST.format(BT.getMinRegisteringFee(contract).longValue()));
 		conditions.setText(terms);
 		conditions.setCaretPosition(0);
