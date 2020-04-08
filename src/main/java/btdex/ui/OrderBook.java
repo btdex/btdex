@@ -64,7 +64,7 @@ public class OrderBook extends JPanel {
 	public static final int[] BID_COLS = {0, 1, 2, 3, 4};
 	public static final int[] ASK_COLS = {9, 8, 7, 6, 5};
 
-	private static final int COL_WIDE = 120;
+	private static final int COL_WIDE = 100;
 	private static final int COL_REGULAR = 75;
 
 	String[] columnNames = {

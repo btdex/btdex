@@ -2,6 +2,8 @@ package btdex.markets;
 
 import java.util.HashMap;
 
+import btdex.core.NumberFormatting;
+
 public class MarketDOGE extends MarketCrypto {
 	
 	public String toString() {
@@ -13,6 +15,10 @@ public class MarketDOGE extends MarketCrypto {
 		return MARKET_DOGE;
 	}
 	
+	
+	public NumberFormatting getNumberFormat() {
+		return NumberFormatting.BURST;
+	}
 	
 	@Override
 	public void validate(HashMap<String, String> fields) throws Exception {
