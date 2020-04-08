@@ -15,7 +15,7 @@ public class MarketDOGE extends MarketCrypto {
 		return MARKET_DOGE;
 	}
 	
-	
+	@Override
 	public NumberFormatting getNumberFormat() {
 		return NumberFormatting.BURST;
 	}
