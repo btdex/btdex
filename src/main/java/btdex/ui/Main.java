@@ -585,7 +585,7 @@ public class Main extends JFrame implements ActionListener {
 					Toast.makeText(this, "Cross-chain markets currently only on testnet.", Toast.Style.ERROR).display();
 				}
 				else if(Contracts.isLoading()) {
-					Toast.makeText(this, "Still loading cross-chain market information...", Toast.Style.NORMAL).display();					
+					Toast.makeText(this, "Cross-chain market information is still loading...", Toast.Style.NORMAL).display();					
 				}
 			}
 			else {

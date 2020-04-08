@@ -64,7 +64,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 		acceptBox = new JCheckBox("I accept the terms and conditions");
 
 		// The number of contracts to register
-		SpinnerNumberModel numModel = new SpinnerNumberModel(2, 1, 20, 1);
+		SpinnerNumberModel numModel = new SpinnerNumberModel(2, 1, 10, 1);
 		numOfContractsSpinner = new JSpinner(numModel);
 		JPanel numOfContractsPanel = new Desc("Number of contracts", numOfContractsSpinner);
 		numOfContractsSpinner.addChangeListener(this);

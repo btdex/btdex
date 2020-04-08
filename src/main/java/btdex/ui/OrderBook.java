@@ -13,6 +13,7 @@ import javax.swing.AbstractCellEditor;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -179,37 +180,41 @@ public class OrderBook extends JPanel {
 
 		AssetOrder order;
 		ContractState contract;
+		boolean isToken;
 		boolean cancel;
 
 		public ActionButton(String text, ContractState contract, boolean cancel) {
-			this(text, null, contract, cancel);
+			this(text, null, contract, cancel, false);
 		}
 
 		public ActionButton(String text, AssetOrder order, boolean cancel) {
-			this(text, order, null, cancel);
+			this(text, order, null, cancel, true);
 		}
 
-		public ActionButton(String text, AssetOrder order, ContractState contract, boolean cancel) {
+		public ActionButton(String text, AssetOrder order, ContractState contract, boolean cancel, boolean isToken) {
 			super(text);
 			this.order = order;
 			this.contract = contract;
 			this.cancel = cancel;
+			this.isToken = isToken;
 
 			addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
 
+					JDialog dlg = null;
 					if(cancel) {
-						CancelOrderDialog dlg = new CancelOrderDialog(f, market, order, contract);
-						dlg.setLocationRelativeTo(OrderBook.this);
-						dlg.setVisible(true);
+						dlg = new CancelOrderDialog(f, market, order, contract);
 					}
 					else {
-						PlaceOrderDialog dlg = new PlaceOrderDialog(f, market, order, contract);
-						dlg.setLocationRelativeTo(OrderBook.this);
-						dlg.setVisible(true);
+						if(isToken)
+							dlg = new PlaceTokenOrderDialog(f, market, order);
+						else
+							dlg = new PlaceOrderDialog(f, market, contract);
 					}
+					dlg.setLocationRelativeTo(OrderBook.this);
+					dlg.setVisible(true);
 
 					BUTTON_EDITOR.stopCellEditing();
 				}
@@ -289,18 +294,22 @@ public class OrderBook extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
-				PlaceOrderDialog dlg = new PlaceOrderDialog(f, market, firstAsk, null);
-				dlg.setLocationRelativeTo(OrderBook.this);
-				dlg.setVisible(true);
+				if(market.getTokenID() != null) {
+					JDialog dlg = new PlaceTokenOrderDialog(f, market, firstAsk);
+					dlg.setLocationRelativeTo(OrderBook.this);
+					dlg.setVisible(true);
+				}
 			}
 		});
 		sellButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
-				PlaceOrderDialog dlg = new PlaceOrderDialog(f, market, firstBid, null);
+				JDialog dlg = market.getTokenID()!= null ? new PlaceTokenOrderDialog(f, market, firstBid)
+						: new PlaceOrderDialog(f, market, null);
+				
 				dlg.setLocationRelativeTo(OrderBook.this);
-				dlg.setVisible(true);				
+				dlg.setVisible(true);
 			}
 		});
 
