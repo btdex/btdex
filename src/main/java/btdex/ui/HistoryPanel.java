@@ -32,6 +32,7 @@ import org.jfree.data.xy.OHLCDataItem;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
+import static btdex.locale.Translation.tr;
 import burst.kit.entity.response.AssetTrade;
 import burst.kit.entity.response.http.BRSError;
 import jiconfont.icons.font_awesome.FontAwesome;
@@ -62,11 +63,11 @@ public class HistoryPanel extends JPanel {
 	public static final int COL_SELLER = 4;
 
 	String[] columnNames = {
-			"PRICE",
-			"AMOUNT",
-			"TIME",
-			"BUYER",
-			"SELLER",
+			"hist_price",
+			"hist_amount",
+			"hist_time",
+			"hist_buyer",
+			"hist_seller",
 	};
 
 	class MyTableModel extends DefaultTableModel {
@@ -77,7 +78,7 @@ public class HistoryPanel extends JPanel {
 		}
 
 		public String getColumnName(int col) {
-			String colName = columnNames[col];
+			String colName = tr(columnNames[col]);
 			return colName;
 		}
 
@@ -89,7 +90,7 @@ public class HistoryPanel extends JPanel {
 	public HistoryPanel(Main main, Market market) {
 		super(new BorderLayout());
 		
-		listOnlyMine = new JCheckBox("List my trades only");
+		listOnlyMine = new JCheckBox(tr("hist_list_mine_only"));
 		listOnlyMine.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

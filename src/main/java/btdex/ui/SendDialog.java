@@ -24,6 +24,7 @@ import btdex.core.Constants;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
+import static btdex.locale.Translation.tr;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
@@ -52,7 +53,7 @@ public class SendDialog extends JDialog implements ActionListener {
 		
 		this.token = token;
 
-		setTitle(String.format("Send %s", token==null ? "BURST" : token));
+		setTitle(tr("main_send", token==null ? "BURST" : token));
 
 		JPanel topPanel = new JPanel(new GridLayout(0, 1, 4, 4));
 
@@ -67,11 +68,11 @@ public class SendDialog extends JDialog implements ActionListener {
 		amount = new JFormattedTextField(token==null ? NumberFormatting.BURST.getFormat() : token.getNumberFormat().getFormat());
 		fee = new JSlider(1, 4);
 
-		topPanel.add(new Desc("Recipient", recipient));
-		topPanel.add(new Desc("Message", message));
-		message.setToolTipText("Leave empty for no message");
+		topPanel.add(new Desc(tr("send_recipient"), recipient));
+		topPanel.add(new Desc(tr("send_message"), message));
+		message.setToolTipText(tr("send_empty_for_no_message"));
 
-		panel.add(new Desc(String.format("Amount (%s)", token==null ? "BURST" : token), amount));
+		panel.add(new Desc(tr("send_amount", token==null ? "BURST" : token), amount));
 		Desc feeDesc = new Desc("", fee);
 		panel.add(feeDesc);
 		fee.addChangeListener(new ChangeListener() {
@@ -79,37 +80,36 @@ public class SendDialog extends JDialog implements ActionListener {
 				String feeType;
 				switch (fee.getValue()) {
 				case 1:
-					feeType = "minimum";
+					feeType = tr("fee_minimum");
 					selectedFee = BurstValue.fromPlanck(Constants.FEE_QUANT);
 					break;
 				case 2:
-					feeType = "cheap";
+					feeType = tr("fee_cheap");
 					selectedFee = Globals.getInstance().getSuggestedFee().getCheapFee();
 					break;
 				case 3:
-					feeType = "standard";
+					feeType = tr("fee_standard");
 					selectedFee = Globals.getInstance().getSuggestedFee().getStandardFee();
 					break;
 				default:
-					feeType = "priority";
+					feeType = tr("fee_priority");
 					selectedFee = Globals.getInstance().getSuggestedFee().getPriorityFee();
 					break;
 				}
-				feeDesc.setDesc(String.format("Fee (%s %s BURST)", feeType,
-						selectedFee.toUnformattedString()));
+				feeDesc.setDesc(tr("send_fee", feeType, selectedFee.toUnformattedString()));
 			}
 		});
 
 		// Create a button
 		JPanel buttonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-		calcelButton = new JButton("Cancel");
-		okButton = new JButton("OK");
+		calcelButton = new JButton(tr("dlg_cancel"));
+		okButton = new JButton(tr("dlg_ok"));
 
 		calcelButton.addActionListener(this);
 		okButton.addActionListener(this);
 
-		buttonPane.add(new Desc("PIN", pin));
+		buttonPane.add(new Desc(tr("dlg_pin"), pin));
 		buttonPane.add(new Desc(" ", calcelButton));
 		buttonPane.add(new Desc(" ", okButton));
 
@@ -146,10 +146,10 @@ public class SendDialog extends JDialog implements ActionListener {
 				}
 			}
 			if(recID == null)
-				error = "Invalid recipient address";
+				error = tr("send_invalid_recipient");
 
 			if(error == null && !g.checkPIN(pin.getPassword())) {
-				error = "Invalid PIN";
+				error = tr("dlg_invalid_pin");
 				pin.requestFocus();
 			}
 			
@@ -163,7 +163,7 @@ public class SendDialog extends JDialog implements ActionListener {
 					amountNumber = NumberFormatting.parse(amount.getText());
 				} catch (ParseException e1) {
 					amount.requestFocus();
-					error = "Invalid amount";
+					error = tr("send_invalid_amount");
 				}
 			}
 
@@ -195,7 +195,7 @@ public class SendDialog extends JDialog implements ActionListener {
 					setVisible(false);
 
 					Toast.makeText((JFrame) this.getOwner(),
-							String.format("Transaction %s has been broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
+							tr("send_tx_broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
 				}
 				catch (Exception ex) {
 					Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
@@ -204,5 +204,4 @@ public class SendDialog extends JDialog implements ActionListener {
 			}
 		}
 	}
-
 }

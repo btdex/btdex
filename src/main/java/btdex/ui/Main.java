@@ -39,6 +39,7 @@ import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.Markets;
 import btdex.core.NumberFormatting;
+import static btdex.locale.Translation.tr;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.AssetBalance;
@@ -176,12 +177,12 @@ public class Main extends JFrame implements ActionListener {
 		marketComboBox = new JComboBox<Market>();
 		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, ICON_SIZE);
 		Color COLOR = marketComboBox.getForeground();
-		marketComboBox.setToolTipText("Select market");
+		marketComboBox.setToolTipText(tr("main_select_market"));
 		marketComboBox.setFont(largeFont);
 		
 		Icon versionIcon = IconFontSwing.buildIcon(FontAwesome.CODE_FORK, ICON_SIZE, COLOR);
 		JButton versionButton = new JButton(version, versionIcon);
-		versionButton.setToolTipText("Check for a new release...");
+		versionButton.setToolTipText(tr("main_check_new_release"));
 		versionButton.setVerticalAlignment(SwingConstants.CENTER);
 		versionButton.addActionListener(new ActionListener() {
 			@Override
@@ -195,7 +196,7 @@ public class Main extends JFrame implements ActionListener {
 			iconBtdex = new ImageIcon(iconMono);
 		JButton webButton = new JButton(iconBtdex);
 		bottomRight.add(webButton, BorderLayout.LINE_END);
-		webButton.setToolTipText("Opens the BTDEX website");
+		webButton.setToolTipText(tr("main_open_website"));
 		webButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -206,7 +207,7 @@ public class Main extends JFrame implements ActionListener {
 		Icon discordIcon = IconFontSwing.buildIcon(FontAwesomeBrands.DISCORD, ICON_SIZE, COLOR);
 		JButton discordButton = new JButton(discordIcon);
 		bottomRight.add(discordButton, BorderLayout.LINE_END);
-		discordButton.setToolTipText("Chat on BTDEX discord channel...");
+		discordButton.setToolTipText(tr("main_chat_discord"));
 		discordButton.setVerticalAlignment(SwingConstants.CENTER);
 		discordButton.addActionListener(new ActionListener() {
 			@Override
@@ -218,7 +219,7 @@ public class Main extends JFrame implements ActionListener {
 		Icon githubIcon = IconFontSwing.buildIcon(FontAwesomeBrands.GITHUB, ICON_SIZE, COLOR);
 		JButton githubButton = new JButton(githubIcon);
 		bottomRight.add(githubButton, BorderLayout.LINE_END);
-		githubButton.setToolTipText("Check the source code...");
+		githubButton.setToolTipText(tr("main_check_source"));
 		githubButton.setVerticalAlignment(SwingConstants.CENTER);
 		githubButton.addActionListener(new ActionListener() {
 			@Override
@@ -229,7 +230,7 @@ public class Main extends JFrame implements ActionListener {
 
 		Icon signoutIcon = IconFontSwing.buildIcon(FontAwesome.SIGN_OUT, ICON_SIZE, COLOR);
 		JButton signoutButton = new JButton(signoutIcon);
-		signoutButton.setToolTipText("Exit and clear user data...");
+		signoutButton.setToolTipText(tr("main_exit_and_clear"));
 		signoutButton.setVerticalAlignment(SwingConstants.CENTER);
 		signoutButton.addActionListener(new ActionListener() {
 			@Override
@@ -252,7 +253,7 @@ public class Main extends JFrame implements ActionListener {
 		
 		Icon resetPinIcon = IconFontSwing.buildIcon(FontAwesome.LOCK, ICON_SIZE, COLOR);
 		JButton resetPinButton = new JButton(resetPinIcon);
-		resetPinButton.setToolTipText("Reset your pin...");
+		resetPinButton.setToolTipText(tr("main_reset_pin"));
 		resetPinButton.setVerticalAlignment(SwingConstants.CENTER);
 		resetPinButton.addActionListener(new ActionListener() {
 			@Override
@@ -290,71 +291,71 @@ public class Main extends JFrame implements ActionListener {
 
 		Icon settinsIcon = IconFontSwing.buildIcon(FontAwesome.COG, ICON_SIZE, COLOR);
 		JButton settingsButton = new JButton(settinsIcon);
-		settingsButton.setToolTipText("Configure settings...");
+		settingsButton.setToolTipText(tr("main_configure_settings"));
 		settingsButton.setFont(largeFont);
 		settingsButton.setVisible(false);
 
 		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.PAPER_PLANE, ICON_SIZE, COLOR);
 
 		sendButton = new JButton(sendIcon);
-		sendButton.setToolTipText("Send BURST...");
+		sendButton.setToolTipText(tr("main_send", "BURST"));
 		sendButton.addActionListener(this);
 
 		sendButtonToken = new JButton(sendIcon);
-		sendButtonToken.setToolTipText(String.format("Send %s...", token.toString()));
+		sendButtonToken.setToolTipText(tr("main_send", token.toString()));
 		sendButtonToken.addActionListener(this);
 
 		content.add(tabbedPane, BorderLayout.CENTER);
 		tabbedPane.setFont(largeFont);
 
 		Icon orderIcon = IconFontSwing.buildIcon(FontAwesome.BOOK, ICON_SIZE, COLOR);
-		tabbedPane.addTab("ORDER BOOK", orderIcon, orderBook);
+		tabbedPane.addTab(tr("main_order_book"), orderIcon, orderBook);
 
 		Icon tradeIcon = IconFontSwing.buildIcon(FontAwesome.LINE_CHART, ICON_SIZE, COLOR);
-		tabbedPane.addTab("TRADE HISTORY", tradeIcon, historyPanel);
+		tabbedPane.addTab(tr("main_trade_history"), tradeIcon, historyPanel);
 
 		if(g.isTestnet()) {
 			// FIXME: accounts on testnet only for now
 			Icon accountIcon = IconFontSwing.buildIcon(FontAwesome.USER_CIRCLE, ICON_SIZE, COLOR);
-			tabbedPane.addTab("ACCOUNTS", accountIcon, accountsPanel);
+			tabbedPane.addTab(tr("main_accounts"), accountIcon, accountsPanel);
 		}
 		
 		Icon chatIcon = IconFontSwing.buildIcon(FontAwesome.COMMENT, ICON_SIZE, COLOR);
-		tabbedPane.addTab("CHAT", chatIcon, new ChatPanel());
+		tabbedPane.addTab(tr("main_chat"), chatIcon, new ChatPanel());
 
 		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.LINK, ICON_SIZE, COLOR);
-		tabbedPane.addTab("TRANSACTIONS", transactionsIcon, transactionsPanel);
+		tabbedPane.addTab(tr("main_transactions"), transactionsIcon, transactionsPanel);
 		
-		top.add(new Desc("Market", marketComboBox));
-		top.add(new Desc("Your Burst address", copyAddButton));
+		top.add(new Desc(tr("main_market"), marketComboBox));
+		top.add(new Desc(tr("main_your_burst_address"), copyAddButton));
 		
 		balanceLabel = new JLabel("0");
-		balanceLabel.setToolTipText("Available balance");
+		balanceLabel.setToolTipText(tr("main_available_balance"));
 		balanceLabel.setFont(largeFont);
 		lockedBalanceLabel = new JLabel("0");
-		lockedBalanceLabel.setToolTipText("Amount locked in orders");
-		top.add(new Desc("Balance (BURST)", balanceLabel, lockedBalanceLabel));
+		lockedBalanceLabel.setToolTipText(tr("main_amount_locked"));
+		top.add(new Desc(tr("main_balance", "BURST"), balanceLabel, lockedBalanceLabel));
 		top.add(new Desc("  ", sendButton));
 
 		balanceLabelToken = new JLabel("0");
-		balanceLabelToken.setToolTipText("Available balance");
+		balanceLabelToken.setToolTipText(tr("main_available_balance"));
 		balanceLabelToken.setFont(largeFont);
 		balanceLabelTokenPending = new JLabel("0");
-		balanceLabelTokenPending.setToolTipText("Amount locked in orders or rewards pending");
-		top.add(tokenDesc = new Desc(String.format("Balance (%s)", token), balanceLabelToken, balanceLabelTokenPending));
+		balanceLabelTokenPending.setToolTipText(tr("main_amount_locked"));
+		top.add(tokenDesc = new Desc(tr("main_balance", token), balanceLabelToken, balanceLabelTokenPending));
 		top.add(new Desc("  ", sendButtonToken));
 
 		
 		top.add(new Desc("  ", settingsButton));
 
 		nodeSelector = new JButton(g.getNode());
-		nodeSelector.setToolTipText("Select node...");
+		nodeSelector.setToolTipText(tr("main_select_node"));
 		nodeSelector.addActionListener(this);
 		
 		explorer = ExplorerWrapper.getExplorer(g.getExplorer());
 		explorerSelector = new JButton(explorer.toString(),
 				IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, ICON_SIZE, COLOR));
-		explorerSelector.setToolTipText("Select explorer...");
+		explorerSelector.setToolTipText(tr("main_select_explorer"));
 		explorerSelector.addActionListener(this);
 		
 		statusLabel = new JLabel();
@@ -409,12 +410,11 @@ public class Main extends JFrame implements ActionListener {
 						try {
 							Response response = g.activate();
 							if(response.isSuccessful()) {
-								Toast.makeText(this, "Great, in a few minutes your new account will be activated.", Toast.Style.SUCCESS).display();
+								Toast.makeText(this, tr("main_account_activate"), Toast.Style.SUCCESS).display();
 								tabbedPane.setSelectedComponent(transactionsPanel);
 							}
 							else {
-								Toast.makeText(this, 
-										"Account activation failed, error code " + response.code() + ": " + response.message(), Toast.Style.ERROR).display();
+								Toast.makeText(this, tr("main_activation_failed", response.code(), response.message()), Toast.Style.ERROR).display();
 							}
 							response.close();
 						}
@@ -431,7 +431,7 @@ public class Main extends JFrame implements ActionListener {
 		statusLabel.setText(g.getNode());
 
 		if(!newAccount)
-			Toast.makeText(this, "Getting info from node...", 4000, Toast.Style.SUCCESS).display();
+			Toast.makeText(this, tr("main_getting_info_from_node"), 4000, Toast.Style.SUCCESS).display();
 		update();
 		Thread updateThread = new UpdateThread();
 		updateThread.start();
@@ -440,7 +440,7 @@ public class Main extends JFrame implements ActionListener {
 	public void browse(String url) {
 		try {
 			DesktopApi.browse(new URI(url));
-			Toast.makeText(Main.this, "Opening " + url, Toast.Style.SUCCESS).display();
+			Toast.makeText(Main.this, tr("main_opening_url", url), Toast.Style.SUCCESS).display();
 		} catch (Exception ex) {
 			Toast.makeText(Main.this, ex.getMessage(), Toast.Style.ERROR).display();
 		}
@@ -478,7 +478,7 @@ public class Main extends JFrame implements ActionListener {
 					if(g.isTestnet()) {
 						Block checkBlock = g.getNS().getBlock(BurstID.fromLong(Constants.CHECK_BLOCK_TESTNET)).blockingGet();
 						if(checkBlock.getHeight() != Constants.CHECK_HEIGHT_TESTNET) {
-							String error = g.getNode() + " is not a valid testnet node!";
+							String error = tr("main_invalid_testnet_node", g.getNode());
 							Toast.makeText(Main.this, error, Toast.Style.ERROR).display();
 
 							nodeSelector.setIcon(ICON_DISCONNECTED);
@@ -504,7 +504,7 @@ public class Main extends JFrame implements ActionListener {
 							throw e;
 					}
 					balanceLabel.setText(NumberFormatting.BURST.format(balance));
-					lockedBalanceLabel.setText("+" + NumberFormatting.BURST.format(locked) + " locked");
+					lockedBalanceLabel.setText(tr("main_plus_locked", NumberFormatting.BURST.format(locked)));
 					
 					g.updateSuggestedFee();
 					
@@ -537,7 +537,7 @@ public class Main extends JFrame implements ActionListener {
 					tokenBalance -= tokenLocked;
 					
 					balanceLabelToken.setText(token.format(tokenBalance));
-					balanceLabelTokenPending.setText("+ " + token.format(tokenLocked) + " locked");
+					balanceLabelTokenPending.setText(tr("main_plus_locked", token.format(tokenLocked)));
 
 					statusLabel.setText("");
 					nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
@@ -549,7 +549,7 @@ public class Main extends JFrame implements ActionListener {
 					// Toast.makeText(Main.this, rex.getMessage(), Toast.Style.ERROR).display();
 
 					nodeSelector.setIcon(ICON_DISCONNECTED);
-					statusLabel.setText("Error: " + rex.getMessage());
+					statusLabel.setText(tr("main_error", rex.getMessage()));
 				}
 				if(showingSplash) {
 					showingSplash = false;
@@ -581,22 +581,22 @@ public class Main extends JFrame implements ActionListener {
 			
 			if(m.getTokenID() == null) {
 				// not a token market, show TRT in the token field 
-				tokenDesc.setDesc(String.format("Balance (%s)", token));
+				tokenDesc.setDesc(tr("main_balance", token));
 				
 				if(!Globals.getInstance().isTestnet()) {
 					// FIXME: remove this when operational
-					Toast.makeText(this, "Cross-chain markets currently only on testnet.", Toast.Style.ERROR).display();
+					Toast.makeText(this, tr("main_cross_chain_testnet_only"), Toast.Style.ERROR).display();
 				}
 				else if(Contracts.isLoading()) {
-					Toast.makeText(this, "Cross-chain market information is still loading...", Toast.Style.NORMAL).display();					
+					Toast.makeText(this, tr("main_cross_chain_loading"), Toast.Style.NORMAL).display();					
 				}
 			}
 			else {
 				// this is a token market, show it on the token field 
-				tokenDesc.setDesc(String.format("Balance (%s)", m));
+				tokenDesc.setDesc(tr("main_balance", m));
 				balanceLabelToken.setText(m.format(0));
 				balanceLabelTokenPending.setText(" ");
-				sendButtonToken.setToolTipText(String.format("Send %s...", m.toString()));
+				sendButtonToken.setToolTipText(tr("main_send", m.toString()));
 			}
 			
 			update();
@@ -625,7 +625,7 @@ public class Main extends JFrame implements ActionListener {
 			
 			JComboBox<String> nodeComboBox = new JComboBox<String>(list);
 			nodeComboBox.setEditable(true);
-			int ret = JOptionPane.showConfirmDialog(this, nodeComboBox, "Select node", JOptionPane.OK_CANCEL_OPTION);
+			int ret = JOptionPane.showConfirmDialog(this, nodeComboBox, tr("main_select_node"), JOptionPane.OK_CANCEL_OPTION);
 			
 			if(ret == JOptionPane.OK_OPTION) {
 				g.setNode(nodeComboBox.getSelectedItem().toString());
@@ -655,7 +655,7 @@ public class Main extends JFrame implements ActionListener {
 					explorerCombo.setSelectedIndex(i);
 			}
 			
-			int ret = JOptionPane.showConfirmDialog(this, explorerCombo, "Select explorer", JOptionPane.OK_CANCEL_OPTION);
+			int ret = JOptionPane.showConfirmDialog(this, explorerCombo, tr("main_select_explorer"), JOptionPane.OK_CANCEL_OPTION);
 			
 			if(ret == JOptionPane.OK_OPTION) {
 				explorer = (ExplorerWrapper) explorerCombo.getSelectedItem();
