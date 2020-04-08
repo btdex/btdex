@@ -27,6 +27,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import com.bulenkov.darcula.DarculaLaf;
 
@@ -136,6 +138,12 @@ public class Main extends JFrame implements ActionListener {
 		
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setOpaque(true);
+		tabbedPane.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent evt) {
+				update();
+			}
+		});
 
 		JPanel topAll = new JPanel(new BorderLayout());
 		JPanel bottomAll = new JPanel(new BorderLayout());
@@ -497,9 +505,12 @@ public class Main extends JFrame implements ActionListener {
 					
 					g.updateSuggestedFee();
 					
-					transactionsPanel.update();
-					orderBook.update();
-					historyPanel.update();
+					if(transactionsPanel.isVisible() || showingSplash)
+						transactionsPanel.update();
+					if(orderBook.isVisible() || showingSplash)
+						orderBook.update();
+					if(historyPanel.isVisible() || showingSplash)
+						historyPanel.update();
 					
 					Market tokenMarket = token;
 					Market m = (Market) marketComboBox.getSelectedItem();
@@ -521,12 +532,6 @@ public class Main extends JFrame implements ActionListener {
 						tokenLocked += o.getQuantity().longValue();
 					}
 					tokenBalance -= tokenLocked;
-					
-					if(showingSplash && g.isTestnet()) {
-						// run a first update on all contracts as it can take longer
-						Toast.makeText(Main.this, "Reading smart contract data...", 8000, Toast.Style.SUCCESS).display();
-						Contracts.updateContracts();
-					}
 					
 					balanceLabelToken.setText(token.format(tokenBalance));
 					balanceLabelTokenPending.setText("+ " + token.format(tokenLocked) + " locked");
@@ -578,6 +583,9 @@ public class Main extends JFrame implements ActionListener {
 				if(!Globals.getInstance().isTestnet()) {
 					// FIXME: remove this when operational
 					Toast.makeText(this, "Cross-chain markets currently only on testnet.", Toast.Style.ERROR).display();
+				}
+				else if(Contracts.isLoading()) {
+					Toast.makeText(this, "Cross-chain market information is still loading...", Toast.Style.NORMAL).display();					
 				}
 			}
 			else {

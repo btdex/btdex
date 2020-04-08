@@ -24,9 +24,29 @@ public class Contracts {
     private static String contractUpdateHash;
     
 	private static HashMap<BurstAddress, ContractState> contractsMap = new HashMap<>();
+	private static boolean loading = true;
 	private static BurstID mostRecentID;
 	private static ContractState freeContract, freeNoDepositContract;
-
+	
+	static class UpdateThread extends Thread {
+		@Override
+		public void run() {
+			while(!Thread.currentThread().isInterrupted()) {
+				updateContracts();
+				loading = false;
+				try {
+					Thread.sleep(10000);
+				} catch (InterruptedException e) {
+					break;
+				}
+			}
+		}
+	}
+	
+	public static boolean isLoading() {
+		return loading;
+	}
+	
     static {
         try {
             contract = new Compiler(SellContract.class);
@@ -47,6 +67,11 @@ public class Contracts {
             b.putLong(m.getHash());
             contractUpdateHash = Hex.toHexString(b.array());
             
+            // TODO: remove this condition on the future
+            if(Globals.getInstance().isTestnet()) {
+            	// start the update thread
+            	new UpdateThread().start();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -97,8 +122,12 @@ public class Contracts {
 		}
 		return true;
 	}
-    
-	public static Collection<ContractState> updateContracts() {
+
+	public static Collection<ContractState> getContracts() {
+		return contractsMap.values();
+	}
+	
+	private static void updateContracts() {
 		// check for new contracts and add them to the list
 		mostRecentID = ContractState.addContracts(contractsMap, mostRecentID);
 		
@@ -117,7 +146,6 @@ public class Contracts {
 					s.getState() == SellNoDepositContract.STATE_FINISHED && !s.hasPending())
 				freeNoDepositContract = s;
 		}
-		return contractsMap.values();
 	}
 
 	public static long[] getNewContractData(Boolean testnet) {

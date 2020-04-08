@@ -13,6 +13,7 @@ import javax.swing.AbstractCellEditor;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -63,7 +64,7 @@ public class OrderBook extends JPanel {
 	public static final int[] BID_COLS = {0, 1, 2, 3, 4};
 	public static final int[] ASK_COLS = {9, 8, 7, 6, 5};
 
-	private static final int COL_WIDE = 200;
+	private static final int COL_WIDE = 120;
 	private static final int COL_REGULAR = 75;
 
 	String[] columnNames = {
@@ -179,37 +180,41 @@ public class OrderBook extends JPanel {
 
 		AssetOrder order;
 		ContractState contract;
+		boolean isToken;
 		boolean cancel;
 
 		public ActionButton(String text, ContractState contract, boolean cancel) {
-			this(text, null, contract, cancel);
+			this(text, null, contract, cancel, false);
 		}
 
 		public ActionButton(String text, AssetOrder order, boolean cancel) {
-			this(text, order, null, cancel);
+			this(text, order, null, cancel, true);
 		}
 
-		public ActionButton(String text, AssetOrder order, ContractState contract, boolean cancel) {
+		public ActionButton(String text, AssetOrder order, ContractState contract, boolean cancel, boolean isToken) {
 			super(text);
 			this.order = order;
 			this.contract = contract;
 			this.cancel = cancel;
+			this.isToken = isToken;
 
 			addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
 
+					JDialog dlg = null;
 					if(cancel) {
-						CancelOrderDialog dlg = new CancelOrderDialog(f, market, order, contract);
-						dlg.setLocationRelativeTo(OrderBook.this);
-						dlg.setVisible(true);
+						dlg = new CancelOrderDialog(f, market, order, contract);
 					}
 					else {
-						PlaceOrderDialog dlg = new PlaceOrderDialog(f, market, order, contract);
-						dlg.setLocationRelativeTo(OrderBook.this);
-						dlg.setVisible(true);
+						if(isToken)
+							dlg = new PlaceTokenOrderDialog(f, market, order);
+						else
+							dlg = new PlaceOrderDialog(f, market, contract);
 					}
+					dlg.setLocationRelativeTo(OrderBook.this);
+					dlg.setVisible(true);
 
 					BUTTON_EDITOR.stopCellEditing();
 				}
@@ -289,18 +294,22 @@ public class OrderBook extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
-				PlaceOrderDialog dlg = new PlaceOrderDialog(f, market, firstAsk, null);
-				dlg.setLocationRelativeTo(OrderBook.this);
-				dlg.setVisible(true);
+				if(market.getTokenID() != null) {
+					JDialog dlg = new PlaceTokenOrderDialog(f, market, firstAsk);
+					dlg.setLocationRelativeTo(OrderBook.this);
+					dlg.setVisible(true);
+				}
 			}
 		});
 		sellButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
-				PlaceOrderDialog dlg = new PlaceOrderDialog(f, market, firstBid, null);
+				JDialog dlg = market.getTokenID()!= null ? new PlaceTokenOrderDialog(f, market, firstBid)
+						: new PlaceOrderDialog(f, market, null);
+				
 				dlg.setLocationRelativeTo(OrderBook.this);
-				dlg.setVisible(true);				
+				dlg.setVisible(true);
 			}
 		});
 
@@ -322,12 +331,6 @@ public class OrderBook extends JPanel {
 				buyButton.setText("BUY " + market);
 				sellButton.setText("SELL " + market);
 
-				// show back the bid cols
-				for (int i = 0; i < BID_COLS.length; i++) {
-					table.getColumnModel().getColumn(i).setMaxWidth(Integer.MAX_VALUE);
-					table.getColumnModel().getColumn(i).setPreferredWidth(COL_REGULAR);
-				}			
-				table.getColumnModel().getColumn(BID_COLS[COL_CONTRACT]).setPreferredWidth(COL_WIDE);
 				table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setMaxWidth(0);
 				table.getColumnModel().getColumn(BID_COLS[COL_SECURITY]).setMaxWidth(0);
 			}
@@ -335,11 +338,10 @@ public class OrderBook extends JPanel {
 				buyButton.setText("BUY BURST");
 				sellButton.setText("SELL BURST");
 
-				for (int i = 0; i < BID_COLS.length; i++) {
-					table.getColumnModel().getColumn(i).setMaxWidth(0);
-				}
 				table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setMaxWidth(Integer.MAX_VALUE);
 				table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setPreferredWidth(COL_REGULAR);
+				table.getColumnModel().getColumn(BID_COLS[COL_SECURITY]).setMaxWidth(Integer.MAX_VALUE);
+				table.getColumnModel().getColumn(BID_COLS[COL_SECURITY]).setPreferredWidth(COL_REGULAR);
 			}
 			lastPrice.setIcon(null);
 			lastPrice.setText(" ");
@@ -468,7 +470,7 @@ public class OrderBook extends JPanel {
 	private void updateContracts() {
 		Globals g = Globals.getInstance();
 
-		Collection<ContractState> allContracts = Contracts.updateContracts();
+		Collection<ContractState> allContracts = Contracts.getContracts();
 		marketContracts.clear();
 
 		for(ContractState s : allContracts) {
