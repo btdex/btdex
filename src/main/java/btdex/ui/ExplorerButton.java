@@ -12,6 +12,8 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.table.TableCellEditor;
 
+import static btdex.locale.Translation.tr;
+
 public class ExplorerButton extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private String id, addressRS;
@@ -44,9 +46,9 @@ public class ExplorerButton extends JPanel {
 		super(new BorderLayout(0, 0));
 		
 		mainButton = new JButton(text, icon);
-		mainButton.setToolTipText("Copy to clipboard");
+		mainButton.setToolTipText(tr("btn_copy_to_clipboard"));
 		explorerButton = new JButton(icon2);
-		explorerButton.setToolTipText("Open on the explorer");
+		explorerButton.setToolTipText(tr("btn_open_on_explorer"));
 		
 		this.type = type;
 		this.id = id;
@@ -63,7 +65,7 @@ public class ExplorerButton extends JPanel {
 				StringSelection stringSelection = new StringSelection(t);
 				clipboard.setContents(stringSelection, null);
 				
-				Toast.makeText(Main.getInstance(), t + " copied to clipboard.", Toast.Style.SUCCESS).display();
+				Toast.makeText(Main.getInstance(), tr("btn_copied_to_clipboard", t), Toast.Style.SUCCESS).display();
 			}
 		});
 		
