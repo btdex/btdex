@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
-import java.util.Random;
 
 import com.google.gson.JsonObject;
 
@@ -15,7 +14,6 @@ import bt.BT;
 import btdex.ui.ExplorerWrapper;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstID;
 import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.service.BurstNodeService;
 import okhttp3.OkHttpClient;

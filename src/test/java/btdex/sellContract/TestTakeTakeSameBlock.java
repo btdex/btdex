@@ -1,6 +1,7 @@
-package btdex;
+package btdex.sellContract;
 
 import bt.BT;
+import btdex.CreateSC;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstValue;

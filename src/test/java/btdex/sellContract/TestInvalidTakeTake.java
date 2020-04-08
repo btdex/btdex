@@ -1,21 +1,24 @@
-package btdex;
+package btdex.sellContract;
 
-import burst.kit.entity.BurstID;
+
+import btdex.CreateSC;
+import btdex.core.Mediators;
 import burst.kit.service.BurstNodeService;
 
-import bt.BT;
-import btdex.sc.SellContract;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.AT;
 
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import bt.BT;
+
+import btdex.sc.SellContract;
+import burst.kit.entity.BurstAddress;
+import burst.kit.entity.BurstID;
+import burst.kit.entity.BurstValue;
+import burst.kit.entity.response.AT;
+
 
 import java.io.IOException;
 
@@ -25,9 +28,9 @@ import java.io.IOException;
  * 
  * @author jjos
  */
-//Not sure why test fails sometimes then you run them in "fresh" IDE
+
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class TestTakeRetake extends BT {
+public class TestInvalidTakeTake extends BT {
     private static bt.compiler.Compiler compiled;
     private static AT contract;
     private static String makerPass;
@@ -129,7 +132,26 @@ public class TestTakeRetake extends BT {
     }
 
     @Test
-    @Order(6)
+    @Order(7)
+    public void testInvalidTake() {
+        // Invalid take, not enough security
+        BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
+                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE*2), BurstValue.fromBurst(0.1), 100,
+                security, amount_chain).blockingGet();
+        balance = BT.getContractBalance(contract).longValue();
+        System.out.println("Contract fees for failed take: " + BurstValue.fromPlanck(sent-balance-SellContract.ACTIVATION_FEE));
+
+        // order should not be taken
+        state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
+        long taker_chain = BT.getContractFieldValue(contract, compiled.getField("taker").getAddress());
+
+        assertEquals(SellContract.STATE_OPEN, state_chain);
+        assertEquals(0, taker_chain);
+        BT.forgeBlock();
+    }
+
+    @Test
+    @Order(8)
     public void testOfferTake() {
         // Take the offer
         BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
@@ -149,7 +171,7 @@ public class TestTakeRetake extends BT {
     }
 
     @Test
-    @Order(7)
+    @Order(9)
     public void testContractsBalanceAfterOfferTake() {
         balance = BT.getContractBalance(contract).longValue();
         assertTrue(balance > amount + security * 2, "not enough balance");
@@ -157,7 +179,7 @@ public class TestTakeRetake extends BT {
     }
 
     @Test
-    @Order(8)
+    @Order(10)
     public void testMakerSignal() {
         // Maker signals the payment was received (off-chain)
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("reportComplete"),
@@ -175,7 +197,7 @@ public class TestTakeRetake extends BT {
     }
 
     @Test
-    @Order(9)
+    @Order(11)
     public void testReopen(){
         //fund maker if needed
         while(accBalance(makerPass) < amount + security + SellContract.ACTIVATION_FEE){
@@ -200,7 +222,7 @@ public class TestTakeRetake extends BT {
     }
 
     @Test
-    @Order(10)
+    @Order(12)
     public void testTakeOfferAgain() {
         // Take the offer again
         BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
@@ -218,7 +240,7 @@ public class TestTakeRetake extends BT {
     }
 
     @Test
-    @Order(11)
+    @Order(13)
     public void testPaymentReceived() {
         // Maker signals the payment was received (off-chain)
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("reportComplete"),
@@ -232,9 +254,13 @@ public class TestTakeRetake extends BT {
     }
 
     @Test
-    @Order(12)
+    @Order(14)
     public void testFinalContractsBalance() {
         balance = BT.getContractBalance(contract).longValue();
         assertTrue(balance == 0, "not enough balance");
     }
- }
+}
+
+/*
+
+    */

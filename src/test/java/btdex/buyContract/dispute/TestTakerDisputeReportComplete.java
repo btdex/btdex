@@ -1,7 +1,7 @@
-package btdex.dispute;
+package btdex.buyContract.dispute;
 
 import bt.BT;
-import btdex.sc.SellContract;
+import btdex.sc.BuyContract;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ public class TestTakerDisputeReportComplete {
     public void initSC() {
         sc = new InitSC();
 
-        long state = SellContract.STATE_WAITING_PAYMT;
+        long state = BuyContract.STATE_WAITING_PAYMT;
         long state_chain = sc.getContractFieldValue("state");
 
         if(state_chain == -1){
@@ -44,7 +44,7 @@ public class TestTakerDisputeReportComplete {
         BT.forgeBlock();
         BT.forgeBlock();
 
-        state = SellContract.STATE_TAKER_DISPUTE;
+        state = BuyContract.STATE_TAKER_DISPUTE;
         assertEquals(state, state&sc.getContractFieldValue("state"));
         assertEquals(0, sc.getContractFieldValue("disputeCreatorAmountToCreator"));
         assertEquals(0, sc.getContractFieldValue("disputeCreatorAmountToTaker"));
@@ -55,11 +55,11 @@ public class TestTakerDisputeReportComplete {
     @Test
     @Order(3)
     public void testInvalidReportComplete() {
-        sc.complete(sc.getTaker());
+        sc.complete(sc.getMaker());
         BT.forgeBlock();
         BT.forgeBlock();
 
-        state = SellContract.STATE_TAKER_DISPUTE;
+        state = BuyContract.STATE_TAKER_DISPUTE;
         assertEquals(state, state&sc.getContractFieldValue("state"));
         assertEquals(0, sc.getContractFieldValue("disputeCreatorAmountToCreator"));
         assertEquals(0, sc.getContractFieldValue("disputeCreatorAmountToTaker"));
@@ -72,16 +72,13 @@ public class TestTakerDisputeReportComplete {
     public void testValidReportComplete() {
         long feeContractBalance = sc.getFeeContractBalance();
         long makerBalance = sc.getMakerBalance();
-        long takerBalance = sc.getTakerBalance();
-        sc.complete(sc.getMaker());
+        sc.complete(sc.getTaker());
         BT.forgeBlock();
         BT.forgeBlock();
 
-        state = SellContract.STATE_FINISHED;
+        state = BuyContract.STATE_FINISHED;
         assertEquals(state, state&sc.getContractFieldValue("state"));
         assertEquals(0, sc.getSCbalance());
-        //taker gets more, because SellContract.ACTIVATION_FEE not used all
-        assertTrue(takerBalance + sc.getAmount() < sc.getTakerBalance());
         assertTrue(sc.getMakerBalance() > makerBalance, "Maker do not received security payment");
         assertTrue(sc.getFeeContractBalance() > feeContractBalance, "FeeContract do not got fee");
     }

@@ -3,6 +3,9 @@ package btdex;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectPackage;
 
+import btdex.sellContract.TestInvalidTakeReopenWithdraw;
+import btdex.sellContract.TestInvalidTakeTake;
+import btdex.sellContract.TestTakeRetake;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
@@ -15,7 +18,7 @@ public class RunSellContractTests {
     public static void main(String[] args) {
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
                 .selectors(
-                        selectPackage("btdex.dispute"),
+                        selectPackage("btdex.sellContract.dispute"),
                         selectClass(TestTakeRetake.class),
                         selectClass(TestInvalidTakeTake.class),
                         selectClass(TestInvalidTakeReopenWithdraw.class)

@@ -1,15 +1,15 @@
-package btdex.dispute;
+package btdex.buyContract.dispute;
 
 import bt.BT;
 import btdex.CreateSC;
-import btdex.sc.SellContract;
+import btdex.sc.BuyContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;
 import burst.kit.service.BurstNodeService;
 
 
-public class InitSC{
+public class InitSC {
     private String name;
     private BurstAddress maker;
     private String makerPass;
@@ -24,21 +24,19 @@ public class InitSC{
     private String mediatorOnePass;
     private String mediatorTwoPass;
 
-    private long amount;
+    private long wantsToBuyInPlanks;
     private long feeContract;
 
     private long security;
-    private long sent;
     private static BurstNodeService bns = BT.getNode();
 
     public InitSC() {
         try {
-            CreateSC sc = new CreateSC(SellContract.class, 10000, 100);
+            CreateSC sc = new CreateSC(BuyContract.class);
             makerPass = Long.toString(System.currentTimeMillis());
             name = sc.registerSC(makerPass);
-            amount = sc.getAmount();
-            security = sc.getSecurity();
-            sent = amount + security + SellContract.ACTIVATION_FEE;
+            wantsToBuyInPlanks = 100_000_000L * 1000L; //1000 Burst
+            security = 100_000_000L * 200L; //200 Burst
             compiled = sc.getCompiled();
             mediatorOne = BurstAddress.fromId(sc.getMediator1());
             mediatorTwo = BurstAddress.fromId(sc.getMediator2());
@@ -63,28 +61,29 @@ public class InitSC{
 
     public void initOffer(){
         //fund maker if needed
-        while(accBalance(makerPass) < sent){
+        while(accBalance(makerPass) < security + BuyContract.ACTIVATION_FEE){
             BT.forgeBlock(makerPass);
         }
         maker = BT.getBurstAddressFromPassphrase(makerPass);
         contract = BT.findContract(maker, name);
         //init offer
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                BurstValue.fromPlanck(sent), BurstValue.fromBurst(0.1), 1000,
-                security).blockingGet();
+                BurstValue.fromPlanck(security + BuyContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1),
+                1000, wantsToBuyInPlanks).blockingGet();
         BT.forgeBlock();
     }
 
     public void takeOffer() {
         //fund taker if needed
-        while (accBalance(takerPass) < security + SellContract.ACTIVATION_FEE) {
+        while (accBalance(takerPass) < security + BuyContract.ACTIVATION_FEE + wantsToBuyInPlanks) {
             BT.forgeBlock(takerPass);
         }
         // Take the offer
         long amount_chain = BT.getContractFieldValue(contract, compiled.getField("amount").getAddress());
+        long security_chain = BT.getContractFieldValue(contract, compiled.getField("security").getAddress());
         BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
-                BurstValue.fromPlanck(security + SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
-                security, amount_chain).blockingGet();
+                BurstValue.fromPlanck(security_chain + BuyContract.ACTIVATION_FEE + wantsToBuyInPlanks), BurstValue.fromBurst(0.1), 100,
+                security_chain, amount_chain).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
     }
@@ -102,7 +101,7 @@ public class InitSC{
     public void dispute(BurstAddress who, long amountToMaker, long amountToTaker) {
         BT.callMethod(who == maker ? makerPass : who == taker ? takerPass : who == mediatorOne ? mediatorOnePass : mediatorTwoPass,
                 contract.getId(), compiled.getMethod("dispute"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
+                BurstValue.fromPlanck(BuyContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
                 amountToMaker, amountToTaker).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
@@ -110,17 +109,13 @@ public class InitSC{
 
     public void complete(BurstAddress who) {
         BT.callMethod(who == maker? makerPass : takerPass, contract.getId(), compiled.getMethod("reportComplete"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100).blockingGet();
+                BurstValue.fromPlanck(BuyContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100).blockingGet();
     }
 
     public void withdraw() {
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000,
+                BurstValue.fromPlanck(BuyContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000,
                 0).blockingGet();
-    }
-
-    public long getAmount() {
-        return amount;
     }
 
     public BurstAddress getMaker() {
@@ -166,5 +161,4 @@ public class InitSC{
     public long getFeeContract() {
         return feeContract;
     }
-
 }

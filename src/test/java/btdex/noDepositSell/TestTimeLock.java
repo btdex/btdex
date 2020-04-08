@@ -1,4 +1,4 @@
-package btdex.noDeposit;
+package btdex.noDepositSell;
 
 import bt.BT;
 import btdex.sc.SellContract;
