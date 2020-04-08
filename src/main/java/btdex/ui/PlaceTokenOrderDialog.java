@@ -33,6 +33,7 @@ import btdex.core.Constants;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
+import static btdex.locale.Translation.tr;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.TransactionBroadcast;
@@ -64,7 +65,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-		setTitle(String.format("Exchange %s for BURST", market.toString()));
+		setTitle(tr("token_exchange_for", market.toString()));
 		this.market = market;
 
 		JPanel fieldPanel = new JPanel(new GridLayout(0, 2, 4, 4));
@@ -77,10 +78,10 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		amountField.getDocument().addDocumentListener(this);
 		priceField.getDocument().addDocumentListener(this);
 
-		fieldPanel.setBorder(BorderFactory.createTitledBorder("Offer details"));
+		fieldPanel.setBorder(BorderFactory.createTitledBorder(tr("token_offer_details")));
 
-		buyToken = new JRadioButton(String.format("Buy %s with BURST", market), true);
-		sellToken = new JRadioButton(String.format("Sell %s for BURST", market));
+		buyToken = new JRadioButton(tr("token_buy_with_burst", market), true);
+		sellToken = new JRadioButton(tr("token_sell_for_burst", market));
 
 		buyToken.setBackground(HistoryPanel.GREEN);
 		sellToken.setBackground(HistoryPanel.RED);
@@ -96,9 +97,9 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		buyToken.addActionListener(this);
 		sellToken.addActionListener(this);
 
-		fieldPanel.add(new Desc("Price (" + "BURST" + ")", priceField));
-		fieldPanel.add(new Desc("Size (" + market + ")", amountField));
-		fieldPanel.add(new Desc("Total (" + "BURST" + ")", totalField));
+		fieldPanel.add(new Desc(tr("token_price", "BURST"), priceField));
+		fieldPanel.add(new Desc(tr("token_size", market), amountField));
+		fieldPanel.add(new Desc(tr("token_total", "BURST"), totalField));
 
 		conditions = new JTextPane();
 		//		conditions.setContentType("text/html");
@@ -107,7 +108,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		//		conditions.setWrapStyleWord(true);
 		conditions.setPreferredSize(new Dimension(80, 140));
 
-		acceptBox = new JCheckBox("I accept the terms and conditions");
+		acceptBox = new JCheckBox(tr("token_accept_terms"));
 
 		// Create a button
 		JPanel buttonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -115,13 +116,13 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		pinField = new JPasswordField(12);
 		pinField.addActionListener(this);
 
-		cancelButton = new JButton("Cancel");
-		okButton = new JButton("OK");
+		cancelButton = new JButton(tr("dlg_cancel"));
+		okButton = new JButton(tr("dlg_ok"));
 
 		cancelButton.addActionListener(this);
 		okButton.addActionListener(this);
 
-		buttonPane.add(new Desc("PIN", pinField));
+		buttonPane.add(new Desc(tr("dlg_pin"), pinField));
 		buttonPane.add(new Desc(" ", cancelButton));
 		buttonPane.add(new Desc(" ", okButton));
 
@@ -131,7 +132,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		content.setBorder(new EmptyBorder(4, 4, 4, 4));
 
 		JPanel conditionsPanel = new JPanel(new BorderLayout());
-		conditionsPanel.setBorder(BorderFactory.createTitledBorder("Terms and conditions"));
+		conditionsPanel.setBorder(BorderFactory.createTitledBorder(tr("token_terms_and_conditions")));
 		JScrollPane scroll = new JScrollPane(conditions);
 		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -180,19 +181,19 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			Globals g = Globals.getInstance();
 
 			if(error == null && (priceValue == null || priceValue.longValue() <= 0)) {
-				error = "Invalid price";
+				error = tr("token_invalid_amount");
 			}
 			if(error == null && (amountValue == null || amountValue.longValue() <= 0)) {
-				error = "Invalid amount";
+				error = tr("send_invalid_amount");
 			}
 
 			if(error == null && !acceptBox.isSelected()) {
-				error = "You must accept the terms first";
+				error = tr("token_accept_first");
 				acceptBox.requestFocus();
 			}
 
 			if(error == null && !g.checkPIN(pinField.getPassword())) {
-				error = "Invalid PIN";
+				error = tr("dlg_invalid_pin");
 				pinField.requestFocus();
 			}
 
@@ -224,7 +225,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 				setVisible(false);
 
 				Toast.makeText((JFrame) this.getOwner(),
-						String.format("Transaction %s has been broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
+						tr("send_tx_broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
 			}
 			catch (Exception ex) {
 				ex.printStackTrace();
@@ -263,12 +264,8 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		String terms = null;
 		boolean isSell = sellToken.isSelected();
 
-		terms = "You are placing a %s limit order for up to %s %s at a price of %s BURST each.\n\n"
-				+ "This order can be partially filled and will be open until filled or cancelled. "
-				+ "No trading fees apply, only a one time %s BURST transaction fee.";
-
-		terms = String.format(terms,
-				isSell ? "sell" : "buy",
+		terms = tr("token_terms",
+				isSell ? tr("token_sell") : tr("token_buy"),
 						amountField.getText(),
 						market,
 						priceField.getText(),
