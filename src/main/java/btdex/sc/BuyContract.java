@@ -22,6 +22,7 @@ import bt.ui.EmulatorWindow;
 public class BuyContract extends Contract {
 
 	public static final long ACTIVATION_FEE = 21 * ONE_BURST;
+	public static final long LAST_STEP_FEE = 360000000L;
 	public static final long NEW_OFFER_FEE = 1680000000L;
 	public static final long REUSE_OFFER_FEE = 1480000000L;
 

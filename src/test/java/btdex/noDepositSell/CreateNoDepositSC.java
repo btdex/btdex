@@ -1,9 +1,8 @@
-package btdex.noDeposit;
+package btdex.noDepositSell;
 
 import bt.BT;
 import bt.compiler.Compiler;
 import btdex.core.Mediators;
-import btdex.sc.SellContract;
 import btdex.sc.SellNoDepositContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
@@ -43,7 +42,7 @@ public class CreateNoDepositSC {
         mediatorTwoPassword = getMediatorPassword(mediator2);
 
         this.lockMinutes = lockMinutes;
-        this.compiled = BT.compileContract(sc);
+        compiled = BT.compileContract(sc);
     }
     private String getMediatorPassword(BurstID mediatorID) {
         BurstAddress mediator = BurstAddress.fromId(mediatorID);
@@ -68,12 +67,12 @@ public class CreateNoDepositSC {
     private void register(String passphrase) {
         long data[] = { feeContract, mediator1.getSignedLongId(), mediator2.getSignedLongId(), lockMinutes};
         String name = sc.getSimpleName() + System.currentTimeMillis() % 200;
-        System.out.println(name);
-        TransactionBroadcast tb = BT.registerContract(passphrase, compiled.getCode(), compiled.getDataPages(),
+        BT.registerContract(passphrase, compiled.getCode(), compiled.getDataPages(),
                 name, name, data, BurstValue.fromPlanck(SellNoDepositContract.ACTIVATION_FEE),
                 BT.getMinRegisteringFee(compiled), 1000).blockingGet();
+
         this.name = name;
-        this.maker = BT.getBurstAddressFromPassphrase(passphrase);
+        maker = BT.getBurstAddressFromPassphrase(passphrase);
     }
 
 
@@ -114,5 +113,4 @@ public class CreateNoDepositSC {
     public String getMediatorTwoPassword() {
         return mediatorTwoPassword;
     }
-
 }

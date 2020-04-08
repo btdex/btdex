@@ -1,4 +1,4 @@
-package btdex.noDeposit;
+package btdex.noDepositSell;
 
 import bt.BT;
 import btdex.sc.SellContract;
@@ -60,6 +60,7 @@ public class TestDispute {
         state = SellNoDepositContract.STATE_OPEN;
         assertEquals(state, state_chain, "State not equal");
     }
+
     @Test
     @Order(3)
     public void dispute() {

@@ -1,8 +1,7 @@
-package btdex.dispute;
+package btdex.sellContract.dispute;
 
 import bt.BT;
 import btdex.sc.SellContract;
-import burst.kit.entity.BurstValue;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;

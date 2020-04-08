@@ -45,6 +45,18 @@ public class CreateSC {
         this.sc = sc;
     }
 
+    public CreateSC(Class sc) throws IOException {
+        Mediators mediators = new Mediators(true);
+        BurstID[] mediatorsID = mediators.getTwoRandomMediators();
+        mediator1 = mediatorsID[0];
+        mediator2 = mediatorsID[1];
+        mediatorOnePassword = getMediatorPassword(mediator1);
+        mediatorTwoPassword = getMediatorPassword(mediator2);
+
+        this.compiled = BT.compileContract(sc);
+        this.sc = sc;
+    }
+
     private String getMediatorPassword(BurstID mediatorID) {
         BurstAddress mediator = BurstAddress.fromId(mediatorID);
 

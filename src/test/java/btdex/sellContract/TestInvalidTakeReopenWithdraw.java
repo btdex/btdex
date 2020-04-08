@@ -1,23 +1,20 @@
-package btdex;
+package btdex.sellContract;
 
-
-import btdex.core.Mediators;
+import btdex.CreateSC;
 import burst.kit.service.BurstNodeService;
-
-
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import bt.BT;
+import btdex.core.Mediators;
 
+import bt.BT;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;
-
 
 import java.io.IOException;
 
@@ -29,7 +26,7 @@ import java.io.IOException;
  */
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class TestInvalidTakeTake extends BT {
+public class TestInvalidTakeReopenWithdraw extends BT {
     private static bt.compiler.Compiler compiled;
     private static AT contract;
     private static String makerPass;
@@ -222,44 +219,19 @@ public class TestInvalidTakeTake extends BT {
 
     @Test
     @Order(12)
-    public void testTakeOfferAgain() {
-        // Take the offer again
-        BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
-                BurstValue.fromPlanck(security + SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
-                security, amount_chain).blockingGet();
+    public void testCancelAndWithdrawOffer() {
+        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
+                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
+                0).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 
-        // order should be taken, waiting for payment
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
-        taker_chain = BT.getContractFieldValue(contract, compiled.getField("taker").getAddress());
+        amount_chain = BT.getContractFieldValue(contract, compiled.getField("amount").getAddress());
+        security_chain = BT.getContractFieldValue(contract, compiled.getField("security").getAddress());
 
-        assertEquals(SellContract.STATE_WAITING_PAYMT, state_chain);
-        assertEquals(taker.getSignedLongId(), taker_chain);
-    }
-
-    @Test
-    @Order(13)
-    public void testPaymentReceived() {
-        // Maker signals the payment was received (off-chain)
-        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("reportComplete"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100).blockingGet();
-        BT.forgeBlock();
-        BT.forgeBlock();
-
-        // order should be finished
-        state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
         assertEquals(SellContract.STATE_FINISHED, state_chain);
-    }
-
-    @Test
-    @Order(14)
-    public void testFinalContractsBalance() {
-        balance = BT.getContractBalance(contract).longValue();
-        assertTrue(balance == 0, "not enough balance");
+        assertEquals(0, amount_chain);
+        assertEquals(0, BT.getContractBalance(contract).longValue());
     }
 }
-
-/*
-
-    */

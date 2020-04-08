@@ -1,4 +1,4 @@
-package btdex.dispute;
+package btdex.sellContract.dispute;
 
 import bt.BT;
 import btdex.sc.SellContract;
