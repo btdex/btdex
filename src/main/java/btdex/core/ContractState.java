@@ -266,13 +266,13 @@ public class ContractState {
 			// check rate, type, etc. from transaction history
 			txs = g.getNS().getAccountTransactions(this.address).blockingGet();
 			takeBlock = findTakeBlock(txs);
-			processTransactions(txs, takeBlock);
+			processTransactions(txs, takeBlock, false);
 		}
 		
-		// check if there is unconfirmed transactions
+		// check if there are unconfirmed transactions
 		txs = g.getNS().getUnconfirmedTransactions(this.address).blockingGet();
-		hasPending = txs.length > 0;
-		processTransactions(txs, takeBlock);
+		hasPending = hasPending || txs.length > 0;
+		processTransactions(txs, takeBlock, hasPending);
 	}
 	
 	private int findTakeBlock(Transaction[] txs) {
@@ -295,7 +295,7 @@ public class ContractState {
 		return takeBlock;
 	}
 	
-	private void processTransactions(Transaction[] txs, int blockHeightLimit) {
+	private void processTransactions(Transaction[] txs, int blockHeightLimit, boolean hasPending) {
 		Globals g = Globals.getInstance();
 
 		for(Transaction tx : txs) {
@@ -365,5 +365,6 @@ public class ContractState {
 				}
 			}
 		}
+		this.hasPending = hasPending;
 	}
 }
