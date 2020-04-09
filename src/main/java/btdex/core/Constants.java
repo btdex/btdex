@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import okhttp3.MediaType;
 
 public class Constants {
+    public static final String PROP_LANG = "lang";
     public static final String PROP_NODE = "node";
     public static final String PROP_TESTNET = "testnet";
     public static final String PROP_ACCOUNT = "account";

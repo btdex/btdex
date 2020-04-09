@@ -238,6 +238,14 @@ public class Globals {
 		return NS;
 	}
 
+	public void setLanguage(String lang) {
+		conf.setProperty(Constants.PROP_LANG, lang);
+	}
+	
+	public String getLanguage() {
+		return conf.getProperty(Constants.PROP_LANG);
+	}
+
 	public void setNode(String node) {
 		conf.setProperty(Constants.PROP_NODE, node);
 

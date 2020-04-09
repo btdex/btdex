@@ -22,8 +22,10 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
@@ -142,6 +144,8 @@ public class Main extends JFrame implements ActionListener {
 		setBackground(Color.BLACK);
 		
 		Globals g = Globals.getInstance();
+		
+		Translation.setLanguage(g.getLanguage());
 		
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setOpaque(true);
@@ -304,6 +308,31 @@ public class Main extends JFrame implements ActionListener {
 		JButton langButton = new JButton(langIcon);
 		langButton.setToolTipText(tr("main_change_language"));
 		langButton.setFont(largeFont);
+		langButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JPopupMenu menu = new JPopupMenu();
+				for(Locale l : Translation.getSupportedLanguages()) {
+					JMenuItem item = new JMenuItem(l.getDisplayLanguage());
+					item.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							g.setLanguage(l.getLanguage());
+							try {
+								g.saveConfs();
+							} catch (Exception e1) {
+								e1.printStackTrace();
+							}
+							JOptionPane.showMessageDialog(Main.this,
+									tr("main_restart_to_apply_changes"), tr("main_language_changed"),
+									JOptionPane.OK_OPTION);
+						}
+					});
+					menu.add(item);
+				}
+				menu.show(langButton, 0, langButton.getHeight());
+			}
+		});
 
 		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.PAPER_PLANE, ICON_SIZE, COLOR);
 

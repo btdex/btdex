@@ -14,6 +14,14 @@ public class Translation {
 	private static Properties enResource = new Properties();
 	private static Properties resource;
 	
+	private static final Locale[] languages = {
+		Locale.ENGLISH,
+		Locale.GERMAN,
+		// Locale.forLanguageTag("es"),
+		Locale.forLanguageTag("pt"),
+		Locale.forLanguageTag("lt"),
+	};
+	
 	static {
 		try {
 			enResource.load(Translation.class.getResourceAsStream(RESOURCE_FILE + ".properties"));
@@ -27,11 +35,15 @@ public class Translation {
 		return locale.getDisplayLanguage();
 	}
 	
-	public static void setLanguage(Locale newLocale) {
+	public static Locale[] getSupportedLanguages() {
+		return languages;
+	}
+	
+	public static void setLanguage(String language) {
 		try {
-			InputStream stream = Translation.class.getResourceAsStream(RESOURCE_FILE + newLocale.getLanguage() + ".properties");
+			InputStream stream = Translation.class.getResourceAsStream(RESOURCE_FILE + language + ".properties");
 			if(stream != null) {
-				locale = newLocale;
+				locale = Locale.forLanguageTag(language);
 				resource = new Properties();		
 				resource.load(stream);
 			}
