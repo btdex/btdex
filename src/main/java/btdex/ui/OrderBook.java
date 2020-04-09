@@ -32,6 +32,7 @@ import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
+import static btdex.locale.Translation.tr;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.response.AssetOrder;
@@ -68,17 +69,17 @@ public class OrderBook extends JPanel {
 	private static final int COL_REGULAR = 75;
 
 	String[] columnNames = {
-			"CONTRACT",
-			"TOTAL",
-			"SIZE",
-			"DEPOSIT (BURST)",
-			"PRICE",
+			"book_contract",
+			"book_total",
+			"book_size",
+			"book_deposit",
+			"book_price",
 
-			"PRICE",
-			"DEPOSIT (BURST)",
-			"SIZE",
-			"TOTAL",
-			"CONTRACT",
+			"book_price",
+			"book_deposit",
+			"book_size",
+			"book_total",
+			"book_contract",
 	};
 
 	Market market = null, newMarket;
@@ -97,15 +98,16 @@ public class OrderBook extends JPanel {
 			boolean isToken = market.getTokenID()!=null;
 
 			String colName = columnNames[col];
-			if(col == BID_COLS[COL_PRICE] || col == ASK_COLS[COL_PRICE] ||
-					col == BID_COLS[COL_TOTAL] || col == ASK_COLS[COL_TOTAL])
-				colName += " (" + (isToken ? "BURST" : market) + ")";
-			if(col == BID_COLS[COL_SIZE] || col == ASK_COLS[COL_SIZE])		
-				colName += " (" + (isToken ? market : "BURST") + ")";
-			if((col == BID_COLS[COL_CONTRACT] || col==ASK_COLS[COL_CONTRACT]) && isToken)
-				colName = "ORDER";
-			if(isToken && (col == BID_COLS[COL_SECURITY] || col == ASK_COLS[COL_SECURITY]))
-				colName = "";
+			if(col == BID_COLS[COL_PRICE] || col == ASK_COLS[COL_PRICE])
+				colName = tr("book_price", isToken ? "BURST" : market);
+			else if(col == BID_COLS[COL_TOTAL] || col == ASK_COLS[COL_TOTAL])
+				colName = tr("book_total", isToken ? "BURST" : market);
+			else if(col == BID_COLS[COL_SIZE] || col == ASK_COLS[COL_SIZE])		
+				colName = tr("book_size", isToken ? market : "BURST");
+			else if((col == BID_COLS[COL_CONTRACT] || col==ASK_COLS[COL_CONTRACT]) && isToken)
+				colName = tr("book_order");
+			else
+				colName = tr(colName);
 			return colName;
 		}
 
@@ -229,7 +231,7 @@ public class OrderBook extends JPanel {
 	public OrderBook(Main main, Market m) {
 		super(new BorderLayout());
 
-		listOnlyMine = new JCheckBox("List my orders only");
+		listOnlyMine = new JCheckBox(tr("book_mine_only"));
 		listOnlyMine.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -281,7 +283,7 @@ public class OrderBook extends JPanel {
 		table.getColumnModel().getColumn(ASK_COLS[COL_CONTRACT]).setPreferredWidth(COL_WIDE);
 
 		JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		top.add(new Desc("Last price", lastPrice = new JLabel()));
+		top.add(new Desc(tr("book_last_price"), lastPrice = new JLabel()));
 
 		top.add(new Desc(" ", buyButton = new JButton()));
 		top.add(new Desc(" ", sellButton = new JButton()));
@@ -328,15 +330,15 @@ public class OrderBook extends JPanel {
 			model.fireTableDataChanged();
 			
 			if(market.getTokenID() != null) {
-				buyButton.setText("BUY " + market);
-				sellButton.setText("SELL " + market);
+				buyButton.setText(tr("book_buy_button", market));
+				sellButton.setText(tr("book_sell_button", market));
 
 				table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setMaxWidth(0);
 				table.getColumnModel().getColumn(BID_COLS[COL_SECURITY]).setMaxWidth(0);
 			}
 			else {
-				buyButton.setText("BUY BURST");
-				sellButton.setText("SELL BURST");
+				buyButton.setText(tr("book_buy_button", "BURST"));
+				sellButton.setText(tr("book_sell_button", "BURST"));
 
 				table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setMaxWidth(Integer.MAX_VALUE);
 				table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setPreferredWidth(COL_REGULAR);
@@ -519,7 +521,7 @@ public class OrderBook extends JPanel {
 				icon = null;
 			}
 			else if(s.getCreator().equals(g.getAddress()) && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
-				priceFormated = String.format("SIGNAL %s RECEIVED", market);
+				priceFormated = tr("book_signal_button", market);
 				icon = null;
 			}
 			JButton b = new ActionButton(priceFormated, s, false);
@@ -540,7 +542,7 @@ public class OrderBook extends JPanel {
 					&& s.getBalance().longValue() > 0 && s.getState() < SellContract.STATE_WAITING_PAYMT
 					&& !s.hasPending()) {
 				ActionButton withDrawButton = new ActionButton("", s, true);
-				withDrawButton.setToolTipText("Withdraw the amount on this contract.");
+				withDrawButton.setToolTipText(tr("book_withdraw"));
 				withDrawButton.setIcon(cancelIcon);
 				exp.add(withDrawButton, BorderLayout.WEST);
 			}
