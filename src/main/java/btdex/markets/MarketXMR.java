@@ -3,6 +3,7 @@ package btdex.markets;
 import java.util.HashMap;
 
 import btdex.core.Globals;
+import btdex.locale.Translation;
 import monero.daemon.model.MoneroNetworkType;
 import monero.utils.MoneroException;
 import monero.utils.MoneroUtils;
@@ -31,7 +32,7 @@ public class MarketXMR extends MarketCrypto {
 			MoneroUtils.validateAddress(addr, type);
 		}
 		catch (MoneroException e) {
-			throw new Exception(addr + " is not a valid XMR (Monero) address");
+			throw new Exception(Translation.tr("mkt_invalid_address", addr, toString()));
 		}
 	}
 }

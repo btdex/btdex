@@ -2,6 +2,8 @@ package btdex.markets;
 
 import java.util.HashMap;
 
+import btdex.locale.Translation;
+
 public class MarketBTC extends MarketCrypto {
 	
 	public String toString() {
@@ -21,6 +23,6 @@ public class MarketBTC extends MarketCrypto {
 		String addr = fields.get(ADDRESS);
 		
 		if(!BTCAddrValidator.validate(addr))
-			throw new Exception(addr + " is not a valid BTC address");
+			throw new Exception(Translation.tr("mkt_invalid_address", addr, toString()));
 	}
 }

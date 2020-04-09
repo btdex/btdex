@@ -3,6 +3,7 @@ package btdex.markets;
 import java.util.HashMap;
 
 import btdex.core.NumberFormatting;
+import btdex.locale.Translation;
 
 public class MarketDOGE extends MarketCrypto {
 	
@@ -27,6 +28,6 @@ public class MarketDOGE extends MarketCrypto {
 		String addr = fields.get(ADDRESS);
 		
 		if(!BTCAddrValidator.validate(addr, BTCAddrValidator.DOGE_HEADERS))
-			throw new Exception(addr + " is not a valid DOGE address");
+			throw new Exception(Translation.tr("mkt_invalid_address", addr, toString()));
 	}
 }

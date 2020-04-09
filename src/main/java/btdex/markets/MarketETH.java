@@ -2,6 +2,8 @@ package btdex.markets;
 
 import java.util.HashMap;
 
+import btdex.locale.Translation;
+
 public class MarketETH extends MarketCrypto {
 	
 	static final String ADDRESS = "Address";
@@ -23,6 +25,6 @@ public class MarketETH extends MarketCrypto {
 		String addr = fields.get(ADDRESS);
 		
 		if(!addr.matches(REGEX))
-			throw new Exception(addr + " is not a valid ETH address");
+			throw new Exception(Translation.tr("mkt_invalid_address", addr, toString()));
 	}	
 }

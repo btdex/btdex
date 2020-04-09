@@ -2,6 +2,8 @@ package btdex.markets;
 
 import java.util.HashMap;
 
+import btdex.locale.Translation;
+
 public class MarketLTC extends MarketCrypto {
 	
 	static final String ADDRESS = "Address";
@@ -23,6 +25,6 @@ public class MarketLTC extends MarketCrypto {
 		String addr = fields.get(ADDRESS);
 		
 		if(!addr.matches(REGEX))
-			throw new Exception(addr + " is not a valid LTC address");
+			throw new Exception(Translation.tr("mkt_invalid_address", addr, toString()));
 	}
 }
