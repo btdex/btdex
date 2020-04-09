@@ -135,16 +135,16 @@ public class Contracts {
 		ContractState updatedFreeContract = null;
 		ContractState updatedFreeNoDepositContract = null;
 
-		// update the state of every contract for the given market
+		// update the state of every contract
 		for(ContractState s : contractsMap.values()) {
 			s.update();
 			
 			if(s.getType() == ContractState.Type.Standard &&
-					s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId() && 
+					s.getCreator().equals(g.getAddress()) && 
 					s.getState() == SellContract.STATE_FINISHED && !s.hasPending())
 				updatedFreeContract = s;
-			if(s.getType() == ContractState.Type.NoDeposit &&
-					s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId() &&
+			else if(s.getType() == ContractState.Type.NoDeposit &&
+					s.getCreator().equals(g.getAddress()) &&
 					s.getState() == SellNoDepositContract.STATE_FINISHED && !s.hasPending())
 				updatedFreeNoDepositContract = s;
 		}
