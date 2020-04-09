@@ -9,8 +9,8 @@ import java.util.Properties;
 public class Translation {
 	
 	private static final String RESOURCE_FILE = "/locale/i18n.btdex";
+	private static final String RESOURCE_TR_FILE = "/locale/tr/i18n.btdex";
 	
-	private static Locale locale = Locale.ENGLISH;
 	private static Properties enResource = new Properties();
 	private static Properties resource;
 	
@@ -25,14 +25,10 @@ public class Translation {
 	static {
 		try {
 			enResource.load(Translation.class.getResourceAsStream(RESOURCE_FILE + ".properties"));
-			resource = enResource;
+			resource = enResource;			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public static String getLanguage() {
-		return locale.getDisplayLanguage();
 	}
 	
 	public static Locale[] getSupportedLanguages() {
@@ -41,10 +37,9 @@ public class Translation {
 	
 	public static void setLanguage(String language) {
 		try {
-			InputStream stream = Translation.class.getResourceAsStream(RESOURCE_FILE + language + ".properties");
+			InputStream stream = Translation.class.getResourceAsStream(RESOURCE_TR_FILE + "_" + language + ".properties");
 			if(stream != null) {
-				locale = Locale.forLanguageTag(language);
-				resource = new Properties();		
+				resource = new Properties();
 				resource.load(stream);
 			}
 		} catch (IOException e) {

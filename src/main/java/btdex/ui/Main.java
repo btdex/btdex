@@ -313,7 +313,7 @@ public class Main extends JFrame implements ActionListener {
 			public void actionPerformed(ActionEvent e) {
 				JPopupMenu menu = new JPopupMenu();
 				for(Locale l : Translation.getSupportedLanguages()) {
-					JMenuItem item = new JMenuItem(l.getDisplayLanguage());
+					JMenuItem item = new JMenuItem(l.getDisplayLanguage(l));
 					item.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
@@ -386,7 +386,7 @@ public class Main extends JFrame implements ActionListener {
 
 		
 		topRight.add(new Desc("  ", settingsButton));
-		topRight.add(new Desc(Translation.getLanguage(), langButton));
+		topRight.add(new Desc(tr("main_language_name"), langButton));
 
 		nodeSelector = new JButton(g.getNode());
 		nodeSelector.setToolTipText(tr("main_select_node"));
