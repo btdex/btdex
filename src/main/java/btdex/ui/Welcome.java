@@ -82,7 +82,7 @@ public class Welcome extends JDialog implements ActionListener {
 			topPanel.add(introText, BorderLayout.PAGE_START);
 
 		acceptBox = new JCheckBox(tr("welc_wrote"));
-		recoverBox = new JCheckBox("welc_reuse");
+		recoverBox = new JCheckBox(tr("welc_reuse"));
 
 		recoverBox.addActionListener(this);
 
