@@ -1,6 +1,7 @@
 package btdex.locale;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.Properties;
@@ -23,9 +24,12 @@ public class Translation {
 	
 	
 	public static void setLanguage(Locale locale) {
-		resource = new Properties();		
 		try {
-			resource.load(Translation.class.getResourceAsStream(RESOURCE_FILE + locale.getLanguage() + ".properties"));
+			InputStream stream = Translation.class.getResourceAsStream(RESOURCE_FILE + locale.getLanguage() + ".properties");
+			if(stream != null) {
+				resource = new Properties();		
+				resource.load(stream);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
