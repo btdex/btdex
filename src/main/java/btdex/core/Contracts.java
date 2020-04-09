@@ -132,8 +132,8 @@ public class Contracts {
 		mostRecentID = ContractState.addContracts(contractsMap, mostRecentID);
 		
 		Globals g = Globals.getInstance();
-		freeContract = null;
-		freeNoDepositContract = null;
+		ContractState updatedFreeContract = null;
+		ContractState updatedFreeNoDepositContract = null;
 
 		// update the state of every contract for the given market
 		for(ContractState s : contractsMap.values()) {
@@ -142,12 +142,16 @@ public class Contracts {
 			if(s.getType() == ContractState.Type.Standard &&
 					s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId() && 
 					s.getState() == SellContract.STATE_FINISHED && !s.hasPending())
-				freeContract = s;
+				updatedFreeContract = s;
 			if(s.getType() == ContractState.Type.NoDeposit &&
 					s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId() &&
 					s.getState() == SellNoDepositContract.STATE_FINISHED && !s.hasPending())
-				freeNoDepositContract = s;
+				updatedFreeNoDepositContract = s;
 		}
+		
+		// TODO: maybe a lock around this
+		freeContract = updatedFreeContract;
+		freeNoDepositContract = updatedFreeNoDepositContract;
 	}
 
 	public static long[] getNewContractData(Boolean testnet) {
