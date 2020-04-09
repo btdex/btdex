@@ -515,7 +515,7 @@ public class OrderBook extends JPanel {
 			ContractState s = marketContracts.get(row);
 
 			String priceFormated = market.format(s.getRate());
-			Icon icon = s.getCreator().equals(g.getAddress()) ? editIcon : takeIcon;
+			Icon icon = s.getCreator().equals(g.getAddress()) ? editIcon : null; // takeIcon;
 			if(s.hasPending()) {
 				priceFormated = "PENDING... ";
 				icon = null;				
