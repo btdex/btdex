@@ -97,9 +97,9 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		buyToken.addActionListener(this);
 		sellToken.addActionListener(this);
 
-		fieldPanel.add(new Desc(tr("token_price", "BURST"), priceField));
-		fieldPanel.add(new Desc(tr("token_size", market), amountField));
-		fieldPanel.add(new Desc(tr("token_total", "BURST"), totalField));
+		fieldPanel.add(new Desc(tr("offer_price", "BURST"), priceField));
+		fieldPanel.add(new Desc(tr("offer_size", market), amountField));
+		fieldPanel.add(new Desc(tr("offer_total", "BURST"), totalField));
 
 		conditions = new JTextPane();
 		//		conditions.setContentType("text/html");
@@ -181,7 +181,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			Globals g = Globals.getInstance();
 
 			if(error == null && (priceValue == null || priceValue.longValue() <= 0)) {
-				error = tr("token_invalid_amount");
+				error = tr("offer_invalid_price");
 			}
 			if(error == null && (amountValue == null || amountValue.longValue() <= 0)) {
 				error = tr("send_invalid_amount");
