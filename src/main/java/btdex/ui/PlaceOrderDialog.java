@@ -136,7 +136,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		}
 
 		// Only FIAT can have zero security (on-ramp special contracts)
-		security = new JSlider(market.isFiat() ? 0 : 1, 20);
+		security = new JSlider(market.isFiat() ? 0 : 1, 30);
 
 		Desc securityDesc = new Desc("", security);
 		fieldPanel.add(securityDesc);
@@ -155,7 +155,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				somethingChanged();
 			}
 		});
-		security.getModel().setValue(5);
+		security.setValue(15);
+		securityDesc.setDesc(tr("offer_security_deposit_percent", security.getValue()));
+		
 
 		if(isUpdate || isTake) {
 			// These cannot be changed
