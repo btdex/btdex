@@ -280,7 +280,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			if(contract==null && Contracts.getFreeContract() == null) {
 				int ret = JOptionPane.showConfirmDialog(getParent(),
 						tr("offer_no_contract_available"),
-						tr("Register Smart Contracts"), JOptionPane.YES_NO_OPTION);
+						tr("reg_register"), JOptionPane.YES_NO_OPTION);
 				if(ret == JOptionPane.YES_OPTION) {
 					// No available contract, show the option to register a contract first
 					RegisterContractDialog dlg = new RegisterContractDialog(getOwner());
@@ -359,6 +359,11 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				if(contract == null) {
 					// configure a new contract and place the deposit
 					contract = Contracts.getFreeContract();
+					if(contract == null) {
+						// This should not happen, since we checked already when opening the dialog
+						Toast.makeText((JFrame) this.getOwner(), tr("offer_no_contract_error"), Toast.Style.ERROR).display(okButton);
+						return;
+					}
 
 					// send the update transaction with the amount + security deposit
 					long securityAmount = amountValue.longValue() * security.getValue() / 100;
