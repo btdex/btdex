@@ -35,6 +35,7 @@ import javax.swing.event.DocumentListener;
 import com.google.gson.JsonObject;
 
 import bt.BT;
+import bt.Contract;
 import btdex.core.Account;
 import btdex.core.Constants;
 import btdex.core.ContractState;
@@ -327,6 +328,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			}
 			if(error == null && (amountValue == null || amountValue.longValue() <= 0)) {
 				error = tr("send_invalid_amount");
+			}
+			if(error == null && amountValue.longValue() <= 10 * Contract.ONE_BURST) {
+				error = tr("offer_too_small");
 			}
 
 			if(error == null && !acceptBox.isSelected()) {
