@@ -10,6 +10,7 @@ public class Translation {
 	
 	private static final String RESOURCE_FILE = "/locale/i18n.btdex";
 	
+	private static Locale locale = Locale.ENGLISH;
 	private static Properties enResource = new Properties();
 	private static Properties resource;
 	
@@ -22,11 +23,15 @@ public class Translation {
 		}
 	}
 	
+	public static String getLanguage() {
+		return locale.getDisplayLanguage();
+	}
 	
-	public static void setLanguage(Locale locale) {
+	public static void setLanguage(Locale newLocale) {
 		try {
-			InputStream stream = Translation.class.getResourceAsStream(RESOURCE_FILE + locale.getLanguage() + ".properties");
+			InputStream stream = Translation.class.getResourceAsStream(RESOURCE_FILE + newLocale.getLanguage() + ".properties");
 			if(stream != null) {
+				locale = newLocale;
 				resource = new Properties();		
 				resource.load(stream);
 			}

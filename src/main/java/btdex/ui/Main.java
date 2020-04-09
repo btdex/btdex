@@ -12,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URI;
 import java.security.SecureRandom;
+import java.util.Locale;
 import java.util.Properties;
 
 import javax.imageio.ImageIO;
@@ -39,6 +40,8 @@ import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.Markets;
 import btdex.core.NumberFormatting;
+import btdex.locale.Translation;
+
 import static btdex.locale.Translation.tr;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.response.Account;
@@ -153,6 +156,7 @@ public class Main extends JFrame implements ActionListener {
 		JPanel bottomAll = new JPanel(new BorderLayout());
 
 		JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		JPanel bottom = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		
 		cardLayout = new CardLayout();
@@ -167,6 +171,7 @@ public class Main extends JFrame implements ActionListener {
 		getContentPane().add(splash, "splash");
 
 		topAll.add(top, BorderLayout.CENTER);
+		topAll.add(topRight, BorderLayout.LINE_END);
 		content.add(topAll, BorderLayout.PAGE_START);
 		content.add(bottomAll, BorderLayout.PAGE_END);
 				
@@ -295,6 +300,11 @@ public class Main extends JFrame implements ActionListener {
 		settingsButton.setFont(largeFont);
 		settingsButton.setVisible(false);
 
+		Icon langIcon = IconFontSwing.buildIcon(FontAwesome.LANGUAGE, ICON_SIZE, COLOR);
+		JButton langButton = new JButton(langIcon);
+		langButton.setToolTipText(tr("main_change_language"));
+		langButton.setFont(largeFont);
+
 		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.PAPER_PLANE, ICON_SIZE, COLOR);
 
 		sendButton = new JButton(sendIcon);
@@ -346,7 +356,8 @@ public class Main extends JFrame implements ActionListener {
 		top.add(new Desc("  ", sendButtonToken));
 
 		
-		top.add(new Desc("  ", settingsButton));
+		topRight.add(new Desc("  ", settingsButton));
+		topRight.add(new Desc(Translation.getLanguage(), langButton));
 
 		nodeSelector = new JButton(g.getNode());
 		nodeSelector.setToolTipText(tr("main_select_node"));
