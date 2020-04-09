@@ -36,6 +36,10 @@ public class Translation {
 	}
 	
 	public static void setLanguage(String language) {
+		if(language == null || language.length()==0) {
+			// if never set, we will use the machine language by default
+			language = Locale.getDefault().getLanguage();
+		}
 		try {
 			InputStream stream = Translation.class.getResourceAsStream(RESOURCE_TR_FILE + "_" + language + ".properties");
 			if(stream != null) {

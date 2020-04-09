@@ -24,6 +24,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import btdex.core.Globals;
+import static btdex.locale.Translation.tr;
 import burst.kit.entity.BurstAddress;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
@@ -57,7 +58,7 @@ public class Welcome extends JDialog implements ActionListener {
 		
 		this.resetPin = resetPin;
 
-		setTitle(resetPin ? "Reset PIN" : "Welcome!");
+		setTitle(tr(resetPin ? "welc_reset_pin" : "welc_welcome"));
 		setResizable(false);
 
 		JPanel topPanel = new JPanel(new BorderLayout());
@@ -65,16 +66,7 @@ public class Welcome extends JDialog implements ActionListener {
 		JPanel panel = new JPanel(new GridLayout(0, 2, 4, 4));
 
 		if(!resetPin) {
-			introText = new JLabel(
-					"<html><h2>You have a new Wallet, read carefully</h2>"
-							+ "You must write down your 12-word recovery phrase "
-							+ "precisely and in the correct order and store "
-							+ "it securely. Anyone who gets your recovery phrase "
-							+ "can take your funds.<br><br>"
-							+ "This installation is secured with a PIN, if "
-							+ "you ever lose this PIN or this computer, "
-							+ "your recovery phrase is your only backup."
-					);
+			introText = new JLabel(tr("welc_intro"));
 			introText.setPreferredSize(new Dimension(60, 180));
 		}
 
@@ -89,15 +81,15 @@ public class Welcome extends JDialog implements ActionListener {
 		if(introText!=null)
 			topPanel.add(introText, BorderLayout.PAGE_START);
 
-		acceptBox = new JCheckBox("I wrote down my recovery phrase");
-		recoverBox = new JCheckBox("I want to use an existing recovery phrase");
+		acceptBox = new JCheckBox(tr("welc_wrote"));
+		recoverBox = new JCheckBox("welc_reuse");
 
 		recoverBox.addActionListener(this);
 
 		JPanel recoveryPanel = new JPanel(new BorderLayout());
-		recoveryPanel.setBorder(BorderFactory.createTitledBorder(resetPin ?
-				"Enter your recovery phrase to redefine your PIN" :
-				"Your recovery phrase"));
+		recoveryPanel.setBorder(BorderFactory.createTitledBorder(tr(resetPin ?
+				"welc_prhase_to_redefine" :
+				"welc_recovery_phrase")));
 		recoveryPanel.add(recoverBox, BorderLayout.PAGE_START);
 		recoveryPanel.add(passphrase, BorderLayout.CENTER);
 		recoveryPanel.add(acceptBox, BorderLayout.PAGE_END);
@@ -107,14 +99,14 @@ public class Welcome extends JDialog implements ActionListener {
 		// Create a button
 		JPanel buttonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-		calcelButton = new JButton("Cancel");
-		okButton = new JButton("OK");
+		calcelButton = new JButton(tr("dlg_cancel"));
+		okButton = new JButton(tr("dlg_ok"));
 
 		calcelButton.addActionListener(this);
 		okButton.addActionListener(this);
 
-		panel.add(new Desc("PIN", pin));
-		panel.add(new Desc("Reenter PIN", pinCheck));
+		panel.add(new Desc(tr("dlg_pin"), pin));
+		panel.add(new Desc(tr("welc_reenter_pin"), pinCheck));
 
 		//		buttonPane.add(acceptBox);
 		buttonPane.add(calcelButton);
@@ -208,20 +200,20 @@ public class Welcome extends JDialog implements ActionListener {
 			String phrase = passphrase.getText();
 
 			if(!acceptBox.isSelected()) {
-				error = "Write down your recovery phrase first.";
+				error = tr("welc_write_phrase");
 				acceptBox.requestFocus();
 			}
 			else if(phrase.length()==0) {
-				error = "Your passphrase is empty.";
+				error = tr("welc_phrase_empty");
 				passphrase.requestFocus();				
 			}
 			else if(pin.getPassword() == null || pin.getPassword().length < 4) {
-				error = "Enter a PIN with at least 4 characters.";
+				error = tr("welc_min_pin");
 				pin.requestFocus();
 			}
 			else if(!Arrays.equals(pin.getPassword(), pinCheck.getPassword())) {
 				pin.requestFocus();
-				error = "PINs do not match.";
+				error = tr("welc_wrong_pin");
 			}
 
 			if(error == null) {
@@ -234,7 +226,7 @@ public class Welcome extends JDialog implements ActionListener {
 				try {
 					if(resetPin) {
 						if(!Arrays.equals(g.getPubKey(), pubKey)) {
-							error = "Incorrect passphrase.";
+							error = tr("welc_wrong_phrase");
 						}
 					}
 
