@@ -259,7 +259,6 @@ public class ContractState {
 			this.lockMinutes = getContractFieldValue(at, contract.getFieldAddress("lockMinutes"));
 		}
 		
-		hasPending = false;
 		Transaction[] txs = null;
 		int takeBlock = 0;
 
@@ -272,6 +271,7 @@ public class ContractState {
 		
 		// check if there is unconfirmed transactions
 		txs = g.getNS().getUnconfirmedTransactions(this.address).blockingGet();
+		hasPending = txs.length > 0;
 		processTransactions(txs, takeBlock);
 	}
 	
