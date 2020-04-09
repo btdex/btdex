@@ -474,6 +474,7 @@ public class OrderBook extends JPanel {
 
 		Collection<ContractState> allContracts = Contracts.getContracts();
 		marketContracts.clear();
+		boolean onlyMine = listOnlyMine.isSelected();
 
 		for(ContractState s : allContracts) {
 			// add your own contracts but not yet configured if they have balance (so you can withdraw)
@@ -485,6 +486,9 @@ public class OrderBook extends JPanel {
 
 			// only contracts for this market
 			if(s.getMarket() != market.getID())
+				continue;
+			
+			if(onlyMine && !s.getCreator().equals(g.getAddress()) && s.getTaker()!=g.getAddress().getSignedLongId())
 				continue;
 
 			// FIXME: add more validity tests here
