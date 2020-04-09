@@ -132,6 +132,8 @@ public class Contracts {
 		mostRecentID = ContractState.addContracts(contractsMap, mostRecentID);
 		
 		Globals g = Globals.getInstance();
+		freeContract = null;
+		freeNoDepositContract = null;
 
 		// update the state of every contract for the given market
 		for(ContractState s : contractsMap.values()) {
