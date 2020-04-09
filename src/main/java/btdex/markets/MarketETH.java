@@ -6,7 +6,6 @@ import btdex.locale.Translation;
 
 public class MarketETH extends MarketCrypto {
 	
-	static final String ADDRESS = "Address";
 	static final String REGEX = "^0x[0-9a-f]{40}$";
 
 	public String toString() {

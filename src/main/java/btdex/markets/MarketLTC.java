@@ -6,7 +6,6 @@ import btdex.locale.Translation;
 
 public class MarketLTC extends MarketCrypto {
 	
-	static final String ADDRESS = "Address";
 	static final String REGEX = "^L[a-km-zA-HJ-NP-Z1-9]{26,33}$";
 
 	public String toString() {
