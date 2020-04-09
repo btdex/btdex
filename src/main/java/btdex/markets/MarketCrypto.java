@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import btdex.core.Account;
 import btdex.core.Market;
+import static btdex.locale.Translation.tr;
 
 /**
  * Basic market for cryptocurrencies.
@@ -29,7 +30,7 @@ public abstract class MarketCrypto extends Market {
 	
 	@Override
 	public String getFieldDescription(String key) {
-		return "Address";
+		return tr("mkt_address");
 	}
 	
 	@Override
@@ -42,7 +43,7 @@ public abstract class MarketCrypto extends Market {
 		String addr = fields.get(ADDRESS);
 		
 		if(addr == null || addr.isEmpty())
-			throw new Exception("Address cannot be empty");
+			throw new Exception(tr("mkt_address_empty"));
 	}
 
 	@Override

@@ -31,6 +31,7 @@ import btdex.core.Account;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.Markets;
+import static btdex.locale.Translation.tr;
 import layout.SpringUtilities;
 
 public class AccountsPanel extends JPanel implements ActionListener, ListSelectionListener {
@@ -70,8 +71,8 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 	static final int PAD = 6;
 
 	static final String[] COLUMN_NAMES = {
-			"MARKET",
-			"ACCOUNT",
+			"acc_market_col",
+			"acc_account_col",
 	};
 
 	public AccountsPanel(Main main) {
@@ -80,6 +81,9 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 		this.main = main;
 
 		table = new JTable(model = new DefaultTableModel(COLUMN_NAMES, 0));
+		for (int i = 0; i < COLUMN_NAMES.length; i++) {
+			table.getColumnModel().getColumn(i).setHeaderValue(tr(COLUMN_NAMES[i]));
+		}
 		table.setRowHeight(table.getRowHeight()+7);
 		table.setPreferredScrollableViewportSize(new Dimension(400, 200));
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -90,8 +94,8 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 		right.setVisible(false);
 		right.setLayout(new BoxLayout(right, BoxLayout.Y_AXIS));
 
-		left.setBorder(BorderFactory.createTitledBorder("Your accounts"));
-		right.setBorder(BorderFactory.createTitledBorder("Account details"));
+		left.setBorder(BorderFactory.createTitledBorder(tr("acc_your_accounts")));
+		right.setBorder(BorderFactory.createTitledBorder(tr("acc_account_details")));
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
@@ -114,8 +118,8 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 		JPanel buttonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		left.add(buttonPane, BorderLayout.PAGE_END);
 
-		addButton = new JButton("ADD");
-		removeButton = new JButton("REMOVE");
+		addButton = new JButton(tr("acc_add_button"));
+		removeButton = new JButton(tr("acc_remove_button"));
 		removeButton.setEnabled(false);
 
 		addButton.addActionListener(this);
@@ -133,8 +137,8 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 		marketComboBox.addActionListener(this);
 
 		JPanel topPanel = new JPanel(new SpringLayout());
-		topPanel.add(new Desc("Market", marketComboBox), BorderLayout.LINE_START);
-		topPanel.add(new Desc("Account alias (optional)", nameField = new JTextField()), BorderLayout.CENTER);
+		topPanel.add(new Desc(tr("main_market"), marketComboBox), BorderLayout.LINE_START);
+		topPanel.add(new Desc(tr("acc_alias"), nameField = new JTextField()), BorderLayout.CENTER);
 		SpringUtilities.makeCompactGrid(topPanel, 1, 2, 0, 0, PAD, PAD);
 		right.add(topPanel);
 
@@ -143,8 +147,8 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 		//		right.add(formScroll);
 		right.add(formPanel);
 
-		cancelButton = new JButton("Cancel");
-		okButton = new JButton("OK");
+		cancelButton = new JButton(tr("dlg_cancel"));
+		okButton = new JButton(tr("dlg_ok"));
 
 		cancelButton.addActionListener(this);
 		okButton.addActionListener(this);
@@ -235,8 +239,7 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 			int row = table.getSelectedRow();
 			if(row >= 0) {
 				int ret = JOptionPane.showConfirmDialog(main,
-						"Remove the selected account?\n" + 
-								"This cannot be undone.", "Remove account",
+						tr("acc_remove_selected"), tr("acc_remove"),
 								JOptionPane.YES_NO_OPTION);
 				if(ret == JOptionPane.YES_OPTION) {
 					Globals.getInstance().removeAccount(row);
