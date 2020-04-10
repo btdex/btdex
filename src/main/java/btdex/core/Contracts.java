@@ -10,6 +10,7 @@ import org.bouncycastle.util.encoders.Hex;
 
 import bt.compiler.Compiler;
 import bt.compiler.Method;
+import btdex.sc.BuyContract;
 import btdex.sc.SellContract;
 import btdex.sc.SellNoDepositContract;
 import burst.kit.entity.BurstAddress;
@@ -17,16 +18,17 @@ import burst.kit.entity.BurstID;
 import burst.kit.entity.response.AT;
 
 public class Contracts {
-    private static Compiler contract, contractNoDeposit;
+    private static Compiler contract, contractNoDeposit, contractBuy;
     private static byte[] contractCode;
     private static byte[] contractNoDepositCode;
+    private static byte[] contractBuyCode;
     
     private static String contractUpdateHash;
     
 	private static HashMap<BurstAddress, ContractState> contractsMap = new HashMap<>();
 	private static boolean loading = true;
 	private static BurstID mostRecentID;
-	private static ContractState freeContract, freeNoDepositContract;
+	private static ContractState freeContract, freeNoDepositContract, freeBuyContract;
 	
 	static class UpdateThread extends Thread {
 		@Override
@@ -56,9 +58,14 @@ public class Contracts {
             contractNoDeposit = new Compiler(SellNoDepositContract.class);
             contractNoDeposit.compile();
             contractNoDeposit.link();
+            
+            contractBuy = new Compiler(BuyContract.class);
+            contractBuy.compile();
+            contractBuy.link();
 
             contractCode = contract.getCode();
             contractNoDepositCode = contractNoDeposit.getCode();
+            contractBuyCode = contractBuy.getCode();
             
             // get the update method hash
         	ByteBuffer b = ByteBuffer.allocate(8);
@@ -77,12 +84,23 @@ public class Contracts {
         }
     }
 
-    public static Compiler getContract() {
+    public static Compiler getContract(ContractState.Type type) {
+    	switch (type) {
+		case Buy:
+			return contractBuy;
+		case NoDeposit:
+			return contractNoDeposit;
+		default:
+		}
         return contract;
     }
 
     public static Compiler getContractNoDeposit() {
         return contractNoDeposit;
+    }
+    
+    public static Compiler getContractBuy() {
+        return contractBuy;
     }
 
     public static byte[] getContractCode() {
@@ -93,13 +111,15 @@ public class Contracts {
         return contractNoDepositCode;
     }
     
+    public static byte[] getContractBuyCode() {
+        return contractBuyCode;
+    }
+    
     public static String getContractUpdateHash() {
     	return contractUpdateHash;
     }
     
-	public static boolean checkContractCode(AT at) {
-		byte []code = getContractCode();
-		
+	public static boolean checkContractCode(AT at, byte []code) {
 		if(at.getMachineCode().length < code.length)
 			return false;
 		
@@ -107,22 +127,11 @@ public class Contracts {
 			if(at.getMachineCode()[i] != code[i])
 				return false;
 		}
+		
+		// TODO, also check the creation transaction and the initial data
 		return true;
 	}
-	
-	public static boolean checkContractCodeNoDeposit(AT at) {
-		byte []code = getContractNoDepositCode();
-		
-		if(at.getMachineCode().length < code.length)
-			return false;
-		
-		for (int i = 0; i < code.length; i++) {
-			if(at.getMachineCode()[i] != code[i])
-				return false;
-		}
-		return true;
-	}
-
+    
 	public static Collection<ContractState> getContracts() {
 		return contractsMap.values();
 	}
@@ -133,6 +142,7 @@ public class Contracts {
 		
 		Globals g = Globals.getInstance();
 		ContractState updatedFreeContract = null;
+		ContractState updatedBuyFreeContract = null;
 		ContractState updatedFreeNoDepositContract = null;
 
 		// update the state of every contract
@@ -143,6 +153,10 @@ public class Contracts {
 					s.getCreator().equals(g.getAddress()) && 
 					s.getState() == SellContract.STATE_FINISHED && !s.hasPending())
 				updatedFreeContract = s;
+			else if(s.getType() == ContractState.Type.Buy &&
+					s.getCreator().equals(g.getAddress()) && 
+					s.getState() == SellContract.STATE_FINISHED && !s.hasPending())
+				updatedBuyFreeContract = s;
 			else if(s.getType() == ContractState.Type.NoDeposit &&
 					s.getCreator().equals(g.getAddress()) &&
 					s.getState() == SellNoDepositContract.STATE_FINISHED && !s.hasPending())
@@ -151,6 +165,7 @@ public class Contracts {
 		
 		// TODO: maybe a lock around this
 		freeContract = updatedFreeContract;
+		freeBuyContract = updatedBuyFreeContract;
 		freeNoDepositContract = updatedFreeNoDepositContract;
 	}
 
@@ -169,6 +184,10 @@ public class Contracts {
 	
 	public static ContractState getFreeContract() {
 		return freeContract;
+	}
+	
+	public static ContractState getFreeBuyContract() {
+		return freeBuyContract;
 	}
 	
 	public static ContractState getFreeNoDepositContract() {

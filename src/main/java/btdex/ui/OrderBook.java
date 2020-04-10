@@ -54,16 +54,16 @@ public class OrderBook extends JPanel {
 
 	int ROW_HEIGHT;
 
-	ArrayList<ContractState> marketContracts = new ArrayList<>();
+	ArrayList<ContractState> contracts = new ArrayList<>();
+	ArrayList<ContractState> contractsBuy = new ArrayList<>();
 
 	public static final int COL_CONTRACT = 0;
 	public static final int COL_TOTAL = 1;
 	public static final int COL_SIZE = 2;
-	public static final int COL_SECURITY = 3;
-	public static final int COL_PRICE = 4;
+	public static final int COL_PRICE = 3;
 
-	public static final int[] BID_COLS = {0, 1, 2, 3, 4};
-	public static final int[] ASK_COLS = {9, 8, 7, 6, 5};
+	public static final int[] BID_COLS = {0, 1, 2, 3};
+	public static final int[] ASK_COLS = {7, 6, 5, 4};
 
 	private static final int COL_WIDE = 100;
 	private static final int COL_REGULAR = 75;
@@ -72,11 +72,9 @@ public class OrderBook extends JPanel {
 			"book_contract",
 			"book_total",
 			"book_size",
-			"book_deposit",
 			"book_price",
 
 			"book_price",
-			"book_deposit",
 			"book_size",
 			"book_total",
 			"book_contract",
@@ -102,8 +100,12 @@ public class OrderBook extends JPanel {
 				colName = tr("book_price", isToken ? "BURST" : market);
 			else if(col == BID_COLS[COL_TOTAL] || col == ASK_COLS[COL_TOTAL])
 				colName = tr("book_total", isToken ? "BURST" : market);
-			else if(col == BID_COLS[COL_SIZE] || col == ASK_COLS[COL_SIZE])		
-				colName = tr("book_size", isToken ? market : "BURST");
+			else if(col == BID_COLS[COL_SIZE] || col == ASK_COLS[COL_SIZE]) {
+				if(isToken)
+					colName = tr("book_size", market);
+				else
+					colName = tr("book_size", "BURST") + " (" + tr("book_deposit") + ")";
+			}
 			else if((col == BID_COLS[COL_CONTRACT] || col==ASK_COLS[COL_CONTRACT]) && isToken)
 				colName = tr("book_order");
 			else
@@ -213,7 +215,7 @@ public class OrderBook extends JPanel {
 						if(isToken)
 							dlg = new PlaceTokenOrderDialog(f, market, order);
 						else
-							dlg = new PlaceOrderDialog(f, market, contract);
+							dlg = new PlaceOrderDialog(f, market, contract, false);
 					}
 					dlg.setLocationRelativeTo(OrderBook.this);
 					dlg.setVisible(true);
@@ -296,11 +298,10 @@ public class OrderBook extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
-				if(market.getTokenID() != null) {
-					JDialog dlg = new PlaceTokenOrderDialog(f, market, firstAsk);
-					dlg.setLocationRelativeTo(OrderBook.this);
-					dlg.setVisible(true);
-				}
+				JDialog dlg = market.getTokenID()!= null ? new PlaceTokenOrderDialog(f, market, firstAsk):
+					new PlaceOrderDialog(f, market, null, true);
+				dlg.setLocationRelativeTo(OrderBook.this);
+				dlg.setVisible(true);
 			}
 		});
 		sellButton.addActionListener(new ActionListener() {
@@ -308,7 +309,7 @@ public class OrderBook extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
 				JDialog dlg = market.getTokenID()!= null ? new PlaceTokenOrderDialog(f, market, firstBid)
-						: new PlaceOrderDialog(f, market, null);
+						: new PlaceOrderDialog(f, market, null, false);
 				
 				dlg.setLocationRelativeTo(OrderBook.this);
 				dlg.setVisible(true);
@@ -332,18 +333,10 @@ public class OrderBook extends JPanel {
 			if(market.getTokenID() != null) {
 				buyButton.setText(tr("book_buy_button", market));
 				sellButton.setText(tr("book_sell_button", market));
-
-				table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setMaxWidth(0);
-				table.getColumnModel().getColumn(BID_COLS[COL_SECURITY]).setMaxWidth(0);
 			}
 			else {
 				buyButton.setText(tr("book_buy_button", "BURST"));
 				sellButton.setText(tr("book_sell_button", "BURST"));
-
-				table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setMaxWidth(Integer.MAX_VALUE);
-				table.getColumnModel().getColumn(ASK_COLS[COL_SECURITY]).setPreferredWidth(COL_REGULAR);
-				table.getColumnModel().getColumn(BID_COLS[COL_SECURITY]).setMaxWidth(Integer.MAX_VALUE);
-				table.getColumnModel().getColumn(BID_COLS[COL_SECURITY]).setPreferredWidth(COL_REGULAR);
 			}
 			lastPrice.setIcon(null);
 			lastPrice.setText(" ");
@@ -473,14 +466,17 @@ public class OrderBook extends JPanel {
 		Globals g = Globals.getInstance();
 
 		Collection<ContractState> allContracts = Contracts.getContracts();
-		marketContracts.clear();
+		contracts.clear();
+		contractsBuy.clear();
 		boolean onlyMine = listOnlyMine.isSelected();
 
 		for(ContractState s : allContracts) {
 			// add your own contracts but not yet configured if they have balance (so you can withdraw)
-			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId() && s.getMarket() == 0
-					&& s.getBalance().longValue() > 0L) {
-				marketContracts.add(s);
+			if(s.getCreator().equals(g.getAddress()) && s.getMarket() == 0 && s.getBalance().longValue() > 0L) {
+				if(s.getType() == ContractState.Type.Standard)
+					contracts.add(s);
+				else if(s.getType() == ContractState.Type.Buy)
+					contractsBuy.add(s);
 				continue;
 			}
 
@@ -493,32 +489,48 @@ public class OrderBook extends JPanel {
 
 			// FIXME: add more validity tests here
 			if(s.hasPending() ||
-					s.getAmountNQT() > 0	&& s.getRate() > 0 && s.getMarketAccount() != null &&
+					s.getAmountNQT() > 0	&& s.getRate() > 0 && (s.getMarketAccount() != null || s.getType() == ContractState.Type.Buy) &&
 					(s.getState() == SellContract.STATE_OPEN
 					|| (s.getState()!= SellContract.STATE_FINISHED && s.getTaker() == g.getAddress().getSignedLongId())
-					|| (s.getState()!= SellContract.STATE_FINISHED && s.getCreator().equals(g.getAddress())) ) )
-				marketContracts.add(s);
+					|| (s.getState()!= SellContract.STATE_FINISHED && s.getCreator().equals(g.getAddress())) ) ) {
+				if(s.getType() == ContractState.Type.Buy)
+					contractsBuy.add(s);
+				else
+					contracts.add(s);
+			}
 		}
 
 		// sort by rate
-		marketContracts.sort(new Comparator<ContractState>() {
+		contracts.sort(new Comparator<ContractState>() {
 			@Override
 			public int compare(ContractState o1, ContractState o2) {
 				return (int)(o1.getRate() - o2.getRate());
 			}
 		});
+		contractsBuy.sort(new Comparator<ContractState>() {
+			@Override
+			public int compare(ContractState o2, ContractState o1) {
+				return (int)(o1.getRate() - o2.getRate());
+			}
+		});
 
-		model.setRowCount(marketContracts.size());
+		model.setRowCount(Math.max(contracts.size(), contractsBuy.size()));
+		addContracts(contracts, ASK_COLS);
+		addContracts(contractsBuy, BID_COLS);
+	}
+	
+	private void addContracts(ArrayList<ContractState> contracts, int []cols) {
+		Globals g = Globals.getInstance();
 
 		// Update the contents
-		for (int row = 0; row < marketContracts.size(); row++) {			
-			ContractState s = marketContracts.get(row);
+		for (int row = 0; row < contracts.size(); row++) {			
+			ContractState s = contracts.get(row);
 
 			String priceFormated = market.format(s.getRate());
 			Icon icon = s.getCreator().equals(g.getAddress()) ? editIcon : null; // takeIcon;
 			if(s.hasPending()) {
 				priceFormated = "PENDING... ";
-				icon = null;				
+				icon = null;
 			}
 			else if(s.getTaker() == g.getAddress().getSignedLongId() && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
 				priceFormated = "DEPOSIT " + market;
@@ -530,16 +542,17 @@ public class OrderBook extends JPanel {
 			}
 			JButton b = new ActionButton(priceFormated, s, false);
 			b.setIcon(icon);
-			b.setBackground(HistoryPanel.RED);
-			model.setValueAt(b, row, ASK_COLS[COL_PRICE]);
+			b.setBackground(s.getType() == ContractState.Type.Buy ? HistoryPanel.GREEN : HistoryPanel.RED);
+			model.setValueAt(b, row, cols[COL_PRICE]);
 
-			model.setValueAt(s.getSecurity(), row, ASK_COLS[COL_SECURITY]);
+			long securityPercent = s.getSecurityNQT()*100L / s.getAmountNQT();
+			String sizeString = s.getAmount() + " (" + securityPercent + "%)";
 
-			model.setValueAt(s.getAmount(), row, ASK_COLS[COL_SIZE]);
+			model.setValueAt(sizeString, row, cols[COL_SIZE]);
 			double amount = ((double)s.getRate())*s.getAmountNQT();
 			amount /= Contract.ONE_BURST;
 			model.setValueAt(market.format((long)amount),
-					row, ASK_COLS[COL_TOTAL]);
+					row, cols[COL_TOTAL]);
 			ExplorerButton exp = new ExplorerButton(s.getAddress().getRawAddress(), copyIcon, expIcon,
 					ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(), s.getAddress().getFullAddress(), BUTTON_EDITOR); 
 			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId()
@@ -550,7 +563,7 @@ public class OrderBook extends JPanel {
 				withDrawButton.setIcon(cancelIcon);
 				exp.add(withDrawButton, BorderLayout.WEST);
 			}
-			model.setValueAt(exp, row, ASK_COLS[COL_CONTRACT]);
+			model.setValueAt(exp, row, cols[COL_CONTRACT]);
 
 			//			model.setValueAt(new ExplorerButton(
 			//					s.getCreator().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : s.getCreator().getRawAddress(), copyIcon, expIcon,

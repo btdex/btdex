@@ -11,6 +11,8 @@ import com.google.gson.JsonParser;
 import bt.BT;
 import bt.Contract;
 import bt.compiler.Compiler;
+import bt.compiler.Method;
+import btdex.sc.BuyContract;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
@@ -22,8 +24,8 @@ import burst.kit.entity.response.appendix.PlaintextMessageAppendix;
 
 public class ContractState {
 	
-	enum Type {
-		Invalid, Standard, NoDeposit
+	public enum Type {
+		Invalid, Standard, NoDeposit, Buy
 	}
 	
 	private BurstAddress address;
@@ -35,6 +37,7 @@ public class ContractState {
 	private long mediator2;
 	private long offerType;
 	private long feeContract;
+	private Compiler compiler;
 	
 	private long state;
 	private long amount;
@@ -120,6 +123,10 @@ public class ContractState {
 					SellContract.REUSE_OFFER_FEE :
 						SellContract.NEW_OFFER_FEE;
 		}
+		if(type == Type.Buy)
+			return at.isFrozen() ?
+					BuyContract.REUSE_OFFER_FEE :
+						BuyContract.NEW_OFFER_FEE;
 
 		return getActivationFee();
 	}
@@ -144,6 +151,10 @@ public class ContractState {
 	public String getSecurity() {
 		double dvalue = (double)security / Contract.ONE_BURST;
 		return NumberFormatting.BURST.format(dvalue);
+	}
+	
+	public Method getMethod(String method) {
+		return compiler.getMethod(method);
 	}
 
 	/**
@@ -188,9 +199,11 @@ public class ContractState {
 			Type type = Type.Invalid;
 			
 			// check the code (should match perfectly)
-			if(Contracts.checkContractCode(at))
+			if(Contracts.checkContractCode(at, Contracts.getContractCode()))
 				type = Type.Standard;
-			else if(Contracts.checkContractCodeNoDeposit(at))
+			else if(Contracts.checkContractCode(at, Contracts.getContractBuyCode()))
+				type = Type.Buy;
+			else if(Contracts.checkContractCode(at, Contracts.getContractNoDepositCode()))
 				type = Type.NoDeposit;
 			
 			if(type!=Type.Invalid) {
@@ -198,18 +211,10 @@ public class ContractState {
 				s.at = at;
 				
 				// Check some immutable variables
-				if(type == Type.Standard) {
-					Compiler contract = Contracts.getContract();
-					s.mediator1 = getContractFieldValue(at, contract.getFieldAddress("mediator1"));
-					s.mediator2 = getContractFieldValue(at, contract.getFieldAddress("mediator2"));
-					s.feeContract = getContractFieldValue(at, contract.getFieldAddress("feeContract"));
-				}
-				else if(type == Type.NoDeposit) {
-					Compiler contract = Contracts.getContractNoDeposit();
-					s.mediator1 = getContractFieldValue(at, contract.getFieldAddress("mediator1"));
-					s.mediator2 = getContractFieldValue(at, contract.getFieldAddress("mediator2"));
-					s.feeContract = getContractFieldValue(at, contract.getFieldAddress("feeContract"));
-				}
+				s.compiler = Contracts.getContract(type);
+				s.mediator1 = s.getContractFieldValue("mediator1");
+				s.mediator2 = s.getContractFieldValue("mediator2");
+				s.feeContract = s.getContractFieldValue("feeContract");
 				
 				// Check if the immutable variables are valid
 				if(g.getMediators().areMediatorsAccepted(s)
@@ -227,8 +232,9 @@ public class ContractState {
 		updateState(null);
 	}
 	
-    private static long getContractFieldValue(AT contract, int address) {
-        byte[] data = contract.getMachineData();
+    private long getContractFieldValue(String field) {
+    	int address = compiler.getFieldAddress(field);
+        byte[] data = at.getMachineData();
         ByteBuffer b = ByteBuffer.wrap(data);
         b.order(ByteOrder.LITTLE_ENDIAN);
 
@@ -246,17 +252,15 @@ public class ContractState {
 		this.balance = at.getBalance();
 		
 		// update variables that can change over time
-		if(type == Type.Standard) {
-			Compiler contract = Contracts.getContract();
-			this.state = getContractFieldValue(at, contract.getFieldAddress("state"));
-			this.amount = getContractFieldValue(at, contract.getFieldAddress("amount"));
-			this.security = getContractFieldValue(at, contract.getFieldAddress("security"));
-			this.taker = getContractFieldValue(at, contract.getFieldAddress("taker"));
+		if(type == Type.Standard || type == Type.Buy) {
+			this.state = getContractFieldValue("state");
+			this.amount = getContractFieldValue("amount");
+			this.security = getContractFieldValue("security");
+			this.taker = getContractFieldValue("taker");
 		}
 		else if(type == Type.NoDeposit) {
-			Compiler contract = Contracts.getContractNoDeposit();
-			this.state = getContractFieldValue(at, contract.getFieldAddress("state"));
-			this.lockMinutes = getContractFieldValue(at, contract.getFieldAddress("lockMinutes"));
+			this.state = getContractFieldValue("state");
+			this.lockMinutes = getContractFieldValue("lockMinutes");
 		}
 		
 		Transaction[] txs = null;
@@ -314,11 +318,11 @@ public class ContractState {
 			}
 			
 			// order configurations should be set by the creator
-			if(tx.getSender().getSignedLongId() != at.getCreator().getSignedLongId())
+			if(!tx.getSender().equals(at.getCreator()))
 				continue;
 			
 			if(tx.getRecipient().getSignedLongId() == address.getSignedLongId()
-					&& tx.getSender().getBurstID().getSignedLongId() == at.getCreator().getSignedLongId()
+					&& tx.getSender().equals(at.getCreator())
 					&& tx.getType() == 1 /* TYPE_MESSAGING */
 					&& tx.getSubtype() == 0 /* SUBTYPE_MESSAGING_ARBITRARY_MESSAGE */
 					&& tx.getAppendages()!=null && tx.getAppendages().length > 0) {
@@ -343,11 +347,13 @@ public class ContractState {
 						if(rateJson!=null)
 							rate = Long.parseLong(rateJson.getAsString());
 						
-						// parse the account fields
-						for(Market m : Markets.getMarkets()) {
-							if(m.getID() == market) {
-								marketAccount = m.parseAccount(accountFields);
-								break;
+						// parse the account fields (buy do not have it)
+						if(type != Type.Buy) {
+							for(Market m : Markets.getMarkets()) {
+								if(m.getID() == market) {
+									marketAccount = m.parseAccount(accountFields);
+									break;
+								}
 							}
 						}
 						

@@ -29,6 +29,7 @@ import javax.swing.event.ChangeListener;
 import bt.BT;
 import bt.compiler.Compiler;
 import btdex.core.Constants;
+import btdex.core.ContractState;
 import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.NumberFormatting;
@@ -54,9 +55,13 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 
 	private Compiler contract;
 
-	public RegisterContractDialog(Window owner) {
+	private boolean isBuy;
+
+	public RegisterContractDialog(Window owner, boolean isBuy) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		
+		this.isBuy = isBuy;
 
 		setTitle(tr("reg_register"));
 
@@ -106,7 +111,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 		content.add(centerPanel, BorderLayout.CENTER);
 		content.add(buttonPane, BorderLayout.PAGE_END);
 
-		contract = Contracts.getContract();
+		contract = Contracts.getContract(isBuy ? ContractState.Type.Buy : ContractState.Type.Standard);
 		stateChanged(null);
 		pack();
 	}
@@ -143,7 +148,6 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 				int ncontracts = Integer.parseInt(numOfContractsSpinner.getValue().toString());
 
 				for (int c = 0; c < ncontracts; c++) {
-					Compiler contract = Contracts.getContract();
 					long data[] = Contracts.getNewContractData(g.isTestnet());
 
 					ByteBuffer dataBuffer = ByteBuffer.allocate(data==null ? 0 : data.length*8);
@@ -184,8 +188,10 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 		Integer ncontracts = Integer.parseInt(numOfContractsSpinner.getValue().toString());
 		StringBuilder terms = new StringBuilder();
 		terms.append(tr("reg_terms", ncontracts,
+				tr(isBuy ? "reg_buying" : "reg_selling"),
 				NumberFormatting.BURST.format(BT.getMinRegisteringFee(contract).longValue())));
-		terms.append("\n\n").append(tr("reg_terms_closing"));
+		terms.append("\n\n").append(tr("reg_terms_closing",
+				tr(isBuy ? "reg_buying" : "reg_selling") ));
 		conditions.setText(terms.toString());
 		conditions.setCaretPosition(0);
 	}

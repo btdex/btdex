@@ -1,5 +1,7 @@
 package btdex.ui;
 
+import static btdex.locale.Translation.tr;
+
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -21,11 +23,9 @@ import javax.swing.border.EmptyBorder;
 import bt.BT;
 import btdex.core.Constants;
 import btdex.core.ContractState;
-import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
-import static btdex.locale.Translation.tr;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.FeeSuggestion;
@@ -104,11 +104,15 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 
 		suggestedFee = Globals.getInstance().getNS().suggestFee().blockingGet();
 
-		boolean isSell = order==null || order.getType() == AssetOrder.OrderType.ASK;
+		boolean isBuy = false;
+		if(order!=null && order.getType() == AssetOrder.OrderType.BID)
+			isBuy = true;
+		if(state!=null && state.getType() == ContractState.Type.Buy)
+			isBuy = true;
 		
 		StringBuilder terms = new StringBuilder();
-		terms.append(tr("canc_terms_brief", isSell ? tr("token_sell") : tr("token_buy"), market,
-				isToken ? order.getId() : state.getAddress().getFullAddress()));
+		terms.append(tr("canc_terms_brief", isBuy ? tr("token_buy") : tr("token_sell"), market,
+				isToken ? order.getId() : state.getAddress().getRawAddress()));
 		if(isToken) {
 			terms.append("\n\n").append(tr("canc_terms_token",
 					NumberFormatting.BURST.format(suggestedFee.getPriorityFee().longValue())));
@@ -165,7 +169,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 				}
 				else {
 					// update the security to zero to withdraw all funds
-					byte[] message = BT.callMethodMessage(Contracts.getContract().getMethod("update"), 0L);
+					byte[] message = BT.callMethodMessage(state.getMethod("update"), 0L);
 					
 					BurstValue amountToSend = BurstValue.fromPlanck(state.getActivationFee());
 

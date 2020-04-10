@@ -70,7 +70,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	private JButton cancelButton;
 	private JButton disputeButton;
 
-	private boolean isUpdate, isTake, isTaken;
+	private boolean isUpdate, isTake, isTaken, isBuy;
 
 	private JToggleButton buyToken;
 	private JToggleButton sellToken;
@@ -81,12 +81,16 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 	private Desc pinDesc;
 
-	public PlaceOrderDialog(JFrame owner, Market market, ContractState contract) {
+	public PlaceOrderDialog(JFrame owner, Market market, ContractState contract, boolean buy) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
 		this.contract = contract;
 		Globals g = Globals.getInstance();
+		
+		this.isBuy = buy;
+		if(contract !=null && contract.getType() == ContractState.Type.Buy)
+			this.isBuy = true;
 
 		if(contract !=null && contract.getState()==SellContract.STATE_OPEN) {
 			isUpdate =  contract.getCreator().equals(Globals.getInstance().getAddress());
@@ -96,8 +100,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			isTake = isTaken = true;
 		}
 
-		setTitle(tr((contract==null || contract.getCreator().equals(g.getAddress()) ?
-				"offer_sell_burst_for" : "offer_buy_burst_with"), market.toString()));
+		setTitle(tr((contract==null || contract.getCreator().equals(g.getAddress())) && !isBuy ?
+				"offer_sell_burst_for" : "offer_buy_burst_with", market.toString()));
 
 		if(isTaken && contract.getCreator().equals(g.getAddress()))
 			setTitle(tr("offer_signal_was_received", market));
@@ -213,7 +217,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		content.setBorder(new EmptyBorder(4, 4, 4, 4));
 
 		// We need the top panel
-		if(!isTake)
+		if(!isTake && !isBuy)
 			content.add(accountPanel, BorderLayout.PAGE_START);
 
 		JPanel conditionsPanel = new JPanel(new BorderLayout());
@@ -266,7 +270,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						"Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if(accountComboBox.getItemCount()==0 && contract==null) {
+			if(!isBuy && accountComboBox.getItemCount()==0 && contract==null) {
 				JOptionPane.showMessageDialog(getParent(), tr("offer_register_account_first", market),
 						"Error", JOptionPane.ERROR_MESSAGE);
 				return;
@@ -277,13 +281,15 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				return;
 			}
 
-			if(contract==null && Contracts.getFreeContract() == null) {
+			if(contract == null)
+				contract = isBuy ? Contracts.getFreeBuyContract() : Contracts.getFreeContract();
+			if(contract == null) {
 				int ret = JOptionPane.showConfirmDialog(getParent(),
 						tr("offer_no_contract_available"),
 						tr("reg_register"), JOptionPane.YES_NO_OPTION);
 				if(ret == JOptionPane.YES_OPTION) {
 					// No available contract, show the option to register a contract first
-					RegisterContractDialog dlg = new RegisterContractDialog(getOwner());
+					RegisterContractDialog dlg = new RegisterContractDialog(getOwner(), isBuy);
 					dlg.setLocationRelativeTo(getOwner());
 					dlg.setVisible(true);
 				}			
@@ -319,7 +325,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				setVisible(false);
 			}
 
-			if(accountComboBox.getSelectedIndex() < 0 && !isTake) {
+			if(accountComboBox.getSelectedIndex() < 0 && !isTake && !isBuy) {
 				error = tr("offer_select_account");
 			}
 
@@ -356,20 +362,22 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				Single<TransactionBroadcast> updateTx = null;
 
 				BurstValue configureFee = suggestedFee;
-				if(contract == null) {
+				if(!isUpdate) {
 					// configure a new contract and place the deposit
-					contract = Contracts.getFreeContract();
+					contract = isBuy ? Contracts.getFreeBuyContract() : Contracts.getFreeContract();
 					if(contract == null) {
 						// This should not happen, since we checked already when opening the dialog
 						Toast.makeText((JFrame) this.getOwner(), tr("offer_no_contract_error"), Toast.Style.ERROR).display(okButton);
 						return;
 					}
 
-					// send the update transaction with the amount + security deposit
-					long securityAmount = amountValue.longValue() * security.getValue() / 100;
-					byte[] message = BT.callMethodMessage(Contracts.getContract().getMethod("update"), securityAmount);
+					// send the update transaction
+					long securityAmount = amountValue.longValue() * security.getValue() / 100L;
+					byte[] message = BT.callMethodMessage(contract.getMethod("update"), isBuy? amountValue.longValue() : securityAmount);
 
-					BurstValue amountToSend = amountValue.add(BurstValue.fromPlanck(securityAmount + contract.getNewOfferFee()));
+					BurstValue amountToSend = BurstValue.fromPlanck(securityAmount + contract.getNewOfferFee());
+					if(!isBuy)
+						amountToSend = amountToSend.add(amountValue);
 
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 							amountToSend, suggestedFee,
@@ -386,7 +394,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 				if(isTaken && contract.getCreator().equals(g.getAddress())) {
 					// we are signaling that we have received
-					byte[] message = BT.callMethodMessage(Contracts.getContract().getMethod("reportComplete"));
+					byte[] message = BT.callMethodMessage(contract.getMethod("reportComplete"));
 					BurstValue amountToSend = BurstValue.fromPlanck(contract.getActivationFee());
 
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
@@ -395,7 +403,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				}
 				else if(isTake) {
 					// send the take transaction with the amount + security deposit
-					byte[] message = BT.callMethodMessage(Contracts.getContract().getMethod("take"),
+					byte[] message = BT.callMethodMessage(contract.getMethod("take"),
 							contract.getSecurityNQT(), contract.getAmountNQT());
 
 					BurstValue amountToSend = BurstValue.fromPlanck(contract.getSecurityNQT() + contract.getActivationFee());
@@ -409,7 +417,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					JsonObject messageJson = new JsonObject();
 					messageJson.addProperty("market", String.valueOf(market.getID()));
 					messageJson.addProperty("rate", String.valueOf(priceValue.longValue()));
-					messageJson.addProperty("account", accountDetails.getText());
+					if(!isBuy)
+						messageJson.addProperty("account", accountDetails.getText());
 
 					String messageString = Constants.GSON.toJson(messageJson);
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
@@ -527,20 +536,37 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						));
 				terms.append("\n\n").append(tr("offer_terms_protocol"));				
 			}
+			else if (isBuy){
+				if(!isUpdate)
+					contract = Contracts.getFreeBuyContract();
+
+				terms.append(tr(isUpdate ? "offer_terms_update_buy" : "offer_terms_buy",
+						amountField.getText(), priceField.getText(), market));
+				
+				terms.append("\n\n").append(tr(isUpdate ? "offer_terms_update_buy_details" : "offer_terms_buy_details",
+						NumberFormatting.BURST.format(isUpdate ? suggestedFee.longValue() :
+									contract.getNewOfferFee() + 2*suggestedFee.longValue() + Constants.FEE_EXTRA_PRIORITY),
+						isUpdate ? contract.getSecurity() :
+							NumberFormatting.BURST.format(security.getValue()*amountValue.longValue()/100) ));
+				terms.append("\n\n").append(tr("offer_terms_buy_taker",
+						amountField.getText(),
+						totalField.getText(), market, market));
+				terms.append("\n\n").append(tr("offer_terms_protocol"));				
+			}
 			else {
-				ContractState contract = Contracts.getFreeContract();
+				// sell contract (new or update)
+				if(!isUpdate)
+					contract = Contracts.getFreeContract();
 
 				terms.append(tr(isUpdate ? "offer_terms_update_sell" : "offer_terms_sell",
 						amountField.getText(), priceField.getText(), market,
 						accountDetails.getText()));
 				
 				terms.append("\n\n").append(tr(isUpdate ? "offer_terms_update_sell_details" : "offer_terms_sell_details",
-						NumberFormatting.BURST.format(
-								isUpdate ? suggestedFee.longValue() :
-									contract == null ? SellContract.NEW_OFFER_FEE : contract.getNewOfferFee()
-											+ 2*suggestedFee.longValue() + Constants.FEE_EXTRA_PRIORITY),
+						NumberFormatting.BURST.format(isUpdate ? suggestedFee.longValue() :
+									contract.getNewOfferFee() + 2*suggestedFee.longValue() + Constants.FEE_EXTRA_PRIORITY),
 						amountField.getText(),
-						isUpdate && contract!=null ? contract.getSecurity() :
+						isUpdate ? contract.getSecurity() :
 							NumberFormatting.BURST.format(security.getValue()*amountValue.longValue()/100) ));
 				terms.append("\n\n").append(tr("offer_terms_sell_taker",
 							totalField.getText(),

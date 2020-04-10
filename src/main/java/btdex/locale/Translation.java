@@ -9,7 +9,7 @@ import java.util.Properties;
 public class Translation {
 	
 	private static final String RESOURCE_FILE = "/locale/i18n.btdex";
-	private static final String RESOURCE_TR_FILE = "/locale/tr/i18n.btdex";
+	private static final String RESOURCE_TR_FILE = "/locale/tr/i18n_btdex";
 	
 	private static Properties enResource = new Properties();
 	private static Properties resource;
@@ -20,6 +20,7 @@ public class Translation {
 		// Locale.forLanguageTag("es"),
 		Locale.forLanguageTag("pt"),
 		Locale.forLanguageTag("lt"),
+		Locale.forLanguageTag("ru"),
 	};
 	
 	static {
