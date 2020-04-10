@@ -49,6 +49,7 @@ public class ContractState {
 	
 	private long rate;
 	private int market;
+	private int takeBlock;
 	private Account marketAccount;
 	
 	private long lastTxId;
@@ -177,6 +178,9 @@ public class ContractState {
 		BurstID idLimit = BurstID.fromLong(g.isTestnet() ?
 				"9601465021860021685" : "17916279999448178140");
 		
+		// check for the pending transactions
+		Transaction[] utxs = g.getNS().getUnconfirmedTransactions(g.getAddress()).blockingGet();
+		
 		// reverse order to get the more recent ones first
 		for (int i = atIDs.length-1; i >= 0; i--) {
 			BurstAddress ad = atIDs[i];
@@ -219,12 +223,13 @@ public class ContractState {
 				// Check if the immutable variables are valid
 				if(g.getMediators().areMediatorsAccepted(s)
 						&& Constants.FEE_CONTRACT == s.getFeeContract()){
-					s.updateState(at);
+					s.hasPending = s.updateState(at) || s.processTransactions(utxs, s.takeBlock);
+					
 					map.put(ad, s);
 				}
 			}
 		}
-		
+				
 		return first;
 	}	
 	
@@ -241,7 +246,7 @@ public class ContractState {
         return b.getLong(address * 8);
     }
     
-	void updateState(AT at) {
+	private boolean updateState(AT at) {
 		Globals g = Globals.getInstance();
 		
 		if(at == null)
@@ -264,19 +269,15 @@ public class ContractState {
 		}
 		
 		Transaction[] txs = null;
-		int takeBlock = 0;
+		boolean hasPending = false;
 
 		if(state != SellContract.STATE_FINISHED) {
 			// check rate, type, etc. from transaction history
 			txs = g.getNS().getAccountTransactions(this.address).blockingGet();
 			takeBlock = findTakeBlock(txs);
-			processTransactions(txs, takeBlock, false);
+			hasPending = processTransactions(txs, takeBlock);
 		}
-		
-		// check if there are unconfirmed transactions
-		txs = g.getNS().getUnconfirmedTransactions(this.address).blockingGet();
-		hasPending = hasPending || txs.length > 0;
-		processTransactions(txs, takeBlock, hasPending);
+		return hasPending;
 	}
 	
 	private int findTakeBlock(Transaction[] txs) {
@@ -299,12 +300,17 @@ public class ContractState {
 		return takeBlock;
 	}
 	
-	private void processTransactions(Transaction[] txs, int blockHeightLimit, boolean hasPending) {
+	private boolean processTransactions(Transaction[] txs, int blockHeightLimit) {
 		Globals g = Globals.getInstance();
+		boolean hasPending = false;
 
 		for(Transaction tx : txs) {
 			if(tx.getId().getSignedLongId() == lastTxId)
 				break;
+			
+			// Only transactions for this contract
+			if(!tx.getRecipient().equals(getAddress()))
+				continue;
 			
 			// We only accept configurations with 2 confirmations or more
 			// but also get pending info from the user
@@ -371,6 +377,6 @@ public class ContractState {
 				}
 			}
 		}
-		this.hasPending = hasPending;
+		return hasPending;
 	}
 }
