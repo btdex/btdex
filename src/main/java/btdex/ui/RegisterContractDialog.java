@@ -182,10 +182,11 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 	@Override
 	public void stateChanged(ChangeEvent evt) {
 		Integer ncontracts = Integer.parseInt(numOfContractsSpinner.getValue().toString());
-		String terms = null;
-		terms = tr("reg_terms", ncontracts,
-				NumberFormatting.BURST.format(BT.getMinRegisteringFee(contract).longValue()));
-		conditions.setText(terms);
+		StringBuilder terms = new StringBuilder();
+		terms.append(tr("reg_terms", ncontracts,
+				NumberFormatting.BURST.format(BT.getMinRegisteringFee(contract).longValue())));
+		terms.append("\n\n").append(tr("reg_terms_closing"));
+		conditions.setText(terms.toString());
 		conditions.setCaretPosition(0);
 	}
 }

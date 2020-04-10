@@ -471,74 +471,89 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		}
 
 
-		String terms = null;
+		StringBuilder terms = new StringBuilder();
 		boolean isNoDeposit = security.getValue() == 0;
 
 		if(isNoDeposit) {
-			terms = tr("offer_terms_no_deposit",
+			terms.append(tr("offer_terms_no_deposit",
 					market, priceField.getText(), market,
-					amountField.getText(),
+					amountField.getText()));
+			terms.append("\n\n").append(tr("offer_terms_no_deposit_maker",
 					totalField.getText(), market, accountDetails.getText(),
-					amountField.getText(),
-					market.getPaymentTimeout(account.getFields()), market, market, market
-					);
+					amountField.getText()));
+			terms.append("\n\n").append(tr("offer_terms_no_deposit_taker",
+					market.getPaymentTimeout(account.getFields()),
+					market, market, market
+					));
+			terms.append("\n\n").append(tr("offer_terms_closing"));
 		}
 		else {
 			if(isTaken) {
 				if (contract.getCreator().equals(Globals.getInstance().getAddress())) {
 					// Signaling that we have received the market amount
-					terms = tr("offer_terms_signaling",
+					terms.append(tr("offer_terms_signaling",
 							totalField.getText(), market,
-							market.simpleFormat(contract.getMarketAccount().getFields()),
+							market.simpleFormat(contract.getMarketAccount().getFields())));
+					terms.append("\n\n").append(tr("offer_terms_signaling_details",
 							amountField.getText(), contract.getSecurity(),
 							NumberFormatting.BURST.format(suggestedFee.longValue() +
 									contract.getActivationFee()),
 							market
-							);
+							));
+					terms.append("\n\n").append(tr("offer_terms_protocol"));
 				}
 				else {
 					// Telling we need to transfer the market amount
-					terms = tr("offer_terms_need_transfer",
+					terms.append(tr("offer_terms_need_transfer",
 							totalField.getText(), market,
 							market.simpleFormat(contract.getMarketAccount().getFields()),
-							market.getPaymentTimeout(account.getFields()),
+							market.getPaymentTimeout(account.getFields())));
+					terms.append("\n\n").append(tr("offer_terms_need_transfer_details",
 							amountField.getText(), contract.getSecurity(),
 							totalField.getText(), market
-							);
+							));
+					terms.append("\n\n").append(tr("offer_terms_protocol"));
 				}
 			}
 			else if(isTake) {
-				terms = tr("offer_terms_take_sell",
-						amountField.getText(), priceField.getText(), market,
+				terms.append(tr("offer_terms_take_sell",
+						amountField.getText(), priceField.getText(), market));
+				terms.append("\n\n").append(tr("offer_terms_take_sell_details",
 						amountField.getText(), contract.getSecurity(),
 						NumberFormatting.BURST.format(suggestedFee.longValue() +
 								contract.getActivationFee()),
 						totalField.getText(), market, market.getPaymentTimeout(account.getFields()),
 						market
-						);
+						));
+				terms.append("\n\n").append(tr("offer_terms_protocol"));				
 			}
 			else {
 				ContractState contract = Contracts.getFreeContract();
 
-				terms = tr(isUpdate ? "offer_terms_update_sell" : "offer_terms_sell",
+				terms.append(tr(isUpdate ? "offer_terms_update_sell" : "offer_terms_sell",
 						amountField.getText(), priceField.getText(), market,
-						accountDetails.getText(),
+						accountDetails.getText()));
+				
+				terms.append("\n\n").append(tr(isUpdate ? "offer_terms_update_sell_details" : "offer_terms_sell_details",
 						NumberFormatting.BURST.format(
 								isUpdate ? suggestedFee.longValue() :
 									contract == null ? SellContract.NEW_OFFER_FEE : contract.getNewOfferFee()
 											+ 2*suggestedFee.longValue() + Constants.FEE_EXTRA_PRIORITY),
 						amountField.getText(),
 						isUpdate && contract!=null ? contract.getSecurity() :
-							NumberFormatting.BURST.format(security.getValue()*amountValue.longValue()/100),
+							NumberFormatting.BURST.format(security.getValue()*amountValue.longValue()/100) ));
+				terms.append("\n\n").append(tr("offer_terms_sell_taker",
 							totalField.getText(),
 							market, accountDetails.getText(),
-							market.getPaymentTimeout(account.getFields()), market, market
-						);
+							market.getPaymentTimeout(account.getFields()), market
+						));
+				terms.append("\n\n").append(tr("offer_terms_protocol"));				
 			}
 		}
 
-		if(!conditions.getText().equals(terms)) {
-			conditions.setText(terms);
+		String termsText = terms.toString();
+		if(!conditions.getText().equals(termsText)) {
+			conditions.setText(termsText);
 			conditions.setCaretPosition(0);
 		}
 	}

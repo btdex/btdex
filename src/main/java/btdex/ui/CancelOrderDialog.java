@@ -103,24 +103,23 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 		content.add(buttonPane, BorderLayout.PAGE_END);
 
 		suggestedFee = Globals.getInstance().getNS().suggestFee().blockingGet();
-		
-		
-		String terms;
-		if(isToken) {
-			boolean isSell = !(order.getType() == AssetOrder.OrderType.BID);
 
-			terms = tr("canc_terms_token",
-					isSell ? tr("token_sell") : tr("token_buy"), market, order.getId(),
-							NumberFormatting.BURST.format(suggestedFee.getPriorityFee().longValue()));
+		boolean isSell = order==null || order.getType() == AssetOrder.OrderType.ASK;
+		
+		StringBuilder terms = new StringBuilder();
+		terms.append(tr("canc_terms_brief", isSell ? tr("token_sell") : tr("token_buy"), market,
+				isToken ? order.getId() : state.getAddress().getFullAddress()));
+		if(isToken) {
+			terms.append("\n\n").append(tr("canc_terms_token",
+					NumberFormatting.BURST.format(suggestedFee.getPriorityFee().longValue())));
 		}
 		else {
-			terms = tr("canc_terms",
-					state.getAddress().getFullAddress(),
+			terms.append("\n\n").append(tr("canc_terms_contract",
 					state.getBalance().toUnformattedString(),
-					NumberFormatting.BURST.format(state.getActivationFee() + suggestedFee.getPriorityFee().longValue()));			
+					NumberFormatting.BURST.format(state.getActivationFee() + suggestedFee.getPriorityFee().longValue())));			
 		}
 		
-		conditions.setText(terms);
+		conditions.setText(terms.toString());
 		conditions.setCaretPosition(0);
 		
 		pack();

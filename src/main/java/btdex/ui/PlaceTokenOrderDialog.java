@@ -261,18 +261,18 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			e.printStackTrace();
 		}
 
-		String terms = null;
 		boolean isSell = sellToken.isSelected();
 
-		terms = tr("token_terms",
-				isSell ? tr("token_sell") : tr("token_buy"),
-						amountField.getText(),
-						market,
-						priceField.getText(),
-						NumberFormatting.BURST.format(suggestedFee.longValue()));
+		StringBuilder terms = new StringBuilder();
+		terms.append(tr("token_terms_brief", isSell ? tr("token_sell") : tr("token_buy"),
+						amountField.getText(), market, priceField.getText()));
+		terms.append("\n\n").append(tr("token_terms_details",
+				NumberFormatting.BURST.format(suggestedFee.longValue())));
+		terms.append("\n\n").append(tr("token_terms_closing"));
+		
 
-		if(!conditions.getText().equals(terms)) {
-			conditions.setText(terms);
+		if(!conditions.getText().equals(terms.toString())) {
+			conditions.setText(terms.toString());
 			conditions.setCaretPosition(0);
 		}
 	}
