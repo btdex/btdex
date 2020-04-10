@@ -16,6 +16,7 @@ import btdex.sc.SellNoDepositContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.response.AT;
+import burst.kit.entity.response.Transaction;
 
 public class Contracts {
     private static Compiler contract, contractNoDeposit, contractBuy;
@@ -144,10 +145,13 @@ public class Contracts {
 		ContractState updatedFreeContract = null;
 		ContractState updatedBuyFreeContract = null;
 		ContractState updatedFreeNoDepositContract = null;
+		
+		// check for the pending transactions
+		Transaction[] utxs = g.getNS().getUnconfirmedTransactions(g.getAddress()).blockingGet();
 
 		// update the state of every contract
 		for(ContractState s : contractsMap.values()) {
-			s.update();
+			s.update(utxs);
 			
 			if(s.getType() == ContractState.Type.Standard &&
 					s.getCreator().equals(g.getAddress()) && 

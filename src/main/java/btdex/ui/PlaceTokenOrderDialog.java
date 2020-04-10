@@ -103,9 +103,9 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 
 		conditions = new JTextPane();
 		//		conditions.setContentType("text/html");
-		//		conditions.setEditable(false);
 		//		conditions.setLineWrap(true);
 		//		conditions.setWrapStyleWord(true);
+		conditions.setEditable(false);
 		conditions.setPreferredSize(new Dimension(80, 140));
 
 		acceptBox = new JCheckBox(tr("dlg_accept_terms"));

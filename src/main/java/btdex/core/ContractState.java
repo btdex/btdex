@@ -178,9 +178,6 @@ public class ContractState {
 		BurstID idLimit = BurstID.fromLong(g.isTestnet() ?
 				"9601465021860021685" : "17916279999448178140");
 		
-		// check for the pending transactions
-		Transaction[] utxs = g.getNS().getUnconfirmedTransactions(g.getAddress()).blockingGet();
-		
 		// reverse order to get the more recent ones first
 		for (int i = atIDs.length-1; i >= 0; i--) {
 			BurstAddress ad = atIDs[i];
@@ -223,8 +220,7 @@ public class ContractState {
 				// Check if the immutable variables are valid
 				if(g.getMediators().areMediatorsAccepted(s)
 						&& Constants.FEE_CONTRACT == s.getFeeContract()){
-					s.hasPending = s.updateState(at) || s.processTransactions(utxs, s.takeBlock);
-					
+					s.updateState(at, null);
 					map.put(ad, s);
 				}
 			}
@@ -233,8 +229,8 @@ public class ContractState {
 		return first;
 	}	
 	
-	public void update() {
-		updateState(null);
+	public void update(Transaction[] utxs) {
+		updateState(null, utxs);
 	}
 	
     private long getContractFieldValue(String field) {
@@ -246,7 +242,7 @@ public class ContractState {
         return b.getLong(address * 8);
     }
     
-	private boolean updateState(AT at) {
+	private void updateState(AT at, Transaction[] utxs) {
 		Globals g = Globals.getInstance();
 		
 		if(at == null)
@@ -268,16 +264,12 @@ public class ContractState {
 			this.lockMinutes = getContractFieldValue("lockMinutes");
 		}
 		
-		Transaction[] txs = null;
-		boolean hasPending = false;
-
 		if(state != SellContract.STATE_FINISHED) {
 			// check rate, type, etc. from transaction history
-			txs = g.getNS().getAccountTransactions(this.address).blockingGet();
+			Transaction[] txs = g.getNS().getAccountTransactions(this.address).blockingGet();
 			takeBlock = findTakeBlock(txs);
-			hasPending = processTransactions(txs, takeBlock);
+			hasPending = processTransactions(txs, takeBlock) || processTransactions(utxs, takeBlock);
 		}
-		return hasPending;
 	}
 	
 	private int findTakeBlock(Transaction[] txs) {
@@ -301,6 +293,9 @@ public class ContractState {
 	}
 	
 	private boolean processTransactions(Transaction[] txs, int blockHeightLimit) {
+		if(txs == null)
+			return false;
+		
 		Globals g = Globals.getInstance();
 		boolean hasPending = false;
 
