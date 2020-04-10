@@ -66,7 +66,10 @@ public class Welcome extends JDialog implements ActionListener {
 		JPanel panel = new JPanel(new GridLayout(0, 2, 4, 4));
 
 		if(!resetPin) {
-			introText = new JLabel(tr("welc_intro"));
+			String intro = "<html><h2>" + tr("welc_intro_header") + "</h2>" +
+					tr("welc_intro_text") + "<br><br>" +
+					tr("welc_intro_pin");
+			introText = new JLabel(intro);
 			introText.setPreferredSize(new Dimension(60, 180));
 		}
 
