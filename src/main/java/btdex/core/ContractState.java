@@ -252,6 +252,9 @@ public class ContractState {
 		this.address = at.getId();
 		this.balance = at.getBalance();
 		
+		if(at.isDead() || at.isRunning())
+			type = Type.Invalid;
+		
 		// update variables that can change over time
 		if(type == Type.Standard || type == Type.Buy) {
 			this.state = getContractFieldValue("state");
@@ -277,14 +280,47 @@ public class ContractState {
 		if(this.state > SellContract.STATE_TAKEN) {
 			// We need to find out what is the block of the take transaction (price definition should be after that)
 			for(Transaction tx : txs) {
+				if(takeBlock > 0 && tx.getBlockHeight() < takeBlock)
+					break;
+				
 				if(tx.getSender().getSignedLongId() == this.taker &&
 						tx.getAppendages()!=null && tx.getAppendages().length==1 &&
 						tx.getAppendages()[0] instanceof PlaintextMessageAppendix) {
 					PlaintextMessageAppendix msg = (PlaintextMessageAppendix) tx.getAppendages()[0];
-					if(!msg.isText() && msg.getMessage().startsWith(Contracts.getContractUpdateHash())) {
+					if(!msg.isText() && msg.getMessage().startsWith(Contracts.getContractTakeHash(type))) {
 						// should be a hexadecimal message
-						takeBlock = tx.getBlockHeight() - Constants.PRICE_NCONF;
-						break;
+						takeBlock = tx.getBlockHeight();
+					}
+				}
+				
+				// we also look for the address definition of a taken buy order (should be more recent than the takeBlock
+				if(type == Type.Buy && tx.getSender().getSignedLongId() == this.taker
+						&& tx.getType() == 1 /* TYPE_MESSAGING */
+						&& tx.getSubtype() == 0 /* SUBTYPE_MESSAGING_ARBITRARY_MESSAGE */) {
+					TransactionAppendix append = tx.getAppendages()[0];
+					if(append instanceof PlaintextMessageAppendix) {
+						PlaintextMessageAppendix appendMessage = (PlaintextMessageAppendix) append;
+						try {
+							String jsonData = appendMessage.getMessage();
+							JsonObject json = JsonParser.parseString(jsonData).getAsJsonObject();
+							JsonElement accountJson = json.get("account");
+							String accountFields = null;
+							if(accountJson!=null)
+								accountFields = accountJson.getAsString();
+
+							// parse the account fields (buy do not have it)
+							if(accountFields != null) {
+								for(Market m : Markets.getMarkets()) {
+									if(m.getID() == market) {
+										marketAccount = m.parseAccount(accountFields);
+										break;
+									}
+								}
+							}
+						}
+						catch (Exception e) {
+							// we ignore invalid messages
+						}
 					}
 				}
 			}
@@ -304,7 +340,7 @@ public class ContractState {
 				break;
 			
 			// Only transactions for this contract
-			if(!tx.getRecipient().equals(getAddress()))
+			if(tx.getRecipient()==null || !tx.getRecipient().equals(getAddress()))
 				continue;
 			
 			// We only accept configurations with 2 confirmations or more
@@ -318,12 +354,12 @@ public class ContractState {
 					continue;
 			}
 			
-			// order configurations should be set by the creator
+			// order configurations should be set by the creator (or the taker of a buy is sending his address)
 			if(!tx.getSender().equals(at.getCreator()))
 				continue;
 			
-			if(tx.getRecipient().getSignedLongId() == address.getSignedLongId()
-					&& tx.getSender().equals(at.getCreator())
+			if(tx.getRecipient().equals(address)
+					&& (tx.getSender().equals(at.getCreator()) || (tx.getSender().getSignedLongId() == taker))
 					&& tx.getType() == 1 /* TYPE_MESSAGING */
 					&& tx.getSubtype() == 0 /* SUBTYPE_MESSAGING_ARBITRARY_MESSAGE */
 					&& tx.getAppendages()!=null && tx.getAppendages().length > 0) {
@@ -349,7 +385,7 @@ public class ContractState {
 							rate = Long.parseLong(rateJson.getAsString());
 						
 						// parse the account fields (buy do not have it)
-						if(type != Type.Buy) {
+						if(accountFields != null) {
 							for(Market m : Markets.getMarkets()) {
 								if(m.getID() == market) {
 									marketAccount = m.parseAccount(accountFields);

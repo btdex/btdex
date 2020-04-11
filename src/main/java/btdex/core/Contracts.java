@@ -24,7 +24,7 @@ public class Contracts {
     private static byte[] contractNoDepositCode;
     private static byte[] contractBuyCode;
     
-    private static String contractUpdateHash;
+    private static String contractTakeHash, contractBuyTakeHash;
     
 	private static HashMap<BurstAddress, ContractState> contractsMap = new HashMap<>();
 	private static boolean loading = true;
@@ -71,9 +71,12 @@ public class Contracts {
             // get the update method hash
         	ByteBuffer b = ByteBuffer.allocate(8);
             b.order(ByteOrder.LITTLE_ENDIAN);
-            Method m = contract.getMethod("update");
-            b.putLong(m.getHash());
-            contractUpdateHash = Hex.toHexString(b.array());
+            b.putLong(contract.getMethod("take").getHash());
+            contractTakeHash = Hex.toHexString(b.array());
+
+            b.clear();
+            b.putLong(contractBuy.getMethod("take").getHash());
+            contractBuyTakeHash = Hex.toHexString(b.array());
             
             // TODO: remove this condition on the future
             if(Globals.getInstance().isTestnet()) {
@@ -116,8 +119,10 @@ public class Contracts {
         return contractBuyCode;
     }
     
-    public static String getContractUpdateHash() {
-    	return contractUpdateHash;
+    public static String getContractTakeHash(ContractState.Type type) {
+    	if(type == ContractState.Type.Buy)
+    		return contractBuyTakeHash;
+    	return contractTakeHash;
     }
     
 	public static boolean checkContractCode(AT at, byte []code) {

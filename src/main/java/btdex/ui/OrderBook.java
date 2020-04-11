@@ -529,15 +529,15 @@ public class OrderBook extends JPanel {
 			String priceFormated = market.format(s.getRate());
 			Icon icon = s.getCreator().equals(g.getAddress()) ? editIcon : null; // takeIcon;
 			if(s.hasPending()) {
-				priceFormated = "PENDING... ";
+				priceFormated = tr("book_pending_button");
 				icon = null;
 			}
 			else if(s.getTaker() == g.getAddress().getSignedLongId() && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
-				priceFormated = "DEPOSIT " + market;
+				priceFormated = tr(s.getType() == ContractState.Type.Buy ? "book_signal_button" : "book_deposit_button", market);
 				icon = null;
 			}
 			else if(s.getCreator().equals(g.getAddress()) && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
-				priceFormated = tr("book_signal_button", market);
+				priceFormated = tr(s.getType() == ContractState.Type.Buy ? "book_deposit_button" : "book_signal_button", market);
 				icon = null;
 			}
 			JButton b = new ActionButton(priceFormated, s, false);
