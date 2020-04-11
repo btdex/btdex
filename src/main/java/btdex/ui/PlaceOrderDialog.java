@@ -274,7 +274,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						"Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if(accountComboBox.getItemCount()==0 && ((!isBuy && contract==null) || (isBuy && contract!=null))) {
+			if(accountComboBox.getItemCount()==0 && (isBuy && isTake || !isBuy && !isTake)) {
 				JOptionPane.showMessageDialog(getParent(), tr("offer_register_account_first", market),
 						"Error", JOptionPane.ERROR_MESSAGE);
 				return;
@@ -348,6 +348,15 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			if(error == null && !acceptBox.isSelected()) {
 				error = tr("dlg_accept_first");
 				acceptBox.requestFocus();
+			}
+			
+			if(error == null && isUpdate) {
+				// check if something changed
+				if(priceValue.longValue() == contract.getRate() &&
+						(accountDetails.getText().length()==0 || 
+						accountDetails.getText().equals(market.simpleFormat(contract.getMarketAccount().getFields())))
+						)
+					error = tr("offer_no_changes");
 			}
 
 			if(error == null && !g.checkPIN(pinField.getPassword())) {
