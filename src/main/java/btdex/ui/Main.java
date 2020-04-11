@@ -621,7 +621,7 @@ public class Main extends JFrame implements ActionListener {
 					Toast.makeText(this, tr("main_cross_chain_testnet_only"), Toast.Style.ERROR).display();
 				}
 				else if(Contracts.isLoading()) {
-					Toast.makeText(this, tr("main_cross_chain_loading"), Toast.Style.NORMAL).display();					
+					Toast.makeText(this, tr("main_cross_chain_loading"), 8000, Toast.Style.NORMAL).display();					
 				}
 			}
 			else {
