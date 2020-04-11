@@ -467,6 +467,7 @@ public class OrderBook extends JPanel {
 				continue;
 			
 			// add your own contracts but not yet configured if they have balance (so you can withdraw)
+			// this should never happen on normal circumstances
 			if(s.getCreator().equals(g.getAddress()) && s.getMarket() == 0 && s.getBalance().longValue() > 0L) {
 				if(s.getType() == ContractState.Type.SELL)
 					contracts.add(s);
@@ -484,7 +485,8 @@ public class OrderBook extends JPanel {
 
 			// FIXME: add more validity tests here
 			if(s.hasPending() ||
-					s.getAmountNQT() > 0	&& s.getRate() > 0 && (s.getMarketAccount() != null || s.getType() == ContractState.Type.BUY) &&
+					s.getAmountNQT() > 0 && s.getBalance().longValue() + s.getActivationFee() > s.getSecurityNQT() &&
+					s.getRate() > 0 && (s.getMarketAccount() != null || s.getType() == ContractState.Type.BUY) &&
 					(s.getState() == SellContract.STATE_OPEN
 					|| (s.getState()!= SellContract.STATE_FINISHED && s.getTaker() == g.getAddress().getSignedLongId())
 					|| (s.getState()!= SellContract.STATE_FINISHED && s.getCreator().equals(g.getAddress())) ) ) {
@@ -540,14 +542,20 @@ public class OrderBook extends JPanel {
 			b.setBackground(s.getType() == ContractState.Type.BUY ? HistoryPanel.GREEN : HistoryPanel.RED);
 			model.setValueAt(b, row, cols[COL_PRICE]);
 
-			long securityPercent = s.getSecurityNQT()*100L / s.getAmountNQT();
-			String sizeString = s.getAmount() + " (" + securityPercent + "%)";
+			if(s.getSecurityNQT() > 0 && s.getAmountNQT() > 0 && s.getRate() > 0) {
+				long securityPercent = s.getSecurityNQT()*100L / s.getAmountNQT();
+				String sizeString = s.getAmount() + " (" + securityPercent + "%)";
 
-			model.setValueAt(sizeString, row, cols[COL_SIZE]);
-			double amount = ((double)s.getRate())*s.getAmountNQT();
-			amount /= Contract.ONE_BURST;
-			model.setValueAt(market.format((long)amount),
-					row, cols[COL_TOTAL]);
+				model.setValueAt(sizeString, row, cols[COL_SIZE]);
+				double amount = ((double)s.getRate())*s.getAmountNQT();
+				amount /= Contract.ONE_BURST;
+				model.setValueAt(market.format((long)amount), row, cols[COL_TOTAL]);
+			}
+			else {
+				model.setValueAt(null, row, cols[COL_SIZE]);
+				model.setValueAt(null, row, cols[COL_TOTAL]);
+			}
+			
 			ExplorerButton exp = new ExplorerButton(s.getAddress().getRawAddress(), copyIcon, expIcon,
 					ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(), s.getAddress().getFullAddress(), BUTTON_EDITOR); 
 			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId()
