@@ -471,6 +471,9 @@ public class OrderBook extends JPanel {
 		boolean onlyMine = listOnlyMine.isSelected();
 
 		for(ContractState s : allContracts) {
+			if(s.getType() == ContractState.Type.INVALID)
+				continue;
+			
 			// add your own contracts but not yet configured if they have balance (so you can withdraw)
 			if(s.getCreator().equals(g.getAddress()) && s.getMarket() == 0 && s.getBalance().longValue() > 0L) {
 				if(s.getType() == ContractState.Type.SELL)
@@ -523,7 +526,8 @@ public class OrderBook extends JPanel {
 		Globals g = Globals.getInstance();
 
 		// Update the contents
-		for (int row = 0; row < contracts.size(); row++) {			
+		int row = 0;
+		for (; row < contracts.size(); row++) {			
 			ContractState s = contracts.get(row);
 
 			String priceFormated = market.format(s.getRate());
@@ -570,6 +574,13 @@ public class OrderBook extends JPanel {
 			//					ExplorerButton.TYPE_ADDRESS, s.getCreator().getID(), s.getCreator().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
 
 			//			model.setValueAt(s.getSecurity(), row, COL_SECURITY);			
+		}
+		
+		// fill with null all the remaining rows
+		for (; row < model.getRowCount(); row++) {
+			for (int col = 0; col < cols.length; col++) {
+				model.setValueAt(null, row, cols[col]);
+			}
 		}
 	}
 }

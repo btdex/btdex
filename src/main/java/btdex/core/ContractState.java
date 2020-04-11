@@ -252,7 +252,7 @@ public class ContractState {
 		this.address = at.getId();
 		this.balance = at.getBalance();
 		
-		if(at.isDead() || at.isRunning())
+		if(at.isDead())
 			type = Type.INVALID;
 		
 		// update variables that can change over time
