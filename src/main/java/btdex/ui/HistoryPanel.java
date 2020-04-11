@@ -218,10 +218,10 @@ public class HistoryPanel extends JPanel {
 					long price = tr.getPrice().longValue();
 
 					model.setValueAt(new ExplorerButton(
-							tr.getBuyerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getBuyerAddress().getRawAddress(), copyIcon, expIcon,
+							tr.getBuyerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? tr("hist_you") : tr.getBuyerAddress().getRawAddress(), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, tr.getBuyerAddress().getID(), tr.getBuyerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
 					model.setValueAt(new ExplorerButton(
-							tr.getSellerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getSellerAddress().getRawAddress(), copyIcon, expIcon,
+							tr.getSellerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? tr("hist_you") : tr.getSellerAddress().getRawAddress(), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, tr.getSellerAddress().getID(), tr.getSellerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
 
 					model.setValueAt(NumberFormatting.BURST.format(price*market.getFactor()), row, COL_PRICE);
