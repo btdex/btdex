@@ -1,5 +1,7 @@
 package btdex.ui;
 
+import static btdex.locale.Translation.tr;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -33,9 +35,7 @@ import btdex.core.BurstNode;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
-import static btdex.locale.Translation.tr;
 import burst.kit.entity.response.AssetTrade;
-import burst.kit.entity.response.http.BRSError;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
 
@@ -47,10 +47,10 @@ public class HistoryPanel extends JPanel {
 	DefaultTableModel model;
 	Icon copyIcon, expIcon;
 	JCheckBox listOnlyMine;
-	
+
 	public static final Color RED = Color.decode("#BE474A");
 	public static final Color GREEN = Color.decode("#29BF76");
-	
+
 	Market market = null, newMarket;
 
 	private JFreeChart chart;
@@ -90,7 +90,7 @@ public class HistoryPanel extends JPanel {
 
 	public HistoryPanel(Main main, Market market) {
 		super(new BorderLayout());
-		
+
 		listOnlyMine = new JCheckBox(tr("hist_list_mine_only"));
 		listOnlyMine.addActionListener(new ActionListener() {
 			@Override
@@ -169,18 +169,18 @@ public class HistoryPanel extends JPanel {
 	public synchronized void update() {
 		Globals g = Globals.getInstance();
 		BurstNode bn = BurstNode.getInstance();
-		
+
 		if(newMarket != market) {
 			market = newMarket;
 			model.setRowCount(0);
 			model.fireTableDataChanged();
-			
+
 			// update the column headers
 			for (int c = 0; c < columnNames.length; c++) {
 				table.getColumnModel().getColumn(c).setHeaderValue(model.getColumnName(c));
 			}
 			table.getTableHeader().repaint();
-			
+
 			if(chart!=null)
 				chart.getXYPlot().setDataset(null);
 		}
@@ -188,114 +188,102 @@ public class HistoryPanel extends JPanel {
 		boolean isToken = market.getTokenID()!=null;
 		boolean myHistory = listOnlyMine.isSelected();
 
-		try {
-			if(isToken) {
-				AssetTrade trs[] = bn.getAssetTrades(market);
+		if(isToken) {
+			AssetTrade trs[] = bn.getAssetTrades(market);
 
-				int nLines = 0;
+			int nLines = 0;
 
-				int maxLines = Math.min(200, trs == null ? 0 : trs.length);
-				for (int i = 0; i < maxLines; i++) {
-					AssetTrade tr = trs[i];
-					if(myHistory &&
-							tr.getBuyerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
-							tr.getSellerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
-						continue;
-					nLines++;
-				}
-
-				model.setRowCount(nLines);
-
-				// Update the contents
-				for (int row = 0, i=0; i < maxLines; i++) {
-					AssetTrade tr = trs[i];
-					if(myHistory &&
-							tr.getBuyerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
-							tr.getSellerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
-						continue;
-
-					long amount = tr.getQuantity().longValue();
-					long price = tr.getPrice().longValue();
-
-					model.setValueAt(new ExplorerButton(
-							tr.getBuyerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? tr("hist_you") : tr.getBuyerAddress().getRawAddress(), copyIcon, expIcon,
-							ExplorerButton.TYPE_ADDRESS, tr.getBuyerAddress().getID(), tr.getBuyerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
-					model.setValueAt(new ExplorerButton(
-							tr.getSellerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? tr("hist_you") : tr.getSellerAddress().getRawAddress(), copyIcon, expIcon,
-							ExplorerButton.TYPE_ADDRESS, tr.getSellerAddress().getID(), tr.getSellerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
-
-					model.setValueAt(NumberFormatting.BURST.format(price*market.getFactor()), row, COL_PRICE);
-					model.setValueAt(market.format(amount), row, COL_AMOUNT);
-					model.setValueAt(DATE_FORMAT.format(tr.getTimestamp().getAsDate()), row, COL_TIME);
-
-					row++;
-				}
-
-
-				ArrayList<OHLCDataItem> data = new ArrayList<>();
-				int NCANDLES = 50;
-				long DELTA = TimeUnit.HOURS.toMillis(4);
-				Date start = new Date(System.currentTimeMillis() - DELTA*NCANDLES);
-				Date next = new Date(start.getTime() + DELTA);
-
-				double lastClose = Double.NaN;
-				for (int i = 0; i < 50; i++) {
-					double high = 0;
-					double low = Double.MAX_VALUE;
-					double close = lastClose;
-					double open = lastClose;
-					double volume = 0;
-					if(!Double.isNaN(lastClose))
-						high = lastClose;
-
-					for (int row = maxLines-1; row >= 0; row--) {
-						AssetTrade tr = trs[row];
-						Date date = tr.getTimestamp().getAsDate();
-						double price = tr.getPrice().doubleValue()*market.getFactor();
-
-						if(date.after(start) && date.before(next)) {
-							close = price;
-							open = lastClose;
-							high = Math.max(price, high);
-							low = Math.min(price, low);
-							if(Double.isNaN(open))
-								open = lastClose = price;
-							volume += tr.getQuantity().doubleValue()*market.getFactor();
-						}
-					}
-					low = Math.min(high, low);
-					if(!Double.isNaN(close))
-						lastClose = close;
-
-					if(!Double.isNaN(open)) {
-						OHLCDataItem item = new OHLCDataItem(
-								start, open, high, low, close, volume);
-						data.add(item);
-					}
-
-					start = next;
-					next = new Date(start.getTime() + DELTA);
-				}
-
-				DefaultOHLCDataset dataset = new DefaultOHLCDataset(market.toString(), data.toArray(new OHLCDataItem[data.size()]));
-
-				chart.getXYPlot().setDataset(dataset);
+			int maxLines = Math.min(200, trs == null ? 0 : trs.length);
+			for (int i = 0; i < maxLines; i++) {
+				AssetTrade tr = trs[i];
+				if(myHistory &&
+						tr.getBuyerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
+						tr.getSellerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
+					continue;
+				nLines++;
 			}
 
-			else {
-				if(chart!=null)
-					chart.getXYPlot().setDataset(null);
+			model.setRowCount(nLines);
+
+			// Update the contents
+			for (int row = 0, i=0; i < maxLines; i++) {
+				AssetTrade tr = trs[i];
+				if(myHistory &&
+						tr.getBuyerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
+						tr.getSellerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
+					continue;
+
+				long amount = tr.getQuantity().longValue();
+				long price = tr.getPrice().longValue();
+
+				model.setValueAt(new ExplorerButton(
+						tr.getBuyerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? tr("hist_you") : tr.getBuyerAddress().getRawAddress(), copyIcon, expIcon,
+								ExplorerButton.TYPE_ADDRESS, tr.getBuyerAddress().getID(), tr.getBuyerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
+				model.setValueAt(new ExplorerButton(
+						tr.getSellerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? tr("hist_you") : tr.getSellerAddress().getRawAddress(), copyIcon, expIcon,
+								ExplorerButton.TYPE_ADDRESS, tr.getSellerAddress().getID(), tr.getSellerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
+
+				model.setValueAt(NumberFormatting.BURST.format(price*market.getFactor()), row, COL_PRICE);
+				model.setValueAt(market.format(amount), row, COL_AMOUNT);
+				model.setValueAt(DATE_FORMAT.format(tr.getTimestamp().getAsDate()), row, COL_TIME);
+
+				row++;
 			}
+
+
+			ArrayList<OHLCDataItem> data = new ArrayList<>();
+			int NCANDLES = 50;
+			long DELTA = TimeUnit.HOURS.toMillis(4);
+			Date start = new Date(System.currentTimeMillis() - DELTA*NCANDLES);
+			Date next = new Date(start.getTime() + DELTA);
+
+			double lastClose = Double.NaN;
+			for (int i = 0; i < 50; i++) {
+				double high = 0;
+				double low = Double.MAX_VALUE;
+				double close = lastClose;
+				double open = lastClose;
+				double volume = 0;
+				if(!Double.isNaN(lastClose))
+					high = lastClose;
+
+				for (int row = maxLines-1; row >= 0; row--) {
+					AssetTrade tr = trs[row];
+					Date date = tr.getTimestamp().getAsDate();
+					double price = tr.getPrice().doubleValue()*market.getFactor();
+
+					if(date.after(start) && date.before(next)) {
+						close = price;
+						open = lastClose;
+						high = Math.max(price, high);
+						low = Math.min(price, low);
+						if(Double.isNaN(open))
+							open = lastClose = price;
+						volume += tr.getQuantity().doubleValue()*market.getFactor();
+					}
+				}
+				low = Math.min(high, low);
+				if(!Double.isNaN(close))
+					lastClose = close;
+
+				if(!Double.isNaN(open)) {
+					OHLCDataItem item = new OHLCDataItem(
+							start, open, high, low, close, volume);
+					data.add(item);
+				}
+
+				start = next;
+				next = new Date(start.getTime() + DELTA);
+			}
+
+			DefaultOHLCDataset dataset = new DefaultOHLCDataset(market.toString(), data.toArray(new OHLCDataItem[data.size()]));
+
+			chart.getXYPlot().setDataset(dataset);
 		}
-		catch (Exception e) {
-			if(e.getCause() instanceof BRSError) {
-				BRSError error = (BRSError) e.getCause();
-				if(error.getCode() != 5) // unknown account
-					throw e;
-			}
-			else
-				throw e;
-			// Unknown account, no transactions
+
+		else {
+			if(chart!=null)
+				chart.getXYPlot().setDataset(null);
 		}
 	}
 }
