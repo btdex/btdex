@@ -401,7 +401,7 @@ public class OrderBook extends JPanel {
 		firstBid = bidOrders.size() > 0 ? bidOrders.get(0) : null;
 		firstAsk = askOrders.size() > 0 ? askOrders.get(0) : null;
 
-		model.setRowCount(Math.max(bids == null ? 0 : bids.length, asks == null ? 0 : asks.length));
+		model.setRowCount(Math.max(bidOrders.size(), askOrders.size()));
 
 		AssetTrade trs[] = BurstNode.getInstance().getAssetTrades(market);
 		AssetTrade lastTrade = trs !=null && trs.length > 0 ? trs[0] : null;
