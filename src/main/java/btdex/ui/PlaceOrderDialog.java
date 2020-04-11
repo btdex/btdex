@@ -89,7 +89,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		Globals g = Globals.getInstance();
 		
 		this.isBuy = buy;
-		if(contract !=null && contract.getType() == ContractState.Type.Buy)
+		if(contract !=null && contract.getType() == ContractState.Type.BUY)
 			this.isBuy = true;
 
 		if(contract !=null && contract.getState()==SellContract.STATE_OPEN) {

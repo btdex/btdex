@@ -18,10 +18,7 @@ import burst.kit.entity.response.AT;
 import burst.kit.entity.response.Transaction;
 
 public class Contracts {
-    private static Compiler contract, contractNoDeposit, contractBuy;
-    private static byte[] contractCode;
-    private static byte[] contractNoDepositCode;
-    private static byte[] contractBuyCode;
+    private static Compiler compilerSell, compilerNoDeposit, compilerBuy;
     
     private static String contractTakeHash, contractBuyTakeHash;
     
@@ -51,30 +48,26 @@ public class Contracts {
 	
     static {
         try {
-            contract = new Compiler(SellContract.class);
-            contract.compile();
-            contract.link();
+            compilerSell = new Compiler(SellContract.class);
+            compilerSell.compile();
+            compilerSell.link();
 
-            contractNoDeposit = new Compiler(SellNoDepositContract.class);
-            contractNoDeposit.compile();
-            contractNoDeposit.link();
+            compilerNoDeposit = new Compiler(SellNoDepositContract.class);
+            compilerNoDeposit.compile();
+            compilerNoDeposit.link();
             
-            contractBuy = new Compiler(BuyContract.class);
-            contractBuy.compile();
-            contractBuy.link();
+            compilerBuy = new Compiler(BuyContract.class);
+            compilerBuy.compile();
+            compilerBuy.link();
 
-            contractCode = contract.getCode();
-            contractNoDepositCode = contractNoDeposit.getCode();
-            contractBuyCode = contractBuy.getCode();
-            
             // get the update method hash
         	ByteBuffer b = ByteBuffer.allocate(8);
             b.order(ByteOrder.LITTLE_ENDIAN);
-            b.putLong(contract.getMethod("take").getHash());
+            b.putLong(compilerSell.getMethod("take").getHash());
             contractTakeHash = Hex.toHexString(b.array());
 
             b.clear();
-            b.putLong(contractBuy.getMethod("take").getHash());
+            b.putLong(compilerBuy.getMethod("take").getHash());
             contractBuyTakeHash = Hex.toHexString(b.array());
             
             // TODO: remove this condition on the future
@@ -87,39 +80,39 @@ public class Contracts {
         }
     }
 
-    public static Compiler getContract(ContractState.Type type) {
+    public static Compiler getCompiler(ContractState.Type type) {
     	switch (type) {
-		case Buy:
-			return contractBuy;
-		case NoDeposit:
-			return contractNoDeposit;
+		case BUY:
+			return compilerBuy;
+		case NO_DEPOSIT:
+			return compilerNoDeposit;
 		default:
 		}
-        return contract;
+        return compilerSell;
     }
 
     public static Compiler getContractNoDeposit() {
-        return contractNoDeposit;
+        return compilerNoDeposit;
     }
     
     public static Compiler getContractBuy() {
-        return contractBuy;
+        return compilerBuy;
     }
 
-    public static byte[] getContractCode() {
-        return contractCode;
+    public static byte[] getCodeSell() {
+        return compilerSell.getCode();
     }
 
-    public static byte[] getContractNoDepositCode() {
-        return contractNoDepositCode;
+    public static byte[] getCodeNoDeposit() {
+        return compilerNoDeposit.getCode();
     }
     
-    public static byte[] getContractBuyCode() {
-        return contractBuyCode;
+    public static byte[] getCodeBuy() {
+        return compilerBuy.getCode();
     }
     
     public static String getContractTakeHash(ContractState.Type type) {
-    	if(type == ContractState.Type.Buy)
+    	if(type == ContractState.Type.BUY)
     		return contractBuyTakeHash;
     	return contractTakeHash;
     }
@@ -157,15 +150,15 @@ public class Contracts {
 		for(ContractState s : contractsMap.values()) {
 			s.update(utxs);
 			
-			if(s.getType() == ContractState.Type.Standard &&
+			if(s.getType() == ContractState.Type.SELL &&
 					s.getCreator().equals(g.getAddress()) && 
 					s.getState() == SellContract.STATE_FINISHED && !s.hasPending())
 				updatedFreeContract = s;
-			else if(s.getType() == ContractState.Type.Buy &&
+			else if(s.getType() == ContractState.Type.BUY &&
 					s.getCreator().equals(g.getAddress()) && 
 					s.getState() == SellContract.STATE_FINISHED && !s.hasPending())
 				updatedBuyFreeContract = s;
-			else if(s.getType() == ContractState.Type.NoDeposit &&
+			else if(s.getType() == ContractState.Type.NO_DEPOSIT &&
 					s.getCreator().equals(g.getAddress()) &&
 					s.getState() == SellNoDepositContract.STATE_FINISHED && !s.hasPending())
 				updatedFreeNoDepositContract = s;

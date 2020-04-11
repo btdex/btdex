@@ -473,9 +473,9 @@ public class OrderBook extends JPanel {
 		for(ContractState s : allContracts) {
 			// add your own contracts but not yet configured if they have balance (so you can withdraw)
 			if(s.getCreator().equals(g.getAddress()) && s.getMarket() == 0 && s.getBalance().longValue() > 0L) {
-				if(s.getType() == ContractState.Type.Standard)
+				if(s.getType() == ContractState.Type.SELL)
 					contracts.add(s);
-				else if(s.getType() == ContractState.Type.Buy)
+				else if(s.getType() == ContractState.Type.BUY)
 					contractsBuy.add(s);
 				continue;
 			}
@@ -489,11 +489,11 @@ public class OrderBook extends JPanel {
 
 			// FIXME: add more validity tests here
 			if(s.hasPending() ||
-					s.getAmountNQT() > 0	&& s.getRate() > 0 && (s.getMarketAccount() != null || s.getType() == ContractState.Type.Buy) &&
+					s.getAmountNQT() > 0	&& s.getRate() > 0 && (s.getMarketAccount() != null || s.getType() == ContractState.Type.BUY) &&
 					(s.getState() == SellContract.STATE_OPEN
 					|| (s.getState()!= SellContract.STATE_FINISHED && s.getTaker() == g.getAddress().getSignedLongId())
 					|| (s.getState()!= SellContract.STATE_FINISHED && s.getCreator().equals(g.getAddress())) ) ) {
-				if(s.getType() == ContractState.Type.Buy)
+				if(s.getType() == ContractState.Type.BUY)
 					contractsBuy.add(s);
 				else
 					contracts.add(s);
@@ -533,16 +533,16 @@ public class OrderBook extends JPanel {
 				icon = null;
 			}
 			else if(s.getTaker() == g.getAddress().getSignedLongId() && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
-				priceFormated = tr(s.getType() == ContractState.Type.Buy ? "book_signal_button" : "book_deposit_button", market);
+				priceFormated = tr(s.getType() == ContractState.Type.BUY ? "book_signal_button" : "book_deposit_button", market);
 				icon = null;
 			}
 			else if(s.getCreator().equals(g.getAddress()) && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
-				priceFormated = tr(s.getType() == ContractState.Type.Buy ? "book_deposit_button" : "book_signal_button", market);
+				priceFormated = tr(s.getType() == ContractState.Type.BUY ? "book_deposit_button" : "book_signal_button", market);
 				icon = null;
 			}
 			JButton b = new ActionButton(priceFormated, s, false);
 			b.setIcon(icon);
-			b.setBackground(s.getType() == ContractState.Type.Buy ? HistoryPanel.GREEN : HistoryPanel.RED);
+			b.setBackground(s.getType() == ContractState.Type.BUY ? HistoryPanel.GREEN : HistoryPanel.RED);
 			model.setValueAt(b, row, cols[COL_PRICE]);
 
 			long securityPercent = s.getSecurityNQT()*100L / s.getAmountNQT();

@@ -25,7 +25,7 @@ import burst.kit.entity.response.appendix.PlaintextMessageAppendix;
 public class ContractState {
 	
 	public enum Type {
-		Invalid, Standard, NoDeposit, Buy
+		INVALID, SELL, BUY, NO_DEPOSIT
 	}
 	
 	private BurstAddress address;
@@ -119,12 +119,12 @@ public class ContractState {
 	}
 	
 	public long getNewOfferFee() {
-		if(type == Type.Standard) {
+		if(type == Type.SELL) {
 			return at.isFrozen() ?
 					SellContract.REUSE_OFFER_FEE :
 						SellContract.NEW_OFFER_FEE;
 		}
-		if(type == Type.Buy)
+		if(type == Type.BUY)
 			return at.isFrozen() ?
 					BuyContract.REUSE_OFFER_FEE :
 						BuyContract.NEW_OFFER_FEE;
@@ -197,22 +197,22 @@ public class ContractState {
 				break;
 			
 			AT at = g.getNS().getAt(ad).blockingGet();
-			Type type = Type.Invalid;
+			Type type = Type.INVALID;
 			
 			// check the code (should match perfectly)
-			if(Contracts.checkContractCode(at, Contracts.getContractCode()))
-				type = Type.Standard;
-			else if(Contracts.checkContractCode(at, Contracts.getContractBuyCode()))
-				type = Type.Buy;
-			else if(Contracts.checkContractCode(at, Contracts.getContractNoDepositCode()))
-				type = Type.NoDeposit;
+			if(Contracts.checkContractCode(at, Contracts.getCodeSell()))
+				type = Type.SELL;
+			else if(Contracts.checkContractCode(at, Contracts.getCodeBuy()))
+				type = Type.BUY;
+			else if(Contracts.checkContractCode(at, Contracts.getCodeNoDeposit()))
+				type = Type.NO_DEPOSIT;
 			
-			if(type!=Type.Invalid) {
+			if(type!=Type.INVALID) {
 				ContractState s = new ContractState(type);
 				s.at = at;
 				
 				// Check some immutable variables
-				s.compiler = Contracts.getContract(type);
+				s.compiler = Contracts.getCompiler(type);
 				s.mediator1 = s.getContractFieldValue("mediator1");
 				s.mediator2 = s.getContractFieldValue("mediator2");
 				s.feeContract = s.getContractFieldValue("feeContract");
@@ -253,16 +253,16 @@ public class ContractState {
 		this.balance = at.getBalance();
 		
 		if(at.isDead() || at.isRunning())
-			type = Type.Invalid;
+			type = Type.INVALID;
 		
 		// update variables that can change over time
-		if(type == Type.Standard || type == Type.Buy) {
+		if(type == Type.SELL || type == Type.BUY) {
 			this.state = getContractFieldValue("state");
 			this.amount = getContractFieldValue("amount");
 			this.security = getContractFieldValue("security");
 			this.taker = getContractFieldValue("taker");
 		}
-		else if(type == Type.NoDeposit) {
+		else if(type == Type.NO_DEPOSIT) {
 			this.state = getContractFieldValue("state");
 			this.lockMinutes = getContractFieldValue("lockMinutes");
 		}
@@ -292,7 +292,7 @@ public class ContractState {
 				}
 				
 				// we also look for the address definition of a taken buy order (should be more recent than the takeBlock
-				if(type == Type.Buy && tx.getSender().getSignedLongId() == this.taker
+				if(type == Type.BUY && tx.getSender().getSignedLongId() == this.taker
 						&& tx.getType() == 1 /* TYPE_MESSAGING */
 						&& tx.getSubtype() == 0 /* SUBTYPE_MESSAGING_ARBITRARY_MESSAGE */) {
 					TransactionAppendix append = tx.getAppendages()[0];

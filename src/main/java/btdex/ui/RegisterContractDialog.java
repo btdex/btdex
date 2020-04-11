@@ -111,7 +111,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 		content.add(centerPanel, BorderLayout.CENTER);
 		content.add(buttonPane, BorderLayout.PAGE_END);
 
-		contract = Contracts.getContract(isBuy ? ContractState.Type.Buy : ContractState.Type.Standard);
+		contract = Contracts.getCompiler(isBuy ? ContractState.Type.BUY : ContractState.Type.SELL);
 		stateChanged(null);
 		pack();
 	}

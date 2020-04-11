@@ -107,7 +107,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 		boolean isBuy = false;
 		if(order!=null && order.getType() == AssetOrder.OrderType.BID)
 			isBuy = true;
-		if(state!=null && state.getType() == ContractState.Type.Buy)
+		if(state!=null && state.getType() == ContractState.Type.BUY)
 			isBuy = true;
 		
 		StringBuilder terms = new StringBuilder();
