@@ -20,6 +20,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.Globals;
 import btdex.core.Market;
@@ -28,6 +29,7 @@ import static btdex.locale.Translation.tr;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
+import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
@@ -75,6 +77,8 @@ public class SendDialog extends JDialog implements ActionListener {
 		panel.add(new Desc(tr("send_amount", token==null ? "BURST" : token), amount));
 		Desc feeDesc = new Desc("", fee);
 		panel.add(feeDesc);
+		FeeSuggestion suggestedFee = BurstNode.getInstance().getSuggestedFee();
+		
 		fee.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent evt) {
 				String feeType;
@@ -85,15 +89,15 @@ public class SendDialog extends JDialog implements ActionListener {
 					break;
 				case 2:
 					feeType = tr("fee_cheap");
-					selectedFee = Globals.getInstance().getSuggestedFee().getCheapFee();
+					selectedFee = suggestedFee.getCheapFee();
 					break;
 				case 3:
 					feeType = tr("fee_standard");
-					selectedFee = Globals.getInstance().getSuggestedFee().getStandardFee();
+					selectedFee = suggestedFee.getStandardFee();
 					break;
 				default:
 					feeType = tr("fee_priority");
-					selectedFee = Globals.getInstance().getSuggestedFee().getPriorityFee();
+					selectedFee = suggestedFee.getPriorityFee();
 					break;
 				}
 				feeDesc.setDesc(tr("send_fee", feeType, selectedFee.toUnformattedString()));

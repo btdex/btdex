@@ -33,7 +33,6 @@ public class Globals {
 
 	private boolean testnet = false;
 	private BurstAddress address;
-	private FeeSuggestion suggestedFee;
 	
 	private Mediators mediators;
 
@@ -97,10 +96,6 @@ public class Globals {
 
 	public String getNode() {
 		return conf.getProperty(Constants.PROP_NODE);
-	}
-
-	public FeeSuggestion getSuggestedFee() {
-		return suggestedFee;
 	}
 
 	public void saveConfs() throws Exception {

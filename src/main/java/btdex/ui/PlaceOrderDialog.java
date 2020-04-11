@@ -37,6 +37,7 @@ import com.google.gson.JsonObject;
 import bt.BT;
 import bt.Contract;
 import btdex.core.MarketAccount;
+import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.ContractState;
 import btdex.core.Contracts;
@@ -241,7 +242,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		content.add(centerPanel, BorderLayout.CENTER);
 		content.add(buttonPane, BorderLayout.PAGE_END);
 
-		suggestedFee = Globals.getInstance().getSuggestedFee().getPriorityFee();
+		suggestedFee = BurstNode.getInstance().getSuggestedFee().getPriorityFee();
 
 		accountComboBox.addActionListener(this);
 		if(accountComboBox.getItemCount() > 0)

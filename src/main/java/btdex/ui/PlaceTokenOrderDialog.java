@@ -29,6 +29,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.Globals;
 import btdex.core.Market;
@@ -148,7 +149,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		content.add(centerPanel, BorderLayout.CENTER);
 		content.add(buttonPane, BorderLayout.PAGE_END);
 
-		suggestedFee = Globals.getInstance().getSuggestedFee().getPriorityFee();
+		suggestedFee = BurstNode.getInstance().getSuggestedFee().getPriorityFee();
 
 		if(order != null) {
 			// taking this order
