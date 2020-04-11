@@ -384,7 +384,7 @@ public class OrderBook extends JPanel {
 			public int compare(AssetOrder o1, AssetOrder o2) {
 				int cmp = (int)(o2.getPrice().longValue() - o1.getPrice().longValue());
 				if(cmp == 0)
-					cmp = o2.getHeight() - o1.getHeight();
+					cmp = o1.getHeight() - o2.getHeight();
 				return cmp;
 			}
 		});
@@ -394,7 +394,7 @@ public class OrderBook extends JPanel {
 			public int compare(AssetOrder o1, AssetOrder o2) {
 				int cmp = -(int)(o2.getPrice().longValue() - o1.getPrice().longValue());
 				if(cmp == 0)
-					cmp = o2.getHeight() - o1.getHeight();
+					cmp = o1.getHeight() - o2.getHeight();
 				return cmp;
 			}
 		});
