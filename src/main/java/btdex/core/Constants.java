@@ -45,4 +45,11 @@ public class Constants {
 	// Deadline in minutes to be used on transactions
 	public static final int BURST_DEADLINE = 1440;
 
+    public static final String RELEASES_LINK = "https://github.com/btdex/btdex/releases";
+    public static final String WEBSITE_LINK = "https://btdex.trade";
+    public static final String DISCORD_LINK = "https://discord.gg/VQ6sFAY";
+    public static final String GITHUB_LINK = "https://github.com/btdex/btdex";
+
+    public static final int ICON_SIZE = 24;
+
 }
