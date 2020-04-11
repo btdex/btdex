@@ -107,7 +107,7 @@ public class ContractState {
 	 *
 	 * @return the most recent ID visited
 	 */
-	public static BurstID addContracts(HashMap<BurstAddress, ContractState> map, BurstID mostRecent){
+	public static BurstID addContracts(HashMap<BurstAddress, ContractState> map, BurstID mostRecent) {
 		Globals g = Globals.getInstance();
 		BT.setNodeInstance(g.getNS());
 
@@ -118,35 +118,35 @@ public class ContractState {
 				"9601465021860021685" : "17916279999448178140");
 
 		// reverse order to get the more recent ones first
-		for (int i = atIDs.length-1; i >= 0; i--) {
+		for (int i = atIDs.length - 1; i >= 0; i--) {
 			BurstAddress ad = atIDs[i];
 
-			if(first == null)
+			if (first == null)
 				first = ad.getBurstID();
 
 			// avoid running all IDs, we know these past one are useless
-			if(ad.getBurstID().getSignedLongId() == idLimit.getSignedLongId())
+			if (ad.getBurstID().getSignedLongId() == idLimit.getSignedLongId())
 				break;
 			// already visited, no need to continue
-			if(mostRecent!=null && ad.getBurstID().getSignedLongId() == mostRecent.getSignedLongId())
+			if (mostRecent != null && ad.getBurstID().getSignedLongId() == mostRecent.getSignedLongId())
 				break;
 
 			// If the map already have this one stop, since they come in order
-			if(map.containsKey(ad))
+			if (map.containsKey(ad))
 				break;
 
 			AT at = g.getNS().getAt(ad).blockingGet();
 			Type type = Type.INVALID;
 
 			// check the code (should match perfectly)
-			if(Contracts.checkContractCode(at, Contracts.getCodeSell()))
+			if (Contracts.checkContractCode(at, Contracts.getCodeSell()))
 				type = Type.SELL;
-			else if(Contracts.checkContractCode(at, Contracts.getCodeBuy()))
+			else if (Contracts.checkContractCode(at, Contracts.getCodeBuy()))
 				type = Type.BUY;
-			else if(Contracts.checkContractCode(at, Contracts.getCodeNoDeposit()))
+			else if (Contracts.checkContractCode(at, Contracts.getCodeNoDeposit()))
 				type = Type.NO_DEPOSIT;
 
-			if(type!=Type.INVALID) {
+			if (type != Type.INVALID) {
 				ContractState s = new ContractState(type);
 				s.at = at;
 
@@ -157,8 +157,8 @@ public class ContractState {
 				s.feeContract = s.getContractFieldValue("feeContract");
 
 				// Check if the immutable variables are valid
-				if(g.getMediators().areMediatorsAccepted(s)
-						&& Constants.FEE_CONTRACT == s.getFeeContract()){
+				if (g.getMediators().areMediatorsAccepted(s)
+						&& Constants.FEE_CONTRACT == s.getFeeContract()) {
 					s.updateState(at, null);
 					map.put(ad, s);
 				}
@@ -168,8 +168,8 @@ public class ContractState {
 		return first;
 	}
 
-	public void update(Transaction[] utxs) {
-		updateState(null, utxs);
+	public void update(Transaction[] utxs, boolean onlyUnconf) {
+		updateState(onlyUnconf ? at : null, utxs);
 	}
 
     private long getContractFieldValue(String field) {
