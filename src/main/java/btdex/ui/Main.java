@@ -17,22 +17,7 @@ import java.security.SecureRandom;
 import java.util.Locale;
 import java.util.Properties;
 
-import javax.imageio.ImageIO;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingConstants;
-import javax.swing.Timer;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -63,9 +48,7 @@ import okhttp3.Response;
 public class Main extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
-	
-	public static final int ICON_SIZE = 24;
-	
+
 	Image icon, iconMono;
 
 	CardLayout cardLayout;
@@ -82,7 +65,7 @@ public class Main extends JFrame implements ActionListener {
 	ExplorerWrapper explorer;
 	
 	Icon ICON_CONNECTED, ICON_DISCONNECTED, ICON_TESTNET;
-	
+
 	private JLabel balanceLabel;
 	private JLabel lockedBalanceLabel;
 
@@ -105,49 +88,59 @@ public class Main extends JFrame implements ActionListener {
 	private long lastUpdated;
 
 	private PulsingIcon pulsingButton;
-	
+
 	private static Main instance;
-	
+
 	public static Main getInstance() {
 		return instance;
 	}
-	
+
+	public static void main(String[] args) {
+		StringBuilder sb = new StringBuilder();
+		byte[] entropy = new byte[Words.TWELVE.byteLength()];
+		new SecureRandom().nextBytes(entropy);
+		new MnemonicGenerator(English.INSTANCE).createMnemonic(entropy, sb::append);
+		System.out.println(sb.toString());
+
+		new Main();
+	}
+
 	public Main() {
 		super("BTDEX" + (Globals.getInstance().isTestnet() ? "-TESTNET" : ""));
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		String version = "dev";
 		instance = this;
-		
+		Icons i = new Icons();
 		try {
-			icon = ImageIO.read(Main.class.getResourceAsStream("/icon.png"));
+			icon = i.getIcon();
 			setIconImage(icon);
-			iconMono = ImageIO.read(Main.class.getResourceAsStream("/icon-mono.png"));
-			
+			iconMono = i.getIconMono();
+
 			Properties versionProp = new Properties();
 			versionProp.load(Main.class.getResourceAsStream("/version.properties"));
 			version = versionProp.getProperty("version");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		
+
 		// TODO try again later this other theme, now bugs with tooltip, long text buttons, etc.
 		// LafManager.install(new DarculaTheme()); //Specify the used theme.
 		// LafManager.getUserProperties().put(DarkTooltipUI.KEY_STYLE, DarkTooltipUI.VARIANT_PLAIN);
-		try {			
+		try {
 			DarculaLaf laf = new DarculaLaf();
 			UIManager.setLookAndFeel(laf);
 		} catch (UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-		
+
 		IconFontSwing.register(FontAwesome.getIconFont());
 		IconFontSwing.register(FontAwesomeBrands.getIconFont());
 		setBackground(Color.BLACK);
-		
+
 		Globals g = Globals.getInstance();
-		
+
 		Translation.setLanguage(g.getLanguage());
-		
+
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setOpaque(true);
 		tabbedPane.addChangeListener(new ChangeListener() {
@@ -163,10 +156,10 @@ public class Main extends JFrame implements ActionListener {
 		JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		JPanel bottom = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		
+
 		cardLayout = new CardLayout();
 		getContentPane().setLayout(cardLayout);
-		
+
 		JPanel content = new JPanel(new BorderLayout());
 		JPanel splash = new JPanel(new BorderLayout());
 		pulsingButton = new PulsingIcon(new ImageIcon(icon));
@@ -179,29 +172,31 @@ public class Main extends JFrame implements ActionListener {
 		topAll.add(topRight, BorderLayout.LINE_END);
 		content.add(topAll, BorderLayout.PAGE_START);
 		content.add(bottomAll, BorderLayout.PAGE_END);
-				
+
 		JPanel bottomRight = new JPanel();
 		bottomAll.add(bottomRight, BorderLayout.LINE_END);
 		bottomAll.add(bottom, BorderLayout.CENTER);
-		
+
 		marketComboBox = new JComboBox<Market>();
-		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, ICON_SIZE);
+		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, i.getIconSize());
+
 		Color COLOR = marketComboBox.getForeground();
+		i.setColor(COLOR);
+
 		marketComboBox.setToolTipText(tr("main_select_market"));
 		marketComboBox.setFont(largeFont);
-		
-		Icon versionIcon = IconFontSwing.buildIcon(FontAwesome.CODE_FORK, ICON_SIZE, COLOR);
-		JButton versionButton = new JButton(version, versionIcon);
+
+		JButton versionButton = new JButton(version, i.getVersionIcon());
 		versionButton.setToolTipText(tr("main_check_new_release"));
 		versionButton.setVerticalAlignment(SwingConstants.CENTER);
 		versionButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				browse("https://github.com/btdex/btdex/releases");
+				browse(Constants.RELEASES_LINK);
 			}
 		});
-		
-		Icon iconBtdex = IconFontSwing.buildIcon(FontAwesome.HEART, ICON_SIZE, COLOR);
+
+		Icon iconBtdex = i.getIconBtdex();
 		if(iconMono!=null)
 			iconBtdex = new ImageIcon(iconMono);
 		JButton webButton = new JButton(iconBtdex);
@@ -210,36 +205,33 @@ public class Main extends JFrame implements ActionListener {
 		webButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				browse("https://btdex.trade");
+				browse(Constants.WEBSITE_LINK);
 			}
 		});
 
-		Icon discordIcon = IconFontSwing.buildIcon(FontAwesomeBrands.DISCORD, ICON_SIZE, COLOR);
-		JButton discordButton = new JButton(discordIcon);
+		JButton discordButton = new JButton(i.getDiscordIcon());
 		bottomRight.add(discordButton, BorderLayout.LINE_END);
 		discordButton.setToolTipText(tr("main_chat_discord"));
 		discordButton.setVerticalAlignment(SwingConstants.CENTER);
 		discordButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				browse("https://discord.gg/VQ6sFAY");
+				browse(Constants.DISCORD_LINK);
 			}
 		});
-		
-		Icon githubIcon = IconFontSwing.buildIcon(FontAwesomeBrands.GITHUB, ICON_SIZE, COLOR);
-		JButton githubButton = new JButton(githubIcon);
+
+		JButton githubButton = new JButton(i.getGithubIcon());
 		bottomRight.add(githubButton, BorderLayout.LINE_END);
 		githubButton.setToolTipText(tr("main_check_source"));
 		githubButton.setVerticalAlignment(SwingConstants.CENTER);
 		githubButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				browse("https://github.com/btdex/btdex");
+				browse(Constants.GITHUB_LINK);
 			}
 		});
 
-		Icon signoutIcon = IconFontSwing.buildIcon(FontAwesome.SIGN_OUT, ICON_SIZE, COLOR);
-		JButton signoutButton = new JButton(signoutIcon);
+		JButton signoutButton = new JButton(i.getSignoutIcon());
 		signoutButton.setToolTipText(tr("main_exit_and_clear"));
 		signoutButton.setVerticalAlignment(SwingConstants.CENTER);
 		signoutButton.addActionListener(new ActionListener() {
@@ -260,21 +252,20 @@ public class Main extends JFrame implements ActionListener {
 				}
 			}
 		});
-		
-		Icon resetPinIcon = IconFontSwing.buildIcon(FontAwesome.LOCK, ICON_SIZE, COLOR);
-		JButton resetPinButton = new JButton(resetPinIcon);
+
+		JButton resetPinButton = new JButton(i.getResetPinIcon());
 		resetPinButton.setToolTipText(tr("main_reset_pin"));
 		resetPinButton.setVerticalAlignment(SwingConstants.CENTER);
 		resetPinButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Welcome welcome = new Welcome(Main.this, true);
-				
+
 				welcome.setLocationRelativeTo(Main.this);
 				welcome.setVisible(true);
 			}
 		});
-				
+
 		bottomRight.add(versionButton);
 		bottomRight.add(resetPinButton);
 		bottomRight.add(signoutButton);
@@ -285,28 +276,24 @@ public class Main extends JFrame implements ActionListener {
 
 		marketComboBox.addActionListener(this);
 		orderBook = new OrderBook(this, (Market) marketComboBox.getSelectedItem());
-		
+
 		transactionsPanel = new TransactionsPanel();
 		historyPanel = new HistoryPanel(this, (Market) marketComboBox.getSelectedItem());
 		accountsPanel = new AccountsPanel(this);
-		
-		ICON_CONNECTED = IconFontSwing.buildIcon(FontAwesome.WIFI, ICON_SIZE, COLOR);
-		ICON_TESTNET = IconFontSwing.buildIcon(FontAwesome.FLASK, ICON_SIZE, COLOR);
-		ICON_DISCONNECTED = IconFontSwing.buildIcon(FontAwesome.EXCLAMATION, ICON_SIZE, COLOR);
 
-		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, ICON_SIZE, COLOR);
-		Icon expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, ICON_SIZE, COLOR);
-		copyAddButton = new ExplorerButton("", copyIcon, expIcon);
+		ICON_CONNECTED = i.getICON_CONNECTED();
+		ICON_TESTNET = i.getICON_TESTNET();
+		ICON_DISCONNECTED = i.getICON_DISCONNECTED();
+
+		copyAddButton = new ExplorerButton("", i.getCopyIcon(), i.getExpIcon());
 		copyAddButton.getMainButton().setFont(largeFont);
 
-		Icon settinsIcon = IconFontSwing.buildIcon(FontAwesome.COG, ICON_SIZE, COLOR);
-		JButton settingsButton = new JButton(settinsIcon);
+		JButton settingsButton = new JButton(i.getSettingsIcon());
 		settingsButton.setToolTipText(tr("main_configure_settings"));
 		settingsButton.setFont(largeFont);
 		settingsButton.setVisible(false);
 
-		Icon langIcon = IconFontSwing.buildIcon(FontAwesome.LANGUAGE, ICON_SIZE, COLOR);
-		JButton langButton = new JButton(langIcon);
+		JButton langButton = new JButton(i.getLangIcon());
 		langButton.setToolTipText(tr("main_change_language"));
 		langButton.setFont(largeFont);
 		langButton.addActionListener(new ActionListener() {
@@ -335,40 +322,31 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 
-		Icon sendIcon = IconFontSwing.buildIcon(FontAwesome.PAPER_PLANE, ICON_SIZE, COLOR);
-
-		sendButton = new JButton(sendIcon);
+		sendButton = new JButton(i.getSendIcon());
 		sendButton.setToolTipText(tr("main_send", "BURST"));
 		sendButton.addActionListener(this);
 
-		sendButtonToken = new JButton(sendIcon);
+		sendButtonToken = new JButton(i.getSendIcon());
 		sendButtonToken.setToolTipText(tr("main_send", token.toString()));
 		sendButtonToken.addActionListener(this);
 
 		content.add(tabbedPane, BorderLayout.CENTER);
 		tabbedPane.setFont(largeFont);
 
-		Icon orderIcon = IconFontSwing.buildIcon(FontAwesome.BOOK, ICON_SIZE, COLOR);
-		tabbedPane.addTab(tr("main_order_book"), orderIcon, orderBook);
-
-		Icon tradeIcon = IconFontSwing.buildIcon(FontAwesome.LINE_CHART, ICON_SIZE, COLOR);
-		tabbedPane.addTab(tr("main_trade_history"), tradeIcon, historyPanel);
+		tabbedPane.addTab(tr("main_order_book"), i.getOrderIcon(), orderBook);
+		tabbedPane.addTab(tr("main_trade_history"), i.getTradeIcon(), historyPanel);
 
 		if(g.isTestnet()) {
 			// FIXME: accounts on testnet only for now
-			Icon accountIcon = IconFontSwing.buildIcon(FontAwesome.USER_CIRCLE, ICON_SIZE, COLOR);
-			tabbedPane.addTab(tr("main_accounts"), accountIcon, accountsPanel);
+			tabbedPane.addTab(tr("main_accounts"), i.getAccountIcon(), accountsPanel);
 		}
-		
-		Icon chatIcon = IconFontSwing.buildIcon(FontAwesome.COMMENT, ICON_SIZE, COLOR);
-		tabbedPane.addTab(tr("main_chat"), chatIcon, new ChatPanel());
 
-		Icon transactionsIcon = IconFontSwing.buildIcon(FontAwesome.LINK, ICON_SIZE, COLOR);
-		tabbedPane.addTab(tr("main_transactions"), transactionsIcon, transactionsPanel);
-		
+		tabbedPane.addTab(tr("main_chat"), i.getChatIcon(), new ChatPanel());
+		tabbedPane.addTab(tr("main_transactions"), i.getTransactionsIcon(), transactionsPanel);
+
 		top.add(new Desc(tr("main_market"), marketComboBox));
 		top.add(new Desc(tr("main_your_burst_address"), copyAddButton));
-		
+
 		balanceLabel = new JLabel("0");
 		balanceLabel.setToolTipText(tr("main_available_balance"));
 		balanceLabel.setFont(largeFont);
@@ -385,20 +363,20 @@ public class Main extends JFrame implements ActionListener {
 		top.add(tokenDesc = new Desc(tr("main_balance", token), balanceLabelToken, balanceLabelTokenPending));
 		top.add(new Desc("  ", sendButtonToken));
 
-		
+
 		topRight.add(new Desc("  ", settingsButton));
 		topRight.add(new Desc(tr("main_language_name"), langButton));
 
 		nodeSelector = new JButton(g.getNode());
 		nodeSelector.setToolTipText(tr("main_select_node"));
 		nodeSelector.addActionListener(this);
-		
+
 		explorer = ExplorerWrapper.getExplorer(g.getExplorer());
 		explorerSelector = new JButton(explorer.toString(),
-				IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, ICON_SIZE, COLOR));
+				i.getExpIcon());
 		explorerSelector.setToolTipText(tr("main_select_explorer"));
 		explorerSelector.addActionListener(this);
-		
+
 		statusLabel = new JLabel();
 
 		bottom.add(nodeSelector);
@@ -411,11 +389,11 @@ public class Main extends JFrame implements ActionListener {
 		cardLayout.last(getContentPane());
 		showingSplash = true;
 		setVisible(true);
-		
-		if(g.getAddress()==null) {			
+
+		if(g.getAddress()==null) {
 			// no public key or invalid, show the welcome screen
 			Welcome welcome = new Welcome(this);
-			
+
 			welcome.setLocationRelativeTo(this);
 			welcome.setVisible(true);
 			if(welcome.getReturn() == 0) {
@@ -468,13 +446,13 @@ public class Main extends JFrame implements ActionListener {
 			}
 		}
 		setCursor(Cursor.getDefaultCursor());
-		
+
 		statusLabel.setText(g.getNode());
 
 		if(!newAccount)
 			Toast.makeText(this, tr("main_getting_info_from_node"), 4000, Toast.Style.SUCCESS).display();
 		update();
-		
+
 		Timer timer = new Timer(1000, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -483,7 +461,7 @@ public class Main extends JFrame implements ActionListener {
 		});
 		timer.start();
 	}
-	
+
 	public void browse(String url) {
 		try {
 			DesktopApi.browse(new URI(url));
@@ -492,7 +470,7 @@ public class Main extends JFrame implements ActionListener {
 			Toast.makeText(Main.this, ex.getMessage(), Toast.Style.ERROR).display();
 		}
 	}
-	
+
 	/**
 	 * Signal an update should take place.
 	 */
@@ -596,16 +574,6 @@ public class Main extends JFrame implements ActionListener {
 			pulsingButton.stopPulsing();
 			cardLayout.first(getContentPane());
 		}
-	}
-
-	public static void main(String[] args) {
-		StringBuilder sb = new StringBuilder();
-		byte[] entropy = new byte[Words.TWELVE.byteLength()];
-		new SecureRandom().nextBytes(entropy);
-		new MnemonicGenerator(English.INSTANCE).createMnemonic(entropy, sb::append);
-		System.out.println(sb.toString());
-		
-		new Main();
 	}
 
 	@Override
