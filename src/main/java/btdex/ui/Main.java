@@ -28,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
@@ -473,8 +474,14 @@ public class Main extends JFrame implements ActionListener {
 		if(!newAccount)
 			Toast.makeText(this, tr("main_getting_info_from_node"), 4000, Toast.Style.SUCCESS).display();
 		update();
-		Thread updateThread = new UpdateThread();
-		updateThread.start();
+		
+		Timer timer = new Timer(200, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				updateUI();
+			}
+		});
+		timer.start();
 	}
 	
 	public void browse(String url) {
@@ -493,114 +500,100 @@ public class Main extends JFrame implements ActionListener {
 		lastUpdated = 0;
 	}
 
-	public class UpdateThread extends Thread {
-		
-		@Override
-		public void run() {
-			while (!Thread.currentThread().isInterrupted()) {
-				// Update at every 10 seconds
-				if(System.currentTimeMillis() - lastUpdated < 10000) {
-					try {
-						sleep(100);
-						continue;
-					}
-					catch (InterruptedException ex) {
-						Thread.currentThread().interrupt();
-					}
-				}				
-				lastUpdated = System.currentTimeMillis();
-				
-				long balance = 0, locked = 0;
-				try {
-					Globals g = Globals.getInstance();
-					
-					// Check if the node has the expected block
-					if(g.isTestnet()) {
-						Block checkBlock = g.getNS().getBlock(BurstID.fromLong(Constants.CHECK_BLOCK_TESTNET)).blockingGet();
-						if(checkBlock.getHeight() != Constants.CHECK_HEIGHT_TESTNET) {
-							String error = tr("main_invalid_testnet_node", g.getNode());
-							Toast.makeText(Main.this, error, Toast.Style.ERROR).display();
+	private void updateUI() {
+		// Update at every 10 seconds
+		if(System.currentTimeMillis() - lastUpdated < 10000) {
+			return;
+		}				
+		lastUpdated = System.currentTimeMillis();
 
-							nodeSelector.setIcon(ICON_DISCONNECTED);
-							statusLabel.setText(error);
-						}
-					}
-					
-					try {
-						Account ac = g.getNS().getAccount(g.getAddress()).blockingGet();
-						balance = ac.getBalance().longValue();
-						// Locked value in *market* and possibly other Burst coin stuff.
-						locked = balance - ac.getUnconfirmedBalance().longValue();
-						
-						balance -= locked;
-					}
-					catch (Exception e) {
-						if(e.getCause() instanceof BRSError) {
-							BRSError error = (BRSError) e.getCause();
-							if(error.getCode() != 5) // unknown account
-								throw e;
-						}
-						else
-							throw e;
-					}
-					balanceLabel.setText(NumberFormatting.BURST.format(balance));
-					lockedBalanceLabel.setText(tr("main_plus_locked", NumberFormatting.BURST.format(locked)));
-					
-					g.updateSuggestedFee();
-					
-					if(transactionsPanel.isVisible() || showingSplash)
-						transactionsPanel.update();
-					if(orderBook.isVisible() || showingSplash)
-						orderBook.update();
-					if(historyPanel.isVisible() || showingSplash)
-						historyPanel.update();
-					
-					Market tokenMarket = token;
-					Market m = (Market) marketComboBox.getSelectedItem();
-					if(m.getTokenID()!=null && m!=token)
-						tokenMarket = m;
-					AssetBalance[] accounts = g.getNS().getAssetBalances(tokenMarket.getTokenID()).blockingGet();
-					long tokenBalance = 0;
-					long tokenLocked = 0;
-					for (AssetBalance aac : accounts) {
-						if(aac.getAccountAddress().getSignedLongId() == g.getAddress().getSignedLongId()) {
-							tokenBalance += aac.getBalance().longValue();
-						}
-					}
-					
-					AssetOrder[] asks = g.getNS().getAskOrders(token.getTokenID()).blockingGet();
-					for(AssetOrder o : asks) {
-						if(o.getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
-							continue;
-						tokenLocked += o.getQuantity().longValue();
-					}
-					tokenBalance -= tokenLocked;
-					
-					balanceLabelToken.setText(token.format(tokenBalance));
-					balanceLabelTokenPending.setText(tr("main_plus_locked", token.format(tokenLocked)));
+		long balance = 0, locked = 0;
+		try {
+			Globals g = Globals.getInstance();
 
-					statusLabel.setText("");
-					nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
-				}
-				catch (RuntimeException rex) {
-					rex.printStackTrace();
-					
-					// Avoid making the window pop up on connectivity problems
-					// Toast.makeText(Main.this, rex.getMessage(), Toast.Style.ERROR).display();
+			// Check if the node has the expected block
+			if(g.isTestnet()) {
+				Block checkBlock = g.getNS().getBlock(BurstID.fromLong(Constants.CHECK_BLOCK_TESTNET)).blockingGet();
+				if(checkBlock.getHeight() != Constants.CHECK_HEIGHT_TESTNET) {
+					String error = tr("main_invalid_testnet_node", g.getNode());
+					Toast.makeText(Main.this, error, Toast.Style.ERROR).display();
 
 					nodeSelector.setIcon(ICON_DISCONNECTED);
-					statusLabel.setText(tr("main_error", rex.getMessage()));
-				}
-				if(showingSplash) {
-					showingSplash = false;
-					pulsingButton.stopPulsing();
-					cardLayout.first(getContentPane());
+					statusLabel.setText(error);
 				}
 			}
-			
-			System.err.println("Update thread finished!");
+
+			try {
+				Account ac = g.getNS().getAccount(g.getAddress()).blockingGet();
+				balance = ac.getBalance().longValue();
+				// Locked value in *market* and possibly other Burst coin stuff.
+				locked = balance - ac.getUnconfirmedBalance().longValue();
+
+				balance -= locked;
+			}
+			catch (Exception e) {
+				if(e.getCause() instanceof BRSError) {
+					BRSError error = (BRSError) e.getCause();
+					if(error.getCode() != 5) // unknown account
+						throw e;
+				}
+				else
+					throw e;
+			}
+			balanceLabel.setText(NumberFormatting.BURST.format(balance));
+			lockedBalanceLabel.setText(tr("main_plus_locked", NumberFormatting.BURST.format(locked)));
+
+			g.updateSuggestedFee();
+
+			if(transactionsPanel.isVisible() || showingSplash)
+				transactionsPanel.update();
+			if(orderBook.isVisible() || showingSplash)
+				orderBook.update();
+			if(historyPanel.isVisible() || showingSplash)
+				historyPanel.update();
+
+			Market tokenMarket = token;
+			Market m = (Market) marketComboBox.getSelectedItem();
+			if(m.getTokenID()!=null && m!=token)
+				tokenMarket = m;
+			AssetBalance[] accounts = g.getNS().getAssetBalances(tokenMarket.getTokenID()).blockingGet();
+			long tokenBalance = 0;
+			long tokenLocked = 0;
+			for (AssetBalance aac : accounts) {
+				if(aac.getAccountAddress().getSignedLongId() == g.getAddress().getSignedLongId()) {
+					tokenBalance += aac.getBalance().longValue();
+				}
+			}
+
+			AssetOrder[] asks = g.getNS().getAskOrders(token.getTokenID()).blockingGet();
+			for(AssetOrder o : asks) {
+				if(o.getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
+					continue;
+				tokenLocked += o.getQuantity().longValue();
+			}
+			tokenBalance -= tokenLocked;
+
+			balanceLabelToken.setText(token.format(tokenBalance));
+			balanceLabelTokenPending.setText(tr("main_plus_locked", token.format(tokenLocked)));
+
+			statusLabel.setText("");
+			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 		}
-	};
+		catch (RuntimeException rex) {
+			rex.printStackTrace();
+
+			// Avoid making the window pop up on connectivity problems
+			// Toast.makeText(Main.this, rex.getMessage(), Toast.Style.ERROR).display();
+
+			nodeSelector.setIcon(ICON_DISCONNECTED);
+			statusLabel.setText(tr("main_error", rex.getMessage()));
+		}
+		if(showingSplash) {
+			showingSplash = false;
+			pulsingButton.stopPulsing();
+			cardLayout.first(getContentPane());
+		}
+	}
 
 	public static void main(String[] args) {
 		StringBuilder sb = new StringBuilder();
