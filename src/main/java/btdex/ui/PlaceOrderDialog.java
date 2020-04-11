@@ -465,7 +465,6 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				}
 
 				setVisible(false);
-
 				Toast.makeText((JFrame) this.getOwner(),
 						tr("send_tx_broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
 			}
@@ -573,7 +572,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 									contract.getActivationFee()),
 							totalField.getText(), market,
 							accountDetails.getText(), market
-							));					
+							));
 				}
 				else {
 					terms.append(tr("offer_terms_take_sell",

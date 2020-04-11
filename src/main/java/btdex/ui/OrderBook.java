@@ -379,25 +379,17 @@ public class OrderBook extends JPanel {
 		}
 
 		// sort by price
-		bidOrders.sort(new Comparator<AssetOrder>() {
+		Comparator<AssetOrder> comparator = new Comparator<AssetOrder>() {
 			@Override
 			public int compare(AssetOrder o1, AssetOrder o2) {
 				int cmp = (int)(o2.getPrice().longValue() - o1.getPrice().longValue());
 				if(cmp == 0)
-					cmp = o2.getHeight() - o1.getHeight();
+					cmp = o1.getHeight() - o2.getHeight();
 				return cmp;
 			}
-		});
-		// sort by price
-		askOrders.sort(new Comparator<AssetOrder>() {
-			@Override
-			public int compare(AssetOrder o1, AssetOrder o2) {
-				int cmp = -(int)(o2.getPrice().longValue() - o1.getPrice().longValue());
-				if(cmp == 0)
-					cmp = o2.getHeight() - o1.getHeight();
-				return cmp;
-			}
-		});
+		};
+		bidOrders.sort(comparator);
+		askOrders.sort(comparator);
 
 		firstBid = bidOrders.size() > 0 ? bidOrders.get(0) : null;
 		firstAsk = askOrders.size() > 0 ? askOrders.get(0) : null;
@@ -475,6 +467,7 @@ public class OrderBook extends JPanel {
 				continue;
 			
 			// add your own contracts but not yet configured if they have balance (so you can withdraw)
+			// this should never happen on normal circumstances
 			if(s.getCreator().equals(g.getAddress()) && s.getMarket() == 0 && s.getBalance().longValue() > 0L) {
 				if(s.getType() == ContractState.Type.SELL)
 					contracts.add(s);
@@ -492,7 +485,8 @@ public class OrderBook extends JPanel {
 
 			// FIXME: add more validity tests here
 			if(s.hasPending() ||
-					s.getAmountNQT() > 0	&& s.getRate() > 0 && (s.getMarketAccount() != null || s.getType() == ContractState.Type.BUY) &&
+					s.getAmountNQT() > 0 && s.getBalance().longValue() + s.getActivationFee() > s.getSecurityNQT() &&
+					s.getRate() > 0 && (s.getMarketAccount() != null || s.getType() == ContractState.Type.BUY) &&
 					(s.getState() == SellContract.STATE_OPEN
 					|| (s.getState()!= SellContract.STATE_FINISHED && s.getTaker() == g.getAddress().getSignedLongId())
 					|| (s.getState()!= SellContract.STATE_FINISHED && s.getCreator().equals(g.getAddress())) ) ) {
@@ -504,18 +498,17 @@ public class OrderBook extends JPanel {
 		}
 
 		// sort by rate
-		contracts.sort(new Comparator<ContractState>() {
+		Comparator<ContractState> comparator = new Comparator<ContractState>() {
 			@Override
 			public int compare(ContractState o1, ContractState o2) {
-				return (int)(o1.getRate() - o2.getRate());
+				int cmp = (int)(o1.getRate() - o2.getRate());
+				if(cmp == 0)
+					cmp = (int)(o1.getSecurityNQT() - o2.getSecurityNQT());
+				return cmp;
 			}
-		});
-		contractsBuy.sort(new Comparator<ContractState>() {
-			@Override
-			public int compare(ContractState o2, ContractState o1) {
-				return (int)(o1.getRate() - o2.getRate());
-			}
-		});
+		};
+		contracts.sort(comparator);
+		contractsBuy.sort(comparator);
 
 		model.setRowCount(Math.max(contracts.size(), contractsBuy.size()));
 		addContracts(contracts, ASK_COLS);
@@ -549,14 +542,20 @@ public class OrderBook extends JPanel {
 			b.setBackground(s.getType() == ContractState.Type.BUY ? HistoryPanel.GREEN : HistoryPanel.RED);
 			model.setValueAt(b, row, cols[COL_PRICE]);
 
-			long securityPercent = s.getSecurityNQT()*100L / s.getAmountNQT();
-			String sizeString = s.getAmount() + " (" + securityPercent + "%)";
+			if(s.getSecurityNQT() > 0 && s.getAmountNQT() > 0 && s.getRate() > 0) {
+				long securityPercent = s.getSecurityNQT()*100L / s.getAmountNQT();
+				String sizeString = s.getAmount() + " (" + securityPercent + "%)";
 
-			model.setValueAt(sizeString, row, cols[COL_SIZE]);
-			double amount = ((double)s.getRate())*s.getAmountNQT();
-			amount /= Contract.ONE_BURST;
-			model.setValueAt(market.format((long)amount),
-					row, cols[COL_TOTAL]);
+				model.setValueAt(sizeString, row, cols[COL_SIZE]);
+				double amount = ((double)s.getRate())*s.getAmountNQT();
+				amount /= Contract.ONE_BURST;
+				model.setValueAt(market.format((long)amount), row, cols[COL_TOTAL]);
+			}
+			else {
+				model.setValueAt(null, row, cols[COL_SIZE]);
+				model.setValueAt(null, row, cols[COL_TOTAL]);
+			}
+			
 			ExplorerButton exp = new ExplorerButton(s.getAddress().getRawAddress(), copyIcon, expIcon,
 					ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(), s.getAddress().getFullAddress(), BUTTON_EDITOR); 
 			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId()
