@@ -379,7 +379,7 @@ public class OrderBook extends JPanel {
 		}
 
 		// sort by price
-		bidOrders.sort(new Comparator<AssetOrder>() {
+		Comparator<AssetOrder> comparator = new Comparator<AssetOrder>() {
 			@Override
 			public int compare(AssetOrder o1, AssetOrder o2) {
 				int cmp = (int)(o2.getPrice().longValue() - o1.getPrice().longValue());
@@ -387,17 +387,9 @@ public class OrderBook extends JPanel {
 					cmp = o1.getHeight() - o2.getHeight();
 				return cmp;
 			}
-		});
-		// sort by price
-		askOrders.sort(new Comparator<AssetOrder>() {
-			@Override
-			public int compare(AssetOrder o1, AssetOrder o2) {
-				int cmp = -(int)(o2.getPrice().longValue() - o1.getPrice().longValue());
-				if(cmp == 0)
-					cmp = o1.getHeight() - o2.getHeight();
-				return cmp;
-			}
-		});
+		};
+		bidOrders.sort(comparator);
+		askOrders.sort(comparator);
 
 		firstBid = bidOrders.size() > 0 ? bidOrders.get(0) : null;
 		firstAsk = askOrders.size() > 0 ? askOrders.get(0) : null;
@@ -504,18 +496,17 @@ public class OrderBook extends JPanel {
 		}
 
 		// sort by rate
-		contracts.sort(new Comparator<ContractState>() {
+		Comparator<ContractState> comparator = new Comparator<ContractState>() {
 			@Override
 			public int compare(ContractState o1, ContractState o2) {
-				return (int)(o1.getRate() - o2.getRate());
+				int cmp = (int)(o1.getRate() - o2.getRate());
+				if(cmp == 0)
+					cmp = (int)(o1.getSecurityNQT() - o2.getSecurityNQT());
+				return cmp;
 			}
-		});
-		contractsBuy.sort(new Comparator<ContractState>() {
-			@Override
-			public int compare(ContractState o2, ContractState o1) {
-				return (int)(o1.getRate() - o2.getRate());
-			}
-		});
+		};
+		contracts.sort(comparator);
+		contractsBuy.sort(comparator);
 
 		model.setRowCount(Math.max(contracts.size(), contractsBuy.size()));
 		addContracts(contracts, ASK_COLS);
