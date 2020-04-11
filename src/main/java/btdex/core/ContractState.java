@@ -16,6 +16,7 @@ import btdex.sc.BuyContract;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
+import burst.kit.entity.BurstTimestamp;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;
 import burst.kit.entity.response.Transaction;
@@ -50,6 +51,7 @@ public class ContractState {
 	private long rate;
 	private int market;
 	private int takeBlock;
+	private BurstTimestamp takeTimestamp;
 	private Account marketAccount;
 	
 	private long lastTxId;
@@ -100,6 +102,10 @@ public class ContractState {
 	
 	public boolean hasStateFlag(long flag) {
 		return (state & flag) == flag;
+	}
+	
+	public BurstTimestamp getTakeTimestamp() {
+		return takeTimestamp;
 	}
 
 	public long getRate() {
@@ -269,12 +275,13 @@ public class ContractState {
 		
 		// check rate, type, etc. from transaction history
 		Transaction[] txs = g.getNS().getAccountTransactions(this.address).blockingGet();
-		takeBlock = findTakeBlock(txs);
+		findTakeBlock(txs);
 		hasPending = processTransactions(txs, takeBlock) || processTransactions(utxs, takeBlock);
 	}
 	
-	private int findTakeBlock(Transaction[] txs) {
+	private void findTakeBlock(Transaction[] txs) {
 		int takeBlock = 0;
+		BurstTimestamp takeTimestamp = null;
 		if(this.state > SellContract.STATE_TAKEN) {
 			// We need to find out what is the block of the take transaction (price definition should be after that)
 			for(Transaction tx : txs) {
@@ -288,6 +295,7 @@ public class ContractState {
 					if(!msg.isText() && msg.getMessage().startsWith(Contracts.getContractTakeHash(type))) {
 						// should be a hexadecimal message
 						takeBlock = tx.getBlockHeight();
+						takeTimestamp = tx.getTimestamp();
 					}
 				}
 				
@@ -323,7 +331,8 @@ public class ContractState {
 				}
 			}
 		}
-		return takeBlock;
+		this.takeBlock = takeBlock;
+		this.takeTimestamp = takeTimestamp;
 	}
 	
 	private boolean processTransactions(Transaction[] txs, int blockHeightLimit) {
