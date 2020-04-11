@@ -267,12 +267,10 @@ public class ContractState {
 			this.lockMinutes = getContractFieldValue("lockMinutes");
 		}
 		
-		if(state != SellContract.STATE_FINISHED) {
-			// check rate, type, etc. from transaction history
-			Transaction[] txs = g.getNS().getAccountTransactions(this.address).blockingGet();
-			takeBlock = findTakeBlock(txs);
-			hasPending = processTransactions(txs, takeBlock) || processTransactions(utxs, takeBlock);
-		}
+		// check rate, type, etc. from transaction history
+		Transaction[] txs = g.getNS().getAccountTransactions(this.address).blockingGet();
+		takeBlock = findTakeBlock(txs);
+		hasPending = processTransactions(txs, takeBlock) || processTransactions(utxs, takeBlock);
 	}
 	
 	private int findTakeBlock(Transaction[] txs) {
@@ -345,8 +343,8 @@ public class ContractState {
 			
 			// We only accept configurations with 2 confirmations or more
 			// but also get pending info from the user
-			if(tx.getConfirmations() < Constants.PRICE_NCONF
-					|| (blockHeightLimit > 0 && tx.getBlockHeight() > blockHeightLimit) ) {
+			if(tx.getConfirmations() < Constants.PRICE_NCONF) {
+				// || (blockHeightLimit > 0 && tx.getBlockHeight() > blockHeightLimit) )
 				if(tx.getSender().equals(g.getAddress())) {
 					hasPending = true;
 				}

@@ -9,7 +9,6 @@ import java.util.HashMap;
 import org.bouncycastle.util.encoders.Hex;
 
 import bt.compiler.Compiler;
-import bt.compiler.Method;
 import btdex.sc.BuyContract;
 import btdex.sc.SellContract;
 import btdex.sc.SellNoDepositContract;
