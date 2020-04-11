@@ -1,5 +1,7 @@
 package btdex.ui;
 
+import static btdex.locale.Translation.tr;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -27,14 +29,13 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 import bt.Contract;
+import btdex.core.BurstNode;
 import btdex.core.ContractState;
 import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
-import static btdex.locale.Translation.tr;
 import btdex.sc.SellContract;
-import burst.kit.entity.BurstID;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.AssetTrade;
 import jiconfont.icons.font_awesome.FontAwesome;
@@ -356,30 +357,29 @@ public class OrderBook extends JPanel {
 	}
 
 	private void updateOrders() {
-		BurstID token = market.getTokenID();
-
 		Globals g = Globals.getInstance();
+		BurstNode bn = BurstNode.getInstance();
 
 		boolean onlyMine = listOnlyMine.isSelected();
 
 		ArrayList<AssetOrder> bidOrders = new ArrayList<>();
 		ArrayList<AssetOrder> askOrders = new ArrayList<>();
-		AssetOrder[] bids = g.getNS().getBidOrders(token).blockingGet();
-		AssetOrder[] asks = g.getNS().getAskOrders(token).blockingGet();
+		AssetOrder[] bids = bn.getAssetBids(market);
+		AssetOrder[] asks = bn.getAssetAsks(market);
 
-		for (int i = 0; i < asks.length; i++) {
+		for (int i = 0; asks != null && i < asks.length; i++) {
 			if(onlyMine && asks[i].getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
 				continue;
 			askOrders.add(asks[i]);
 		}
-		for (int i = 0; i < bids.length; i++) {
+		for (int i = 0; bids != null && i < bids.length; i++) {
 			if(onlyMine && bids[i].getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
 				continue;
 			bidOrders.add(bids[i]);
 		}
 
 		// sort by price
-		Comparator<AssetOrder> comparator = new Comparator<AssetOrder>() {
+		bidOrders.sort(new Comparator<AssetOrder>() {
 			@Override
 			public int compare(AssetOrder o1, AssetOrder o2) {
 				int cmp = (int)(o2.getPrice().longValue() - o1.getPrice().longValue());
@@ -387,19 +387,26 @@ public class OrderBook extends JPanel {
 					cmp = o1.getHeight() - o2.getHeight();
 				return cmp;
 			}
-		};
-		bidOrders.sort(comparator);
-		askOrders.sort(comparator);
+		});
+		askOrders.sort(new Comparator<AssetOrder>() {
+			@Override
+			public int compare(AssetOrder o1, AssetOrder o2) {
+				int cmp = (int)(o1.getPrice().longValue() - o2.getPrice().longValue());
+				if(cmp == 0)
+					cmp = o1.getHeight() - o2.getHeight();
+				return cmp;
+			}
+		});
 
 		firstBid = bidOrders.size() > 0 ? bidOrders.get(0) : null;
 		firstAsk = askOrders.size() > 0 ? askOrders.get(0) : null;
 
-		model.setRowCount(Math.max(bids.length, asks.length));
+		model.setRowCount(Math.max(bidOrders.size(), askOrders.size()));
 
-		AssetTrade trs[] = g.getNS().getAssetTrades(market.getTokenID(), null, 0, 1).blockingGet();
-		AssetTrade lastTrade = trs.length > 0 ? trs[0] : null;
+		AssetTrade trs[] = BurstNode.getInstance().getAssetTrades(market);
+		AssetTrade lastTrade = trs !=null && trs.length > 0 ? trs[0] : null;
 		boolean lastIsUp = true;
-		if(trs.length > 1 && trs[0].getPrice().longValue() < trs[1].getPrice().longValue())
+		if(trs !=null && trs.length > 1 && trs[0].getPrice().longValue() < trs[1].getPrice().longValue())
 			lastIsUp = false;
 
 		if(lastTrade != null) {
@@ -498,7 +505,7 @@ public class OrderBook extends JPanel {
 		}
 
 		// sort by rate
-		Comparator<ContractState> comparator = new Comparator<ContractState>() {
+		contracts.sort(new Comparator<ContractState>() {
 			@Override
 			public int compare(ContractState o1, ContractState o2) {
 				int cmp = (int)(o1.getRate() - o2.getRate());
@@ -506,9 +513,16 @@ public class OrderBook extends JPanel {
 					cmp = (int)(o1.getSecurityNQT() - o2.getSecurityNQT());
 				return cmp;
 			}
-		};
-		contracts.sort(comparator);
-		contractsBuy.sort(comparator);
+		});
+		contractsBuy.sort(new Comparator<ContractState>() {
+			@Override
+			public int compare(ContractState o1, ContractState o2) {
+				int cmp = (int)(o2.getRate() - o1.getRate());
+				if(cmp == 0)
+					cmp = (int)(o1.getSecurityNQT() - o2.getSecurityNQT());
+				return cmp;
+			}
+		});
 
 		model.setRowCount(Math.max(contracts.size(), contractsBuy.size()));
 		addContracts(contracts, ASK_COLS);

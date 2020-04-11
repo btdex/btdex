@@ -29,6 +29,7 @@ import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.data.xy.DefaultOHLCDataset;
 import org.jfree.data.xy.OHLCDataItem;
 
+import btdex.core.BurstNode;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
@@ -167,6 +168,7 @@ public class HistoryPanel extends JPanel {
 
 	public synchronized void update() {
 		Globals g = Globals.getInstance();
+		BurstNode bn = BurstNode.getInstance();
 		
 		if(newMarket != market) {
 			market = newMarket;
@@ -188,13 +190,11 @@ public class HistoryPanel extends JPanel {
 
 		try {
 			if(isToken) {
-				AssetTrade trs[] = g.getNS().getAssetTrades(market.getTokenID(),
-						// myHistory ? g.getAddress() :
-							null, 0, 200).blockingGet();
+				AssetTrade trs[] = bn.getAssetTrades(market);
 
 				int nLines = 0;
 
-				int maxLines = Math.min(200, trs.length);
+				int maxLines = Math.min(200, trs == null ? 0 : trs.length);
 				for (int i = 0; i < maxLines; i++) {
 					AssetTrade tr = trs[i];
 					if(myHistory &&
@@ -218,10 +218,10 @@ public class HistoryPanel extends JPanel {
 					long price = tr.getPrice().longValue();
 
 					model.setValueAt(new ExplorerButton(
-							tr.getBuyerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getBuyerAddress().getRawAddress(), copyIcon, expIcon,
+							tr.getBuyerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? tr("hist_you") : tr.getBuyerAddress().getRawAddress(), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, tr.getBuyerAddress().getID(), tr.getBuyerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
 					model.setValueAt(new ExplorerButton(
-							tr.getSellerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : tr.getSellerAddress().getRawAddress(), copyIcon, expIcon,
+							tr.getSellerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? tr("hist_you") : tr.getSellerAddress().getRawAddress(), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, tr.getSellerAddress().getID(), tr.getSellerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
 
 					model.setValueAt(NumberFormatting.BURST.format(price*market.getFactor()), row, COL_PRICE);

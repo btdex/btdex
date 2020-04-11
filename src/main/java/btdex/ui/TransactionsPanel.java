@@ -12,6 +12,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
+import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.Globals;
 import btdex.core.Market;
@@ -109,22 +110,23 @@ public class TransactionsPanel extends JPanel {
 
 	public void update() {
 		Globals g = Globals.getInstance();
+		BurstNode bn = BurstNode.getInstance();
 		
 		ArrayList<Transaction> txs = new ArrayList<>();
 
 		try {
 			// Get all unconf. txs, not only for this account, this way we can catch the
 			// activation message for new accounts.
-			Transaction[] unconf = g.getNS().getUnconfirmedTransactions(null).blockingGet();
-			for (int i = 0; i < unconf.length; i++) {
+			Transaction[] unconf = bn.getUnconfirmedTransactions();
+			for (int i = 0; unconf !=null && i < unconf.length; i++) {
 				Transaction utx = unconf[i];
 				if((utx.getRecipient()!=null && utx.getRecipient().getSignedLongId() == g.getAddress().getSignedLongId()) ||
 						(utx.getSender()!=null && utx.getSender().getSignedLongId() == g.getAddress().getSignedLongId()) )
 					txs.add(utx);
 			}
 			
-			Transaction[] conf = g.getNS().getAccountTransactions(g.getAddress()).blockingGet();
-			for (int i = 0; i < conf.length; i++) {
+			Transaction[] conf = bn.getAccountTransactions();
+			for (int i = 0; conf != null && i < conf.length; i++) {
 				txs.add(conf[i]);
 			}
 		}

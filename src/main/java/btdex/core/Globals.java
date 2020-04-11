@@ -29,11 +29,10 @@ public class Globals {
 	static String confFile = Constants.DEF_CONF_FILE;
 	private Properties conf = new Properties();
 
-	private ArrayList<Account> accounts = new ArrayList<>();
+	private ArrayList<MarketAccount> accounts = new ArrayList<>();
 
 	private boolean testnet = false;
 	private BurstAddress address;
-	private FeeSuggestion suggestedFee;
 	
 	private Mediators mediators;
 
@@ -99,14 +98,6 @@ public class Globals {
 		return conf.getProperty(Constants.PROP_NODE);
 	}
 
-	public void updateSuggestedFee() {
-		suggestedFee = getNS().suggestFee().blockingGet();
-	}
-
-	public FeeSuggestion getSuggestedFee() {
-		return suggestedFee;
-	}
-
 	public void saveConfs() throws Exception {
 		File f = new File(confFile);
 		if(f.getParentFile()!=null)
@@ -155,7 +146,7 @@ public class Globals {
 		return BC.signTransaction(privKey, unsigned);
 	}
 
-	public ArrayList<Account> getAccounts() {
+	public ArrayList<MarketAccount> getMarketAccounts() {
 		return accounts;
 	}
 
@@ -188,7 +179,7 @@ public class Globals {
 			if(accountName == null)
 				accountName = m.simpleFormat(fields);
 
-			accounts.add(new Account(accountMarket, accountName, fields));
+			accounts.add(new MarketAccount(accountMarket, accountName, fields));
 
 			i++;
 		}
@@ -197,7 +188,7 @@ public class Globals {
 	private void saveAccounts() {
 		int i = 1;
 		for (; i <= accounts.size(); i++) {
-			Account ac = accounts.get(i-1);
+			MarketAccount ac = accounts.get(i-1);
 			conf.setProperty(Constants.PROP_ACCOUNT + i, ac.getMarket());
 			conf.setProperty(Constants.PROP_ACCOUNT + i + ".name", ac.getName());
 
@@ -216,7 +207,7 @@ public class Globals {
 		}
 	}
 
-	public void addAccount(Account ac) {
+	public void addAccount(MarketAccount ac) {
 		accounts.add(ac);
 		saveAccounts();
 	}
@@ -229,7 +220,7 @@ public class Globals {
 	public BurstAddress getAddress() {
 		return address;
 	}
-
+	
 	public byte[] getPubKey() {
 		return BC.parseHexString(conf.getProperty(Constants.PROP_PUBKEY));
 	}
@@ -281,5 +272,4 @@ public class Globals {
 	public boolean isTestnet() {
 		return testnet;
 	}
-
 }

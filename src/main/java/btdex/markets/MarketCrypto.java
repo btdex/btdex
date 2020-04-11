@@ -3,7 +3,7 @@ package btdex.markets;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import btdex.core.Account;
+import btdex.core.MarketAccount;
 import btdex.core.Market;
 import static btdex.locale.Translation.tr;
 
@@ -52,7 +52,7 @@ public abstract class MarketCrypto extends Market {
 	}
 	
 	@Override
-	public Account parseAccount(String accountFields) {
+	public MarketAccount parseAccount(String accountFields) {
 		String fieldsArray[] = accountFields.split(":");
 		
 		if(fieldsArray.length!=1)
@@ -66,7 +66,7 @@ public abstract class MarketCrypto extends Market {
 		catch (Exception e) {
 			return null;
 		}
-		Account ret = new Account(this.toString(), null, fields);
+		MarketAccount ret = new MarketAccount(this.toString(), null, fields);
 		return ret;
 	}
 }

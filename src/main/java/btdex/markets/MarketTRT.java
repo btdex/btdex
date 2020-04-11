@@ -1,6 +1,5 @@
 package btdex.markets;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
