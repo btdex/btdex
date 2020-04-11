@@ -235,8 +235,8 @@ public class ContractState {
 		return first;
 	}	
 	
-	public void update(Transaction[] utxs) {
-		updateState(null, utxs);
+	public void update(Transaction[] utxs, boolean onlyUnconf) {
+		updateState(onlyUnconf ? at : null, utxs);
 	}
 	
     private long getContractFieldValue(String field) {

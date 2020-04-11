@@ -15,6 +15,7 @@ import btdex.sc.SellNoDepositContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.response.AT;
+import burst.kit.entity.response.Block;
 import burst.kit.entity.response.Transaction;
 
 public class Contracts {
@@ -25,6 +26,7 @@ public class Contracts {
 	private static HashMap<BurstAddress, ContractState> contractsMap = new HashMap<>();
 	private static boolean loading = true;
 	private static BurstID mostRecentID;
+	private static BurstID lastBlock;
 	private static ContractState freeContract, freeNoDepositContract, freeBuyContract;
 	
 	static class UpdateThread extends Thread {
@@ -139,6 +141,11 @@ public class Contracts {
 		mostRecentID = ContractState.addContracts(contractsMap, mostRecentID);
 		
 		Globals g = Globals.getInstance();
+		
+		// check if we have a new block or not
+		Block[] latestBlocks = g.getNS().getBlocks(0, 1).blockingGet();
+		boolean noNewBlock = latestBlocks[0].getId().equals(lastBlock);
+		
 		ContractState updatedFreeContract = null;
 		ContractState updatedBuyFreeContract = null;
 		ContractState updatedFreeNoDepositContract = null;
@@ -148,7 +155,7 @@ public class Contracts {
 
 		// update the state of every contract
 		for(ContractState s : contractsMap.values()) {
-			s.update(utxs);
+			s.update(utxs, noNewBlock);
 			
 			if(s.getType() == ContractState.Type.SELL &&
 					s.getCreator().equals(g.getAddress()) && 
@@ -163,6 +170,7 @@ public class Contracts {
 					s.getState() == SellNoDepositContract.STATE_FINISHED && !s.hasPending())
 				updatedFreeNoDepositContract = s;
 		}
+		lastBlock = latestBlocks[0].getId();
 		
 		// TODO: maybe a lock around this
 		freeContract = updatedFreeContract;

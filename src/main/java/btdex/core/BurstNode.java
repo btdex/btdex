@@ -18,6 +18,11 @@ import burst.kit.service.BurstNodeService;
 /**
  * Keeps updated the relevant information from a Burst node.
  * 
+ * This is intended to reduce network traffic and make the UI more responsive.
+ * All blocking calls are made on a separate thread and new information
+ * if requested only when a new block arrives (except for the unconfirmed
+ * transactions which are frequently updated).
+ * 
  * @author jjos
  *
  */
@@ -31,7 +36,7 @@ public class BurstNode {
 	private Transaction[] utxs;
 	private Block checkBlock;
 	private Exception nodeError;
-	private Account ac;
+	private Account account;
 	private FeeSuggestion suggestedFee;
 	private BurstID lastBlock;
 	
@@ -79,7 +84,7 @@ public class BurstNode {
 	}
 	
 	public Account getAccount() {
-		return ac;
+		return account;
 	}
 	
 	public Exception getNodeException() {
@@ -106,8 +111,8 @@ public class BurstNode {
 				utxs = NS.getUnconfirmedTransactions(null).blockingGet();
 				
 				// check if we have a new block or not
-				Block[] newBlocks = NS.getBlocks(0, 1).blockingGet();
-				if(newBlocks[0].getId().equals(lastBlock))
+				Block[] latestBlocks = NS.getBlocks(0, 1).blockingGet();
+				if(latestBlocks[0].getId().equals(lastBlock))
 					return; // no need to update
 				
 				lastBlock = null;
@@ -116,7 +121,7 @@ public class BurstNode {
 				if(checkBlock == null && g.isTestnet())
 					checkBlock = NS.getBlock(BurstID.fromLong(Constants.CHECK_BLOCK_TESTNET)).blockingGet();
 				try {
-					ac = NS.getAccount(g.getAddress()).blockingGet();
+					account = NS.getAccount(g.getAddress()).blockingGet();
 				}
 				catch (Exception e) {
 					if(e.getCause() instanceof BRSError) {
@@ -150,7 +155,7 @@ public class BurstNode {
 				txs = NS.getAccountTransactions(g.getAddress()).blockingGet();
 				
 				// set we have this one updated
-				lastBlock = newBlocks[0].getId();
+				lastBlock = latestBlocks[0].getId();
 			}
 			catch (RuntimeException rex) {
 				rex.printStackTrace();
