@@ -6,7 +6,7 @@ import btdex.locale.Translation;
 
 public class MarketETH extends MarketCrypto {
 	
-	static final String REGEX = "^0x[0-9a-f]{40}$";
+	static final String REGEX = "^0x[0-9a-fA-F]{40}$";
 
 	public String toString() {
 		return "ETH";
@@ -23,6 +23,7 @@ public class MarketETH extends MarketCrypto {
 		
 		String addr = fields.get(ADDRESS);
 		
+		// TODO: add the checksum code when possible
 		if(!addr.matches(REGEX))
 			throw new Exception(Translation.tr("mkt_invalid_address", addr, toString()));
 	}	
