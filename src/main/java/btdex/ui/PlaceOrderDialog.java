@@ -36,7 +36,7 @@ import com.google.gson.JsonObject;
 
 import bt.BT;
 import bt.Contract;
-import btdex.core.Account;
+import btdex.core.MarketAccount;
 import btdex.core.Constants;
 import btdex.core.ContractState;
 import btdex.core.Contracts;
@@ -54,7 +54,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 	Market market;
 
-	JComboBox<Account> accountComboBox;
+	JComboBox<MarketAccount> accountComboBox;
 	JTextField accountDetails;
 	JTextField amountField, priceField, totalField;
 	JSlider security;
@@ -137,9 +137,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		fieldPanel.add(new Desc(tr("offer_size", "BURST"), amountField));
 		fieldPanel.add(new Desc(tr("offer_total", market), totalField));
 
-		ArrayList<Account> acs = Globals.getInstance().getAccounts();
+		ArrayList<MarketAccount> acs = Globals.getInstance().getMarketAccounts();
 
-		for (Account ac : acs) {
+		for (MarketAccount ac : acs) {
 			if(ac.getMarket().equals(market.toString()))
 				accountComboBox.addItem(ac);
 		}
@@ -311,7 +311,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		}
 
 		if(e.getSource() == accountComboBox) {
-			Account ac = (Account) accountComboBox.getSelectedItem();
+			MarketAccount ac = (MarketAccount) accountComboBox.getSelectedItem();
 			String details = market.simpleFormat(ac.getFields());
 			accountDetails.setText(details);
 			somethingChanged();
@@ -494,7 +494,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		amountValue = null;
 		priceValue = null;
 
-		Account account = isTake ? contract.getMarketAccount() : (Account) accountComboBox.getSelectedItem();
+		MarketAccount account = isTake ? contract.getMarketAccount() : (MarketAccount) accountComboBox.getSelectedItem();
 
 		if(priceField.getText().length()==0 || amountField.getText().length()==0)
 			return;

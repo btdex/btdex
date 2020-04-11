@@ -1,5 +1,7 @@
 package btdex.ui;
 
+import static btdex.locale.Translation.tr;
+
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -37,6 +39,7 @@ import javax.swing.event.ChangeListener;
 import com.bulenkov.darcula.DarculaLaf;
 
 import bt.BT;
+import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.Contracts;
 import btdex.core.Globals;
@@ -44,9 +47,6 @@ import btdex.core.Market;
 import btdex.core.Markets;
 import btdex.core.NumberFormatting;
 import btdex.locale.Translation;
-
-import static btdex.locale.Translation.tr;
-import burst.kit.entity.BurstID;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.AssetBalance;
 import burst.kit.entity.response.AssetOrder;
@@ -475,7 +475,7 @@ public class Main extends JFrame implements ActionListener {
 			Toast.makeText(this, tr("main_getting_info_from_node"), 4000, Toast.Style.SUCCESS).display();
 		update();
 		
-		Timer timer = new Timer(200, new ActionListener() {
+		Timer timer = new Timer(1000, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				updateUI();
@@ -504,16 +504,30 @@ public class Main extends JFrame implements ActionListener {
 		// Update at every 10 seconds
 		if(System.currentTimeMillis() - lastUpdated < 10000) {
 			return;
-		}				
+		}
 		lastUpdated = System.currentTimeMillis();
 
 		long balance = 0, locked = 0;
 		try {
 			Globals g = Globals.getInstance();
+			BurstNode bn = BurstNode.getInstance();
+			
+			Exception nodeException = bn.getNodeException();
+			if(nodeException != null) {
+				nodeSelector.setIcon(ICON_DISCONNECTED);
+				statusLabel.setText(tr("main_error", nodeException.getMessage()));				
+				if(showingSplash) {
+					showingSplash = false;
+					pulsingButton.stopPulsing();
+					cardLayout.first(getContentPane());
+				}
+			}
 
 			// Check if the node has the expected block
 			if(g.isTestnet()) {
-				Block checkBlock = g.getNS().getBlock(BurstID.fromLong(Constants.CHECK_BLOCK_TESTNET)).blockingGet();
+				Block checkBlock = bn.getCheckBlock();
+				if(checkBlock == null)
+					return;
 				if(checkBlock.getHeight() != Constants.CHECK_HEIGHT_TESTNET) {
 					String error = tr("main_invalid_testnet_node", g.getNode());
 					Toast.makeText(Main.this, error, Toast.Style.ERROR).display();
@@ -523,27 +537,16 @@ public class Main extends JFrame implements ActionListener {
 				}
 			}
 
-			try {
-				Account ac = g.getNS().getAccount(g.getAddress()).blockingGet();
-				balance = ac.getBalance().longValue();
-				// Locked value in *market* and possibly other Burst coin stuff.
-				locked = balance - ac.getUnconfirmedBalance().longValue();
+			Account ac = bn.getAccount();
+			if(ac == null)
+				return;
+			balance = ac.getBalance().longValue();
+			// Locked value in *market* and possibly other Burst coin stuff.
+			locked = balance - ac.getUnconfirmedBalance().longValue();
 
-				balance -= locked;
-			}
-			catch (Exception e) {
-				if(e.getCause() instanceof BRSError) {
-					BRSError error = (BRSError) e.getCause();
-					if(error.getCode() != 5) // unknown account
-						throw e;
-				}
-				else
-					throw e;
-			}
+			balance -= locked;
 			balanceLabel.setText(NumberFormatting.BURST.format(balance));
 			lockedBalanceLabel.setText(tr("main_plus_locked", NumberFormatting.BURST.format(locked)));
-
-			g.updateSuggestedFee();
 
 			if(transactionsPanel.isVisible() || showingSplash)
 				transactionsPanel.update();
@@ -556,7 +559,10 @@ public class Main extends JFrame implements ActionListener {
 			Market m = (Market) marketComboBox.getSelectedItem();
 			if(m.getTokenID()!=null && m!=token)
 				tokenMarket = m;
-			AssetBalance[] accounts = g.getNS().getAssetBalances(tokenMarket.getTokenID()).blockingGet();
+			AssetBalance[] accounts = bn.getAssetBalances(tokenMarket);
+			if(accounts == null)
+				return; // not yet retrieved from node
+			
 			long tokenBalance = 0;
 			long tokenLocked = 0;
 			for (AssetBalance aac : accounts) {
@@ -565,7 +571,7 @@ public class Main extends JFrame implements ActionListener {
 				}
 			}
 
-			AssetOrder[] asks = g.getNS().getAskOrders(token.getTokenID()).blockingGet();
+			AssetOrder[] asks = bn.getAssetAsks(token);
 			for(AssetOrder o : asks) {
 				if(o.getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
 					continue;
@@ -581,9 +587,6 @@ public class Main extends JFrame implements ActionListener {
 		}
 		catch (RuntimeException rex) {
 			rex.printStackTrace();
-
-			// Avoid making the window pop up on connectivity problems
-			// Toast.makeText(Main.this, rex.getMessage(), Toast.Style.ERROR).display();
 
 			nodeSelector.setIcon(ICON_DISCONNECTED);
 			statusLabel.setText(tr("main_error", rex.getMessage()));

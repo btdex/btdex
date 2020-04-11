@@ -29,6 +29,7 @@ import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.data.xy.DefaultOHLCDataset;
 import org.jfree.data.xy.OHLCDataItem;
 
+import btdex.core.BurstNode;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
@@ -167,6 +168,7 @@ public class HistoryPanel extends JPanel {
 
 	public synchronized void update() {
 		Globals g = Globals.getInstance();
+		BurstNode bn = BurstNode.getInstance();
 		
 		if(newMarket != market) {
 			market = newMarket;
@@ -188,13 +190,11 @@ public class HistoryPanel extends JPanel {
 
 		try {
 			if(isToken) {
-				AssetTrade trs[] = g.getNS().getAssetTrades(market.getTokenID(),
-						// myHistory ? g.getAddress() :
-							null, 0, 200).blockingGet();
+				AssetTrade trs[] = bn.getAssetTrades(market);
 
 				int nLines = 0;
 
-				int maxLines = Math.min(200, trs.length);
+				int maxLines = Math.min(200, trs == null ? 0 : trs.length);
 				for (int i = 0; i < maxLines; i++) {
 					AssetTrade tr = trs[i];
 					if(myHistory &&

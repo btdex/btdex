@@ -52,7 +52,7 @@ public class ContractState {
 	private int market;
 	private int takeBlock;
 	private BurstTimestamp takeTimestamp;
-	private Account marketAccount;
+	private MarketAccount marketAccount;
 	
 	private long lastTxId;
 	
@@ -68,7 +68,7 @@ public class ContractState {
 		return market;
 	}
 	
-	public Account getMarketAccount() {
+	public MarketAccount getMarketAccount() {
 		return marketAccount;
 	}
 	

@@ -122,7 +122,7 @@ public abstract class Market {
 	 * @param accountFields
 	 * @return the account for the given fields or null if invalid
 	 */
-	public Account parseAccount(String accountFields) {
+	public MarketAccount parseAccount(String accountFields) {
 		return null;
 	}
 	

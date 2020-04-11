@@ -1,5 +1,7 @@
 package btdex.ui;
 
+import static btdex.locale.Translation.tr;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -27,11 +29,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
-import btdex.core.Account;
 import btdex.core.Globals;
 import btdex.core.Market;
+import btdex.core.MarketAccount;
 import btdex.core.Markets;
-import static btdex.locale.Translation.tr;
 import layout.SpringUtilities;
 
 public class AccountsPanel extends JPanel implements ActionListener, ListSelectionListener {
@@ -169,7 +170,7 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 
 	private void loadAccounts() {
 		model.setNumRows(0);
-		ArrayList<Account> accs = Globals.getInstance().getAccounts();
+		ArrayList<MarketAccount> accs = Globals.getInstance().getMarketAccounts();
 		for (int i = 0; i < accs.size(); i++) {
 			Object []row = new Object[2];
 			row[0] = accs.get(i).getMarket();
@@ -218,7 +219,7 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 			if(name.trim().length()==0)
 				name = market.simpleFormat(fields);
 
-			Account ac = new Account(market.toString(), name, fields);
+			MarketAccount ac = new MarketAccount(market.toString(), name, fields);
 			Globals.getInstance().addAccount(ac);
 
 			loadAccounts();
@@ -280,7 +281,7 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 			nameField.setEditable(false);
 			
 			// show this account properties
-			Account ac = Globals.getInstance().getAccounts().get(row);
+			MarketAccount ac = Globals.getInstance().getMarketAccounts().get(row);
 			
 			for (int i = 0; i < marketComboBox.getItemCount(); i++) {
 				if(ac.getMarket().equals(marketComboBox.getItemAt(i).toString())) {
