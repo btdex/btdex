@@ -22,8 +22,8 @@ public class Toast extends JDialog {
 	
 	public enum Style { NORMAL, SUCCESS, ERROR };
 	
-	public static final int LENGTH_SHORT = 3000;
-	public static final int LENGTH_LONG = 6000;
+	public static final int LENGTH_SHORT = 5000;
+	public static final int LENGTH_LONG = 10000;
 	public static final Color ERROR_RED = new Color(121, 0, 0);
 	public static final Color SUCCESS_GREEN = new Color(22, 127, 57);
 	public static final Color NORMAL_BLACK = new Color(0, 0, 0);
@@ -32,7 +32,7 @@ public class Toast extends JDialog {
 	private final float OPACITY_INCREMENT = 0.05f;
 	private final int FADE_REFRESH_RATE = 20;
 	private final int WINDOW_RADIUS = 15;
-	private final int DISTANCE_FROM_PARENT_TOP = 100;	
+	private final int DISTANCE_FROM_PARENT_TOP = 35;	
 	
 	private JFrame mOwner;
 	private String mText;
@@ -130,7 +130,7 @@ public class Toast extends JDialog {
 		}
 		Point ownerLoc = mOwner.getLocation();		
 		int x = (int) (ownerLoc.getX() + ((mOwner.getWidth() - this.getWidth()) / 2)); 
-		int y = (int) (ownerLoc.getY() + DISTANCE_FROM_PARENT_TOP);
+		int y = (int) (ownerLoc.getY() + mOwner.getHeight()*DISTANCE_FROM_PARENT_TOP/100);
 		return new Point(x, y);
 	}
 	
@@ -204,19 +204,19 @@ public class Toast extends JDialog {
         }).start();
     }
 
-    public static void main(String... args){
+    public static void main(String []args){
     	final JFrame frame = new JFrame();
     	frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     	frame.setSize(new Dimension(500, 300));
     	JButton b = new JButton("Toast!");
-    	
+
     	b.addActionListener(new ActionListener() {		
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			Toast.makeText(frame, "Annotations were successfully saved.", Style.SUCCESS).display();
-		}
-	});
-    	
+    		@Override
+    		public void actionPerformed(ActionEvent e) {
+    			Toast.makeText(frame, "Annotations were successfully saved.", Style.SUCCESS).display();
+    		}
+    	});
+
     	frame.add(b);
     	frame.setVisible(true);        
     }
