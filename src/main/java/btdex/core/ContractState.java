@@ -2,7 +2,10 @@ package btdex.core;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.HashMap;
+
+import org.bouncycastle.util.encoders.Hex;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -24,38 +27,42 @@ import burst.kit.entity.response.TransactionAppendix;
 import burst.kit.entity.response.appendix.PlaintextMessageAppendix;
 
 public class ContractState {
-	
+
 	public enum Type {
 		INVALID, SELL, BUY, NO_DEPOSIT
 	}
-	
+
 	private BurstAddress address;
 	private Type type;
 	private AT at;
 	private BurstValue balance;
-	
+
 	private long mediator1;
 	private long mediator2;
 	private long offerType;
 	private long feeContract;
 	private Compiler compiler;
-	
+
 	private long state;
 	private long amount;
 	private long security;
 	private long taker;
 	private long lockMinutes;
-	
+
 	private boolean hasPending;
-	
+
 	private long rate;
 	private int market;
 	private int takeBlock;
 	private BurstTimestamp takeTimestamp;
 	private MarketAccount marketAccount;
-	
+
 	private long lastTxId;
-	
+	private ArrayList<ContractTrade> trades = new ArrayList<>();
+	private long rateHistory;
+	private long marketHistory;
+	private int blockHistory;
+
 	public ContractState(Type type) {
 		this.type = type;
 	}
@@ -64,7 +71,7 @@ public class ContractState {
 	public boolean hasStateFlag(long flag) {
 		return (state & flag) == flag;
 	}
-	
+
 	public BurstTimestamp getTakeTimestamp() {
 		return takeTimestamp;
 	}
@@ -172,14 +179,14 @@ public class ContractState {
 		updateState(onlyUnconf ? at : null, utxs);
 	}
 
-    private long getContractFieldValue(String field) {
-    	int address = compiler.getFieldAddress(field);
-        byte[] data = at.getMachineData();
-        ByteBuffer b = ByteBuffer.wrap(data);
-        b.order(ByteOrder.LITTLE_ENDIAN);
+	private long getContractFieldValue(String field) {
+		int address = compiler.getFieldAddress(field);
+		byte[] data = at.getMachineData();
+		ByteBuffer b = ByteBuffer.wrap(data);
+		b.order(ByteOrder.LITTLE_ENDIAN);
 
-        return b.getLong(address * 8);
-    }
+		return b.getLong(address * 8);
+	}
 
 	private void updateState(AT at, Transaction[] utxs) {
 		Globals g = Globals.getInstance();
@@ -208,11 +215,12 @@ public class ContractState {
 
 		// check rate, type, etc. from transaction history
 		Transaction[] txs = g.getNS().getAccountTransactions(this.address).blockingGet();
-		findTakeBlock(txs);
+		findCurrentTakeBlock(txs);
+		buildHistory(txs);
 		hasPending = processTransactions(txs, takeBlock) || processTransactions(utxs, takeBlock);
 	}
 
-	private void findTakeBlock(Transaction[] txs) {
+	private void findCurrentTakeBlock(Transaction[] txs) {
 		int takeBlock = 0;
 		BurstTimestamp takeTimestamp = null;
 		if(this.state > SellContract.STATE_TAKEN) {
@@ -351,6 +359,66 @@ public class ContractState {
 		return hasPending;
 	}
 
+	private void buildHistory(Transaction[] txs) {
+		if(txs == null || txs.length == 0
+				|| txs[0].getBlockHeight() <= blockHistory) // we already have the more recent one
+			return;
+
+		rateHistory = 0;
+		marketHistory = 0;
+
+		for (int i = txs.length -1 ; i >= 0; i--) {
+			// in reverse order so we have the price available when we see the 'take'
+			Transaction tx = txs[i];
+			
+			// if we already have this one
+			if(tx.getBlockHeight() <= blockHistory)
+				continue;
+			
+			if(tx.getRecipient().equals(address)
+					&& tx.getAppendages()!=null && tx.getAppendages().length > 0
+					&& tx.getAppendages()[0] instanceof PlaintextMessageAppendix) {
+
+				PlaintextMessageAppendix appendMessage = (PlaintextMessageAppendix) tx.getAppendages()[0];
+				if(tx.getSender().equals(at.getCreator())) {
+					// price update
+					try {
+						String jsonData = appendMessage.getMessage();
+						JsonObject json = JsonParser.parseString(jsonData).getAsJsonObject();
+						JsonElement marketJson = json.get("market");
+						JsonElement rateJson = json.get("rate");
+						if(marketJson!=null)
+							marketHistory = Long.parseLong(marketJson.getAsString());
+						if(rateJson!=null)
+							rateHistory = Long.parseLong(rateJson.getAsString());
+					}
+					catch (Exception e) {
+						// we ignore invalid messages
+					}
+				}
+				else if(rateHistory > 0L && marketHistory > 0L // we only want to register trades we know the price 
+						&& !appendMessage.isText() && appendMessage.getMessage().length() == 64
+						&& appendMessage.getMessage().startsWith(Contracts.getContractTakeHash(type))) {
+					// the take message (we are not so strict here as this is not vital information)
+					// so we can have false positives here, like multiple takes on the same order or invalid takes
+					// being account
+					byte []messageBytes = Hex.decode(appendMessage.getMessage());
+					ByteBuffer b = ByteBuffer.wrap(messageBytes);
+					b.order(ByteOrder.LITTLE_ENDIAN);
+					b.getLong(); // method hash
+					long security = b.getLong();
+					long amount = b.getLong();
+					
+					ContractTrade trade = new ContractTrade(this, tx.getBlockTimestamp(), tx.getSender(), rateHistory, security, amount, marketHistory);
+					trades.add(trade);
+				}
+			}
+		}
+		
+		blockHistory = txs[0].getBlockHeight();
+	}
+
+
 	public boolean hasPending() {
 		return hasPending;
 	}
@@ -417,5 +485,9 @@ public class ContractState {
 
 	public long getState() {
 		return state;
+	}
+	
+	public ArrayList<ContractTrade> getTrades() {
+		return trades;
 	}
 }

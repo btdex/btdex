@@ -14,7 +14,6 @@ import bt.BT;
 import btdex.ui.ExplorerWrapper;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstAddress;
-import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.service.BurstNodeService;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

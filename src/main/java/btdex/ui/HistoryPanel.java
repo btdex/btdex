@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -32,9 +34,13 @@ import org.jfree.data.xy.DefaultOHLCDataset;
 import org.jfree.data.xy.OHLCDataItem;
 
 import btdex.core.BurstNode;
+import btdex.core.ContractState;
+import btdex.core.ContractTrade;
+import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
+import burst.kit.entity.BurstAddress;
 import burst.kit.entity.response.AssetTrade;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
@@ -64,8 +70,8 @@ public class HistoryPanel extends JPanel {
 	public static final int COL_SELLER = 4;
 
 	String[] columnNames = {
-			"hist_price",
-			"hist_amount",
+			"book_price",
+			"book_size",
 			"hist_time",
 			"hist_buyer",
 			"hist_seller",
@@ -79,7 +85,17 @@ public class HistoryPanel extends JPanel {
 		}
 
 		public String getColumnName(int col) {
-			String colName = tr(columnNames[col]);
+			String colName = columnNames[col];
+			if(market == null)
+				return colName;
+			
+			boolean isToken = market.getTokenID()!=null;
+			if(col == COL_PRICE)
+				colName = tr(colName, isToken ? "BURST" : market);
+			else if(col == COL_AMOUNT)
+				colName = tr(colName, isToken ? market : "BURST");
+			else
+				colName = tr(colName);
 			return colName;
 		}
 
@@ -95,8 +111,6 @@ public class HistoryPanel extends JPanel {
 		listOnlyMine.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				model.setRowCount(0);
-				model.fireTableDataChanged();
 				main.update();
 			}
 		});
@@ -166,124 +180,232 @@ public class HistoryPanel extends JPanel {
 		newMarket = m;
 	}
 
-	public synchronized void update() {
-		Globals g = Globals.getInstance();
-		BurstNode bn = BurstNode.getInstance();
-
+	public void update() {
 		if(newMarket != market) {
 			market = newMarket;
-			model.setRowCount(0);
-			model.fireTableDataChanged();
 
 			// update the column headers
 			for (int c = 0; c < columnNames.length; c++) {
 				table.getColumnModel().getColumn(c).setHeaderValue(model.getColumnName(c));
 			}
 			table.getTableHeader().repaint();
-
-			if(chart!=null)
-				chart.getXYPlot().setDataset(null);
 		}
 
-		boolean isToken = market.getTokenID()!=null;
+		if(market.getTokenID() != null)
+			updateToken();
+		else
+			updateContract();
+		
+		model.fireTableDataChanged();
+	}
+
+	private void updateToken() {
+		Globals g = Globals.getInstance();
+		BurstNode bn = BurstNode.getInstance();
 		boolean myHistory = listOnlyMine.isSelected();
 
-		if(isToken) {
-			AssetTrade trs[] = bn.getAssetTrades(market);
+		AssetTrade trs[] = bn.getAssetTrades(market);
 
-			int nLines = 0;
+		int nLines = 0;
 
-			int maxLines = Math.min(200, trs == null ? 0 : trs.length);
-			for (int i = 0; i < maxLines; i++) {
-				AssetTrade tr = trs[i];
-				if(myHistory &&
-						tr.getBuyerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
-						tr.getSellerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
-					continue;
-				nLines++;
-			}
-
-			model.setRowCount(nLines);
-
-			// Update the contents
-			for (int row = 0, i=0; i < maxLines; i++) {
-				AssetTrade tr = trs[i];
-				if(myHistory &&
-						tr.getBuyerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
-						tr.getSellerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
-					continue;
-
-				long amount = tr.getQuantity().longValue();
-				long price = tr.getPrice().longValue();
-
-				model.setValueAt(new ExplorerButton(
-						tr.getBuyerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? tr("hist_you") : tr.getBuyerAddress().getRawAddress(), copyIcon, expIcon,
-								ExplorerButton.TYPE_ADDRESS, tr.getBuyerAddress().getID(), tr.getBuyerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
-				model.setValueAt(new ExplorerButton(
-						tr.getSellerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? tr("hist_you") : tr.getSellerAddress().getRawAddress(), copyIcon, expIcon,
-								ExplorerButton.TYPE_ADDRESS, tr.getSellerAddress().getID(), tr.getSellerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
-
-				model.setValueAt(NumberFormatting.BURST.format(price*market.getFactor()), row, COL_PRICE);
-				model.setValueAt(market.format(amount), row, COL_AMOUNT);
-				model.setValueAt(DATE_FORMAT.format(tr.getTimestamp().getAsDate()), row, COL_TIME);
-
-				row++;
-			}
-
-
-			ArrayList<OHLCDataItem> data = new ArrayList<>();
-			int NCANDLES = 50;
-			long DELTA = TimeUnit.HOURS.toMillis(4);
-			Date start = new Date(System.currentTimeMillis() - DELTA*NCANDLES);
-			Date next = new Date(start.getTime() + DELTA);
-
-			double lastClose = Double.NaN;
-			for (int i = 0; i < 50; i++) {
-				double high = 0;
-				double low = Double.MAX_VALUE;
-				double close = lastClose;
-				double open = lastClose;
-				double volume = 0;
-				if(!Double.isNaN(lastClose))
-					high = lastClose;
-
-				for (int row = maxLines-1; row >= 0; row--) {
-					AssetTrade tr = trs[row];
-					Date date = tr.getTimestamp().getAsDate();
-					double price = tr.getPrice().doubleValue()*market.getFactor();
-
-					if(date.after(start) && date.before(next)) {
-						close = price;
-						open = lastClose;
-						high = Math.max(price, high);
-						low = Math.min(price, low);
-						if(Double.isNaN(open))
-							open = lastClose = price;
-						volume += tr.getQuantity().doubleValue()*market.getFactor();
-					}
-				}
-				low = Math.min(high, low);
-				if(!Double.isNaN(close))
-					lastClose = close;
-
-				if(!Double.isNaN(open)) {
-					OHLCDataItem item = new OHLCDataItem(
-							start, open, high, low, close, volume);
-					data.add(item);
-				}
-
-				start = next;
-				next = new Date(start.getTime() + DELTA);
-			}
-
-			DefaultOHLCDataset dataset = new DefaultOHLCDataset(market.toString(), data.toArray(new OHLCDataItem[data.size()]));
-
-			chart.getXYPlot().setDataset(dataset);
+		int maxLines = Math.min(200, trs == null ? 0 : trs.length);
+		for (int i = 0; i < maxLines; i++) {
+			AssetTrade tr = trs[i];
+			if(myHistory &&
+					tr.getBuyerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
+					tr.getSellerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
+				continue;
+			nLines++;
 		}
 
-		else {
-			if(chart!=null)
-				chart.getXYPlot().setDataset(null);
+		model.setRowCount(nLines);
+
+		// Update the contents
+		for (int row = 0, i=0; i < maxLines; i++) {
+			AssetTrade tr = trs[i];
+			if(myHistory &&
+					tr.getBuyerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
+					tr.getSellerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
+				continue;
+
+			long amount = tr.getQuantity().longValue();
+			long price = tr.getPrice().longValue();
+
+			model.setValueAt(new ExplorerButton(
+					tr.getBuyerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? tr("hist_you") : tr.getBuyerAddress().getRawAddress(), copyIcon, expIcon,
+							ExplorerButton.TYPE_ADDRESS, tr.getBuyerAddress().getID(), tr.getBuyerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
+			model.setValueAt(new ExplorerButton(
+					tr.getSellerAddress().getSignedLongId()==g.getAddress().getSignedLongId() ? tr("hist_you") : tr.getSellerAddress().getRawAddress(), copyIcon, expIcon,
+							ExplorerButton.TYPE_ADDRESS, tr.getSellerAddress().getID(), tr.getSellerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
+
+			model.setValueAt(NumberFormatting.BURST.format(price*market.getFactor()), row, COL_PRICE);
+			model.setValueAt(market.format(amount), row, COL_AMOUNT);
+			model.setValueAt(DATE_FORMAT.format(tr.getTimestamp().getAsDate()), row, COL_TIME);
+
+			row++;
 		}
+
+
+		ArrayList<OHLCDataItem> data = new ArrayList<>();
+		int NCANDLES = 50;
+		long DELTA = TimeUnit.HOURS.toMillis(4);
+		Date start = new Date(System.currentTimeMillis() - DELTA*NCANDLES);
+		Date next = new Date(start.getTime() + DELTA);
+
+		double lastClose = Double.NaN;
+		for (int i = 0; i < 50; i++) {
+			double high = 0;
+			double low = Double.MAX_VALUE;
+			double close = lastClose;
+			double open = lastClose;
+			double volume = 0;
+			if(!Double.isNaN(lastClose))
+				high = lastClose;
+
+			for (int row = maxLines-1; row >= 0; row--) {
+				AssetTrade tr = trs[row];
+				Date date = tr.getTimestamp().getAsDate();
+				double price = tr.getPrice().doubleValue()*market.getFactor();
+
+				if(date.after(start) && date.before(next)) {
+					close = price;
+					open = lastClose;
+					high = Math.max(price, high);
+					low = Math.min(price, low);
+					if(Double.isNaN(open))
+						open = lastClose = price;
+					volume += tr.getQuantity().doubleValue()*market.getFactor();
+				}
+			}
+			low = Math.min(high, low);
+			if(!Double.isNaN(close))
+				lastClose = close;
+
+			if(!Double.isNaN(open)) {
+				OHLCDataItem item = new OHLCDataItem(
+						start, open, high, low, close, volume);
+				data.add(item);
+			}
+
+			start = next;
+			next = new Date(start.getTime() + DELTA);
+		}
+
+		DefaultOHLCDataset dataset = new DefaultOHLCDataset(market.toString(), data.toArray(new OHLCDataItem[data.size()]));
+
+		chart.getXYPlot().setDataset(dataset);
+	}
+
+	private void updateContract() {
+		Globals g = Globals.getInstance();
+		boolean myHistory = listOnlyMine.isSelected();
+
+		Collection<ContractState> allContracts = Contracts.getContracts();
+		ArrayList<ContractTrade> trades = new ArrayList<>();
+		
+		// build the trade list for this market
+		for(ContractState s : allContracts) {
+			for(ContractTrade t : s.getTrades()) {
+				if(t.getMarket() == market.getID()) {
+					trades.add(t);
+					// TODO: break if these trades are old enough
+				}
+			}
+		}
+		
+		// now we sort the trades on time
+		trades.sort(new Comparator<ContractTrade>() {
+			@Override
+			public int compare(ContractTrade t1, ContractTrade t2) {
+				int cmp = (int)(t2.getTimestamp().getAsDate().getTime() - t1.getTimestamp().getAsDate().getTime());
+				return cmp;
+			}
+		});
+		
+		int maxLines = Math.min(200, trades.size());
+		int nLines = myHistory ? 0 : maxLines;
+		for (int i = 0; myHistory && i < maxLines; i++) {
+			ContractTrade tr = trades.get(i);
+			if(myHistory && !tr.getCreator().equals(g.getAddress()) && !tr.getTaker().equals(g.getAddress()))
+				continue;
+			nLines++;
+		}
+
+		model.setRowCount(nLines);
+
+		// Update the contents
+		for (int row = 0, i=0; i < maxLines; i++) {
+			ContractTrade tr = trades.get(i);
+			if(myHistory && !tr.getCreator().equals(g.getAddress()) && !tr.getTaker().equals(g.getAddress()))
+				continue;
+
+			long amount = tr.getAmount();
+			double price = (double)tr.getRate() / market.getFactor();
+			
+			BurstAddress buyer = tr.getContract().getType() == ContractState.Type.BUY ? tr.getCreator() : tr.getTaker();
+			BurstAddress seller = tr.getContract().getType() == ContractState.Type.BUY ? tr.getTaker() : tr.getCreator();
+
+			model.setValueAt(new ExplorerButton(
+					buyer.equals(g.getAddress()) ? tr("hist_you") : buyer.getRawAddress(), copyIcon, expIcon,
+							ExplorerButton.TYPE_ADDRESS, buyer.getID(), buyer.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
+			model.setValueAt(new ExplorerButton(
+					seller.equals(g.getAddress()) ? tr("hist_you") : seller.getRawAddress(), copyIcon, expIcon,
+							ExplorerButton.TYPE_ADDRESS, seller.getID(), seller.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
+
+			model.setValueAt(market.getNumberFormat().format(price), row, COL_PRICE);
+			model.setValueAt(NumberFormatting.BURST.format(amount), row, COL_AMOUNT);
+			model.setValueAt(DATE_FORMAT.format(tr.getTimestamp().getAsDate()), row, COL_TIME);
+
+			row++;
+		}
+
+		ArrayList<OHLCDataItem> data = new ArrayList<>();
+		int NCANDLES = 50;
+		long DELTA = TimeUnit.HOURS.toMillis(4);
+		Date start = new Date(System.currentTimeMillis() - DELTA*NCANDLES);
+		Date next = new Date(start.getTime() + DELTA);
+
+		double lastClose = Double.NaN;
+		for (int i = 0; i < 50; i++) {
+			double high = 0;
+			double low = Double.MAX_VALUE;
+			double close = lastClose;
+			double open = lastClose;
+			double volume = 0;
+			if(!Double.isNaN(lastClose))
+				high = lastClose;
+
+			for (int row = maxLines-1; row >= 0; row--) {
+				ContractTrade tr = trades.get(row);
+				Date date = tr.getTimestamp().getAsDate();
+				double price = (double)tr.getRate() / market.getFactor();
+
+				if(date.after(start) && date.before(next)) {
+					close = price;
+					open = lastClose;
+					high = Math.max(price, high);
+					low = Math.min(price, low);
+					if(Double.isNaN(open))
+						open = lastClose = price;
+					volume += (double)tr.getAmount() * tr.getRate() / market.getFactor();
+				}
+			}
+			low = Math.min(high, low);
+			if(!Double.isNaN(close))
+				lastClose = close;
+
+			if(!Double.isNaN(open)) {
+				OHLCDataItem item = new OHLCDataItem(
+						start, open, high, low, close, volume);
+				data.add(item);
+			}
+
+			start = next;
+			next = new Date(start.getTime() + DELTA);
+		}
+
+		DefaultOHLCDataset dataset = new DefaultOHLCDataset(market.toString(), data.toArray(new OHLCDataItem[data.size()]));
+
+		chart.getXYPlot().setDataset(dataset);
 	}
 }
