@@ -52,7 +52,7 @@ public class Main extends JFrame implements ActionListener {
 	Image icon, iconMono;
 
 	CardLayout cardLayout;
-	boolean showingSplash;
+	boolean showingSplash, notifiedLoadingContracts;
 	OrderBook orderBook;
 	TransactionsPanel transactionsPanel;
 	HistoryPanel historyPanel;
@@ -514,6 +514,13 @@ public class Main extends JFrame implements ActionListener {
 					statusLabel.setText(error);
 				}
 			}
+			
+			if(!notifiedLoadingContracts) {
+				notifiedLoadingContracts = true;
+				Toast.makeText(this, tr("main_cross_chain_loading"), 8000, Toast.Style.SUCCESS).display();
+			}
+			if(Contracts.isLoading())
+				return; // we will wait the contracts to be ready so we can get the locked balance
 
 			Account ac = bn.getAccount();
 			if(ac == null)
@@ -590,9 +597,6 @@ public class Main extends JFrame implements ActionListener {
 				if(!Globals.getInstance().isTestnet()) {
 					// FIXME: remove this when operational
 					Toast.makeText(this, tr("main_cross_chain_testnet_only"), Toast.Style.ERROR).display();
-				}
-				else if(Contracts.isLoading()) {
-					Toast.makeText(this, tr("main_cross_chain_loading"), 8000, Toast.Style.NORMAL).display();					
 				}
 			}
 			else {
