@@ -64,7 +64,7 @@ public class Main extends JFrame implements ActionListener {
 	JButton nodeSelector, explorerSelector;
 	ExplorerWrapper explorer;
 	
-	Icon ICON_CONNECTED, ICON_DISCONNECTED, ICON_TESTNET;
+	private Icon ICON_CONNECTED, ICON_DISCONNECTED, ICON_TESTNET;
 
 	private JLabel balanceLabel;
 	private JLabel lockedBalanceLabel;
@@ -480,7 +480,7 @@ public class Main extends JFrame implements ActionListener {
 
 	private void updateUI() {
 		// Update at every 10 seconds
-		if(System.currentTimeMillis() - lastUpdated < 10000) {
+		if(System.currentTimeMillis() - lastUpdated < Constants.UI_UPDATE_INTERVAL) {
 			return;
 		}
 		lastUpdated = System.currentTimeMillis();
@@ -622,7 +622,7 @@ public class Main extends JFrame implements ActionListener {
 			Globals g = Globals.getInstance();
 			
 			String[] list = {BT.NODE_BURSTCOIN_RO, BT.NODE_BURST_ALLIANCE,
-					BT.NODE_BURST_TEAM, "http://localhost:8125"};
+					BT.NODE_BURST_TEAM, Constants.NODE_LOCALHOST};
 			if(g.isTestnet()){
 				list = new String[]{BT.NODE_TESTNET, BT.NODE_TESTNET_MEGASH, BT.NODE_LOCAL_TESTNET };
 			}

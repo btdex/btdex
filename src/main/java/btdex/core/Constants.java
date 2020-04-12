@@ -5,6 +5,8 @@ import com.google.gson.Gson;
 import okhttp3.MediaType;
 
 public class Constants {
+    public static final String NODE_LOCALHOST = "http://localhost:8125";
+
     public static final String PROP_LANG = "lang";
     public static final String PROP_NODE = "node";
     public static final String PROP_TESTNET = "testnet";
@@ -40,7 +42,7 @@ public class Constants {
     // Number of confirmations needed for SC update to be taken into account
     public static final int PRICE_NCONF = 1;
     
-	public static final int FEE_QUANT          = 735000;
+	public static final int FEE_QUANT = 735000;
 	
 	// Deadline in minutes to be used on transactions
 	public static final int BURST_DEADLINE = 1440;
@@ -51,5 +53,7 @@ public class Constants {
     public static final String GITHUB_LINK = "https://github.com/btdex/btdex";
 
     public static final int ICON_SIZE = 24;
+
+    public static final int UI_UPDATE_INTERVAL = 10000;
 
 }
