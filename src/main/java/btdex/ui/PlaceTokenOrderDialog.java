@@ -143,8 +143,8 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		conditionsPanel.add(acceptBox, BorderLayout.PAGE_END);
 
 		JPanel centerPanel = new JPanel(new BorderLayout());
-		centerPanel.add(fieldPanel, BorderLayout.CENTER);
-		centerPanel.add(conditionsPanel, BorderLayout.PAGE_END);
+		centerPanel.add(fieldPanel, BorderLayout.PAGE_START);
+		centerPanel.add(conditionsPanel, BorderLayout.CENTER);
 
 		content.add(centerPanel, BorderLayout.CENTER);
 		content.add(buttonPane, BorderLayout.PAGE_END);
