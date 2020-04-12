@@ -355,7 +355,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				// check if something changed
 				if(priceValue.longValue() == contract.getRate() &&
 						(accountDetails.getText().length()==0 || 
-						accountDetails.getText().equals(market.simpleFormat(contract.getMarketAccount().getFields())))
+						accountDetails.getText().equals(contract.getMarketAccount()))
 						)
 					error = tr("offer_no_changes");
 			}
@@ -495,7 +495,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		amountValue = null;
 		priceValue = null;
 
-		MarketAccount account = isTake ? contract.getMarketAccount() : (MarketAccount) accountComboBox.getSelectedItem();
+		MarketAccount account = isTake ? market.parseAccount(contract.getMarketAccount()) : (MarketAccount) accountComboBox.getSelectedItem();
 
 		if(priceField.getText().length()==0 || amountField.getText().length()==0)
 			return;
@@ -539,7 +539,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					// Signaling that we have received the market amount
 					terms.append(tr("offer_terms_signaling",
 							totalField.getText(), market,
-							market.simpleFormat(contract.getMarketAccount().getFields())));
+							contract.getMarketAccount()));
 					terms.append("\n\n").append(tr("offer_terms_signaling_details",
 							amountField.getText(), contract.getSecurity(),
 							NumberFormatting.BURST.format(suggestedFee.longValue() +
@@ -552,12 +552,12 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					if(isBuy) {
 						terms.append(tr("offer_terms_buy_deposit",
 								totalField.getText(), market,
-								market.simpleFormat(contract.getMarketAccount().getFields())));
+								contract.getMarketAccount()));
 					}
 					else {
 						terms.append(tr("offer_terms_need_transfer",
 								totalField.getText(), market,
-								market.simpleFormat(contract.getMarketAccount().getFields()),
+								contract.getMarketAccount(),
 								market.getPaymentTimeout(account.getFields())));
 					}
 					terms.append("\n\n").append(tr("offer_terms_need_transfer_details",

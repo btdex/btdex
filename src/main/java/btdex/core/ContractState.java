@@ -55,7 +55,7 @@ public class ContractState {
 	private int market;
 	private int takeBlock;
 	private BurstTimestamp takeTimestamp;
-	private MarketAccount marketAccount;
+	private String marketAccount;
 
 	private long lastTxId;
 	private ArrayList<ContractTrade> trades = new ArrayList<>();
@@ -217,7 +217,7 @@ public class ContractState {
 		Transaction[] txs = g.getNS().getAccountTransactions(this.address).blockingGet();
 		findCurrentTakeBlock(txs);
 		buildHistory(txs);
-		hasPending = processTransactions(txs, takeBlock) || processTransactions(utxs, takeBlock);
+		hasPending = processTransactions(txs) || processTransactions(utxs);
 	}
 
 	private void findCurrentTakeBlock(Transaction[] txs) {
@@ -226,7 +226,7 @@ public class ContractState {
 		if(this.state > SellContract.STATE_TAKEN) {
 			// We need to find out what is the block of the take transaction (price definition should be after that)
 			for(Transaction tx : txs) {
-				if(takeBlock > 0 && tx.getBlockHeight() < takeBlock)
+				if(takeBlock > 0 && tx.getBlockHeight() < takeBlock && marketAccount != null)
 					break;
 
 				if(tx.getSender().getSignedLongId() == this.taker &&
@@ -234,13 +234,13 @@ public class ContractState {
 						tx.getAppendages()[0] instanceof PlaintextMessageAppendix) {
 					PlaintextMessageAppendix msg = (PlaintextMessageAppendix) tx.getAppendages()[0];
 					if(!msg.isText() && msg.getMessage().startsWith(Contracts.getContractTakeHash(type))) {
-						// should be a hexadecimal message
 						takeBlock = tx.getBlockHeight();
 						takeTimestamp = tx.getTimestamp();
 					}
 				}
 
-				// we also look for the address definition of a taken buy order (should be more recent than the takeBlock
+				// we also look for the address definition of a taken buy order
+				// (should be more recent than the takeBlock, this is taken care with the 'break' on the loop start)
 				if(type == Type.BUY && tx.getSender().getSignedLongId() == this.taker
 						&& tx.getType() == 1 /* TYPE_MESSAGING */
 						&& tx.getSubtype() == 0 /* SUBTYPE_MESSAGING_ARBITRARY_MESSAGE */) {
@@ -259,7 +259,7 @@ public class ContractState {
 							if(accountFields != null) {
 								for(Market m : Markets.getMarkets()) {
 									if(m.getID() == market) {
-										marketAccount = m.parseAccount(accountFields);
+										marketAccount = accountFields;
 										break;
 									}
 								}
@@ -276,7 +276,7 @@ public class ContractState {
 		this.takeTimestamp = takeTimestamp;
 	}
 
-	private boolean processTransactions(Transaction[] txs, int blockHeightLimit) {
+	private boolean processTransactions(Transaction[] txs) {
 		if(txs == null)
 			return false;
 
@@ -284,9 +284,9 @@ public class ContractState {
 		boolean hasPending = false;
 
 		for(Transaction tx : txs) {
-			if(tx.getId().getSignedLongId() == lastTxId)
+			if(tx.getId().getSignedLongId() == lastTxId && takeBlock == 0)
 				break;
-
+			
 			// Only transactions for this contract
 			if(tx.getRecipient()==null || !tx.getRecipient().equals(getAddress()))
 				continue;
@@ -294,7 +294,6 @@ public class ContractState {
 			// We only accept configurations with 2 confirmations or more
 			// but also get pending info from the user
 			if(tx.getConfirmations() < Constants.PRICE_NCONF) {
-				// || (blockHeightLimit > 0 && tx.getBlockHeight() > blockHeightLimit) )
 				if(tx.getSender().equals(g.getAddress())) {
 					hasPending = true;
 				}
@@ -306,11 +305,11 @@ public class ContractState {
 			if(!tx.getSender().equals(at.getCreator()))
 				continue;
 
-			if(tx.getRecipient().equals(address)
-					&& (tx.getSender().equals(at.getCreator()) || (tx.getSender().getSignedLongId() == taker))
-					&& tx.getType() == 1 /* TYPE_MESSAGING */
+			if(tx.getType() == 1 /* TYPE_MESSAGING */
 					&& tx.getSubtype() == 0 /* SUBTYPE_MESSAGING_ARBITRARY_MESSAGE */
 					&& tx.getAppendages()!=null && tx.getAppendages().length > 0) {
+				if(takeBlock > 0 && tx.getBlockHeight() > takeBlock)
+					continue; // we ignore any configuration after the take block
 
 				TransactionAppendix append = tx.getAppendages()[0];
 				if(append instanceof PlaintextMessageAppendix) {
@@ -336,23 +335,29 @@ public class ContractState {
 						if(accountFields != null) {
 							for(Market m : Markets.getMarkets()) {
 								if(m.getID() == market) {
-									marketAccount = m.parseAccount(accountFields);
+									// check is valid
+									m.parseAccount(accountFields);
+									marketAccount = accountFields;
 									break;
 								}
 							}
 						}
 
 						// set this as the accepted last TxId
-						if(tx.getConfirmations() >= Constants.PRICE_NCONF) {
+						if(tx.getConfirmations() >= Constants.PRICE_NCONF && takeBlock == 0) {
 							lastTxId = tx.getId().getSignedLongId();
 
 							// done, only the more recent (2 confirmations) matters
 							break;
 						}
+						// we should stop on the first valid configuration before the take block
+						if(takeBlock > 0 && tx.getBlockHeight() < takeBlock)
+							break;
 					}
 					catch (Exception e) {
 						// we ignore invalid messages
 					}
+					
 				}
 			}
 		}
@@ -455,7 +460,7 @@ public class ContractState {
 		return market;
 	}
 
-	public MarketAccount getMarketAccount() {
+	public String getMarketAccount() {
 		return marketAccount;
 	}
 
