@@ -248,6 +248,7 @@ public class OrderBook extends JPanel {
 		ROW_HEIGHT = table.getRowHeight()+10;
 		table.setRowHeight(ROW_HEIGHT);
 		table.setRowSelectionAllowed(false);
+		table.getTableHeader().setReorderingAllowed(false);
 
 		// Allowing to hide columns
 		for (int i = 0; i < columnNames.length; i++) {

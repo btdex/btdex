@@ -124,6 +124,7 @@ public class HistoryPanel extends JPanel {
 
 		table = new JTable(model = new MyTableModel());
 		table.setRowSelectionAllowed(false);
+		table.getTableHeader().setReorderingAllowed(false);
 		table.setRowHeight(table.getRowHeight()+10);
 		table.setPreferredScrollableViewportSize(new Dimension(200, 200));
 
