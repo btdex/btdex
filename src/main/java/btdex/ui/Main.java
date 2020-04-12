@@ -26,12 +26,14 @@ import com.bulenkov.darcula.DarculaLaf;
 import bt.BT;
 import btdex.core.BurstNode;
 import btdex.core.Constants;
+import btdex.core.ContractState;
 import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.Markets;
 import btdex.core.NumberFormatting;
 import btdex.locale.Translation;
+import btdex.sc.SellContract;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.AssetBalance;
 import burst.kit.entity.response.AssetOrder;
@@ -528,6 +530,24 @@ public class Main extends JFrame implements ActionListener {
 			balance = ac.getBalance().longValue();
 			// Locked value in *market* and possibly other Burst coin stuff.
 			locked = balance - ac.getUnconfirmedBalance().longValue();
+			
+			// Add the amounts on smart contract trades on the locked balance
+			for(ContractState s : Contracts.getContracts()) {
+				if(s.getState() == SellContract.STATE_FINISHED)
+					continue;
+				if(s.getCreator().equals(g.getAddress())){
+					if(s.getType() == ContractState.Type.SELL)
+						locked += s.getAmountNQT() + s.getSecurityNQT();
+					else if(s.getType() == ContractState.Type.BUY)
+						locked += s.getSecurityNQT();
+				}
+				else if (s.getTaker() == g.getAddress().getSignedLongId()) {
+					if(s.getType() == ContractState.Type.SELL)
+						locked += s.getAmountNQT();
+					else if(s.getType() == ContractState.Type.BUY)
+						locked += s.getSecurityNQT() + s.getSecurityNQT();					
+				}
+			}
 
 			balance -= locked;
 			balanceLabel.setText(NumberFormatting.BURST.format(balance));
