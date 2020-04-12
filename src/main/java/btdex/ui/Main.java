@@ -518,13 +518,6 @@ public class Main extends JFrame implements ActionListener {
 				}
 			}
 			
-			if(!notifiedLoadingContracts) {
-				notifiedLoadingContracts = true;
-				Toast.makeText(this, tr("main_cross_chain_loading"), 8000, Toast.Style.SUCCESS).display();
-			}
-			if(Contracts.isLoading())
-				return; // we will wait the contracts to be ready so we can get the locked balance
-
 			Account ac = bn.getAccount();
 			if(ac == null)
 				return;
@@ -601,6 +594,8 @@ public class Main extends JFrame implements ActionListener {
 			showingSplash = false;
 			pulsingButton.stopPulsing();
 			cardLayout.first(getContentPane());
+
+			Toast.makeText(this, tr("main_cross_chain_loading"), 8000, Toast.Style.SUCCESS).display();
 		}
 	}
 
@@ -618,6 +613,9 @@ public class Main extends JFrame implements ActionListener {
 				if(!Globals.getInstance().isTestnet()) {
 					// FIXME: remove this when operational
 					Toast.makeText(this, tr("main_cross_chain_testnet_only"), Toast.Style.ERROR).display();
+				}
+				else if(Contracts.isLoading()) {
+					Toast.makeText(this, tr("main_cross_chain_loading"), 8000, Toast.Style.NORMAL).display();					
 				}
 			}
 			else {

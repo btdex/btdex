@@ -238,8 +238,6 @@ public class OrderBook extends JPanel {
 		listOnlyMine.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				model.setRowCount(0);
-				model.fireTableDataChanged();
 				main.update();
 			}
 		});
