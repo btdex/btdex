@@ -26,12 +26,14 @@ import com.bulenkov.darcula.DarculaLaf;
 import bt.BT;
 import btdex.core.BurstNode;
 import btdex.core.Constants;
+import btdex.core.ContractState;
 import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.Markets;
 import btdex.core.NumberFormatting;
 import btdex.locale.Translation;
+import btdex.sc.SellContract;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.AssetBalance;
 import burst.kit.entity.response.AssetOrder;
@@ -52,7 +54,7 @@ public class Main extends JFrame implements ActionListener {
 	Image icon, iconMono;
 
 	CardLayout cardLayout;
-	boolean showingSplash;
+	boolean showingSplash, notifiedLoadingContracts;
 	OrderBook orderBook;
 	TransactionsPanel transactionsPanel;
 	HistoryPanel historyPanel;
@@ -278,7 +280,7 @@ public class Main extends JFrame implements ActionListener {
 		orderBook = new OrderBook(this, (Market) marketComboBox.getSelectedItem());
 
 		transactionsPanel = new TransactionsPanel();
-		historyPanel = new HistoryPanel(this, (Market) marketComboBox.getSelectedItem());
+		historyPanel = new HistoryPanel(this, (Market) marketComboBox.getSelectedItem(), orderBook);
 		accountsPanel = new AccountsPanel(this);
 
 		ICON_CONNECTED = i.getICON_CONNECTED();
@@ -448,6 +450,7 @@ public class Main extends JFrame implements ActionListener {
 		setCursor(Cursor.getDefaultCursor());
 
 		statusLabel.setText(g.getNode());
+		marketComboBox.addActionListener(this);
 
 		if(!newAccount)
 			Toast.makeText(this, tr("main_getting_info_from_node"), 4000, Toast.Style.SUCCESS).display();
@@ -514,13 +517,31 @@ public class Main extends JFrame implements ActionListener {
 					statusLabel.setText(error);
 				}
 			}
-
+			
 			Account ac = bn.getAccount();
 			if(ac == null)
 				return;
 			balance = ac.getBalance().longValue();
 			// Locked value in *market* and possibly other Burst coin stuff.
 			locked = balance - ac.getUnconfirmedBalance().longValue();
+			
+			// Add the amounts on smart contract trades on the locked balance
+			for(ContractState s : Contracts.getContracts()) {
+				if(s.getState() == SellContract.STATE_FINISHED)
+					continue;
+				if(s.getCreator().equals(g.getAddress())){
+					if(s.getType() == ContractState.Type.SELL)
+						locked += s.getAmountNQT() + s.getSecurityNQT();
+					else if(s.getType() == ContractState.Type.BUY)
+						locked += s.getSecurityNQT();
+				}
+				else if (s.getTaker() == g.getAddress().getSignedLongId()) {
+					if(s.getType() == ContractState.Type.SELL)
+						locked += s.getAmountNQT();
+					else if(s.getType() == ContractState.Type.BUY)
+						locked += s.getSecurityNQT() + s.getSecurityNQT();					
+				}
+			}
 
 			balance -= locked;
 			balanceLabel.setText(NumberFormatting.BURST.format(balance));
@@ -528,10 +549,10 @@ public class Main extends JFrame implements ActionListener {
 
 			if(transactionsPanel.isVisible() || showingSplash)
 				transactionsPanel.update();
-			if(orderBook.isVisible() || showingSplash)
+			if(orderBook.isVisible() || historyPanel.isVisible() || showingSplash) {
 				orderBook.update();
-			if(historyPanel.isVisible() || showingSplash)
 				historyPanel.update();
+			}
 
 			Market tokenMarket = token;
 			Market m = (Market) marketComboBox.getSelectedItem();
@@ -573,6 +594,8 @@ public class Main extends JFrame implements ActionListener {
 			showingSplash = false;
 			pulsingButton.stopPulsing();
 			cardLayout.first(getContentPane());
+
+			Toast.makeText(this, tr("main_cross_chain_loading"), 8000, Toast.Style.SUCCESS).display();
 		}
 	}
 

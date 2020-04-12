@@ -5,6 +5,7 @@ import static btdex.locale.Translation.tr;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
@@ -51,8 +52,10 @@ public class HistoryPanel extends JPanel {
 
 	JTable table;
 	DefaultTableModel model;
-	Icon copyIcon, expIcon;
+	Icon copyIcon, expIcon, upIcon, downIcon;
 	JCheckBox listOnlyMine;
+	JLabel lastPrice;
+	private OrderBook book;
 
 	public static final Color RED = Color.decode("#BE474A");
 	public static final Color GREEN = Color.decode("#29BF76");
@@ -104,10 +107,14 @@ public class HistoryPanel extends JPanel {
 		}
 	}
 
-	public HistoryPanel(Main main, Market market) {
+	public HistoryPanel(Main main, Market market, OrderBook book) {
 		super(new BorderLayout());
 
-		listOnlyMine = new JCheckBox(tr("hist_list_mine_only"));
+		this.book = book;
+		
+		JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		top.add(new Desc(tr("book_last_price"), lastPrice = new JLabel()));
+		top.add(new Desc(" ", listOnlyMine = new JCheckBox(tr("hist_list_mine_only"))));
 		listOnlyMine.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -117,6 +124,7 @@ public class HistoryPanel extends JPanel {
 
 		table = new JTable(model = new MyTableModel());
 		table.setRowSelectionAllowed(false);
+		table.getTableHeader().setReorderingAllowed(false);
 		table.setRowHeight(table.getRowHeight()+10);
 		table.setPreferredScrollableViewportSize(new Dimension(200, 200));
 
@@ -124,6 +132,8 @@ public class HistoryPanel extends JPanel {
 
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
 		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
+		upIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_UP, 18, HistoryPanel.GREEN);
+		downIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_DOWN, 18, HistoryPanel.RED);
 
 		ChartPanel chartPanel = null;
 		chart = ChartFactory.createCandlestickChart(null, null, null, null, true);
@@ -171,7 +181,7 @@ public class HistoryPanel extends JPanel {
 		table.getColumnModel().getColumn(COL_BUYER).setPreferredWidth(200);
 		table.getColumnModel().getColumn(COL_SELLER).setPreferredWidth(200);
 
-		add(listOnlyMine, BorderLayout.PAGE_START);
+		add(top, BorderLayout.PAGE_START);
 		add(scrollPane, BorderLayout.CENTER);
 		add(chartPanel, BorderLayout.PAGE_END);
 	}
@@ -205,6 +215,27 @@ public class HistoryPanel extends JPanel {
 		boolean myHistory = listOnlyMine.isSelected();
 
 		AssetTrade trs[] = bn.getAssetTrades(market);
+		if(trs == null)
+			return;
+		
+		AssetTrade lastTrade = trs !=null && trs.length > 0 ? trs[0] : null;
+		boolean lastIsUp = true;
+		if(trs !=null && trs.length > 1 && trs[0].getPrice().longValue() < trs[1].getPrice().longValue())
+			lastIsUp = false;
+
+		if(lastTrade != null) {
+			// set the last price label
+			String priceLabel = NumberFormatting.BURST.format(lastTrade.getPrice().longValue()*market.getFactor()) + " BURST";
+			lastPrice.setText(priceLabel);
+			lastPrice.setIcon(lastIsUp ? upIcon : downIcon);
+			lastPrice.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
+			book.setLastPrice(lastPrice.getText(), lastPrice.getIcon(), lastPrice.getForeground());
+		}
+		else {
+			lastPrice.setText("");
+			lastPrice.setIcon(null);
+			book.setLastPrice(lastPrice.getText(), lastPrice.getIcon(), lastPrice.getForeground());			
+		}
 
 		int nLines = 0;
 
@@ -244,8 +275,7 @@ public class HistoryPanel extends JPanel {
 
 			row++;
 		}
-
-
+		
 		ArrayList<OHLCDataItem> data = new ArrayList<>();
 		int NCANDLES = 50;
 		long DELTA = TimeUnit.HOURS.toMillis(4);
@@ -321,6 +351,25 @@ public class HistoryPanel extends JPanel {
 				return cmp;
 			}
 		});
+		
+		ContractTrade lastTrade = trades.size() > 1 ? trades.get(0) : null;
+		boolean lastIsUp = true;
+		if(trades.size() > 1 && trades.get(0).getRate() < trades.get(1).getRate())
+			lastIsUp = false;
+
+		if(lastTrade != null) {
+			// set the last price label
+			String priceLabel = market.getNumberFormat().format(lastTrade.getRate()) + " " + market;
+			lastPrice.setText(priceLabel);
+			lastPrice.setIcon(lastIsUp ? upIcon : downIcon);
+			lastPrice.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
+			book.setLastPrice(lastPrice.getText(), lastPrice.getIcon(), lastPrice.getForeground());
+		}
+		else {
+			lastPrice.setText("");
+			lastPrice.setIcon(null);
+			book.setLastPrice(lastPrice.getText(), lastPrice.getIcon(), lastPrice.getForeground());			
+		}
 		
 		int maxLines = Math.min(200, trades.size());
 		int nLines = myHistory ? 0 : maxLines;

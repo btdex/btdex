@@ -64,7 +64,8 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 		this.state = state;
 
 		conditions = new JTextPane();
-		conditions.setPreferredSize(new Dimension(80, 120));
+		conditions.setContentType("text/html");
+		conditions.setPreferredSize(new Dimension(80, 160));
 		conditions.setEditable(false);
 
 		acceptBox = new JCheckBox(tr("dlg_accept_terms"));
@@ -111,16 +112,18 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 			isBuy = true;
 		
 		StringBuilder terms = new StringBuilder();
-		terms.append(tr("canc_terms_brief", isBuy ? tr("token_buy") : tr("token_sell"), market,
-				isToken ? order.getId() : state.getAddress().getRawAddress()));
+		terms.append(PlaceOrderDialog.HTML_STYLE);
+		terms.append("<h3>").append(tr("canc_terms_brief", isBuy ? tr("token_buy") : tr("token_sell"), market,
+				isToken ? order.getId() : state.getAddress().getRawAddress())).append("</h3>");
 		if(isToken) {
-			terms.append("\n\n").append(tr("canc_terms_token",
-					NumberFormatting.BURST.format(suggestedFee.getPriorityFee().longValue())));
+			terms.append("<p>").append(tr("canc_terms_token",
+					NumberFormatting.BURST.format(suggestedFee.getPriorityFee().longValue()))).append("</p>");
 		}
 		else {
-			terms.append("\n\n").append(tr("canc_terms_contract",
+			terms.append("<p>").append(tr("canc_terms_contract",
 					state.getBalance().toUnformattedString(),
-					NumberFormatting.BURST.format(state.getActivationFee() + suggestedFee.getPriorityFee().longValue())));			
+					NumberFormatting.BURST.format(state.getActivationFee() + suggestedFee.getPriorityFee().longValue()))
+					).append("</p>");
 		}
 		
 		conditions.setText(terms.toString());

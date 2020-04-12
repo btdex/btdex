@@ -103,11 +103,9 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		fieldPanel.add(new Desc(tr("offer_total", "BURST"), totalField));
 
 		conditions = new JTextPane();
-		//		conditions.setContentType("text/html");
-		//		conditions.setLineWrap(true);
-		//		conditions.setWrapStyleWord(true);
+		conditions.setContentType("text/html");
 		conditions.setEditable(false);
-		conditions.setPreferredSize(new Dimension(80, 140));
+		conditions.setPreferredSize(new Dimension(80, 200));
 
 		acceptBox = new JCheckBox(tr("dlg_accept_terms"));
 
@@ -143,8 +141,8 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		conditionsPanel.add(acceptBox, BorderLayout.PAGE_END);
 
 		JPanel centerPanel = new JPanel(new BorderLayout());
-		centerPanel.add(fieldPanel, BorderLayout.CENTER);
-		centerPanel.add(conditionsPanel, BorderLayout.PAGE_END);
+		centerPanel.add(fieldPanel, BorderLayout.PAGE_START);
+		centerPanel.add(conditionsPanel, BorderLayout.CENTER);
 
 		content.add(centerPanel, BorderLayout.CENTER);
 		content.add(buttonPane, BorderLayout.PAGE_END);
@@ -235,7 +233,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			setCursor(Cursor.getDefaultCursor());
 		}
 	}
-
+	
 	private void somethingChanged(){
 		if(acceptBox == null)
 			return;
@@ -265,11 +263,13 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		boolean isSell = sellToken.isSelected();
 
 		StringBuilder terms = new StringBuilder();
-		terms.append(tr("token_terms_brief", isSell ? tr("token_sell") : tr("token_buy"),
-						amountField.getText(), market, priceField.getText()));
-		terms.append("\n\n").append(tr("token_terms_details",
-				NumberFormatting.BURST.format(suggestedFee.longValue())));
-		terms.append("\n\n").append(tr("token_terms_closing"));
+		terms.append(PlaceOrderDialog.HTML_STYLE);
+
+		terms.append("<h3>").append(tr("token_terms_brief", isSell ? tr("token_sell") : tr("token_buy"),
+						amountField.getText(), market, priceField.getText())).append("</h3>");
+		terms.append("<p>").append(tr("token_terms_details",
+				NumberFormatting.BURST.format(suggestedFee.longValue()))).append("</p>");
+		terms.append("<p>").append(tr("token_terms_closing")).append("</p>");
 		
 
 		if(!conditions.getText().equals(terms.toString())) {
