@@ -280,7 +280,7 @@ public class Main extends JFrame implements ActionListener {
 		orderBook = new OrderBook(this, (Market) marketComboBox.getSelectedItem());
 
 		transactionsPanel = new TransactionsPanel();
-		historyPanel = new HistoryPanel(this, (Market) marketComboBox.getSelectedItem());
+		historyPanel = new HistoryPanel(this, (Market) marketComboBox.getSelectedItem(), orderBook);
 		accountsPanel = new AccountsPanel(this);
 
 		ICON_CONNECTED = i.getICON_CONNECTED();
@@ -450,6 +450,7 @@ public class Main extends JFrame implements ActionListener {
 		setCursor(Cursor.getDefaultCursor());
 
 		statusLabel.setText(g.getNode());
+		marketComboBox.addActionListener(this);
 
 		if(!newAccount)
 			Toast.makeText(this, tr("main_getting_info_from_node"), 4000, Toast.Style.SUCCESS).display();
@@ -555,10 +556,10 @@ public class Main extends JFrame implements ActionListener {
 
 			if(transactionsPanel.isVisible() || showingSplash)
 				transactionsPanel.update();
-			if(orderBook.isVisible() || showingSplash)
+			if(orderBook.isVisible() || historyPanel.isVisible() || showingSplash) {
 				orderBook.update();
-			if(historyPanel.isVisible() || showingSplash)
 				historyPanel.update();
+			}
 
 			Market tokenMarket = token;
 			Market m = (Market) marketComboBox.getSelectedItem();

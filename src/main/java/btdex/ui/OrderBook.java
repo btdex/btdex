@@ -3,6 +3,7 @@ package btdex.ui;
 import static btdex.locale.Translation.tr;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -37,7 +38,6 @@ import btdex.core.Market;
 import btdex.core.NumberFormatting;
 import btdex.sc.SellContract;
 import burst.kit.entity.response.AssetOrder;
-import burst.kit.entity.response.AssetTrade;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
 
@@ -47,7 +47,7 @@ public class OrderBook extends JPanel {
 
 	JTable table;
 	DefaultTableModel model;
-	Icon copyIcon, expIcon, upIcon, downIcon, cancelIcon, editIcon, takeIcon, withdrawIcon;
+	Icon copyIcon, expIcon, cancelIcon, editIcon, takeIcon, withdrawIcon;
 	JCheckBox listOnlyMine;
 	JLabel lastPrice;
 	JButton buyButton, sellButton;
@@ -258,8 +258,6 @@ public class OrderBook extends JPanel {
 
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
 		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
-		upIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_UP, 18, HistoryPanel.GREEN);
-		downIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_DOWN, 18, HistoryPanel.RED);
 		cancelIcon = IconFontSwing.buildIcon(FontAwesome.TIMES, 12, table.getForeground());
 		editIcon = IconFontSwing.buildIcon(FontAwesome.PENCIL, 12, table.getForeground());
 		takeIcon = IconFontSwing.buildIcon(FontAwesome.HANDSHAKE_O, 12, table.getForeground());
@@ -323,6 +321,12 @@ public class OrderBook extends JPanel {
 		market = null;
 		setMarket(m);
 	}
+	
+	public void setLastPrice(String price, Icon icon, Color color) {
+		lastPrice.setText(price);
+		lastPrice.setIcon(icon);
+		lastPrice.setForeground(color);
+	}
 
 	public void update() {
 		if(newMarket != market) {
@@ -339,9 +343,7 @@ public class OrderBook extends JPanel {
 				buyButton.setText(tr("book_buy_button", "BURST"));
 				sellButton.setText(tr("book_sell_button", "BURST"));
 			}
-			lastPrice.setIcon(null);
-			lastPrice.setText(" ");
-
+			
 			// update the column headers
 			for (int c = 0; c < columnNames.length; c++) {
 				table.getColumnModel().getColumn(c).setHeaderValue(model.getColumnName(c));
@@ -402,20 +404,6 @@ public class OrderBook extends JPanel {
 		firstAsk = askOrders.size() > 0 ? askOrders.get(0) : null;
 
 		model.setRowCount(Math.max(bidOrders.size(), askOrders.size()));
-
-		AssetTrade trs[] = BurstNode.getInstance().getAssetTrades(market);
-		AssetTrade lastTrade = trs !=null && trs.length > 0 ? trs[0] : null;
-		boolean lastIsUp = true;
-		if(trs !=null && trs.length > 1 && trs[0].getPrice().longValue() < trs[1].getPrice().longValue())
-			lastIsUp = false;
-
-		if(lastTrade != null) {
-			// set the last price label
-			String priceLabel = NumberFormatting.BURST.format(lastTrade.getPrice().longValue()*market.getFactor()) + " BURST";
-			lastPrice.setText(priceLabel);
-			lastPrice.setIcon(lastIsUp ? upIcon : downIcon);
-			lastPrice.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
-		}
 
 		addOrders(bidOrders, BID_COLS);
 		addOrders(askOrders, ASK_COLS);
