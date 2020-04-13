@@ -597,7 +597,9 @@ public class Main extends JFrame implements ActionListener {
 			pulsingButton.stopPulsing();
 			cardLayout.first(getContentPane());
 
-			Toast.makeText(this, tr("main_cross_chain_loading"), 8000, Toast.Style.SUCCESS).display();
+			// TODO: remove this check when operational
+			if(!Globals.getInstance().isTestnet())
+				Toast.makeText(this, tr("main_cross_chain_loading"), 8000, Toast.Style.SUCCESS).display();
 		}
 	}
 
