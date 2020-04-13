@@ -99,6 +99,13 @@ public class SocialButton extends JButton implements ActionListener {
 						break; // just one order per token
 					}
 				}
+				for(AssetOrder o : BurstNode.getInstance().getAssetBids(m)) {
+					if(o.getAccountAddress().equals(g.getAddress())) {
+						orders.add(o.getId().getID());
+						markets.add(m.toString());
+						break; // just one order per token
+					}
+				}
 			}
 		}
 		

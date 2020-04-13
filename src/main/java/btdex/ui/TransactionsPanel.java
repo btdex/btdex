@@ -1,5 +1,7 @@
 package btdex.ui;
 
+import static btdex.locale.Translation.tr;
+
 import java.awt.BorderLayout;
 import java.util.ArrayList;
 
@@ -44,13 +46,13 @@ public class TransactionsPanel extends JPanel {
 	public static final int COL_CONF = 6;
 
 	String[] columnNames = {
-			"TRANSACTION ID",
-			"TIME",
-			"TYPE",
-			"AMOUNT",
-			"FEE (BURST)",
-			"ACCOUNT",
-			"CONF.",
+			"txs_id",
+			"hist_time",
+			"txs_type",
+			"hist_amount",
+			"txs_fee",
+			"txs_account",
+			"txs_conf",
 	};
 
 	class MyTableModel extends DefaultTableModel {
@@ -61,7 +63,7 @@ public class TransactionsPanel extends JPanel {
 		}
 
 		public String getColumnName(int col) {
-			String colName = columnNames[col];
+			String colName = tr(columnNames[col]);
 			return colName;
 		}
 
@@ -156,34 +158,34 @@ public class TransactionsPanel extends JPanel {
 				amountFormatted = "- " + amountFormatted;
 
 			// Types defined at brs/TransactionType.java
-			String type = "Payment";
+			String type = tr("txs_payment");
 			switch (tx.getType()) {
 			case 1: // TYPE_PAYMENT
 				switch (tx.getSubtype()) {
 				case 1:
-					type = "Alias assingment";
+					type = tr("txs_alias_assign");
 					break;
 				case 5:
-					type = "Account info";
+					type = tr("txs_account_info");
 					break;
 				case 6:
-					type = "Alias sell";
+					type = tr("txs_alias_sell");
 					break;
 				case 7:
-					type = "Alias buy";
+					type = tr("txs_alias_buy");
 					break;
 				default:
-					type = "Message";
+					type = tr("txs_message");
 					amountFormatted = "";
 				}
 				break;
 			case 2: // TYPE_MESSAGING
 				switch (tx.getSubtype()) {
 				case 0:
-					type = "Token Issuance";
+					type = tr("txs_token_issue");
 					break;
 				case 1:
-					type = "Token Transfer";
+					type = tr("txs_token_transfer");
 					if(tx.getAttachment() instanceof AssetTransferAttachment) {
 						AssetTransferAttachment assetTx = (AssetTransferAttachment) tx.getAttachment();
 						for(Market market : Markets.getMarkets()) {
@@ -198,7 +200,7 @@ public class TransactionsPanel extends JPanel {
 					}
 					break;
 				case 2:
-					type = "Ask Offer";
+					type = tr("txs_ask_offer");
 					if(tx.getAttachment() instanceof AskOrderPlacementAttachment) {
 						AskOrderPlacementAttachment order = (AskOrderPlacementAttachment) tx.getAttachment();
 						for(Market market : Markets.getMarkets()) {
@@ -211,7 +213,7 @@ public class TransactionsPanel extends JPanel {
 					}
 					break;
 				case 3:
-					type = "Bid Offer";
+					type = tr("txs_bid_offer");
 					if(tx.getAttachment() instanceof BidOrderPlacementAttachment) {
 						BidOrderPlacementAttachment order = (BidOrderPlacementAttachment) tx.getAttachment();
 						for(Market market : Markets.getMarkets()) {
@@ -224,11 +226,11 @@ public class TransactionsPanel extends JPanel {
 					}
 					break;
 				case 4:
-					type = "Cancel Ask";
+					type = tr("txs_cancel_ask");
 					amountFormatted = "";
 					break;
 				case 5:
-					type = "Cancel Bid";
+					type = tr("txs_cancel_bid");
 					amountFormatted = "";
 					break;
 				default:
@@ -236,16 +238,16 @@ public class TransactionsPanel extends JPanel {
 				}
 				break;
 			case 20: // TYPE_MINING
-				type = "Set reward rec.";
+				type = tr("txs_set_reward");
 				break;
 			case 22: // TYPE_AUTOMATED_TRANSACTIONS
 				switch (tx.getSubtype()) {
 				case 0:
-					type = "SC Creation";
+					type = tr("txs_sc_create");
 					amountFormatted = "";
 					break;
 				case 1:
-					type = "SC Payment";
+					type = tr("txs_sc_payment");
 				default:
 					break;
 				}
@@ -259,7 +261,7 @@ public class TransactionsPanel extends JPanel {
 			if(tx.getRecipient()!=null && tx.getRecipient().getSignedLongId()!= g.getAddress().getSignedLongId())
 				account = tx.getRecipient();
 
-			model.setValueAt(tx.getBlockId()==null ? "PENDING" : tx.getConfirmations(), row, COL_CONF);
+			model.setValueAt(tx.getBlockId()==null ? tr("book_pending_button") : tx.getConfirmations(), row, COL_CONF);
 			model.setValueAt(account==null ? new JLabel() :
 				new ExplorerButton(account.getRawAddress(), copyIcon, expIcon, ExplorerButton.TYPE_ADDRESS,
 						account.getID(), account.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);

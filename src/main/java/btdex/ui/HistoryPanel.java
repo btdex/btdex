@@ -112,10 +112,12 @@ public class HistoryPanel extends JPanel {
 
 		this.book = book;
 		
-		JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		top.add(lastPrice = new JLabel());
+		JPanel top = new JPanel(new BorderLayout());
+		JPanel topLeft = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		top.add(topLeft, BorderLayout.LINE_START);
+		topLeft.add(lastPrice = new JLabel());
 		lastPrice.setToolTipText(tr("book_last_price"));
-		top.add(listOnlyMine = new JCheckBox(tr("hist_list_mine_only")));
+		topLeft.add(listOnlyMine = new JCheckBox(tr("hist_list_mine_only")));
 		listOnlyMine.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -135,6 +137,10 @@ public class HistoryPanel extends JPanel {
 		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
 		upIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_UP, 18, HistoryPanel.GREEN);
 		downIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_DOWN, 18, HistoryPanel.RED);
+		
+		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		top.add(topRight, BorderLayout.LINE_END);
+		topRight.add(new SocialButton(SocialButton.Type.TWITTER, table.getForeground()));
 
 		ChartPanel chartPanel = null;
 		chart = ChartFactory.createCandlestickChart(null, null, null, null, true);
