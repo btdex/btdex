@@ -27,11 +27,15 @@ public class SocialButton extends JButton implements ActionListener {
 	
 	private static final String TWITTER_URL = "https://twitter.com/intent/tweet?text=";
 	private static final String FACEBOOK_URL = "https://www.facebook.com/sharer/sharer.php?u=";
+	// TODO: add other media
 	
 	public enum Type {
 		TWITTER,
 		FACEBOOK,
 		INSTAGRAM,
+		REDDIT,
+		TELEGRAM,
+		WHATSAPP,
 		GOOGLE_PLUS
 	}
 	
@@ -55,6 +59,18 @@ public class SocialButton extends JButton implements ActionListener {
 		case GOOGLE_PLUS:
 			icon = FontAwesomeBrands.GOOGLE_PLUS;
 			name = "Google Plus";
+			break;
+		case REDDIT:
+			icon = FontAwesomeBrands.REDDIT;
+			name = "Reddit";
+			break;
+		case TELEGRAM:
+			icon = FontAwesomeBrands.TELEGRAM;
+			name = "Reddit";
+			break;
+		case WHATSAPP:
+			icon = FontAwesomeBrands.WHATSAPP;
+			name = "Reddit";
 			break;
 		default:
 			icon = FontAwesomeBrands.TWITTER;
@@ -84,7 +100,7 @@ public class SocialButton extends JButton implements ActionListener {
 						orders.add(o.getId().getID());
 						break; // one order per market here
 					}
-				}				
+				}
 			}
 		}
 		
@@ -124,6 +140,7 @@ public class SocialButton extends JButton implements ActionListener {
 		case FACEBOOK:
 			url = FACEBOOK_URL;
 			break;
+			// TODO: add support for other medias
 		default:
 			url = TWITTER_URL;
 			break;
