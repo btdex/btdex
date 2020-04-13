@@ -14,6 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -238,7 +239,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		content.setBorder(new EmptyBorder(4, 4, 4, 4));
 
 		// We need the top panel
-		if(!isTake && !isBuy)
+		if(!isSignal && ( (!isTake && !isBuy) || (isTake && isBuy)))
 			content.add(accountPanel, BorderLayout.PAGE_START);
 
 		JPanel conditionsPanel = new JPanel(new BorderLayout());
@@ -530,7 +531,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		amountValue = null;
 		priceValue = null;
 
-		MarketAccount account = isTake ? market.parseAccount(contract.getMarketAccount()) : (MarketAccount) accountComboBox.getSelectedItem();
+		MarketAccount account = isTake && !isBuy ? market.parseAccount(contract.getMarketAccount()) : (MarketAccount) accountComboBox.getSelectedItem();
 		
 		if(priceField.getText().length()==0 || amountField.getText().length()==0)
 			return;
@@ -570,29 +571,47 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			if(isTaken) {
 				// we have to either signal we have received or make the deposit
 				if (isSignal) {
+					// The signal received for a buy order is from the taker, otherwise from maker.
+					// When the taker has to signal received, there are two waiting steps, so 48 h.
+					Calendar deadline = Calendar.getInstance();
+				    deadline.setTime(contract.getTakeTimestamp().getAsDate());
+				    deadline.add(Calendar.HOUR_OF_DAY, isBuy ? 48 : 24);
+					Calendar deadline2 = Calendar.getInstance();
+				    deadline2.setTime(contract.getTakeTimestamp().getAsDate());
+				    deadline2.add(Calendar.HOUR_OF_DAY, isBuy ? 24 : market.getPaymentTimeout(account.getFields()));
+				    
 					// Signaling that we have received the market amount
 					header(tr("offer_terms_signaling",
 							totalField.getText(), market,
 							contract.getMarketAccount() + BUTTON_TEXT));
 					append(tr("offer_terms_signaling_details",
 							amountField.getText(), contract.getSecurity(),
+							HistoryPanel.DATE_FORMAT.format(deadline.getTime()),
 							NumberFormatting.BURST.format(suggestedFee.longValue() +
 									contract.getActivationFee()),
-							market
+							market,
+							HistoryPanel.DATE_FORMAT.format(deadline2.getTime())
 							));
 				}
 				else {
 					// is deposit
 					if(isBuy) {
+						Calendar deadline = Calendar.getInstance();
+					    deadline.setTime(contract.getTakeTimestamp().getAsDate());
+					    deadline.add(Calendar.HOUR_OF_DAY, 24);
 						header(tr("offer_terms_buy_deposit",
 								totalField.getText(), market,
+								HistoryPanel.DATE_FORMAT.format(deadline.getTime()),
 								contract.getMarketAccount() + BUTTON_TEXT));
 					}
 					else {
+						Calendar deadline = Calendar.getInstance();
+					    deadline.setTime(contract.getTakeTimestamp().getAsDate());
+					    deadline.add(Calendar.HOUR_OF_DAY, market.getPaymentTimeout(account.getFields()));
 						header(tr("offer_terms_need_transfer",
 								totalField.getText(), market,
-								contract.getMarketAccount() + BUTTON_TEXT,
-								market.getPaymentTimeout(account.getFields())));
+								HistoryPanel.DATE_FORMAT.format(deadline.getTime()),
+								contract.getMarketAccount() + BUTTON_TEXT));
 					}
 					append(tr("offer_terms_need_transfer_details",
 							amountField.getText(), contract.getSecurity(),
