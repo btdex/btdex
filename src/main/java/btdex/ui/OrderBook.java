@@ -504,7 +504,7 @@ public class OrderBook extends JPanel {
 				b.setIcon(cancelIcon);
 			}
 			if(o.getId() == null || o.getAssetId() == null) {
-				b.setIcon(pendingIcon);
+				b.setIcon(new RotatingIcon(pendingIcon, b, model, row, cols[COL_PRICE]));
 			}
 			b.setBackground(o.getType() == AssetOrder.OrderType.ASK ? HistoryPanel.RED : HistoryPanel.GREEN);
 			model.setValueAt(b, row, cols[COL_PRICE]);
@@ -609,10 +609,11 @@ public class OrderBook extends JPanel {
 
 			String priceFormated = market.format(s.getRate());
 			Icon icon = s.getCreator().equals(g.getAddress()) ? editIcon : null; // takeIcon;
+			JButton b = new ActionButton(priceFormated, s, false);
 			if(s.hasPending()) {
 				if(s.getRate() == 0)
 					priceFormated = tr("book_pending_button");
-				icon = pendingIcon;
+				icon = new RotatingIcon(pendingIcon, b, model, row, cols[COL_PRICE]);
 			}
 			else if(s.getTaker() == g.getAddress().getSignedLongId() && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
 				priceFormated = tr(s.getType() == ContractState.Type.BUY ? "book_signal_button" : "book_deposit_button", market);
@@ -622,7 +623,6 @@ public class OrderBook extends JPanel {
 				priceFormated = tr(s.getType() == ContractState.Type.BUY ? "book_deposit_button" : "book_signal_button", market);
 				icon = null;
 			}
-			JButton b = new ActionButton(priceFormated, s, false);
 			b.setIcon(icon);
 			b.setBackground(s.getType() == ContractState.Type.BUY ? HistoryPanel.GREEN : HistoryPanel.RED);
 			model.setValueAt(b, row, cols[COL_PRICE]);
