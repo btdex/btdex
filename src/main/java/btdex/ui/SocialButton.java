@@ -11,12 +11,14 @@ import java.util.HashSet;
 
 import javax.swing.JButton;
 
+import btdex.core.BurstNode;
 import btdex.core.ContractState;
 import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.Markets;
 import btdex.locale.Translation;
+import burst.kit.entity.response.AssetOrder;
 import jiconfont.icons.font_awesome.FontAwesomeBrands;
 import jiconfont.swing.IconFontSwing;
 
@@ -70,6 +72,23 @@ public class SocialButton extends JButton implements ActionListener {
 		Globals g = Globals.getInstance();
 		HashSet<String> markets = new HashSet<>();
 		ArrayList<String> orders = new ArrayList<>();
+		
+		// Checking token orders
+		for(Market m : Markets.getMarkets()) {
+			if(orders.size() > 2)
+				break;
+			if(m.getTokenID()!=null) {
+				markets.add(m.toString());
+				for(AssetOrder o : BurstNode.getInstance().getAssetAsks(m)) {
+					if(o.getAccountAddress().equals(g.getAddress())) {
+						orders.add(o.getId().getID());
+						break; // one order per market here
+					}
+				}				
+			}
+		}
+		
+		// Smart contract based
 		for(ContractState c : Contracts.getContracts()) {
 			// limiting to 2 mentions for now
 			if(orders.size() > 2)
@@ -87,7 +106,7 @@ public class SocialButton extends JButton implements ActionListener {
 		
 		String pairs = "";
 		for(String m : markets) {
-			if(pairs.length() > 0) pairs += " ";
+			if(pairs.length() > 0) pairs += ", ";
 			pairs += "$" + m;
 		}
 		if(pairs.length() == 0)
