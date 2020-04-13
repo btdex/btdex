@@ -91,14 +91,12 @@ public class SocialButton extends JButton implements ActionListener {
 		
 		// Checking token orders
 		for(Market m : Markets.getMarkets()) {
-			if(orders.size() > 2)
-				break;
 			if(m.getTokenID()!=null) {
-				markets.add(m.toString());
 				for(AssetOrder o : BurstNode.getInstance().getAssetAsks(m)) {
 					if(o.getAccountAddress().equals(g.getAddress())) {
 						orders.add(o.getId().getID());
-						break; // one order per market here
+						markets.add(m.toString());
+						break; // just one order per token
 					}
 				}
 			}
