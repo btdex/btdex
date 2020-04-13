@@ -225,9 +225,11 @@ public class TransactionsPanel extends JPanel {
 					break;
 				case 4:
 					type = "Cancel Ask";
+					amountFormatted = "";
 					break;
 				case 5:
 					type = "Cancel Bid";
+					amountFormatted = "";
 					break;
 				default:
 					break;
