@@ -156,6 +156,8 @@ public class BurstNode {
 				
 				// set we have this one updated
 				lastBlock = latestBlocks[0].getId();
+				// clears any previous error
+				nodeError = null;
 			}
 			catch (RuntimeException rex) {
 				rex.printStackTrace();

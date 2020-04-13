@@ -177,7 +177,7 @@ public class Main extends JFrame implements ActionListener {
 
 		JPanel bottomRight = new JPanel();
 		bottomAll.add(bottomRight, BorderLayout.LINE_END);
-		bottomAll.add(bottom, BorderLayout.CENTER);
+		bottomAll.add(bottom, BorderLayout.LINE_START);
 
 		marketComboBox = new JComboBox<Market>();
 		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, i.getIconSize());
@@ -383,7 +383,7 @@ public class Main extends JFrame implements ActionListener {
 
 		bottom.add(nodeSelector);
 		bottom.add(explorerSelector);
-		bottom.add(statusLabel);
+		bottomAll.add(statusLabel, BorderLayout.CENTER);
 
 		pack();
 		setMinimumSize(new Dimension(1280, 600));
@@ -449,7 +449,6 @@ public class Main extends JFrame implements ActionListener {
 		}
 		setCursor(Cursor.getDefaultCursor());
 
-		statusLabel.setText(g.getNode());
 		marketComboBox.addActionListener(this);
 
 		if(!newAccount)
@@ -496,12 +495,15 @@ public class Main extends JFrame implements ActionListener {
 			Exception nodeException = bn.getNodeException();
 			if(nodeException != null) {
 				nodeSelector.setIcon(ICON_DISCONNECTED);
-				statusLabel.setText(tr("main_error", nodeException.getMessage()));				
+				String errorMessage = tr("main_error", nodeException.getLocalizedMessage());
+				statusLabel.setText(errorMessage);
 				if(showingSplash) {
 					showingSplash = false;
 					pulsingButton.stopPulsing();
 					cardLayout.first(getContentPane());
+					update();
 				}
+				return;
 			}
 
 			// Check if the node has the expected block
