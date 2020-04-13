@@ -341,9 +341,9 @@ public class Main extends JFrame implements ActionListener {
 		if(g.isTestnet()) {
 			// FIXME: accounts on testnet only for now
 			tabbedPane.addTab(tr("main_accounts"), i.getAccountIcon(), accountsPanel);
+			tabbedPane.addTab(tr("main_chat"), i.getChatIcon(), new ChatPanel());
 		}
 
-		tabbedPane.addTab(tr("main_chat"), i.getChatIcon(), new ChatPanel());
 		tabbedPane.addTab(tr("main_transactions"), i.getTransactionsIcon(), transactionsPanel);
 
 		top.add(new Desc(tr("main_market"), marketComboBox));
