@@ -602,8 +602,9 @@ public class OrderBook extends JPanel {
 			String priceFormated = market.format(s.getRate());
 			Icon icon = s.getCreator().equals(g.getAddress()) ? editIcon : null; // takeIcon;
 			if(s.hasPending()) {
-				priceFormated = tr("book_pending_button");
-				icon = null;
+				if(s.getRate() == 0)
+					priceFormated = tr("book_pending_button");
+				icon = pendingIcon;
 			}
 			else if(s.getTaker() == g.getAddress().getSignedLongId() && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
 				priceFormated = tr(s.getType() == ContractState.Type.BUY ? "book_signal_button" : "book_deposit_button", market);
