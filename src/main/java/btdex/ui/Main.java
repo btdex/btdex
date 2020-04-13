@@ -303,7 +303,7 @@ public class Main extends JFrame implements ActionListener {
 			public void actionPerformed(ActionEvent e) {
 				JPopupMenu menu = new JPopupMenu();
 				for(Locale l : Translation.getSupportedLanguages()) {
-					JMenuItem item = new JMenuItem(l.getDisplayLanguage(l));
+					JMenuItem item = new JMenuItem(l.getDisplayLanguage(Translation.getCurrentLocale()));
 					item.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {

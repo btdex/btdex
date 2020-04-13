@@ -13,6 +13,7 @@ public class Translation {
 	
 	private static Properties enResource = new Properties();
 	private static Properties resource;
+	private static Locale locale;
 	
 	private static final Locale[] languages = {
 		Locale.ENGLISH,
@@ -36,11 +37,16 @@ public class Translation {
 		return languages;
 	}
 	
+	public static Locale getCurrentLocale() {
+		return locale;
+	}
+	
 	public static void setLanguage(String language) {
 		if(language == null || language.length()==0) {
 			// if never set, we will use the machine language by default
 			language = Locale.getDefault().getLanguage();
 		}
+		locale = Locale.forLanguageTag(language);
 		try {
 			InputStream stream = Translation.class.getResourceAsStream(RESOURCE_TR_FILE + "_" + language + ".properties");
 			if(stream != null) {
