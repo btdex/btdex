@@ -297,13 +297,21 @@ public class OrderBook extends JPanel {
 		table.getColumnModel().getColumn(BID_COLS[COL_CONTRACT]).setPreferredWidth(COL_WIDE);
 		table.getColumnModel().getColumn(ASK_COLS[COL_CONTRACT]).setPreferredWidth(COL_WIDE);
 
-		JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		top.add(new Desc(tr("book_last_price"), lastPrice = new JLabel()));
-
-		top.add(new Desc(" ", buyButton = new JButton()));
-		top.add(new Desc(" ", sellButton = new JButton()));
-
-		top.add(new Desc(" ", listOnlyMine));
+		JPanel top = new JPanel(new BorderLayout());
+		JPanel topLeft = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		top.add(topLeft, BorderLayout.LINE_START);
+		topLeft.add(lastPrice = new JLabel());
+		lastPrice.setToolTipText(tr("book_last_price"));
+		topLeft.add(buyButton = new JButton());
+		topLeft.add(sellButton = new JButton());
+		topLeft.add(listOnlyMine);
+		
+		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		top.add(topRight, BorderLayout.LINE_END);
+		topRight.add(new SocialButton(SocialButton.Type.TWITTER, table.getForeground()));
+//		topRight.add(new SocialButton(SocialButton.Type.INSTAGRAM, table.getForeground()));
+//		topRight.add(new SocialButton(SocialButton.Type.FACEBOOK, table.getForeground()));
+//		topRight.add(new SocialButton(SocialButton.Type.GOOGLE_PLUS, table.getForeground()));
 
 		buyButton.setBackground(HistoryPanel.GREEN);
 		sellButton.setBackground(HistoryPanel.RED);

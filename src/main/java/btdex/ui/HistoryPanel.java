@@ -113,8 +113,9 @@ public class HistoryPanel extends JPanel {
 		this.book = book;
 		
 		JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		top.add(new Desc(tr("book_last_price"), lastPrice = new JLabel()));
-		top.add(new Desc(" ", listOnlyMine = new JCheckBox(tr("hist_list_mine_only"))));
+		top.add(lastPrice = new JLabel());
+		lastPrice.setToolTipText(tr("book_last_price"));
+		top.add(listOnlyMine = new JCheckBox(tr("hist_list_mine_only")));
 		listOnlyMine.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

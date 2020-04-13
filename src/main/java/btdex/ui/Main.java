@@ -468,7 +468,7 @@ public class Main extends JFrame implements ActionListener {
 	public void browse(String url) {
 		try {
 			DesktopApi.browse(new URI(url));
-			Toast.makeText(Main.this, tr("main_opening_url", url), Toast.Style.SUCCESS).display();
+			Toast.makeText(Main.this, tr("main_opening_url", url.substring(0, Math.min(url.length(), 40)) + "..."), Toast.Style.SUCCESS).display();
 		} catch (Exception ex) {
 			Toast.makeText(Main.this, ex.getMessage(), Toast.Style.ERROR).display();
 		}
