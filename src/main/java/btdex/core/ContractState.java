@@ -166,7 +166,7 @@ public class ContractState {
 				// Check if the immutable variables are valid
 				if (g.getMediators().areMediatorsAccepted(s)
 						&& Constants.FEE_CONTRACT == s.getFeeContract()) {
-					s.updateState(at, null);
+					s.updateState(at, null, false);
 					map.put(ad, s);
 				}
 			}
@@ -176,7 +176,7 @@ public class ContractState {
 	}
 
 	public void update(Transaction[] utxs, boolean onlyUnconf) {
-		updateState(onlyUnconf ? at : null, utxs);
+		updateState(onlyUnconf ? at : null, utxs, onlyUnconf);
 	}
 
 	private long getContractFieldValue(String field) {
@@ -188,7 +188,7 @@ public class ContractState {
 		return b.getLong(address * 8);
 	}
 
-	private void updateState(AT at, Transaction[] utxs) {
+	private void updateState(AT at, Transaction[] utxs, boolean onlyUnconf) {
 		Globals g = Globals.getInstance();
 
 		if(at == null)
@@ -214,10 +214,14 @@ public class ContractState {
 		}
 
 		// check rate, type, etc. from transaction history
-		Transaction[] txs = g.getNS().getAccountTransactions(this.address).blockingGet();
-		findCurrentTakeBlock(txs);
-		buildHistory(txs);
-		hasPending = processTransactions(txs) || processTransactions(utxs);
+		boolean hasPending = false;
+		if(!onlyUnconf) {
+			Transaction[] txs = g.getNS().getAccountTransactions(this.address).blockingGet();
+			findCurrentTakeBlock(txs);
+			buildHistory(txs);
+			hasPending = processTransactions(txs);
+		}
+		this.hasPending = hasPending || processTransactions(utxs);
 	}
 
 	private void findCurrentTakeBlock(Transaction[] txs) {

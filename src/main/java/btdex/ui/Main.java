@@ -567,14 +567,14 @@ public class Main extends JFrame implements ActionListener {
 			long tokenBalance = 0;
 			long tokenLocked = 0;
 			for (AssetBalance aac : accounts) {
-				if(aac.getAccountAddress().getSignedLongId() == g.getAddress().getSignedLongId()) {
+				if(aac.getAccountAddress().equals(g.getAddress())) {
 					tokenBalance += aac.getBalance().longValue();
 				}
 			}
 
 			AssetOrder[] asks = bn.getAssetAsks(token);
 			for(AssetOrder o : asks) {
-				if(o.getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
+				if(!o.getAccountAddress().equals(g.getAddress()))
 					continue;
 				tokenLocked += o.getQuantity().longValue();
 			}

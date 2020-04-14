@@ -23,6 +23,9 @@ import burst.kit.service.BurstNodeService;
  * if requested only when a new block arrives (except for the unconfirmed
  * transactions which are frequently updated).
  * 
+ * TODO: create a structure of listeners, so only changes are notified
+ * and we can save resources and make it more scalable.
+ * 
  * @author jjos
  *
  */
@@ -52,7 +55,7 @@ public class BurstNode {
 		try {
 			// start the node updater thread
 			Timer timer = new Timer("node update");
-			timer.scheduleAtFixedRate(new NodeUpdateTask(), 0, 10000);
+			timer.schedule(new NodeUpdateTask(), 0, 5000);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
