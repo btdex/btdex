@@ -15,7 +15,7 @@ import static btdex.locale.Translation.tr;
  */
 public abstract class MarketCrypto extends Market {
 	
-	static final String ADDRESS = "address";
+	public static final String ADDRESS = "address";
 
 	public String toString() {
 		return "BTC";

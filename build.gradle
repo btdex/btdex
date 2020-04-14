@@ -44,6 +44,8 @@ dependencies {
     implementation 'io.github.novacrypto:BIP39:2019.01.27'
 
     implementation 'jfree:jfreechart:1.0.13'
+    
+    implementation 'com.github.kenglxn.QRGen:javase:2.6.0'
 
     implementation 'io.github.monero-ecosystem:monero-java:0.2.1'
 

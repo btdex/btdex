@@ -7,9 +7,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.ParseException;
@@ -17,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -51,12 +47,11 @@ import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.MarketAccount;
 import btdex.core.NumberFormatting;
+import btdex.markets.MarketCrypto;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
-import jiconfont.icons.font_awesome.FontAwesome;
-import jiconfont.swing.IconFontSwing;
 
 public class PlaceOrderDialog extends JDialog implements ActionListener, DocumentListener {
 	private static final long serialVersionUID = 1L;
@@ -70,7 +65,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	JTextField accountDetails;
 	JTextField amountField, priceField, totalField;
 	JSlider security;
-	JButton copyAddressButton;
+	ClipboardAndQRButton addressButton;
 
 	ContractState contract;
 
@@ -152,10 +147,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		fieldPanel.add(new Desc(tr("offer_size", "BURST"), amountField));
 		fieldPanel.add(new Desc(tr("offer_total", market), totalField));
 		
-		Icon copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 8, amountField.getForeground());
-		copyAddressButton = new JButton(copyIcon);
-		copyAddressButton.setToolTipText(tr("btn_copy_to_clipboard"));
-		copyAddressButton.addActionListener(this);
+		addressButton = new ClipboardAndQRButton(this, 18, amountField.getForeground());
 
 		ArrayList<MarketAccount> acs = Globals.getInstance().getMarketAccounts();
 
@@ -328,15 +320,6 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			return;
 		}
 		
-		if(e.getSource() == copyAddressButton) {
-			String t = contract.getMarketAccount();
-			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-			StringSelection stringSelection = new StringSelection(t);
-			clipboard.setContents(stringSelection, null);
-			
-			Toast.makeText(Main.getInstance(), tr("btn_copied_to_clipboard", t), Toast.Style.SUCCESS).display();
-		}
-
 		if(e.getSource() == accountComboBox) {
 			MarketAccount ac = (MarketAccount) accountComboBox.getSelectedItem();
 			String details = market.simpleFormat(ac.getFields());
@@ -535,6 +518,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		
 		if(priceField.getText().length()==0 || amountField.getText().length()==0)
 			return;
+		
+		if(account != null && account.getFields().get(MarketCrypto.ADDRESS) != null)
+			addressButton.setURI(account.getFields().get(MarketCrypto.ADDRESS));
 
 		try {
 			// Price is on the selected market
@@ -687,7 +673,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 							market, accountDetails.getText(),
 							market.getPaymentTimeout(account.getFields()), market
 						));
-				append(tr("offer_terms_protocol"));				
+				append(tr("offer_terms_protocol"));
 			}
 		}
 		
@@ -705,7 +691,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			int pos = termsText.indexOf(BUTTON_TEXT) - HTML_STYLE.length() - 3;
 			if(pos > 0) {
 				conditions.select(pos, pos + BUTTON_TEXT.length());
-				conditions.insertComponent(copyAddressButton);
+				conditions.insertComponent(addressButton);
 			}
 			
 			conditions.setCaretPosition(0);
