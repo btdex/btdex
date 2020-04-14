@@ -25,6 +25,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JToggleButton;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -84,8 +85,6 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		buyToken = new JRadioButton(tr("token_buy_with_burst", market), true);
 		sellToken = new JRadioButton(tr("token_sell_for_burst", market));
 
-		buyToken.setBackground(HistoryPanel.GREEN);
-		sellToken.setBackground(HistoryPanel.RED);
 		buyToken.setForeground(Color.WHITE);
 		sellToken.setForeground(Color.WHITE);
 
@@ -149,6 +148,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 
 		suggestedFee = BurstNode.getInstance().getSuggestedFee().getPriorityFee();
 
+		buyToken.setSelected(true);
 		if(order != null) {
 			// taking this order
 			if(order.getType() == AssetOrder.OrderType.BID)
@@ -160,9 +160,15 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			amountField.setText(market.format(order.getQuantity().longValue()));
 			somethingChanged();
 		}
-
+		actionPerformed(new ActionEvent(buyToken, 0, null));
 		somethingChanged();
 		pack();
+
+		SwingUtilities.invokeLater(new Runnable() {  
+			public void run() {
+				priceField.requestFocusInWindow();
+			}
+		});
 	}
 
 	@Override
@@ -172,6 +178,11 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		}
 
 		if(e.getSource()==buyToken || e.getSource()==sellToken) {
+			buyToken.setBackground(buyToken.isSelected() ? HistoryPanel.GREEN : this.getBackground());
+			sellToken.setBackground(sellToken.isSelected() ? HistoryPanel.RED : this.getBackground());
+			
+			okButton.setText(tr(buyToken.isSelected() ? "offer_confirm_limit_buy" : "offer_confirm_limit_sell"));
+			okButton.setBackground(buyToken.isSelected() ? HistoryPanel.GREEN : HistoryPanel.RED);
 			somethingChanged();
 		}
 
@@ -233,7 +244,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			setCursor(Cursor.getDefaultCursor());
 		}
 	}
-	
+
 	private void somethingChanged(){
 		if(acceptBox == null)
 			return;
@@ -266,11 +277,11 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		terms.append(PlaceOrderDialog.HTML_STYLE);
 
 		terms.append("<h3>").append(tr("token_terms_brief", isSell ? tr("token_sell") : tr("token_buy"),
-						amountField.getText(), market, priceField.getText())).append("</h3>");
+				amountField.getText(), market, priceField.getText())).append("</h3>");
 		terms.append("<p>").append(tr("token_terms_details",
 				NumberFormatting.BURST.format(suggestedFee.longValue()))).append("</p>");
 		terms.append("<p>").append(tr("token_terms_closing")).append("</p>");
-		
+
 
 		if(!conditions.getText().equals(terms.toString())) {
 			conditions.setText(terms.toString());
