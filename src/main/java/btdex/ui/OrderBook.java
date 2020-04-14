@@ -609,7 +609,7 @@ public class OrderBook extends JPanel {
 
 			String priceFormated = market.format(s.getRate());
 			Icon icon = s.getCreator().equals(g.getAddress()) ? editIcon : null; // takeIcon;
-			JButton b = new ActionButton(priceFormated, s, false);
+			JButton b = new ActionButton("", s, false);
 			if(s.hasPending()) {
 				if(s.getRate() == 0)
 					priceFormated = tr("book_pending_button");
@@ -623,6 +623,7 @@ public class OrderBook extends JPanel {
 				priceFormated = tr(s.getType() == ContractState.Type.BUY ? "book_deposit_button" : "book_signal_button", market);
 				icon = null;
 			}
+			b.setText(priceFormated);
 			b.setIcon(icon);
 			b.setBackground(s.getType() == ContractState.Type.BUY ? HistoryPanel.GREEN : HistoryPanel.RED);
 			model.setValueAt(b, row, cols[COL_PRICE]);
