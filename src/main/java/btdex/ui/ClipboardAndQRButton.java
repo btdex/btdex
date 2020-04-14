@@ -26,7 +26,7 @@ public class ClipboardAndQRButton extends JPanel {
 	
 	private String uri;
 	
-	public ClipboardAndQRButton(final Component parent, int iconSize, Color fg) {
+	public ClipboardAndQRButton(final Component parent, int iconSize, final Color fg) {
 		super(new FlowLayout(FlowLayout.LEFT));
 		this.setAlignmentY(0.65f);
 		
@@ -53,12 +53,21 @@ public class ClipboardAndQRButton extends JPanel {
 		qrButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				byte[] imageBytes = QRCode.from(uri).withSize(260, 260).to(ImageType.PNG).stream().toByteArray();
+				byte[] imageBytes = QRCode.from(uri).withColor(0, getIntFromColor(fg))
+						.withSize(260, 260).to(ImageType.PNG).stream().toByteArray();
 				JLabel label = new JLabel(new ImageIcon(imageBytes));
 				
 				JOptionPane.showMessageDialog(parent, label, "QR code", JOptionPane.PLAIN_MESSAGE);
 			}
 		});
+	}
+	
+	public int getIntFromColor(Color c){
+	    int red = (c.getRed() << 16) & 0x00FF0000; //Shift red 16-bits and mask out other stuff
+	    int green = (c.getGreen() << 8) & 0x0000FF00; //Shift Green 8-bits and mask out other stuff
+	    int blue = c.getBlue() & 0x000000FF; //Mask out anything not blue.
+
+	    return 0xFF000000 | red | green | blue; //0xFF000000 for 100% Alpha. Bitwise OR everything together.
 	}
 	
 	public void setURI(String uri) {
