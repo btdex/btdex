@@ -55,6 +55,8 @@ public class OrderBook extends JPanel {
 	JTable table;
 	DefaultTableModel model;
 	Icon copyIcon, expIcon, cancelIcon, pendingIcon, editIcon, takeIcon, withdrawIcon;
+	RotatingIcon pendingIconRotating;
+	
 	JCheckBox listOnlyMine;
 	JLabel lastPrice;
 	JButton buyButton, sellButton;
@@ -273,6 +275,7 @@ public class OrderBook extends JPanel {
 		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
 		cancelIcon = IconFontSwing.buildIcon(FontAwesome.TIMES, 12, table.getForeground());
 		pendingIcon = IconFontSwing.buildIcon(FontAwesome.SPINNER, 12, table.getForeground());
+		pendingIconRotating = new RotatingIcon(pendingIcon, model);
 		editIcon = IconFontSwing.buildIcon(FontAwesome.PENCIL, 12, table.getForeground());
 		takeIcon = IconFontSwing.buildIcon(FontAwesome.HANDSHAKE_O, 12, table.getForeground());
 		withdrawIcon = IconFontSwing.buildIcon(FontAwesome.RECYCLE, 12, table.getForeground());
@@ -480,6 +483,7 @@ public class OrderBook extends JPanel {
 
 		model.setRowCount(Math.max(bidOrders.size(), askOrders.size()));
 
+		pendingIconRotating.clearCells();
 		addOrders(bidOrders, BID_COLS);
 		addOrders(askOrders, ASK_COLS);
 	}
@@ -504,7 +508,8 @@ public class OrderBook extends JPanel {
 				b.setIcon(cancelIcon);
 			}
 			if(o.getId() == null || o.getAssetId() == null) {
-				b.setIcon(new RotatingIcon(pendingIcon, b, model, row, cols[COL_PRICE]));
+				b.setIcon(pendingIconRotating);
+				pendingIconRotating.addCell(row, cols[COL_PRICE]);
 			}
 			b.setBackground(o.getType() == AssetOrder.OrderType.ASK ? HistoryPanel.RED : HistoryPanel.GREEN);
 			model.setValueAt(b, row, cols[COL_PRICE]);
@@ -604,6 +609,7 @@ public class OrderBook extends JPanel {
 
 		// Update the contents
 		int row = 0;
+		pendingIconRotating.clearCells();
 		for (; row < contracts.size(); row++) {
 			ContractState s = contracts.get(row);
 
@@ -613,7 +619,8 @@ public class OrderBook extends JPanel {
 			if(s.hasPending()) {
 				if(s.getRate() == 0)
 					priceFormated = tr("book_pending_button");
-				icon = new RotatingIcon(pendingIcon, b, model, row, cols[COL_PRICE]);
+				icon = pendingIconRotating;
+				pendingIconRotating.addCell(row, cols[COL_PRICE]);
 			}
 			else if(s.getTaker() == g.getAddress().getSignedLongId() && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
 				priceFormated = tr(s.getType() == ContractState.Type.BUY ? "book_signal_button" : "book_deposit_button", market);
