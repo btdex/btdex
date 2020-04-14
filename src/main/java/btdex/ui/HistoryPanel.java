@@ -15,12 +15,14 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JToggleButton;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -56,6 +58,10 @@ public class HistoryPanel extends JPanel {
 	JCheckBox listOnlyMine;
 	JLabel lastPrice;
 	private OrderBook book;
+	
+	private JToggleButton timeButtons[];
+
+	private static final int NCANDLES = 80;
 
 	public static final Color RED = Color.decode("#BE474A");
 	public static final Color GREEN = Color.decode("#29BF76");
@@ -146,12 +152,41 @@ public class HistoryPanel extends JPanel {
 		top.add(topRight, BorderLayout.LINE_END);
 		topRight.add(new SocialButton(SocialButton.Type.TWITTER, table.getForeground()));
 
-		ChartPanel chartPanel = null;
+		timeButtons = new JToggleButton[4];
+		timeButtons[0] = new JToggleButton(tr("hist_1hour"));
+		timeButtons[1] = new JToggleButton(tr("hist_4hours"));
+		timeButtons[2] = new JToggleButton(tr("hist_1day"));
+		timeButtons[3] = new JToggleButton(tr("hist_1week"));
+		
+		JPanel chartPanel = new JPanel(new BorderLayout(0,0));
+		JPanel chartTopPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+		ButtonGroup buttonGroup = new ButtonGroup();
+		for (int i = 0; i < timeButtons.length; i++) {
+			chartTopPanel.add(timeButtons[i]);
+			buttonGroup.add(timeButtons[i]);
+			timeButtons[i].addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					update();
+					// TODO: this theme is now showing the selected button, so this little trick
+					for (int j = 0; j < timeButtons.length; j++) {
+						timeButtons[j].setForeground(timeButtons[j].isSelected() ?
+								Color.WHITE : chartPanel.getForeground());
+					}
+				}
+			});
+		}
+		timeButtons[1].setForeground(Color.WHITE); // TODO: same here
+		buttonGroup.setSelected(timeButtons[1].getModel(), true);
+		
+		chartPanel.add(chartTopPanel, BorderLayout.PAGE_START);
+		ChartPanel chartPanelChart = null;
 		chart = ChartFactory.createCandlestickChart(null, null, null, null, true);
 		chart.getXYPlot().setOrientation(PlotOrientation.VERTICAL);
 		chart.removeLegend();
-		chartPanel = new ChartPanel(chart);
-		chartPanel.setPreferredSize(new java.awt.Dimension(200, 200));
+		chartPanelChart = new ChartPanel(chart);
+		chartPanelChart.setPreferredSize(new java.awt.Dimension(200, 200));
+		chartPanel.add(chartPanelChart, BorderLayout.CENTER);
 
 		chart.setBackgroundPaint(table.getBackground());
 		chart.setBorderPaint(table.getForeground());
@@ -294,13 +329,19 @@ public class HistoryPanel extends JPanel {
 		}
 		
 		ArrayList<OHLCDataItem> data = new ArrayList<>();
-		int NCANDLES = 50;
-		long DELTA = TimeUnit.HOURS.toMillis(4);
-		Date start = new Date(System.currentTimeMillis() - DELTA*NCANDLES);
-		Date next = new Date(start.getTime() + DELTA);
+		int hours = 1;
+		if(timeButtons[1].isSelected())
+			hours = 4;
+		else if(timeButtons[2].isSelected())
+			hours = 24;
+		else if(timeButtons[3].isSelected())
+			hours = 24*7;
+		long delta = TimeUnit.HOURS.toMillis(hours);
+		Date start = new Date(System.currentTimeMillis() - delta*NCANDLES);
+		Date next = new Date(start.getTime() + delta);
 
 		double lastClose = Double.NaN;
-		for (int i = 0; i < 50; i++) {
+		for (int i = 0; i < NCANDLES; i++) {
 			double high = 0;
 			double low = Double.MAX_VALUE;
 			double close = lastClose;
@@ -335,7 +376,7 @@ public class HistoryPanel extends JPanel {
 			}
 
 			start = next;
-			next = new Date(start.getTime() + DELTA);
+			next = new Date(start.getTime() + delta);
 		}
 
 		DefaultOHLCDataset dataset = new DefaultOHLCDataset(market.toString(), data.toArray(new OHLCDataItem[data.size()]));
@@ -431,13 +472,19 @@ public class HistoryPanel extends JPanel {
 		}
 
 		ArrayList<OHLCDataItem> data = new ArrayList<>();
-		int NCANDLES = 50;
-		long DELTA = TimeUnit.HOURS.toMillis(4);
+		int hours = 1;
+		if(timeButtons[1].isSelected())
+			hours = 4;
+		else if(timeButtons[2].isSelected())
+			hours = 24;
+		else if(timeButtons[3].isSelected())
+			hours = 24*7;
+		long DELTA = TimeUnit.HOURS.toMillis(hours);
 		Date start = new Date(System.currentTimeMillis() - DELTA*NCANDLES);
 		Date next = new Date(start.getTime() + DELTA);
 
 		double lastClose = Double.NaN;
-		for (int i = 0; i < 50; i++) {
+		for (int i = 0; i < NCANDLES; i++) {
 			double high = 0;
 			double low = Double.MAX_VALUE;
 			double close = lastClose;
