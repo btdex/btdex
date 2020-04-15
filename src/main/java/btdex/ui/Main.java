@@ -303,7 +303,7 @@ public class Main extends JFrame implements ActionListener {
 			public void actionPerformed(ActionEvent e) {
 				JPopupMenu menu = new JPopupMenu();
 				for(Locale l : Translation.getSupportedLanguages()) {
-					JMenuItem item = new JMenuItem(l.getDisplayLanguage(l));
+					JMenuItem item = new JMenuItem(l.getDisplayLanguage(Translation.getCurrentLocale()));
 					item.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
@@ -567,14 +567,14 @@ public class Main extends JFrame implements ActionListener {
 			long tokenBalance = 0;
 			long tokenLocked = 0;
 			for (AssetBalance aac : accounts) {
-				if(aac.getAccountAddress().getSignedLongId() == g.getAddress().getSignedLongId()) {
+				if(aac.getAccountAddress().equals(g.getAddress())) {
 					tokenBalance += aac.getBalance().longValue();
 				}
 			}
 
 			AssetOrder[] asks = bn.getAssetAsks(token);
 			for(AssetOrder o : asks) {
-				if(o.getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
+				if(!o.getAccountAddress().equals(g.getAddress()))
 					continue;
 				tokenLocked += o.getQuantity().longValue();
 			}
