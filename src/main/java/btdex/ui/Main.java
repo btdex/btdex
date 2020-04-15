@@ -644,7 +644,11 @@ public class Main extends JFrame implements ActionListener {
 						BurstNode.getInstance().update();
 						
 						marketComboBox.setSelectedItem(newMarket);
+						Toast.makeText(this, tr("main_add_token_success", response), Toast.Style.SUCCESS).display();
 						return;
+					}
+					else {
+						Toast.makeText(this, tr("main_add_token_invalid", response), Toast.Style.ERROR).display();
 					}
 				}
 				

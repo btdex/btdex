@@ -18,8 +18,8 @@ public class MarketBurstToken extends Market {
 	private NumberFormatting NF;
 	
 	public MarketBurstToken(String id, BurstNodeService NS) {
-		tokenID = BurstID.fromLong(id);
 		try {
+			tokenID = BurstID.fromLong(id);
 			Asset asset = NS.getAsset(tokenID).blockingGet();
 			ticker = asset.getName().toUpperCase();
 			decimals = asset.getDecimals();
