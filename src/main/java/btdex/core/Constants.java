@@ -12,6 +12,8 @@ public class Constants {
     public static final String PROP_ENC_PRIVKEY = "encPrivKey";
     public static final String PROP_PUBKEY = "pubKey";
 
+    public static final String PROP_USER_TOKEN_ID = "userTokenID";
+    
     public static final String PROP_EXPLORER = "explorer";
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");

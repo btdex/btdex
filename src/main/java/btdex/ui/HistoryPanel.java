@@ -264,8 +264,6 @@ public class HistoryPanel extends JPanel {
 		boolean myHistory = listOnlyMine.isSelected();
 
 		AssetTrade trs[] = bn.getAssetTrades(market);
-		if(trs == null)
-			return;
 		
 		AssetTrade lastTrade = trs !=null && trs.length > 0 ? trs[0] : null;
 		boolean lastIsUp = true;
@@ -284,6 +282,12 @@ public class HistoryPanel extends JPanel {
 			lastPrice.setText("");
 			lastPrice.setIcon(null);
 			book.setLastPrice(lastPrice.getText(), lastPrice.getIcon(), lastPrice.getForeground());			
+		}
+
+		if(trs == null) {
+			model.setRowCount(0);
+			chart.getXYPlot().setDataset(null);
+			return;
 		}
 
 		int nLines = 0;

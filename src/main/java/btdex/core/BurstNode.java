@@ -101,6 +101,13 @@ public class BurstNode {
 	public AssetTrade[] getAssetTrades(Market id){
 		return assetTrades.get(id);
 	}
+	
+	/**
+	 * Force an update even without a new block (e.g. when a new market is introduced)
+	 */
+	public void update() {
+		lastBlock = null;
+	}
 
 	class NodeUpdateTask extends TimerTask {
 

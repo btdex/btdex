@@ -17,7 +17,7 @@ public class NumberFormatting {
 	}
 	
     //NF_FULL min 5, max 8
-    private static NumberFormatting NF(int minimumFractionDigits, int maximumFractionDigits){
+    public static NumberFormatting NF(int minimumFractionDigits, int maximumFractionDigits){
         NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);
         nf.setMinimumFractionDigits(minimumFractionDigits);
         nf.setMaximumFractionDigits(maximumFractionDigits);

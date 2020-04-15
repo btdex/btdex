@@ -11,6 +11,7 @@ import java.util.Properties;
 import com.google.gson.JsonObject;
 
 import bt.BT;
+import btdex.markets.MarketBurstToken;
 import btdex.ui.ExplorerWrapper;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstAddress;
@@ -63,7 +64,10 @@ public class Globals {
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
 			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? BT.NODE_TESTNET : BT.NODE_BURSTCOIN_RO));
 
-			Markets.addMarkets(testnet);
+			// load the markets
+			Markets.loadStandardMarkets(testnet, NS);
+			loadUserMarkets();
+			
 			mediators = new Mediators(testnet);
 
 			checkPublicKey();
@@ -102,7 +106,7 @@ public class Globals {
 		if(f.getParentFile()!=null)
 			f.getParentFile().mkdirs();
 		FileOutputStream fos = new FileOutputStream(f);
-		getInstance().conf.store(fos, "BTDEX configuration file, private key is encrypted, only edit if you know what you're doing");
+		conf.store(fos, "BTDEX configuration file, private key is encrypted, only edit if you know what you're doing");
 	}
 
 	public void clearConfs() throws Exception {
@@ -204,6 +208,44 @@ public class Globals {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void loadUserMarkets() {
+		int userToken = 1;
+		while(true) {
+			String userTokenID = conf.getProperty(Constants.PROP_USER_TOKEN_ID + userToken);
+			if(userTokenID == null || userTokenID.length() == 0)
+				break;
+			
+			try {
+				Market userTokenMarket = new MarketBurstToken(userTokenID, NS);
+				addUserMarket(userTokenMarket);
+			}
+			catch (Exception e) {
+			}
+			userToken++;
+		}
+	}
+	
+	private void saveUserMarkets() {
+		int i = 1;
+		for (; i <= Markets.getUserMarkets().size(); i++) {
+			Market ac = Markets.getUserMarkets().get(i-1);
+			conf.setProperty(Constants.PROP_USER_TOKEN_ID + i, ac.getTokenID().getID());
+		}
+		// null terminated list
+		conf.setProperty(Constants.PROP_USER_TOKEN_ID + i, "");
+
+		try {
+			saveConfs();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void addUserMarket(Market m) {
+		Markets.addUserMarket(m);
+		saveUserMarkets();
 	}
 
 	public void addAccount(MarketAccount ac) {
