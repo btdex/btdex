@@ -415,15 +415,17 @@ public class OrderBook extends JPanel {
 				case 2: // Ask Offer
 					if(tx.getAttachment() instanceof AskOrderPlacementAttachment) {
 						AskOrderPlacementAttachment order = (AskOrderPlacementAttachment) tx.getAttachment();
-						askOrders.add(new AssetOrder(null, null, g.getAddress(),
-								BurstValue.fromPlanck(order.getQuantityQNT()), BurstValue.fromPlanck(order.getPriceNQT()),
-								tx.getBlockHeight(), AssetOrder.OrderType.ASK));
+						if(order.getAsset().equals(market.getTokenID().getID()))
+							askOrders.add(new AssetOrder(null, null, g.getAddress(),
+									BurstValue.fromPlanck(order.getQuantityQNT()), BurstValue.fromPlanck(order.getPriceNQT()),
+									tx.getBlockHeight(), AssetOrder.OrderType.ASK));
 					}
 					break;
 				case 3: // Bid offer
 					if(tx.getAttachment() instanceof BidOrderPlacementAttachment) {
 						BidOrderPlacementAttachment order = (BidOrderPlacementAttachment) tx.getAttachment();
-						bidOrders.add(new AssetOrder(null, null, g.getAddress(),
+						if(order.getAsset().equals(market.getTokenID().getID()))
+							bidOrders.add(new AssetOrder(null, null, g.getAddress(),
 								BurstValue.fromPlanck(order.getQuantityQNT()), BurstValue.fromPlanck(order.getPriceNQT()),
 								tx.getBlockHeight(), AssetOrder.OrderType.BID));
 					}
