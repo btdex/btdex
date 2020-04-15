@@ -600,6 +600,7 @@ public class OrderBook extends JPanel {
 		});
 
 		model.setRowCount(Math.max(contracts.size(), contractsBuy.size()));
+		pendingIconRotating.clearCells();
 		addContracts(contracts, ASK_COLS);
 		addContracts(contractsBuy, BID_COLS);
 	}
@@ -621,6 +622,11 @@ public class OrderBook extends JPanel {
 					priceFormated = tr("book_pending_button");
 				icon = pendingIconRotating;
 				pendingIconRotating.addCell(row, cols[COL_PRICE]);
+			}
+			else if(s.getState() > SellContract.STATE_DISPUTE &&
+					(s.getTaker() == g.getAddress().getSignedLongId() || s.getCreator().equals(g.getAddress()))){
+				priceFormated = tr("book_dispute_button");
+				icon = null;
 			}
 			else if(s.getTaker() == g.getAddress().getSignedLongId() && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
 				priceFormated = tr(s.getType() == ContractState.Type.BUY ? "book_signal_button" : "book_deposit_button", market);

@@ -290,6 +290,13 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						"Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
+			if(contract!=null && contract.getState() > SellContract.STATE_DISPUTE) {
+				DisputeDialog dispute = new DisputeDialog(this.getOwner(), market, contract);
+				dispute.setLocationRelativeTo(this);
+				dispute.setVisible(true);
+
+				return;
+			}
 			
 			if(Globals.getInstance().isTestnet())
 				Toast.makeText((JFrame) this.getOwner(), tr("offer_testnet_warning"), Toast.Style.NORMAL).display();

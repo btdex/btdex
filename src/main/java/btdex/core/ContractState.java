@@ -303,7 +303,8 @@ public class ContractState {
 			// We only accept configurations with 2 confirmations or more
 			// but also get pending info from the user
 			if(tx.getConfirmations() < Constants.PRICE_NCONF) {
-				if(tx.getSender().equals(g.getAddress()) || tx.getSender().getSignedLongId() == getTaker()) {
+				if(tx.getSender().equals(g.getAddress()) ||
+						(tx.getSender().getSignedLongId() == getTaker() && tx.getSender().equals(g.getAddress()) )) {
 					hasPending = true;
 				}
 				else

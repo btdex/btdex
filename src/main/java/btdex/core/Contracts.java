@@ -36,7 +36,7 @@ public class Contracts {
 				updateContracts();
 				loading = false;
 				try {
-					Thread.sleep(10000);
+					Thread.sleep(4000);
 				} catch (InterruptedException e) {
 					break;
 				}

@@ -3,6 +3,7 @@ package btdex.ui;
 import static btdex.locale.Translation.tr;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -15,6 +16,7 @@ import java.util.Calendar;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
@@ -68,13 +70,16 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 	ContractState contract;
 
 	JTextPane conditions;
+	JCheckBox acceptBox;
+	JCheckBox acceptOtherTermsBox;
 
 	JPasswordField pinField;
 
 	private JButton okButton;
 	private JButton cancelButton;
+	private JButton mediatorButton;
 
-	private boolean isBuy, isCreator;
+	private boolean isBuy, isCreator, hasOther;
 
 	private BurstValue suggestedFee;
 
@@ -87,9 +92,11 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		Globals g = Globals.getInstance();
 		this.contract = contract;
 		this.isBuy = contract.getType() == ContractState.Type.BUY;
-		this.isCreator = contract.getAddress().equals(g.getAddress());
+		this.isCreator = contract.getCreator().equals(g.getAddress());
+		this.hasOther = (isCreator && contract.hasStateFlag(SellContract.STATE_TAKER_DISPUTE)) 
+				|| (!isCreator && contract.hasStateFlag(SellContract.STATE_CREATOR_DISPUTE));
 
-		amount = contract.getAmountNQT() + 2* contract.getSecurityNQT() - contract.getFeeNQT();
+		amount = contract.getAmountNQT() + 2* contract.getSecurityNQT() - 2*contract.getFeeNQT();
 		if(isBuy)
 			amountToCreator = contract.getSecurityNQT() + contract.getAmountNQT();
 		else
@@ -139,6 +146,10 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		conditions.setContentType("text/html");
 		conditions.setPreferredSize(new Dimension(80, 200));
 		conditions.setEditable(false);
+		
+		acceptBox = new JCheckBox(tr("dlg_accept_terms"));
+		acceptOtherTermsBox = new JCheckBox(tr("disp_accept_other_suggestion"));
+		acceptOtherTermsBox.addActionListener(this);
 
 		// Dispute panels
 		JPanel otherPanel = new JPanel(new GridLayout(0, 2));
@@ -147,13 +158,25 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		otherPanel.add(otherAmountYouDesc = new Desc("", otherAmountYouSlider = new JSlider(0, 100)));
 		otherPanel.add(new JLabel(tr("disp_other_should_get")));
 		otherPanel.add(otherAmountOtherDesc = new Desc("", otherAmountOtherSlider = new JSlider(0, 100)));
+		otherAmountOtherSlider.setValue((int)(contract.getDisputeAmount(!isCreator, !isCreator)*100 / amount));
+		otherAmountYouSlider.setValue((int)(contract.getDisputeAmount(!isCreator, isCreator)*100 / amount));
+		otherAmountOtherDesc.setDesc(NumberFormatting.BURST.format(amount*otherAmountOtherSlider.getValue() / 100) + " BURST");
+		otherAmountYouDesc.setDesc(NumberFormatting.BURST.format(amount*otherAmountYouSlider.getValue() / 100) + " BURST");
 
-		JPanel yourPanel = new JPanel(new GridLayout(0, 2));
+		otherAmountOtherSlider.setEnabled(false);
+		otherAmountYouSlider.setEnabled(false);
+
+		JPanel yourPanel = new JPanel(new BorderLayout());
 		yourPanel.setBorder(BorderFactory.createTitledBorder(tr("disp_what_you_suggest")));
-		yourPanel.add(new JLabel(tr("disp_you_should_get")));
-		yourPanel.add(yourAmountYouDesc = new Desc("", yourAmountYouSlider = new JSlider(0, 100)));
-		yourPanel.add(new JLabel(tr("disp_other_should_get")));
-		yourPanel.add(yourAmountOtherDesc = new Desc("", yourAmountOtherSlider = new JSlider(0, 100)));
+		JPanel yourSuggestionPanel = new JPanel(new GridLayout(0, 2));
+		yourPanel.add(yourSuggestionPanel, BorderLayout.CENTER);
+		if(hasOther) {
+			yourPanel.add(acceptOtherTermsBox, BorderLayout.PAGE_START);
+		}
+		yourSuggestionPanel.add(new JLabel(tr("disp_you_should_get")));
+		yourSuggestionPanel.add(yourAmountYouDesc = new Desc("", yourAmountYouSlider = new JSlider(0, 100)));
+		yourSuggestionPanel.add(new JLabel(tr("disp_other_should_get")));
+		yourSuggestionPanel.add(yourAmountOtherDesc = new Desc("", yourAmountOtherSlider = new JSlider(0, 100)));
 		yourAmountYouSlider.addChangeListener(this);
 		yourAmountOtherSlider.addChangeListener(this);
 		
@@ -166,12 +189,14 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		pinField = new JPasswordField(12);
 		pinField.addActionListener(this);
 
+		mediatorButton = new JButton(tr("disp_contact_mediator"));
 		cancelButton = new JButton(tr("dlg_cancel"));
 		okButton = new JButton(tr("dlg_ok"));
 
 		cancelButton.addActionListener(this);
 		okButton.addActionListener(this);
 
+		buttonPane.add(new Desc(" ", mediatorButton));
 		buttonPane.add(new Desc(tr("dlg_pin"), pinField));
 		buttonPane.add(new Desc(" ", cancelButton));
 		buttonPane.add(new Desc(" ", okButton));
@@ -180,12 +205,14 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		content.setBorder(new EmptyBorder(4, 4, 4, 4));
 
 		JPanel conditionsPanel = new JPanel(new BorderLayout());
-		conditionsPanel.setBorder(BorderFactory.createTitledBorder(tr("disp_original_terms")));
+		conditionsPanel.setBorder(BorderFactory.createTitledBorder(tr("disp_terms")));
 		JScrollPane scroll = new JScrollPane(conditions);
 		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		scroll.setPreferredSize(conditions.getPreferredSize());
 		conditionsPanel.add(scroll, BorderLayout.CENTER);
+		
+		conditionsPanel.add(acceptBox, BorderLayout.PAGE_END);
 
 		JPanel centerPanel = new JPanel(new BorderLayout());
 		centerPanel.add(fieldPanel, BorderLayout.PAGE_START);
@@ -193,8 +220,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 
 		JPanel bottomPanel = new JPanel(new BorderLayout());
 		// Only show the other side proposal when there is one
-		if( (isCreator && contract.hasStateFlag(SellContract.STATE_TAKER_DISPUTE)) 
-				|| (!isCreator && contract.hasStateFlag(SellContract.STATE_CREATOR_DISPUTE)))
+		if(hasOther)
 			bottomPanel.add(otherPanel, BorderLayout.PAGE_START);
 		bottomPanel.add(yourPanel, BorderLayout.CENTER);
 		bottomPanel.add(buttonPane, BorderLayout.PAGE_END);
@@ -231,9 +257,19 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 			setVisible(false);
 			return;
 		}
+		
+		if(e.getSource() == acceptOtherTermsBox) {
+			if(acceptOtherTermsBox.isSelected()) {
+				yourAmountOtherSlider.setValue(otherAmountOtherSlider.getValue());;
+				yourAmountYouSlider.setValue(otherAmountYouSlider.getValue());				
+			}
+			yourAmountOtherSlider.setEnabled(!acceptOtherTermsBox.isSelected());
+			yourAmountYouSlider.setEnabled(!acceptOtherTermsBox.isSelected());
+		}
 
 		if(e.getSource() == okButton || e.getSource() == pinField) {
 			String error = null;
+			Component errorComp = null;
 			Globals g = Globals.getInstance();
 
 			if(error == null) {
@@ -244,6 +280,12 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 				//						)
 				//					error = tr("offer_no_changes");
 			}
+			
+			if(error == null && !acceptBox.isSelected()) {
+				error = tr("dlg_accept_first");
+				errorComp = acceptBox;
+				acceptBox.requestFocus();
+			}
 
 			if(error == null && !g.checkPIN(pinField.getPassword())) {
 				error = tr("dlg_invalid_pin");
@@ -251,7 +293,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 			}
 
 			if(error!=null) {
-				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(okButton);
+				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(errorComp != null ? errorComp : okButton);
 				return;
 			}
 
@@ -301,6 +343,8 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 
 	private void somethingChanged(){
 		MarketAccount account = market.parseAccount(contract.getMarketAccount());
+		
+		acceptBox.setSelected(false);
 
 		if(priceField.getText().length()==0 || amountField.getText().length()==0)
 			return;
@@ -348,7 +392,8 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 				NumberFormatting.BURST.format(isCreator ? amountToCreator : amountToTaker),
 				NumberFormatting.BURST.format(isCreator ? amountToTaker : amountToCreator)
 				));
-		append(tr("disp_closing", suggestedFee.add(BurstValue.fromPlanck(contract.getActivationFee())).toUnformattedString()));
+		append(tr("disp_dispute_terms", suggestedFee.add(BurstValue.fromPlanck(contract.getActivationFee())).toUnformattedString()));
+		append(tr("disp_mediating", suggestedFee.add(BurstValue.fromPlanck(contract.getActivationFee())).toUnformattedString()));
 
 		// checking it has the balance before requesting the deposit
 		if(unexpectedState) {
