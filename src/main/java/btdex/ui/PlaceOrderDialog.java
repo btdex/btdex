@@ -290,6 +290,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						"Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
+			
+			if(Globals.getInstance().isTestnet())
+				Toast.makeText((JFrame) this.getOwner(), tr("offer_testnet_warning"), Toast.Style.NORMAL).display();
 
 			if(contract == null)
 				contract = isBuy ? Contracts.getFreeBuyContract() : Contracts.getFreeContract();
