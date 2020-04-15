@@ -46,6 +46,7 @@ public class ContractState {
 	private long state;
 	private long amount;
 	private long security;
+	private long fee;
 	private long taker;
 	private long lockMinutes;
 
@@ -206,6 +207,7 @@ public class ContractState {
 			this.state = getContractFieldValue("state");
 			this.amount = getContractFieldValue("amount");
 			this.security = getContractFieldValue("security");
+			this.fee = getContractFieldValue("fee");
 			this.taker = getContractFieldValue("taker");
 		}
 		else if(type == Type.NO_DEPOSIT) {
@@ -446,6 +448,10 @@ public class ContractState {
 
 	public long getAmountNQT() {
 		return amount;
+	}
+	
+	public long getFeeNQT() {
+		return fee;
 	}
 
 	public long getFeeContract() {

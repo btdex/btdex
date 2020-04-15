@@ -27,7 +27,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
-import javax.swing.JToggleButton;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -79,9 +78,6 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	private JButton disputeButton;
 
 	private boolean isUpdate, isTake, isTaken, isBuy, isSignal, isDeposit;
-
-	private JToggleButton buyToken;
-	private JToggleButton sellToken;
 
 	private BurstValue suggestedFee;
 
@@ -319,15 +315,19 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			setVisible(false);
 			return;
 		}
+		if(e.getSource() == disputeButton) {
+			DisputeDialog dispute = new DisputeDialog(this.getOwner(), market, contract);
+			dispute.setLocationRelativeTo(this);
+
+			setVisible(false);
+			dispute.setVisible(true);
+			return;
+		}
 		
 		if(e.getSource() == accountComboBox) {
 			MarketAccount ac = (MarketAccount) accountComboBox.getSelectedItem();
 			String details = market.simpleFormat(ac.getFields());
 			accountDetails.setText(details);
-			somethingChanged();
-		}
-
-		if(e.getSource()==buyToken || e.getSource()==sellToken) {
 			somethingChanged();
 		}
 
