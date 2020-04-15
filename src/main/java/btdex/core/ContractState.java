@@ -48,6 +48,7 @@ public class ContractState {
 	private long security;
 	private long fee;
 	private long taker;
+	
 	private long lockMinutes;
 
 	private boolean hasPending;
@@ -223,7 +224,9 @@ public class ContractState {
 			buildHistory(txs);
 			hasPending = processTransactions(txs);
 		}
-		this.hasPending = hasPending || processTransactions(utxs);
+		hasPending = hasPending || processTransactions(utxs);
+		if(!onlyUnconf || hasPending)
+			this.hasPending = hasPending;
 	}
 
 	private void findCurrentTakeBlock(Transaction[] txs) {
@@ -300,7 +303,7 @@ public class ContractState {
 			// We only accept configurations with 2 confirmations or more
 			// but also get pending info from the user
 			if(tx.getConfirmations() < Constants.PRICE_NCONF) {
-				if(tx.getSender().equals(g.getAddress())) {
+				if(tx.getSender().equals(g.getAddress()) || tx.getSender().getSignedLongId() == getTaker()) {
 					hasPending = true;
 				}
 				else
@@ -500,6 +503,16 @@ public class ContractState {
 
 	public long getState() {
 		return state;
+	}
+	
+	public long getLockMinutes() {
+		return lockMinutes;
+	}
+	
+	public long getDisputeAmount(boolean fromCreator, boolean toCreator) {
+		if(fromCreator)
+			return getContractFieldValue(toCreator ? "disputeCreatorAmountToCreator" : "disputeCreatorAmountToTaker");
+		return getContractFieldValue(toCreator ? "disputeTakerAmountToCreator" : "disputeTakerAmountToTaker");
 	}
 	
 	public ArrayList<ContractTrade> getTrades() {
