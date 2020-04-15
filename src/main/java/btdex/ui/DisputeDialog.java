@@ -262,7 +262,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 				long amountToCreator = amount * (isBuy ? yourAmountYouSlider.getValue() : yourAmountOtherSlider.getValue()) / 100;
 				long amountToTaker = amount - amountToCreator;
 
-				// we are signaling that we have received
+				// we are sending the dispute message with our amounts
 				byte[] message = BT.callMethodMessage(contract.getMethod("dispute"), amountToCreator, amountToTaker);
 				BurstValue amountToSend = BurstValue.fromPlanck(contract.getActivationFee());
 
@@ -348,6 +348,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 				NumberFormatting.BURST.format(isCreator ? amountToCreator : amountToTaker),
 				NumberFormatting.BURST.format(isCreator ? amountToTaker : amountToCreator)
 				));
+		append(tr("disp_closing", suggestedFee.add(BurstValue.fromPlanck(contract.getActivationFee())).toUnformattedString()));
 
 		// checking it has the balance before requesting the deposit
 		if(unexpectedState) {
