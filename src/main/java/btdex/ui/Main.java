@@ -595,7 +595,7 @@ public class Main extends JFrame implements ActionListener {
 				}
 			}
 
-			AssetOrder[] asks = bn.getAssetAsks(token);
+			AssetOrder[] asks = bn.getAssetAsks(tokenMarket);
 			for(AssetOrder o : asks) {
 				if(!o.getAccountAddress().equals(g.getAddress()))
 					continue;
@@ -603,7 +603,7 @@ public class Main extends JFrame implements ActionListener {
 			}
 			tokenBalance -= tokenLocked;
 
-			balanceLabelToken.setText(token.format(tokenBalance));
+			balanceLabelToken.setText(tokenMarket.format(tokenBalance));
 			balanceLabelTokenPending.setText(tr("main_plus_locked", token.format(tokenLocked)));
 
 			statusLabel.setText("");
