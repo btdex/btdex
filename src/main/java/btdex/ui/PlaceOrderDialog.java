@@ -209,6 +209,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 		cancelButton = new JButton(tr("dlg_cancel"));
 		okButton = new JButton(tr("dlg_ok"));
+		getRootPane().setDefaultButton(okButton);
 		disputeButton = new JButton(tr("offer_open_dispute"));
 
 		cancelButton.addActionListener(this);

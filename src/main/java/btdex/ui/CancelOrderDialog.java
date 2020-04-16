@@ -78,6 +78,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 
 		calcelButton = new JButton(tr("dlg_cancel"));
 		okButton = new JButton(tr("dlg_ok"));
+		getRootPane().setDefaultButton(okButton);
 
 		calcelButton.addActionListener(this);
 		okButton.addActionListener(this);

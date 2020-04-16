@@ -116,6 +116,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 
 		cancelButton = new JButton(tr("dlg_cancel"));
 		okButton = new JButton(tr("dlg_ok"));
+		getRootPane().setDefaultButton(okButton);
 
 		cancelButton.addActionListener(this);
 		okButton.addActionListener(this);
