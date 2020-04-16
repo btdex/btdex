@@ -109,7 +109,7 @@ public class OrderBook extends JPanel {
 		public String getColumnName(int col) {
 			boolean isToken = market.getTokenID()!=null;
 
-			String colName = columnNames[col];
+			String colName = columnNames[COLS[col]];
 			if(col == COLS[COL_PRICE])
 				colName = tr("book_price", isToken ? "BURST" : market);
 			else if(col == COLS[COL_TOTAL])
