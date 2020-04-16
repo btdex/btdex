@@ -415,15 +415,17 @@ public class OrderBook extends JPanel {
 				case 2: // Ask Offer
 					if(tx.getAttachment() instanceof AskOrderPlacementAttachment) {
 						AskOrderPlacementAttachment order = (AskOrderPlacementAttachment) tx.getAttachment();
-						askOrders.add(new AssetOrder(null, null, g.getAddress(),
-								BurstValue.fromPlanck(order.getQuantityQNT()), BurstValue.fromPlanck(order.getPriceNQT()),
-								tx.getBlockHeight(), AssetOrder.OrderType.ASK));
+						if(order.getAsset().equals(market.getTokenID().getID()))
+							askOrders.add(new AssetOrder(null, null, g.getAddress(),
+									BurstValue.fromPlanck(order.getQuantityQNT()), BurstValue.fromPlanck(order.getPriceNQT()),
+									tx.getBlockHeight(), AssetOrder.OrderType.ASK));
 					}
 					break;
 				case 3: // Bid offer
 					if(tx.getAttachment() instanceof BidOrderPlacementAttachment) {
 						BidOrderPlacementAttachment order = (BidOrderPlacementAttachment) tx.getAttachment();
-						bidOrders.add(new AssetOrder(null, null, g.getAddress(),
+						if(order.getAsset().equals(market.getTokenID().getID()))
+							bidOrders.add(new AssetOrder(null, null, g.getAddress(),
 								BurstValue.fromPlanck(order.getQuantityQNT()), BurstValue.fromPlanck(order.getPriceNQT()),
 								tx.getBlockHeight(), AssetOrder.OrderType.BID));
 					}
@@ -600,6 +602,7 @@ public class OrderBook extends JPanel {
 		});
 
 		model.setRowCount(Math.max(contracts.size(), contractsBuy.size()));
+		pendingIconRotating.clearCells();
 		addContracts(contracts, ASK_COLS);
 		addContracts(contractsBuy, BID_COLS);
 	}
@@ -621,6 +624,11 @@ public class OrderBook extends JPanel {
 					priceFormated = tr("book_pending_button");
 				icon = pendingIconRotating;
 				pendingIconRotating.addCell(row, cols[COL_PRICE]);
+			}
+			else if(s.getState() > SellContract.STATE_DISPUTE &&
+					(s.getTaker() == g.getAddress().getSignedLongId() || s.getCreator().equals(g.getAddress()))){
+				priceFormated = tr("book_dispute_button");
+				icon = null;
 			}
 			else if(s.getTaker() == g.getAddress().getSignedLongId() && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
 				priceFormated = tr(s.getType() == ContractState.Type.BUY ? "book_signal_button" : "book_deposit_button", market);

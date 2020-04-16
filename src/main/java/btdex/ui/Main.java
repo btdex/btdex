@@ -17,7 +17,21 @@ import java.security.SecureRandom;
 import java.util.Locale;
 import java.util.Properties;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
+import javax.swing.Timer;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -33,6 +47,8 @@ import btdex.core.Market;
 import btdex.core.Markets;
 import btdex.core.NumberFormatting;
 import btdex.locale.Translation;
+import btdex.markets.MarketBTC;
+import btdex.markets.MarketBurstToken;
 import btdex.sc.SellContract;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.AssetBalance;
@@ -72,6 +88,7 @@ public class Main extends JFrame implements ActionListener {
 	private JLabel lockedBalanceLabel;
 
 	private JComboBox<Market> marketComboBox;
+	private Market addMarketDummy;
 
 	private JButton sendButton;
 
@@ -274,6 +291,12 @@ public class Main extends JFrame implements ActionListener {
 
 		for(Market m : Markets.getMarkets())
 			marketComboBox.addItem(m);
+		marketComboBox.addItem(addMarketDummy = new MarketBTC() {
+			@Override
+			public String toString() {
+				return tr("main_add_token_sign");
+			}
+		});
 		token = Markets.getToken();
 
 		marketComboBox.addActionListener(this);
@@ -572,7 +595,7 @@ public class Main extends JFrame implements ActionListener {
 				}
 			}
 
-			AssetOrder[] asks = bn.getAssetAsks(token);
+			AssetOrder[] asks = bn.getAssetAsks(tokenMarket);
 			for(AssetOrder o : asks) {
 				if(!o.getAccountAddress().equals(g.getAddress()))
 					continue;
@@ -580,7 +603,7 @@ public class Main extends JFrame implements ActionListener {
 			}
 			tokenBalance -= tokenLocked;
 
-			balanceLabelToken.setText(token.format(tokenBalance));
+			balanceLabelToken.setText(tokenMarket.format(tokenBalance));
 			balanceLabelTokenPending.setText(tr("main_plus_locked", token.format(tokenLocked)));
 
 			statusLabel.setText("");
@@ -607,6 +630,32 @@ public class Main extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		Market m = (Market) marketComboBox.getSelectedItem();
 		if (e.getSource() == marketComboBox) {
+			if(m == addMarketDummy) {
+				String response = JOptionPane.showInputDialog(this, tr("main_add_token_message"), tr("main_add_token"), JOptionPane.OK_CANCEL_OPTION);
+				if(response != null) {
+					Market newMarket = new MarketBurstToken(response, Globals.getInstance().getNS());
+					if(newMarket.getFactor() != 0) {
+						// this is a valid market, add at the end of the list
+						marketComboBox.removeItem(addMarketDummy);
+						marketComboBox.addItem(newMarket);
+						marketComboBox.addItem(addMarketDummy);
+						
+						Globals.getInstance().addUserMarket(newMarket);
+						BurstNode.getInstance().update();
+						
+						marketComboBox.setSelectedItem(newMarket);
+						Toast.makeText(this, tr("main_add_token_success", response), Toast.Style.SUCCESS).display();
+						return;
+					}
+					else {
+						Toast.makeText(this, tr("main_add_token_invalid", response), Toast.Style.ERROR).display();
+					}
+				}
+				
+				marketComboBox.setSelectedIndex(0);
+				return;
+			}
+			
 			orderBook.setMarket(m);
 			historyPanel.setMarket(m);
 			

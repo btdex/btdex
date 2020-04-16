@@ -46,7 +46,9 @@ public class ContractState {
 	private long state;
 	private long amount;
 	private long security;
+	private long fee;
 	private long taker;
+	
 	private long lockMinutes;
 
 	private boolean hasPending;
@@ -206,6 +208,7 @@ public class ContractState {
 			this.state = getContractFieldValue("state");
 			this.amount = getContractFieldValue("amount");
 			this.security = getContractFieldValue("security");
+			this.fee = getContractFieldValue("fee");
 			this.taker = getContractFieldValue("taker");
 		}
 		else if(type == Type.NO_DEPOSIT) {
@@ -221,7 +224,9 @@ public class ContractState {
 			buildHistory(txs);
 			hasPending = processTransactions(txs);
 		}
-		this.hasPending = hasPending || processTransactions(utxs);
+		hasPending = hasPending || processTransactions(utxs);
+		if(!onlyUnconf || hasPending)
+			this.hasPending = hasPending;
 	}
 
 	private void findCurrentTakeBlock(Transaction[] txs) {
@@ -298,7 +303,8 @@ public class ContractState {
 			// We only accept configurations with 2 confirmations or more
 			// but also get pending info from the user
 			if(tx.getConfirmations() < Constants.PRICE_NCONF) {
-				if(tx.getSender().equals(g.getAddress())) {
+				if(tx.getSender().equals(g.getAddress()) ||
+						(tx.getSender().getSignedLongId() == getTaker() && tx.getSender().equals(g.getAddress()) )) {
 					hasPending = true;
 				}
 				else
@@ -447,6 +453,10 @@ public class ContractState {
 	public long getAmountNQT() {
 		return amount;
 	}
+	
+	public long getFeeNQT() {
+		return fee;
+	}
 
 	public long getFeeContract() {
 		return feeContract;
@@ -494,6 +504,16 @@ public class ContractState {
 
 	public long getState() {
 		return state;
+	}
+	
+	public long getLockMinutes() {
+		return lockMinutes;
+	}
+	
+	public long getDisputeAmount(boolean fromCreator, boolean toCreator) {
+		if(fromCreator)
+			return getContractFieldValue(toCreator ? "disputeCreatorAmountToCreator" : "disputeCreatorAmountToTaker");
+		return getContractFieldValue(toCreator ? "disputeTakerAmountToCreator" : "disputeTakerAmountToTaker");
 	}
 	
 	public ArrayList<ContractTrade> getTrades() {

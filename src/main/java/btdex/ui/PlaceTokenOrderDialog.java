@@ -262,7 +262,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			Number priceN = NumberFormatting.parse(priceField.getText());
 			Number amountN = NumberFormatting.parse(amountField.getText());
 
-			priceValue = BurstValue.fromPlanck((long)(priceN.doubleValue()*market.getFactor()));
+			priceValue = BurstValue.fromBurst(priceN.doubleValue()/market.getFactor());
 			amountValue = BurstValue.fromPlanck((long)(amountN.doubleValue()*market.getFactor()));
 
 			double totalValue = priceN.doubleValue()*amountN.doubleValue();
