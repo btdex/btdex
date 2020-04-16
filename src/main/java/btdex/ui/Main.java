@@ -130,11 +130,11 @@ public class Main extends JFrame implements ActionListener {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		String version = "dev";
 		instance = this;
-		Icons i = new Icons();
+
 		try {
-			icon = i.getIcon();
+			icon = Icons.getIcon();
 			setIconImage(icon);
-			iconMono = i.getIconMono();
+			iconMono = Icons.getIconMono();
 
 			Properties versionProp = new Properties();
 			versionProp.load(Main.class.getResourceAsStream("/version.properties"));
@@ -196,17 +196,16 @@ public class Main extends JFrame implements ActionListener {
 		JPanel bottomRight = new JPanel();
 		bottomAll.add(bottomRight, BorderLayout.LINE_END);
 		bottomAll.add(bottom, BorderLayout.LINE_START);
-
+		
 		marketComboBox = new JComboBox<Market>();
-		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, i.getIconSize());
-
+		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, Constants.ICON_SIZE);
 		Color COLOR = marketComboBox.getForeground();
-		i.setColor(COLOR);
+		Icons i = new Icons(COLOR, Constants.ICON_SIZE);
 
 		marketComboBox.setToolTipText(tr("main_select_market"));
 		marketComboBox.setFont(largeFont);
 
-		JButton versionButton = new JButton(version, i.getVersionIcon());
+		JButton versionButton = new JButton(version, i.get(Icons.VERSION));
 		versionButton.setToolTipText(tr("main_check_new_release"));
 		versionButton.setVerticalAlignment(SwingConstants.CENTER);
 		versionButton.addActionListener(new ActionListener() {
@@ -216,7 +215,7 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 
-		Icon iconBtdex = i.getIconBtdex();
+		Icon iconBtdex = i.get(Icons.BTDEX);
 		if(iconMono!=null)
 			iconBtdex = new ImageIcon(iconMono);
 		JButton webButton = new JButton(iconBtdex);
@@ -229,7 +228,7 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 
-		JButton discordButton = new JButton(i.getDiscordIcon());
+		JButton discordButton = new JButton(i.get(Icons.DISCORD));
 		bottomRight.add(discordButton, BorderLayout.LINE_END);
 		discordButton.setToolTipText(tr("main_chat_discord"));
 		discordButton.setVerticalAlignment(SwingConstants.CENTER);
@@ -240,7 +239,7 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 
-		JButton githubButton = new JButton(i.getGithubIcon());
+		JButton githubButton = new JButton(i.get(Icons.GITHUB));
 		bottomRight.add(githubButton, BorderLayout.LINE_END);
 		githubButton.setToolTipText(tr("main_check_source"));
 		githubButton.setVerticalAlignment(SwingConstants.CENTER);
@@ -251,7 +250,7 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 
-		JButton signoutButton = new JButton(i.getSignoutIcon());
+		JButton signoutButton = new JButton(i.get(Icons.SIGNOUT));
 		signoutButton.setToolTipText(tr("main_exit_and_clear"));
 		signoutButton.setVerticalAlignment(SwingConstants.CENTER);
 		signoutButton.addActionListener(new ActionListener() {
@@ -273,7 +272,7 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 
-		JButton resetPinButton = new JButton(i.getResetPinIcon());
+		JButton resetPinButton = new JButton(i.get(Icons.RESET_PIN));
 		resetPinButton.setToolTipText(tr("main_reset_pin"));
 		resetPinButton.setVerticalAlignment(SwingConstants.CENTER);
 		resetPinButton.addActionListener(new ActionListener() {
@@ -303,7 +302,7 @@ public class Main extends JFrame implements ActionListener {
 		marketComboBox.addActionListener(this);
 		orderBook = new OrderBook(this, (Market) marketComboBox.getSelectedItem());
 		
-		removeTokenButton = new JButton(i.getTrashIcon());
+		removeTokenButton = new JButton(i.get(Icons.TRASH));
 		removeTokenButton.setToolTipText(tr("main_remove_token_tip"));
 		removeTokenButton.addActionListener(this);
 		removeTokenButton.setVisible(false);
@@ -312,19 +311,19 @@ public class Main extends JFrame implements ActionListener {
 		historyPanel = new HistoryPanel(this, (Market) marketComboBox.getSelectedItem(), orderBook);
 		accountsPanel = new AccountsPanel(this);
 
-		ICON_CONNECTED = i.getICON_CONNECTED();
-		ICON_TESTNET = i.getICON_TESTNET();
-		ICON_DISCONNECTED = i.getICON_DISCONNECTED();
+		ICON_CONNECTED = i.get(Icons.CONNECTED);
+		ICON_TESTNET = i.get(Icons.TESTNET);
+		ICON_DISCONNECTED = i.get(Icons.DISCONNECTED);
 
-		copyAddButton = new ExplorerButton("", i.getCopyIcon(), i.getExpIcon());
+		copyAddButton = new ExplorerButton("", i.get(Icons.COPY), i.get(Icons.EXPLORER));
 		copyAddButton.getMainButton().setFont(largeFont);
 
-		JButton settingsButton = new JButton(i.getSettingsIcon());
+		JButton settingsButton = new JButton(i.get(Icons.SETTINGS));
 		settingsButton.setToolTipText(tr("main_configure_settings"));
 		settingsButton.setFont(largeFont);
 		settingsButton.setVisible(false);
 
-		JButton langButton = new JButton(i.getLangIcon());
+		JButton langButton = new JButton(i.get(Icons.LANGUAGE));
 		langButton.setToolTipText(tr("main_change_language"));
 		langButton.setFont(largeFont);
 		langButton.addActionListener(new ActionListener() {
@@ -353,27 +352,27 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 
-		sendButton = new JButton(i.getSendIcon());
+		sendButton = new JButton(i.get(Icons.SEND));
 		sendButton.setToolTipText(tr("main_send", "BURST"));
 		sendButton.addActionListener(this);
 
-		sendButtonToken = new JButton(i.getSendIcon());
+		sendButtonToken = new JButton(i.get(Icons.SEND));
 		sendButtonToken.setToolTipText(tr("main_send", token.toString()));
 		sendButtonToken.addActionListener(this);
 
 		content.add(tabbedPane, BorderLayout.CENTER);
 		tabbedPane.setFont(largeFont);
 
-		tabbedPane.addTab(tr("main_order_book"), i.getOrderIcon(), orderBook);
-		tabbedPane.addTab(tr("main_trade_history"), i.getTradeIcon(), historyPanel);
+		tabbedPane.addTab(tr("main_order_book"), i.get(Icons.ORDER_BOOK), orderBook);
+		tabbedPane.addTab(tr("main_trade_history"), i.get(Icons.TRADE), historyPanel);
 
 		if(g.isTestnet()) {
 			// FIXME: accounts on testnet only for now
-			tabbedPane.addTab(tr("main_accounts"), i.getAccountIcon(), accountsPanel);
-			tabbedPane.addTab(tr("main_chat"), i.getChatIcon(), new ChatPanel());
+			tabbedPane.addTab(tr("main_accounts"), i.get(Icons.ACCOUNT), accountsPanel);
+			tabbedPane.addTab(tr("main_chat"), i.get(Icons.CHAT), new ChatPanel());
 		}
 
-		tabbedPane.addTab(tr("main_transactions"), i.getTransactionsIcon(), transactionsPanel);
+		tabbedPane.addTab(tr("main_transactions"), i.get(Icons.TRANSACTION), transactionsPanel);
 
 		top.add(new Desc(tr("main_market"), marketComboBox));
 		top.add(new Desc(" ", removeTokenButton));
@@ -405,7 +404,7 @@ public class Main extends JFrame implements ActionListener {
 
 		explorer = ExplorerWrapper.getExplorer(g.getExplorer());
 		explorerSelector = new JButton(explorer.toString(),
-				i.getExpIcon());
+				i.get(Icons.EXPLORER));
 		explorerSelector.setToolTipText(tr("main_select_explorer"));
 		explorerSelector.addActionListener(this);
 
