@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.swing.Icon;
 import javax.swing.Timer;
@@ -20,10 +21,11 @@ public class RotatingIcon implements Icon {
 	private double angleInDegrees = 90;
 	private final Timer rotatingTimer;
 	
-	private ArrayList<Point> cells = new ArrayList<>();
+	private HashMap<DefaultTableModel, ArrayList<Point>> cells = new HashMap<>();
 	
-	public RotatingIcon( Icon icon, final DefaultTableModel model) {
+	public RotatingIcon(Icon icon) {
 		delegateIcon = icon;
+		
 		rotatingTimer = new Timer( 200, new ActionListener() {
 			@Override
 			public void actionPerformed( ActionEvent e ) {
@@ -32,20 +34,30 @@ public class RotatingIcon implements Icon {
 					angleInDegrees = 0;
 				}
 				
-				for(Point c : cells)
-					model.fireTableCellUpdated(c.x, c.y);
+				for(DefaultTableModel model : cells.keySet()) {
+					for(Point c : cells.get(model))
+						model.fireTableCellUpdated(c.x, c.y);					
+				}
 			}
 		} );
 		rotatingTimer.setRepeats( false );
 		rotatingTimer.start();
 	}
 	
-	public void addCell(int row, int col) {
-		cells.add(new Point(row, col));
+	public void addCell(DefaultTableModel model, int row, int col) {
+		ArrayList<Point> points = cells.get(model);
+		if(points == null) {
+			points = new ArrayList<>();
+			cells.put(model, points);
+		}
+		points.add(new Point(row, col));
 	}
 	
-	public void clearCells() {
-		cells.clear();
+	public void clearCells(DefaultTableModel model) {
+		ArrayList<Point> points = cells.get(model);
+		if(points != null) {
+			points.clear();
+		}
 	}
 
 	@Override
