@@ -109,6 +109,8 @@ public class Main extends JFrame implements ActionListener {
 
 	private PulsingIcon pulsingButton;
 
+	private JButton signoutButton;
+
 	private static Main instance;
 
 	public static Main getInstance() {
@@ -250,27 +252,10 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 
-		JButton signoutButton = new JButton(i.get(Icons.SIGNOUT));
-		signoutButton.setToolTipText(tr("main_exit_and_clear"));
+		signoutButton = new JButton(i.get(Icons.SIGNOUT));
+		signoutButton.setToolTipText(tr("main_exit_tip"));
 		signoutButton.setVerticalAlignment(SwingConstants.CENTER);
-		signoutButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				int ret = JOptionPane.showConfirmDialog(Main.this,
-						"Exit and clear all user data?\n"
-						+ "ATTENTION: this cannot be undone.", "Exit and clear",
-						JOptionPane.YES_NO_OPTION);
-				if(ret == JOptionPane.YES_OPTION) {
-					try {
-						Globals.getInstance().clearConfs();
-						System.exit(0);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-						Toast.makeText(Main.this, ex.getMessage(), Toast.Style.ERROR).display();
-					}
-				}
-			}
-		});
+		signoutButton.addActionListener(this);
 
 		JButton resetPinButton = new JButton(i.get(Icons.RESET_PIN));
 		resetPinButton.setToolTipText(tr("main_reset_pin"));
@@ -635,6 +620,25 @@ public class Main extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Market m = (Market) marketComboBox.getSelectedItem();
+		
+		if(e.getSource() == signoutButton) {
+			Globals g = Globals.getInstance();
+			String response = JOptionPane.showInputDialog(this, tr("main_exit_message", g.getAddress().getRawAddress()),
+					tr("main_exit"), JOptionPane.OK_CANCEL_OPTION);
+			if(response != null) {
+				if(!response.equals(g.getAddress().getRawAddress().substring(0, 4))) {
+					Toast.makeText(this, tr("main_exit_error"), Toast.Style.ERROR).display();
+					return;
+				}					
+				try {
+					g.clearConfs();
+					System.exit(0);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					Toast.makeText(Main.this, ex.getMessage(), Toast.Style.ERROR).display();
+				}
+			}
+		}
 		
 		if(e.getSource() == removeTokenButton) {
 			int response = JOptionPane.showConfirmDialog(this, tr("main_remove_token_message", m.toString()),
