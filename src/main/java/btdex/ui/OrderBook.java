@@ -612,7 +612,6 @@ public class OrderBook extends JPanel {
 
 		// Update the contents
 		int row = 0;
-		pendingIconRotating.clearCells();
 		for (; row < contracts.size(); row++) {
 			ContractState s = contracts.get(row);
 
