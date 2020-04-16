@@ -34,6 +34,10 @@ public class Icons {
     public static IconCode ACCOUNT = FontAwesome.USER_CIRCLE;
     public static IconCode CHAT = FontAwesome.COMMENT;
     public static IconCode TRANSACTION = FontAwesome.LINK;
+    public static IconCode CANCEL = FontAwesome.TIMES;
+    public static IconCode SPINNER = FontAwesome.SPINNER;
+    public static IconCode EDIT = FontAwesome.PENCIL;
+    public static IconCode WITHDRAW = FontAwesome.RECYCLE;
 
     private int size = Constants.ICON_SIZE;
     private Color color = Color.BLACK;

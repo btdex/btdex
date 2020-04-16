@@ -45,8 +45,6 @@ import burst.kit.entity.response.attachment.AskOrderCancellationAttachment;
 import burst.kit.entity.response.attachment.AskOrderPlacementAttachment;
 import burst.kit.entity.response.attachment.BidOrderCancellationAttachment;
 import burst.kit.entity.response.attachment.BidOrderPlacementAttachment;
-import jiconfont.icons.font_awesome.FontAwesome;
-import jiconfont.swing.IconFontSwing;
 
 public class OrderBook extends JPanel {
 
@@ -54,7 +52,7 @@ public class OrderBook extends JPanel {
 
 	JTable table;
 	DefaultTableModel model;
-	Icon copyIcon, expIcon, cancelIcon, pendingIcon, editIcon, takeIcon, withdrawIcon;
+	Icon copyIcon, expIcon, cancelIcon, pendingIcon, editIcon, withdrawIcon;
 	RotatingIcon pendingIconRotating;
 	
 	JCheckBox listOnlyMine;
@@ -271,14 +269,14 @@ public class OrderBook extends JPanel {
 			table.getColumnModel().getColumn(i).setMinWidth(0);			
 		}
 
-		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
-		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
-		cancelIcon = IconFontSwing.buildIcon(FontAwesome.TIMES, 12, table.getForeground());
-		pendingIcon = IconFontSwing.buildIcon(FontAwesome.SPINNER, 12, table.getForeground());
+		Icons ics = new Icons(table.getForeground(), 12);
+		copyIcon = ics.get(Icons.COPY);
+		expIcon = ics.get(Icons.EXPLORER);
+		cancelIcon = ics.get(Icons.CANCEL);
+		pendingIcon = ics.get(Icons.SPINNER);
 		pendingIconRotating = new RotatingIcon(pendingIcon, model);
-		editIcon = IconFontSwing.buildIcon(FontAwesome.PENCIL, 12, table.getForeground());
-		takeIcon = IconFontSwing.buildIcon(FontAwesome.HANDSHAKE_O, 12, table.getForeground());
-		withdrawIcon = IconFontSwing.buildIcon(FontAwesome.RECYCLE, 12, table.getForeground());
+		editIcon = ics.get(Icons.EDIT);
+		withdrawIcon = ics.get(Icons.WITHDRAW);
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
