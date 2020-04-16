@@ -176,8 +176,8 @@ public class HistoryPanel extends JPanel {
 				}
 			});
 		}
-		timeButtons[1].setForeground(Color.WHITE); // TODO: same here
-		buttonGroup.setSelected(timeButtons[1].getModel(), true);
+		timeButtons[2].setForeground(Color.WHITE); // TODO: same here
+		buttonGroup.setSelected(timeButtons[2].getModel(), true);
 		
 		chartPanel.add(chartTopPanel, BorderLayout.PAGE_START);
 		ChartPanel chartPanelChart = null;
