@@ -243,6 +243,11 @@ public class Globals {
 		}
 	}
 	
+	public void removeUserMarket(Market m) {
+		Markets.removeUserMarket(m);
+		saveUserMarkets();
+	}
+	
 	public void addUserMarket(Market m) {
 		Markets.addUserMarket(m);
 		saveUserMarkets();

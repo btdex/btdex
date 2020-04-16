@@ -88,6 +88,7 @@ public class Main extends JFrame implements ActionListener {
 	private JLabel lockedBalanceLabel;
 
 	private JComboBox<Market> marketComboBox;
+	private JButton removeTokenButton;
 	private Market addMarketDummy;
 
 	private JButton sendButton;
@@ -301,6 +302,11 @@ public class Main extends JFrame implements ActionListener {
 
 		marketComboBox.addActionListener(this);
 		orderBook = new OrderBook(this, (Market) marketComboBox.getSelectedItem());
+		
+		removeTokenButton = new JButton(i.getTrashIcon());
+		removeTokenButton.setToolTipText(tr("main_remove_token_tip"));
+		removeTokenButton.addActionListener(this);
+		removeTokenButton.setVisible(false);
 
 		transactionsPanel = new TransactionsPanel();
 		historyPanel = new HistoryPanel(this, (Market) marketComboBox.getSelectedItem(), orderBook);
@@ -370,6 +376,7 @@ public class Main extends JFrame implements ActionListener {
 		tabbedPane.addTab(tr("main_transactions"), i.getTransactionsIcon(), transactionsPanel);
 
 		top.add(new Desc(tr("main_market"), marketComboBox));
+		top.add(new Desc(" ", removeTokenButton));
 		top.add(new Desc(tr("main_your_burst_address"), copyAddButton));
 
 		balanceLabel = new JLabel("0");
@@ -629,6 +636,20 @@ public class Main extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Market m = (Market) marketComboBox.getSelectedItem();
+		
+		if(e.getSource() == removeTokenButton) {
+			int response = JOptionPane.showConfirmDialog(this, tr("main_remove_token_message", m.toString()),
+					tr("main_remove_token"), JOptionPane.YES_NO_OPTION);
+			if(response == JOptionPane.YES_OPTION) {
+				marketComboBox.removeItem(m);
+				Globals.getInstance().removeUserMarket(m);
+				BurstNode.getInstance().update();
+				
+				marketComboBox.setSelectedIndex(0);
+				return;
+			}
+		}
+		
 		if (e.getSource() == marketComboBox) {
 			if(m == addMarketDummy) {
 				String response = JOptionPane.showInputDialog(this, tr("main_add_token_message"),
@@ -659,6 +680,10 @@ public class Main extends JFrame implements ActionListener {
 			
 			orderBook.setMarket(m);
 			historyPanel.setMarket(m);
+			if(Markets.getUserMarkets().contains(m)) {
+				// this is a custom token
+				removeTokenButton.setVisible(true);
+			}
 			
 			if(m.getTokenID() == null) {
 				// not a token market, show TRT in the token field 

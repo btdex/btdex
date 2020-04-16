@@ -20,6 +20,7 @@ public class Icons {
     private Icon resetPinIcon;
     private Icon copyIcon;
     private Icon expIcon ;
+    private Icon trashIcon;
     private Icon signoutIcon;
     private Icon githubIcon;
     private Icon discordIcon;
@@ -65,6 +66,7 @@ public class Icons {
         versionIcon = IconFontSwing.buildIcon(FontAwesome.CODE_FORK, ICON_SIZE, COLOR);
         signoutIcon = IconFontSwing.buildIcon(FontAwesome.SIGN_OUT, ICON_SIZE, COLOR);
         githubIcon = IconFontSwing.buildIcon(FontAwesomeBrands.GITHUB, ICON_SIZE, COLOR);
+        trashIcon = IconFontSwing.buildIcon(FontAwesome.TRASH, ICON_SIZE, COLOR);
         ICON_CONNECTED = IconFontSwing.buildIcon(FontAwesome.WIFI, ICON_SIZE, COLOR);
         ICON_TESTNET = IconFontSwing.buildIcon(FontAwesome.FLASK, ICON_SIZE, COLOR);
         ICON_DISCONNECTED = IconFontSwing.buildIcon(FontAwesome.EXCLAMATION, ICON_SIZE, COLOR);
@@ -138,6 +140,10 @@ public class Icons {
 
     public Icon getResetPinIcon() {
         return resetPinIcon;
+    }
+    
+    public Icon getTrashIcon() {
+    	return trashIcon;
     }
 
     public Icon getDiscordIcon() {
