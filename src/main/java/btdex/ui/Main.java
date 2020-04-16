@@ -631,7 +631,8 @@ public class Main extends JFrame implements ActionListener {
 		Market m = (Market) marketComboBox.getSelectedItem();
 		if (e.getSource() == marketComboBox) {
 			if(m == addMarketDummy) {
-				String response = JOptionPane.showInputDialog(this, tr("main_add_token_message"), tr("main_add_token"), JOptionPane.OK_CANCEL_OPTION);
+				String response = JOptionPane.showInputDialog(this, tr("main_add_token_message"),
+						tr("main_add_token"), JOptionPane.OK_CANCEL_OPTION);
 				if(response != null) {
 					Market newMarket = new MarketBurstToken(response, Globals.getInstance().getNS());
 					if(newMarket.getFactor() != 0) {
