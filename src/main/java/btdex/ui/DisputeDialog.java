@@ -79,7 +79,8 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 	private JButton cancelButton;
 	private JButton mediatorButton;
 
-	private boolean isBuy, isCreator, hasOther;
+	private boolean isBuy, isCreator;
+	private boolean hasOtherSuggestion, hasYourSuggestion;
 
 	private BurstValue suggestedFee;
 
@@ -93,18 +94,27 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		this.contract = contract;
 		this.isBuy = contract.getType() == ContractState.Type.BUY;
 		this.isCreator = contract.getCreator().equals(g.getAddress());
-		this.hasOther = (isCreator && contract.hasStateFlag(SellContract.STATE_TAKER_DISPUTE)) 
+		this.hasOtherSuggestion = (isCreator && contract.hasStateFlag(SellContract.STATE_TAKER_DISPUTE)) 
 				|| (!isCreator && contract.hasStateFlag(SellContract.STATE_CREATOR_DISPUTE));
+		this.hasYourSuggestion = (isCreator && contract.hasStateFlag(SellContract.STATE_CREATOR_DISPUTE)) 
+				|| (!isCreator && contract.hasStateFlag(SellContract.STATE_TAKER_DISPUTE));
 
-		amount = contract.getAmountNQT() + 2* contract.getSecurityNQT() - 2*contract.getFeeNQT();
+		// This makes sure we do not violate the limitation on the amount being requested by the parties
+		amount = contract.getAmountNQT() + 2 * (contract.getSecurityNQT() - contract.getFeeNQT());
+		// Start with the *standard* value
+		amountToCreator = contract.getSecurityNQT();
 		if(isBuy)
-			amountToCreator = contract.getSecurityNQT() + contract.getAmountNQT();
-		else
-			amountToCreator = contract.getSecurityNQT();
+			amountToCreator += contract.getAmountNQT();
 		amountToTaker = amount - amountToCreator;
 
 		suggestToYou = isCreator ? amountToCreator : amountToTaker;
 		suggestToOther = isCreator ? amountToTaker : amountToCreator;
+		
+		if(hasYourSuggestion) {
+			// Get the value from the contract if there is a previous one
+			suggestToYou = contract.getDisputeAmount(isCreator, isCreator);
+			suggestToOther = contract.getDisputeAmount(isCreator, !isCreator);
+		}
 
 		setTitle(tr("disp_title"));
 
@@ -170,7 +180,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		yourPanel.setBorder(BorderFactory.createTitledBorder(tr("disp_what_you_suggest")));
 		JPanel yourSuggestionPanel = new JPanel(new GridLayout(0, 2));
 		yourPanel.add(yourSuggestionPanel, BorderLayout.CENTER);
-		if(hasOther) {
+		if(hasOtherSuggestion) {
 			yourPanel.add(acceptOtherTermsBox, BorderLayout.PAGE_START);
 		}
 		yourSuggestionPanel.add(new JLabel(tr("disp_you_should_get")));
@@ -220,7 +230,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 
 		JPanel bottomPanel = new JPanel(new BorderLayout());
 		// Only show the other side proposal when there is one
-		if(hasOther)
+		if(hasOtherSuggestion)
 			bottomPanel.add(otherPanel, BorderLayout.PAGE_START);
 		bottomPanel.add(yourPanel, BorderLayout.CENTER);
 		bottomPanel.add(buttonPane, BorderLayout.PAGE_END);
@@ -301,7 +311,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 			try {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-				long amountToCreator = amount * (isBuy ? yourAmountYouSlider.getValue() : yourAmountOtherSlider.getValue()) / 100;
+				long amountToCreator = amount * (isCreator ? yourAmountYouSlider.getValue() : yourAmountOtherSlider.getValue()) / 100;
 				long amountToTaker = amount - amountToCreator;
 
 				// we are sending the dispute message with our amounts
