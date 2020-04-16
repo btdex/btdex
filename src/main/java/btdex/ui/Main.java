@@ -644,11 +644,11 @@ public class Main extends JFrame implements ActionListener {
 			int response = JOptionPane.showConfirmDialog(this, tr("main_remove_token_message", m.toString()),
 					tr("main_remove_token"), JOptionPane.YES_NO_OPTION);
 			if(response == JOptionPane.YES_OPTION) {
+				marketComboBox.setSelectedIndex(0);
+				
 				marketComboBox.removeItem(m);
 				Globals.getInstance().removeUserMarket(m);
 				BurstNode.getInstance().update();
-				
-				marketComboBox.setSelectedIndex(0);
 				return;
 			}
 		}
