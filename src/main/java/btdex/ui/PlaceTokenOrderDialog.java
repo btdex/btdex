@@ -30,6 +30,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import bt.Contract;
 import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.Globals;
@@ -263,7 +264,8 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			Number priceN = NumberFormatting.parse(priceField.getText());
 			Number amountN = NumberFormatting.parse(amountField.getText());
 
-			priceValue = BurstValue.fromBurst(priceN.doubleValue()/market.getFactor());
+			long pricePlanck = (long) (priceN.doubleValue()*(Contract.ONE_BURST/market.getFactor()));
+			priceValue = BurstValue.fromPlanck(pricePlanck);
 			amountValue = BurstValue.fromPlanck((long)(amountN.doubleValue()*market.getFactor()));
 
 			double totalValue = priceN.doubleValue()*amountN.doubleValue();
