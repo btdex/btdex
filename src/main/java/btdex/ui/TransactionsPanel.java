@@ -4,7 +4,9 @@ import static btdex.locale.Translation.tr;
 
 import java.awt.BorderLayout;
 import java.util.ArrayList;
+import java.util.Date;
 
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -21,6 +23,7 @@ import btdex.core.Market;
 import btdex.core.Markets;
 import btdex.core.NumberFormatting;
 import burst.kit.entity.BurstAddress;
+import burst.kit.entity.response.Block;
 import burst.kit.entity.response.Transaction;
 import burst.kit.entity.response.attachment.AskOrderPlacementAttachment;
 import burst.kit.entity.response.attachment.AssetTransferAttachment;
@@ -34,6 +37,7 @@ public class TransactionsPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 	JTable table;
+	JLabel statusLabel;
 	DefaultTableModel model;
 	Icon copyIcon, expIcon;
 
@@ -107,7 +111,11 @@ public class TransactionsPanel extends JPanel {
 		table.getColumnModel().getColumn(COL_ACCOUNT).setPreferredWidth(200);
 		table.getColumnModel().getColumn(COL_ID).setPreferredWidth(200);
 		table.getColumnModel().getColumn(COL_TIME).setPreferredWidth(120);
+		
+		statusLabel = new JLabel(" ", JLabel.RIGHT);
+		statusLabel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 
+		add(statusLabel, BorderLayout.PAGE_START);
 		add(scrollPane, BorderLayout.CENTER);
 	}
 
@@ -116,6 +124,11 @@ public class TransactionsPanel extends JPanel {
 		BurstNode bn = BurstNode.getInstance();
 		
 		ArrayList<Transaction> txs = new ArrayList<>();
+		
+		Block latest = bn.getLatestBlock();
+		Date now = new Date();
+		int mins = 4 - (int) ((now.getTime() - latest.getTimestamp().getAsDate().getTime())/1000 / 60);
+		statusLabel.setText(mins > 0 ? tr("txs_next_block", mins) : tr("txs_next_block_late"));
 
 		try {
 			// Get all unconf. txs, not only for this account, this way we can catch the

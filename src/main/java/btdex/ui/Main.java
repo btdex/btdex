@@ -14,7 +14,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URI;
 import java.security.SecureRandom;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -599,10 +598,7 @@ public class Main extends JFrame implements ActionListener {
 			balanceLabelTokenPending.setText(tr("main_plus_locked", token.format(tokenLocked)));
 
 			// all fine status label with the latest block
-			Block latest = bn.getLatestBlock();
-			Date now = new Date();
-			int mins = 4 - (int) ((now.getTime() - latest.getTimestamp().getAsDate().getTime())/1000 / 60);
-			statusLabel.setText(mins > 0 ? tr("main_next_block", mins) : tr("main_next_block_late"));
+			statusLabel.setText("");
 			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 		}
 		catch (RuntimeException rex) {
