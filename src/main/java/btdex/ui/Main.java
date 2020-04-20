@@ -598,7 +598,8 @@ public class Main extends JFrame implements ActionListener {
 			balanceLabelTokenPending.setText(tr("main_plus_locked", token.format(tokenLocked)));
 
 			// all fine status label with the latest block
-			statusLabel.setText(tr("main_block_info", bn.getLatestBlock().getHeight(), 
+			statusLabel.setText(tr("main_block_info",
+					NumberFormatting.INT.format((double)bn.getLatestBlock().getHeight()), 
 					HistoryPanel.DATE_FORMAT.format(bn.getLatestBlock().getTimestamp().getAsDate())));
 			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 		}

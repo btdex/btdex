@@ -43,6 +43,9 @@ public class NumberFormatting {
     // Always all decimal places
     public static final NumberFormatting FULL = NF(8, 8);
     
+    // No decimal places
+    public static final NumberFormatting INT = NF(0, 0);
+    
     // Minimum of 4 decimal places
     public static final NumberFormatting FIAT = NF(4, 8);
     
