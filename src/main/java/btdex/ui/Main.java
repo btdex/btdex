@@ -597,7 +597,9 @@ public class Main extends JFrame implements ActionListener {
 			balanceLabelToken.setText(tokenMarket.format(tokenBalance));
 			balanceLabelTokenPending.setText(tr("main_plus_locked", token.format(tokenLocked)));
 
-			statusLabel.setText("");
+			// all fine status label with the latest block
+			statusLabel.setText(tr("main_block_info", bn.getLatestBlock().getHeight(), 
+					HistoryPanel.DATE_FORMAT.format(bn.getLatestBlock().getTimestamp().getAsDate())));
 			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 		}
 		catch (RuntimeException rex) {

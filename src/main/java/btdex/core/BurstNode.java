@@ -42,6 +42,7 @@ public class BurstNode {
 	private Account account;
 	private FeeSuggestion suggestedFee;
 	private BurstID lastBlock;
+	private Block latestBlock;
 	
 	static BurstNode INSTANCE;
 
@@ -94,6 +95,10 @@ public class BurstNode {
 		return nodeError;
 	}
 	
+	public Block getLatestBlock() {
+		return latestBlock;
+	}
+	
 	public Block getCheckBlock() {
 		return checkBlock;
 	}
@@ -122,6 +127,7 @@ public class BurstNode {
 				
 				// check if we have a new block or not
 				Block[] latestBlocks = NS.getBlocks(0, 1).blockingGet();
+				latestBlock = latestBlocks[0];
 				if(latestBlocks[0].getId().equals(lastBlock))
 					return; // no need to update
 				
