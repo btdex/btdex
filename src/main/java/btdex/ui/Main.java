@@ -684,10 +684,8 @@ public class Main extends JFrame implements ActionListener {
 			
 			orderBook.setMarket(m);
 			historyPanel.setMarket(m);
-			if(Markets.getUserMarkets().contains(m)) {
-				// this is a custom token
-				removeTokenButton.setVisible(true);
-			}
+			// this is a custom token
+			removeTokenButton.setVisible(Markets.getUserMarkets().contains(m));
 			
 			if(m.getTokenID() == null) {
 				// not a token market, show TRT in the token field 
