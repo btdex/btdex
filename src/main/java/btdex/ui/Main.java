@@ -583,6 +583,8 @@ public class Main extends JFrame implements ActionListener {
 			}
 
 			AssetOrder[] asks = bn.getAssetAsks(tokenMarket);
+			if(asks == null)
+				return;
 			for(AssetOrder o : asks) {
 				if(!o.getAccountAddress().equals(g.getAddress()))
 					continue;
@@ -591,7 +593,7 @@ public class Main extends JFrame implements ActionListener {
 			tokenBalance -= tokenLocked;
 
 			balanceLabelToken.setText(tokenMarket.format(tokenBalance));
-			balanceLabelTokenPending.setText(tr("main_plus_locked", token.format(tokenLocked)));
+			balanceLabelTokenPending.setText(tr("main_plus_locked", tokenMarket.format(tokenLocked)));
 
 			// all fine status label with the latest block
 			statusLabel.setText("");
