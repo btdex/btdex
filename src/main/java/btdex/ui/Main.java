@@ -574,16 +574,12 @@ public class Main extends JFrame implements ActionListener {
 			Market m = (Market) marketComboBox.getSelectedItem();
 			if(m.getTokenID()!=null && m!=token)
 				tokenMarket = m;
-			AssetBalance[] accounts = bn.getAssetBalances(tokenMarket);
-			if(accounts == null)
-				return; // not yet retrieved from node
+			AssetBalance tokenBalanceAccount = bn.getAssetBalances(tokenMarket);
 			
 			long tokenBalance = 0;
 			long tokenLocked = 0;
-			for (AssetBalance aac : accounts) {
-				if(aac.getAccountAddress().equals(g.getAddress())) {
-					tokenBalance += aac.getBalance().longValue();
-				}
+			if (tokenBalanceAccount != null) {
+				tokenBalance += tokenBalanceAccount.getBalance().longValue();
 			}
 
 			AssetOrder[] asks = bn.getAssetAsks(tokenMarket);
