@@ -21,11 +21,7 @@ import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 
 import bt.BT;
-import btdex.core.Constants;
-import btdex.core.ContractState;
-import btdex.core.Globals;
-import btdex.core.Market;
-import btdex.core.NumberFormatting;
+import btdex.core.*;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.FeeSuggestion;
@@ -109,7 +105,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 		boolean isBuy = false;
 		if(order!=null && order.getType() == AssetOrder.OrderType.BID)
 			isBuy = true;
-		if(state!=null && state.getType() == ContractState.Type.BUY)
+		if(state!=null && state.getType() == ContractType.BUY)
 			isBuy = true;
 		
 		StringBuilder terms = new StringBuilder();

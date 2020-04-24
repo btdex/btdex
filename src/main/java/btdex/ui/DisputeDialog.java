@@ -34,14 +34,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import bt.BT;
-import btdex.core.BurstNode;
-import btdex.core.Constants;
-import btdex.core.ContractState;
-import btdex.core.Contracts;
-import btdex.core.Globals;
-import btdex.core.Market;
-import btdex.core.MarketAccount;
-import btdex.core.NumberFormatting;
+import btdex.core.*;
 import btdex.markets.MarketCrypto;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstValue;
@@ -92,7 +85,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 
 		Globals g = Globals.getInstance();
 		this.contract = contract;
-		this.isBuy = contract.getType() == ContractState.Type.BUY;
+		this.isBuy = contract.getType() == ContractType.BUY;
 		this.isCreator = contract.getCreator().equals(g.getAddress());
 		this.hasOtherSuggestion = (isCreator && contract.hasStateFlag(SellContract.STATE_TAKER_DISPUTE)) 
 				|| (!isCreator && contract.hasStateFlag(SellContract.STATE_CREATOR_DISPUTE));

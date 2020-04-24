@@ -82,7 +82,7 @@ public class Contracts {
         }
     }
 
-    public static Compiler getCompiler(ContractState.Type type) {
+    public static Compiler getCompiler(ContractType type) {
     	switch (type) {
 		case BUY:
 			return compilerBuy;
@@ -113,8 +113,8 @@ public class Contracts {
         return compilerBuy.getCode();
     }
     
-    public static String getContractTakeHash(ContractState.Type type) {
-    	if(type == ContractState.Type.BUY)
+    public static String getContractTakeHash(ContractType type) {
+    	if(type == ContractType.BUY)
     		return contractBuyTakeHash;
     	return contractTakeHash;
     }
@@ -157,15 +157,15 @@ public class Contracts {
 		for(ContractState s : contractsMap.values()) {
 			s.update(utxs, noNewBlock);
 			
-			if(s.getType() == ContractState.Type.SELL &&
+			if(s.getType() == ContractType.SELL &&
 					s.getCreator().equals(g.getAddress()) && 
 					s.getState() == SellContract.STATE_FINISHED && !s.hasPending())
 				updatedFreeContract = s;
-			else if(s.getType() == ContractState.Type.BUY &&
+			else if(s.getType() == ContractType.BUY &&
 					s.getCreator().equals(g.getAddress()) && 
 					s.getState() == SellContract.STATE_FINISHED && !s.hasPending())
 				updatedBuyFreeContract = s;
-			else if(s.getType() == ContractState.Type.NO_DEPOSIT &&
+			else if(s.getType() == ContractType.NO_DEPOSIT &&
 					s.getCreator().equals(g.getAddress()) &&
 					s.getState() == SellNoDepositContract.STATE_FINISHED && !s.hasPending())
 				updatedFreeNoDepositContract = s;

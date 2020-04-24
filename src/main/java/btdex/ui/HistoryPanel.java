@@ -27,6 +27,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
+import btdex.core.*;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -36,13 +37,6 @@ import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.data.xy.DefaultOHLCDataset;
 import org.jfree.data.xy.OHLCDataItem;
 
-import btdex.core.BurstNode;
-import btdex.core.ContractState;
-import btdex.core.ContractTrade;
-import btdex.core.Contracts;
-import btdex.core.Globals;
-import btdex.core.Market;
-import btdex.core.NumberFormatting;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.response.AssetTrade;
 import jiconfont.icons.font_awesome.FontAwesome;
@@ -453,8 +447,8 @@ public class HistoryPanel extends JPanel {
 			long amount = tr.getAmount();
 			double price = (double)tr.getRate() / market.getFactor();
 			
-			BurstAddress buyer = tr.getContract().getType() == ContractState.Type.BUY ? tr.getCreator() : tr.getTaker();
-			BurstAddress seller = tr.getContract().getType() == ContractState.Type.BUY ? tr.getTaker() : tr.getCreator();
+			BurstAddress buyer = tr.getContract().getType() == ContractType.BUY ? tr.getCreator() : tr.getTaker();
+			BurstAddress seller = tr.getContract().getType() == ContractType.BUY ? tr.getTaker() : tr.getCreator();
 
 			model.setValueAt(new ExplorerButton(
 					buyer.equals(g.getAddress()) ? tr("hist_you") : buyer.getRawAddress(), copyIcon, expIcon,

@@ -34,18 +34,11 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import btdex.core.*;
 import com.google.gson.JsonObject;
 
 import bt.BT;
 import bt.Contract;
-import btdex.core.BurstNode;
-import btdex.core.Constants;
-import btdex.core.ContractState;
-import btdex.core.Contracts;
-import btdex.core.Globals;
-import btdex.core.Market;
-import btdex.core.MarketAccount;
-import btdex.core.NumberFormatting;
 import btdex.markets.MarketCrypto;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstValue;
@@ -95,7 +88,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		Globals g = Globals.getInstance();
 		
 		this.isBuy = buy;
-		if(contract !=null && contract.getType() == ContractState.Type.BUY)
+		if(contract !=null && contract.getType() == ContractType.BUY)
 			this.isBuy = true;
 
 		if(contract !=null && contract.getState()==SellContract.STATE_OPEN) {

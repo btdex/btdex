@@ -33,12 +33,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 import bt.Contract;
-import btdex.core.BurstNode;
-import btdex.core.ContractState;
-import btdex.core.Contracts;
-import btdex.core.Globals;
-import btdex.core.Market;
-import btdex.core.NumberFormatting;
+import btdex.core.*;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AssetOrder;
@@ -567,15 +562,15 @@ public class OrderBook extends JPanel {
 		boolean onlyMine = listOnlyMine.isSelected();
 
 		for(ContractState s : allContracts) {
-			if(s.getType() == ContractState.Type.INVALID)
+			if(s.getType() == ContractType.INVALID)
 				continue;
 			
 			// add your own contracts but not yet configured if they have balance (so you can withdraw)
 			// this should never happen on normal circumstances
 			if(s.getCreator().equals(g.getAddress()) && s.getMarket() == 0 && s.getBalance().longValue() > 0L) {
-				if(s.getType() == ContractState.Type.SELL)
+				if(s.getType() == ContractType.SELL)
 					contracts.add(s);
-				else if(s.getType() == ContractState.Type.BUY)
+				else if(s.getType() == ContractType.BUY)
 					contractsBuy.add(s);
 				continue;
 			}
@@ -590,11 +585,11 @@ public class OrderBook extends JPanel {
 			// FIXME: add more validity tests here
 			if(s.hasPending() ||
 					s.getAmountNQT() > 0 && s.getBalance().longValue() + s.getActivationFee() > s.getSecurityNQT() &&
-					s.getRate() > 0 && (s.getMarketAccount() != null || s.getType() == ContractState.Type.BUY) &&
+					s.getRate() > 0 && (s.getMarketAccount() != null || s.getType() == ContractType.BUY) &&
 					(s.getState() == SellContract.STATE_OPEN
 					|| (s.getState()!= SellContract.STATE_FINISHED && s.getTaker() == g.getAddress().getSignedLongId())
 					|| (s.getState()!= SellContract.STATE_FINISHED && s.getCreator().equals(g.getAddress())) ) ) {
-				if(s.getType() == ContractState.Type.BUY)
+				if(s.getType() == ContractType.BUY)
 					contractsBuy.add(s);
 				else
 					contracts.add(s);
@@ -651,16 +646,16 @@ public class OrderBook extends JPanel {
 				icon = null;
 			}
 			else if(s.getTaker() == g.getAddress().getSignedLongId() && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
-				priceFormated = tr(s.getType() == ContractState.Type.BUY ? "book_signal_button" : "book_deposit_button", market);
+				priceFormated = tr(s.getType() == ContractType.BUY ? "book_signal_button" : "book_deposit_button", market);
 				icon = null;
 			}
 			else if(s.getCreator().equals(g.getAddress()) && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
-				priceFormated = tr(s.getType() == ContractState.Type.BUY ? "book_deposit_button" : "book_signal_button", market);
+				priceFormated = tr(s.getType() == ContractType.BUY ? "book_deposit_button" : "book_signal_button", market);
 				icon = null;
 			}
 			b.setText(priceFormated);
 			b.setIcon(icon);
-			b.setBackground(s.getType() == ContractState.Type.BUY ? HistoryPanel.GREEN : HistoryPanel.RED);
+			b.setBackground(s.getType() == ContractType.BUY ? HistoryPanel.GREEN : HistoryPanel.RED);
 			model.setValueAt(b, row, cols[COL_PRICE]);
 
 			if(s.getSecurityNQT() > 0 && s.getAmountNQT() > 0 && s.getRate() > 0) {
