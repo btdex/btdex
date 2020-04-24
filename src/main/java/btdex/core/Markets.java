@@ -30,6 +30,11 @@ public class Markets {
     	markets.add(m);
     	userMarkets.add(m);
     }
+    
+    public static void removeUserMarket(Market m) {
+    	markets.remove(m);
+    	userMarkets.remove(m);
+    }
 
     public static ArrayList<Market> getMarkets(){
         return markets;

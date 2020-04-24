@@ -38,6 +38,9 @@ Run this jar file with Java 8 or more recent (the `xdg-utils` package is require
 
 `java -jar btdex-all-version.jar`
 
+## Translations
+If you want to see BTDEX on your own language or have suggestions on how to improve a translation, please join us at https://www.transifex.com/btdex/.
+
 ## Compile from source
 
 Clone this repository code and run the gradle build (requires Java 8 to build):

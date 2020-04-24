@@ -202,6 +202,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		mediatorButton = new JButton(tr("disp_contact_mediator"));
 		cancelButton = new JButton(tr("dlg_cancel"));
 		okButton = new JButton(tr("dlg_ok"));
+		getRootPane().setDefaultButton(okButton);
 
 		cancelButton.addActionListener(this);
 		okButton.addActionListener(this);

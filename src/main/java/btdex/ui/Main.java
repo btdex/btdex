@@ -88,6 +88,7 @@ public class Main extends JFrame implements ActionListener {
 	private JLabel lockedBalanceLabel;
 
 	private JComboBox<Market> marketComboBox;
+	private JButton removeTokenButton;
 	private Market addMarketDummy;
 
 	private JButton sendButton;
@@ -107,6 +108,8 @@ public class Main extends JFrame implements ActionListener {
 	private long lastUpdated;
 
 	private PulsingIcon pulsingButton;
+
+	private JButton signoutButton;
 
 	private static Main instance;
 
@@ -129,11 +132,11 @@ public class Main extends JFrame implements ActionListener {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		String version = "dev";
 		instance = this;
-		Icons i = new Icons();
+
 		try {
-			icon = i.getIcon();
+			icon = Icons.getIcon();
 			setIconImage(icon);
-			iconMono = i.getIconMono();
+			iconMono = Icons.getIconMono();
 
 			Properties versionProp = new Properties();
 			versionProp.load(Main.class.getResourceAsStream("/version.properties"));
@@ -195,17 +198,16 @@ public class Main extends JFrame implements ActionListener {
 		JPanel bottomRight = new JPanel();
 		bottomAll.add(bottomRight, BorderLayout.LINE_END);
 		bottomAll.add(bottom, BorderLayout.LINE_START);
-
+		
 		marketComboBox = new JComboBox<Market>();
-		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, i.getIconSize());
-
+		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, Constants.ICON_SIZE);
 		Color COLOR = marketComboBox.getForeground();
-		i.setColor(COLOR);
+		Icons i = new Icons(COLOR, Constants.ICON_SIZE);
 
 		marketComboBox.setToolTipText(tr("main_select_market"));
 		marketComboBox.setFont(largeFont);
 
-		JButton versionButton = new JButton(version, i.getVersionIcon());
+		JButton versionButton = new JButton(version, i.get(Icons.VERSION));
 		versionButton.setToolTipText(tr("main_check_new_release"));
 		versionButton.setVerticalAlignment(SwingConstants.CENTER);
 		versionButton.addActionListener(new ActionListener() {
@@ -215,7 +217,7 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 
-		Icon iconBtdex = i.getIconBtdex();
+		Icon iconBtdex = i.get(Icons.BTDEX);
 		if(iconMono!=null)
 			iconBtdex = new ImageIcon(iconMono);
 		JButton webButton = new JButton(iconBtdex);
@@ -228,7 +230,7 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 
-		JButton discordButton = new JButton(i.getDiscordIcon());
+		JButton discordButton = new JButton(i.get(Icons.DISCORD));
 		bottomRight.add(discordButton, BorderLayout.LINE_END);
 		discordButton.setToolTipText(tr("main_chat_discord"));
 		discordButton.setVerticalAlignment(SwingConstants.CENTER);
@@ -239,7 +241,7 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 
-		JButton githubButton = new JButton(i.getGithubIcon());
+		JButton githubButton = new JButton(i.get(Icons.GITHUB));
 		bottomRight.add(githubButton, BorderLayout.LINE_END);
 		githubButton.setToolTipText(tr("main_check_source"));
 		githubButton.setVerticalAlignment(SwingConstants.CENTER);
@@ -250,29 +252,12 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 
-		JButton signoutButton = new JButton(i.getSignoutIcon());
-		signoutButton.setToolTipText(tr("main_exit_and_clear"));
+		signoutButton = new JButton(i.get(Icons.SIGNOUT));
+		signoutButton.setToolTipText(tr("main_exit_tip"));
 		signoutButton.setVerticalAlignment(SwingConstants.CENTER);
-		signoutButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				int ret = JOptionPane.showConfirmDialog(Main.this,
-						"Exit and clear all user data?\n"
-						+ "ATTENTION: this cannot be undone.", "Exit and clear",
-						JOptionPane.YES_NO_OPTION);
-				if(ret == JOptionPane.YES_OPTION) {
-					try {
-						Globals.getInstance().clearConfs();
-						System.exit(0);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-						Toast.makeText(Main.this, ex.getMessage(), Toast.Style.ERROR).display();
-					}
-				}
-			}
-		});
+		signoutButton.addActionListener(this);
 
-		JButton resetPinButton = new JButton(i.getResetPinIcon());
+		JButton resetPinButton = new JButton(i.get(Icons.RESET_PIN));
 		resetPinButton.setToolTipText(tr("main_reset_pin"));
 		resetPinButton.setVerticalAlignment(SwingConstants.CENTER);
 		resetPinButton.addActionListener(new ActionListener() {
@@ -301,24 +286,29 @@ public class Main extends JFrame implements ActionListener {
 
 		marketComboBox.addActionListener(this);
 		orderBook = new OrderBook(this, (Market) marketComboBox.getSelectedItem());
+		
+		removeTokenButton = new JButton(i.get(Icons.TRASH));
+		removeTokenButton.setToolTipText(tr("main_remove_token_tip"));
+		removeTokenButton.addActionListener(this);
+		removeTokenButton.setVisible(false);
 
 		transactionsPanel = new TransactionsPanel();
 		historyPanel = new HistoryPanel(this, (Market) marketComboBox.getSelectedItem(), orderBook);
 		accountsPanel = new AccountsPanel(this);
 
-		ICON_CONNECTED = i.getICON_CONNECTED();
-		ICON_TESTNET = i.getICON_TESTNET();
-		ICON_DISCONNECTED = i.getICON_DISCONNECTED();
+		ICON_CONNECTED = i.get(Icons.CONNECTED);
+		ICON_TESTNET = i.get(Icons.TESTNET);
+		ICON_DISCONNECTED = i.get(Icons.DISCONNECTED);
 
-		copyAddButton = new ExplorerButton("", i.getCopyIcon(), i.getExpIcon());
+		copyAddButton = new ExplorerButton("", i.get(Icons.COPY), i.get(Icons.EXPLORER));
 		copyAddButton.getMainButton().setFont(largeFont);
 
-		JButton settingsButton = new JButton(i.getSettingsIcon());
+		JButton settingsButton = new JButton(i.get(Icons.SETTINGS));
 		settingsButton.setToolTipText(tr("main_configure_settings"));
 		settingsButton.setFont(largeFont);
 		settingsButton.setVisible(false);
 
-		JButton langButton = new JButton(i.getLangIcon());
+		JButton langButton = new JButton(i.get(Icons.LANGUAGE));
 		langButton.setToolTipText(tr("main_change_language"));
 		langButton.setFont(largeFont);
 		langButton.addActionListener(new ActionListener() {
@@ -347,29 +337,30 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 
-		sendButton = new JButton(i.getSendIcon());
+		sendButton = new JButton(i.get(Icons.SEND));
 		sendButton.setToolTipText(tr("main_send", "BURST"));
 		sendButton.addActionListener(this);
 
-		sendButtonToken = new JButton(i.getSendIcon());
+		sendButtonToken = new JButton(i.get(Icons.SEND));
 		sendButtonToken.setToolTipText(tr("main_send", token.toString()));
 		sendButtonToken.addActionListener(this);
 
 		content.add(tabbedPane, BorderLayout.CENTER);
 		tabbedPane.setFont(largeFont);
 
-		tabbedPane.addTab(tr("main_order_book"), i.getOrderIcon(), orderBook);
-		tabbedPane.addTab(tr("main_trade_history"), i.getTradeIcon(), historyPanel);
+		tabbedPane.addTab(tr("main_order_book"), i.get(Icons.ORDER_BOOK), orderBook);
+		tabbedPane.addTab(tr("main_trade_history"), i.get(Icons.TRADE), historyPanel);
 
 		if(g.isTestnet()) {
 			// FIXME: accounts on testnet only for now
-			tabbedPane.addTab(tr("main_accounts"), i.getAccountIcon(), accountsPanel);
-			tabbedPane.addTab(tr("main_chat"), i.getChatIcon(), new ChatPanel());
+			tabbedPane.addTab(tr("main_accounts"), i.get(Icons.ACCOUNT), accountsPanel);
+			tabbedPane.addTab(tr("main_chat"), i.get(Icons.CHAT), new ChatPanel());
 		}
 
-		tabbedPane.addTab(tr("main_transactions"), i.getTransactionsIcon(), transactionsPanel);
+		tabbedPane.addTab(tr("main_transactions"), i.get(Icons.TRANSACTION), transactionsPanel);
 
 		top.add(new Desc(tr("main_market"), marketComboBox));
+		top.add(new Desc(" ", removeTokenButton));
 		top.add(new Desc(tr("main_your_burst_address"), copyAddButton));
 
 		balanceLabel = new JLabel("0");
@@ -398,7 +389,7 @@ public class Main extends JFrame implements ActionListener {
 
 		explorer = ExplorerWrapper.getExplorer(g.getExplorer());
 		explorerSelector = new JButton(explorer.toString(),
-				i.getExpIcon());
+				i.get(Icons.EXPLORER));
 		explorerSelector.setToolTipText(tr("main_select_explorer"));
 		explorerSelector.addActionListener(this);
 
@@ -583,19 +574,17 @@ public class Main extends JFrame implements ActionListener {
 			Market m = (Market) marketComboBox.getSelectedItem();
 			if(m.getTokenID()!=null && m!=token)
 				tokenMarket = m;
-			AssetBalance[] accounts = bn.getAssetBalances(tokenMarket);
-			if(accounts == null)
-				return; // not yet retrieved from node
+			AssetBalance tokenBalanceAccount = bn.getAssetBalances(tokenMarket);
 			
 			long tokenBalance = 0;
 			long tokenLocked = 0;
-			for (AssetBalance aac : accounts) {
-				if(aac.getAccountAddress().equals(g.getAddress())) {
-					tokenBalance += aac.getBalance().longValue();
-				}
+			if (tokenBalanceAccount != null) {
+				tokenBalance += tokenBalanceAccount.getBalance().longValue();
 			}
 
 			AssetOrder[] asks = bn.getAssetAsks(tokenMarket);
+			if(asks == null)
+				return;
 			for(AssetOrder o : asks) {
 				if(!o.getAccountAddress().equals(g.getAddress()))
 					continue;
@@ -604,8 +593,9 @@ public class Main extends JFrame implements ActionListener {
 			tokenBalance -= tokenLocked;
 
 			balanceLabelToken.setText(tokenMarket.format(tokenBalance));
-			balanceLabelTokenPending.setText(tr("main_plus_locked", token.format(tokenLocked)));
+			balanceLabelTokenPending.setText(tr("main_plus_locked", tokenMarket.format(tokenLocked)));
 
+			// all fine status label with the latest block
 			statusLabel.setText("");
 			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 		}
@@ -629,9 +619,43 @@ public class Main extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Market m = (Market) marketComboBox.getSelectedItem();
+		
+		if(e.getSource() == signoutButton) {
+			Globals g = Globals.getInstance();
+			String response = JOptionPane.showInputDialog(this, tr("main_exit_message", g.getAddress().getRawAddress()),
+					tr("main_exit"), JOptionPane.OK_CANCEL_OPTION);
+			if(response != null) {
+				if(!response.equals(g.getAddress().getRawAddress().substring(0, 4))) {
+					Toast.makeText(this, tr("main_exit_error"), Toast.Style.ERROR).display();
+					return;
+				}					
+				try {
+					g.clearConfs();
+					System.exit(0);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					Toast.makeText(Main.this, ex.getMessage(), Toast.Style.ERROR).display();
+				}
+			}
+		}
+		
+		if(e.getSource() == removeTokenButton) {
+			int response = JOptionPane.showConfirmDialog(this, tr("main_remove_token_message", m.toString()),
+					tr("main_remove_token"), JOptionPane.YES_NO_OPTION);
+			if(response == JOptionPane.YES_OPTION) {
+				marketComboBox.setSelectedIndex(0);
+				
+				marketComboBox.removeItem(m);
+				Globals.getInstance().removeUserMarket(m);
+				BurstNode.getInstance().update();
+				return;
+			}
+		}
+		
 		if (e.getSource() == marketComboBox) {
 			if(m == addMarketDummy) {
-				String response = JOptionPane.showInputDialog(this, tr("main_add_token_message"), tr("main_add_token"), JOptionPane.OK_CANCEL_OPTION);
+				String response = JOptionPane.showInputDialog(this, tr("main_add_token_message"),
+						tr("main_add_token"), JOptionPane.OK_CANCEL_OPTION);
 				if(response != null) {
 					Market newMarket = new MarketBurstToken(response, Globals.getInstance().getNS());
 					if(newMarket.getFactor() != 0) {
@@ -658,6 +682,8 @@ public class Main extends JFrame implements ActionListener {
 			
 			orderBook.setMarket(m);
 			historyPanel.setMarket(m);
+			// this is a custom token
+			removeTokenButton.setVisible(Markets.getUserMarkets().contains(m));
 			
 			if(m.getTokenID() == null) {
 				// not a token market, show TRT in the token field 

@@ -32,7 +32,7 @@ import burst.kit.service.BurstNodeService;
 public class BurstNode {
 
 	private HashMap<Market, AssetTrade[]> assetTrades = new HashMap<>();
-	private HashMap<Market, AssetBalance[]> assetBalances = new HashMap<>();
+	private HashMap<Market, AssetBalance> assetBalances = new HashMap<>();
 	private HashMap<Market, AssetOrder[]> askOrders = new HashMap<>();
 	private HashMap<Market, AssetOrder[]> bidOrders = new HashMap<>();
 	private Transaction[] txs;
@@ -42,6 +42,7 @@ public class BurstNode {
 	private Account account;
 	private FeeSuggestion suggestedFee;
 	private BurstID lastBlock;
+	private Block latestBlock;
 	
 	static BurstNode INSTANCE;
 
@@ -66,7 +67,7 @@ public class BurstNode {
 		return suggestedFee;
 	}
 
-	public AssetBalance[] getAssetBalances(Market m) {
+	public AssetBalance getAssetBalances(Market m) {
 		return assetBalances.get(m);
 	}
 	
@@ -92,6 +93,10 @@ public class BurstNode {
 	
 	public Exception getNodeException() {
 		return nodeError;
+	}
+	
+	public Block getLatestBlock() {
+		return latestBlock;
 	}
 	
 	public Block getCheckBlock() {
@@ -122,6 +127,7 @@ public class BurstNode {
 				
 				// check if we have a new block or not
 				Block[] latestBlocks = NS.getBlocks(0, 1).blockingGet();
+				latestBlock = latestBlocks[0];
 				if(latestBlocks[0].getId().equals(lastBlock))
 					return; // no need to update
 				
@@ -151,13 +157,31 @@ public class BurstNode {
 				for(Market m : Markets.getMarkets()) {
 					if(m.getTokenID() == null)
 						continue;
+					
+					AssetBalance balance = null;
 
-					AssetBalance[] accounts = NS.getAssetBalances(m.getTokenID()).blockingGet();
+					Integer first = 0;
+					Integer delta = 400;
+					while(true) {
+						AssetBalance[] accounts = NS.getAssetBalances(m.getTokenID(), first, first+delta).blockingGet();
+						if(accounts == null || accounts.length == 0)
+							break;
+						
+						for(AssetBalance b : accounts) {
+							if(b.getAccountAddress().equals(g.getAddress())) {
+								balance = b;
+								break;
+							}
+						}
+						first += delta;
+					}
+					
+					
 					AssetTrade[] trades = NS.getAssetTrades(m.getTokenID(), null, 0, 200).blockingGet();
 					AssetOrder[] asks = NS.getAskOrders(m.getTokenID()).blockingGet();
 					AssetOrder[] bids = NS.getBidOrders(m.getTokenID()).blockingGet();
 
-					assetBalances.put(m, accounts);
+					assetBalances.put(m, balance);
 					assetTrades.put(m, trades);
 					askOrders.put(m, asks);
 					bidOrders.put(m, bids);

@@ -20,6 +20,7 @@ public class Translation {
 		Locale.GERMAN,
 		// Locale.forLanguageTag("es"),
 		Locale.forLanguageTag("pt"),
+		Locale.forLanguageTag("it"),
 		Locale.forLanguageTag("lt"),
 		Locale.forLanguageTag("ru"),
 	};
