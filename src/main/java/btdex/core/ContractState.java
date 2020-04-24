@@ -28,12 +28,8 @@ import burst.kit.entity.response.appendix.PlaintextMessageAppendix;
 
 public class ContractState {
 
-	public enum Type {
-		INVALID, SELL, BUY, NO_DEPOSIT
-	}
-
 	private BurstAddress address;
-	private Type type;
+	private ContractType type;
 	private AT at;
 	private BurstValue balance;
 
@@ -65,7 +61,7 @@ public class ContractState {
 	private long marketHistory;
 	private int blockHistory;
 
-	public ContractState(Type type) {
+	public ContractState(ContractType type) {
 		this.type = type;
 	}
 
@@ -79,12 +75,12 @@ public class ContractState {
 	}
 
 	public long getNewOfferFee() {
-		if(type == Type.SELL) {
+		if(type == ContractType.SELL) {
 			return at.isFrozen() ?
 					SellContract.REUSE_OFFER_FEE :
 						SellContract.NEW_OFFER_FEE;
 		}
-		if(type == Type.BUY)
+		if(type == ContractType.BUY)
 			return at.isFrozen() ?
 					BuyContract.REUSE_OFFER_FEE :
 						BuyContract.NEW_OFFER_FEE;
@@ -145,17 +141,17 @@ public class ContractState {
 				break;
 
 			AT at = g.getNS().getAt(ad).blockingGet();
-			Type type = Type.INVALID;
+			ContractType type = ContractType.INVALID;
 
 			// check the code (should match perfectly)
 			if (Contracts.checkContractCode(at, Contracts.getCodeSell()))
-				type = Type.SELL;
+				type = ContractType.SELL;
 			else if (Contracts.checkContractCode(at, Contracts.getCodeBuy()))
-				type = Type.BUY;
+				type = ContractType.BUY;
 			else if (Contracts.checkContractCode(at, Contracts.getCodeNoDeposit()))
-				type = Type.NO_DEPOSIT;
+				type = ContractType.NO_DEPOSIT;
 
-			if (type != Type.INVALID) {
+			if (type != ContractType.INVALID) {
 				ContractState s = new ContractState(type);
 				s.at = at;
 
@@ -201,17 +197,17 @@ public class ContractState {
 		this.balance = at.getBalance();
 
 		if(at.isDead())
-			type = Type.INVALID;
+			type = ContractType.INVALID;
 
 		// update variables that can change over time
-		if(type == Type.SELL || type == Type.BUY) {
+		if(type == ContractType.SELL || type == ContractType.BUY) {
 			this.state = getContractFieldValue("state");
 			this.amount = getContractFieldValue("amount");
 			this.security = getContractFieldValue("security");
 			this.fee = getContractFieldValue("fee");
 			this.taker = getContractFieldValue("taker");
 		}
-		else if(type == Type.NO_DEPOSIT) {
+		else if(type == ContractType.NO_DEPOSIT) {
 			this.state = getContractFieldValue("state");
 			this.lockMinutes = getContractFieldValue("lockMinutes");
 		}
@@ -250,7 +246,7 @@ public class ContractState {
 
 				// we also look for the address definition of a taken buy order
 				// (should be more recent than the takeBlock, this is taken care with the 'break' on the loop start)
-				if(type == Type.BUY && tx.getSender().getSignedLongId() == this.taker
+				if(type == ContractType.BUY && tx.getSender().getSignedLongId() == this.taker
 						&& tx.getType() == 1 /* TYPE_MESSAGING */
 						&& tx.getSubtype() == 0 /* SUBTYPE_MESSAGING_ARBITRARY_MESSAGE */) {
 					TransactionAppendix append = tx.getAppendages()[0];
@@ -466,7 +462,7 @@ public class ContractState {
 		return at.getMinimumActivation().longValue();
 	}
 
-	public Type getType() {
+	public ContractType getType() {
 		return type;
 	}
 

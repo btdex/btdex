@@ -28,11 +28,8 @@ import javax.swing.event.ChangeListener;
 
 import bt.BT;
 import bt.compiler.Compiler;
-import btdex.core.Constants;
-import btdex.core.ContractState;
-import btdex.core.Contracts;
-import btdex.core.Globals;
-import btdex.core.NumberFormatting;
+import btdex.core.*;
+
 import static btdex.locale.Translation.tr;
 import btdex.sc.SellContract;
 import burst.kit.crypto.BurstCrypto;
@@ -111,7 +108,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 		content.add(centerPanel, BorderLayout.CENTER);
 		content.add(buttonPane, BorderLayout.PAGE_END);
 
-		contract = Contracts.getCompiler(isBuy ? ContractState.Type.BUY : ContractState.Type.SELL);
+		contract = Contracts.getCompiler(isBuy ? ContractType.BUY : ContractType.SELL);
 		stateChanged(null);
 		pack();
 	}

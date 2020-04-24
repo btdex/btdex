@@ -35,17 +35,10 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import btdex.core.*;
 import com.bulenkov.darcula.DarculaLaf;
 
 import bt.BT;
-import btdex.core.BurstNode;
-import btdex.core.Constants;
-import btdex.core.ContractState;
-import btdex.core.Contracts;
-import btdex.core.Globals;
-import btdex.core.Market;
-import btdex.core.Markets;
-import btdex.core.NumberFormatting;
 import btdex.locale.Translation;
 import btdex.markets.MarketBTC;
 import btdex.markets.MarketBurstToken;
@@ -82,7 +75,7 @@ public class Main extends JFrame implements ActionListener {
 	JButton nodeSelector, explorerSelector;
 	ExplorerWrapper explorer;
 	
-	Icon ICON_CONNECTED, ICON_DISCONNECTED, ICON_TESTNET;
+	private Icon ICON_CONNECTED, ICON_DISCONNECTED, ICON_TESTNET;
 
 	private JLabel balanceLabel;
 	private JLabel lockedBalanceLabel;
@@ -496,7 +489,7 @@ public class Main extends JFrame implements ActionListener {
 
 	private void updateUI() {
 		// Update at every 10 seconds
-		if(System.currentTimeMillis() - lastUpdated < 10000) {
+		if(System.currentTimeMillis() - lastUpdated < Constants.UI_UPDATE_INTERVAL) {
 			return;
 		}
 		lastUpdated = System.currentTimeMillis();
@@ -546,15 +539,15 @@ public class Main extends JFrame implements ActionListener {
 				if(s.getState() == SellContract.STATE_FINISHED)
 					continue;
 				if(s.getCreator().equals(g.getAddress())){
-					if(s.getType() == ContractState.Type.SELL)
+					if(s.getType() == ContractType.SELL)
 						locked += s.getAmountNQT() + s.getSecurityNQT();
-					else if(s.getType() == ContractState.Type.BUY)
+					else if(s.getType() == ContractType.BUY)
 						locked += s.getSecurityNQT();
 				}
 				else if (s.getTaker() == g.getAddress().getSignedLongId()) {
-					if(s.getType() == ContractState.Type.SELL)
+					if(s.getType() == ContractType.SELL)
 						locked += s.getAmountNQT();
-					else if(s.getType() == ContractState.Type.BUY)
+					else if(s.getType() == ContractType.BUY)
 						locked += s.getSecurityNQT() + s.getSecurityNQT();					
 				}
 			}
@@ -724,7 +717,7 @@ public class Main extends JFrame implements ActionListener {
 			Globals g = Globals.getInstance();
 			
 			String[] list = {BT.NODE_BURSTCOIN_RO, BT.NODE_BURST_ALLIANCE,
-					BT.NODE_BURST_TEAM, "http://localhost:8125"};
+					BT.NODE_BURST_TEAM, Constants.NODE_LOCALHOST};
 			if(g.isTestnet()){
 				list = new String[]{BT.NODE_TESTNET, BT.NODE_TESTNET_MEGASH, BT.NODE_LOCAL_TESTNET };
 			}
