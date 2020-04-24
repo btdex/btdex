@@ -114,7 +114,7 @@ public class BurstNode {
 		lastBlock = null;
 	}
 
-	class NodeUpdateTask extends TimerTask {
+	private class NodeUpdateTask extends TimerTask {
 
 		@Override
 		public void run() {
