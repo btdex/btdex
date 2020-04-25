@@ -533,6 +533,7 @@ public class Main extends JFrame implements ActionListener {
 			balance = ac.getBalance().longValue();
 			// Locked value in *market* and possibly other Burst coin stuff.
 			locked = balance - ac.getUnconfirmedBalance().longValue();
+			balance -= locked;
 			
 			// Add the amounts on smart contract trades on the locked balance
 			for(ContractState s : Contracts.getContracts()) {
@@ -552,7 +553,6 @@ public class Main extends JFrame implements ActionListener {
 				}
 			}
 
-			balance -= locked;
 			balanceLabel.setText(NumberFormatting.BURST.format(balance));
 			lockedBalanceLabel.setText(tr("main_plus_locked", NumberFormatting.BURST.format(locked)));
 
