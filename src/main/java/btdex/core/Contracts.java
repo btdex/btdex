@@ -159,15 +159,18 @@ public class Contracts {
 			
 			if(s.getType() == ContractType.SELL &&
 					s.getCreator().equals(g.getAddress()) && 
-					s.getState() == SellContract.STATE_FINISHED && !s.hasPending())
+					s.getState() == SellContract.STATE_FINISHED && !s.hasPending() &&
+					s.getATVersion()>1)
 				updatedFreeContract = s;
 			else if(s.getType() == ContractType.BUY &&
 					s.getCreator().equals(g.getAddress()) && 
-					s.getState() == SellContract.STATE_FINISHED && !s.hasPending())
+					s.getState() == SellContract.STATE_FINISHED && !s.hasPending() &&
+					s.getATVersion()>1)
 				updatedBuyFreeContract = s;
 			else if(s.getType() == ContractType.NO_DEPOSIT &&
 					s.getCreator().equals(g.getAddress()) &&
-					s.getState() == SellNoDepositContract.STATE_FINISHED && !s.hasPending())
+					s.getState() == SellNoDepositContract.STATE_FINISHED && !s.hasPending() &&
+					s.getATVersion()>1)
 				updatedFreeNoDepositContract = s;
 		}
 		lastBlock = latestBlocks[0].getId();

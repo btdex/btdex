@@ -28,7 +28,7 @@ dependencies {
     implementation 'com.github.jjos2372:burstkit4j:573d136a95'
     
     //implementation 'com.github.jjos2372:blocktalk:-SNAPSHOT'
-    implementation 'com.github.jjos2372:blocktalk:cddf6d0eb7'
+    implementation 'com.github.jjos2372:blocktalk:bd8a97d7a8'
 
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.15'

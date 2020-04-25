@@ -63,11 +63,11 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 		setTitle(tr("reg_register"));
 
 		conditions = new JTextPane();
-		conditions.setPreferredSize(new Dimension(80, 120));
+		conditions.setPreferredSize(new Dimension(240, 220));
 		acceptBox = new JCheckBox(tr("dlg_accept_terms"));
 
 		// The number of contracts to register
-		SpinnerNumberModel numModel = new SpinnerNumberModel(2, 1, 10, 1);
+		SpinnerNumberModel numModel = new SpinnerNumberModel(1, 1, 10, 1);
 		numOfContractsSpinner = new JSpinner(numModel);
 		JPanel numOfContractsPanel = new Desc(tr("reg_num_contracts"), numOfContractsSpinner);
 		numOfContractsSpinner.addChangeListener(this);
@@ -102,7 +102,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 		conditionsPanel.add(acceptBox, BorderLayout.PAGE_END);
 
 		JPanel centerPanel = new JPanel(new BorderLayout());
-		centerPanel.add(conditionsPanel, BorderLayout.PAGE_END);
+		centerPanel.add(conditionsPanel, BorderLayout.CENTER);
 
 		content.add(numOfContractsPanel, BorderLayout.PAGE_START);
 		content.add(centerPanel, BorderLayout.CENTER);
@@ -153,7 +153,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 						dataBuffer.putLong(data[i]);
 					}
 
-					byte[] creationBytes = BurstCrypto.getInstance().getATCreationBytes((short) 1,
+					byte[] creationBytes = BurstCrypto.getInstance().getATCreationBytes((short)2,
 							contract.getCode(), dataBuffer.array(), (short)contract.getDataPages(), (short)1, (short)1,
 							BurstValue.fromPlanck(SellContract.ACTIVATION_FEE));
 
@@ -174,7 +174,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 				}
 			}
 			catch (Exception ex) {
-				Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
+				Toast.makeText((JFrame) this.getOwner(), ex.getMessage(), Toast.Style.ERROR).display(okButton);
 			}
 			setCursor(Cursor.getDefaultCursor());
 		}

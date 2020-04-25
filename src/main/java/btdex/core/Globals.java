@@ -63,6 +63,7 @@ public class Globals {
 
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
 			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? BT.NODE_TESTNET : BT.NODE_BURSTCOIN_RO));
+			BT.activateCIP20(true);
 
 			// load the markets
 			Markets.loadStandardMarkets(testnet, NS);

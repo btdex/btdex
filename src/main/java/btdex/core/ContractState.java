@@ -506,6 +506,10 @@ public class ContractState {
 		return lockMinutes;
 	}
 	
+	public int getATVersion() {
+		return at.getVersion();
+	}
+	
 	public long getDisputeAmount(boolean fromCreator, boolean toCreator) {
 		if(fromCreator)
 			return getContractFieldValue(toCreator ? "disputeCreatorAmountToCreator" : "disputeCreatorAmountToTaker");
