@@ -639,7 +639,7 @@ public class Main extends JFrame implements ActionListener {
 				marketComboBox.setSelectedIndex(0);
 				
 				marketComboBox.removeItem(m);
-				Globals.getInstance().removeUserMarket(m);
+				Globals.getInstance().removeUserMarket(m, true);
 				BurstNode.getInstance().update();
 				return;
 			}
@@ -657,7 +657,7 @@ public class Main extends JFrame implements ActionListener {
 						marketComboBox.addItem(newMarket);
 						marketComboBox.addItem(addMarketDummy);
 						
-						Globals.getInstance().addUserMarket(newMarket);
+						Globals.getInstance().addUserMarket(newMarket, true);
 						BurstNode.getInstance().update();
 						
 						marketComboBox.setSelectedItem(newMarket);
