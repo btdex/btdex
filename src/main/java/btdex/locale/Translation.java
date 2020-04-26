@@ -21,6 +21,7 @@ public class Translation {
 		// Locale.forLanguageTag("es"),
 		Locale.forLanguageTag("pt"),
 		Locale.forLanguageTag("it"),
+		Locale.forLanguageTag("da"),
 		Locale.forLanguageTag("lt"),
 		Locale.forLanguageTag("ru"),
 	};

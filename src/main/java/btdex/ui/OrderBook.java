@@ -217,7 +217,7 @@ public class OrderBook extends JPanel {
 					if((isToken && order.getAssetId() == null) ||
 							(!isToken && contract.hasPending())) {
 						JOptionPane.showMessageDialog(getParent(), tr("offer_wait_confirm"),
-								"Error", JOptionPane.ERROR_MESSAGE);
+								tr("offer_processing"), JOptionPane.WARNING_MESSAGE);
 						return;
 					}
 
@@ -646,11 +646,11 @@ public class OrderBook extends JPanel {
 				icon = null;
 			}
 			else if(s.getTaker() == g.getAddress().getSignedLongId() && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
-				priceFormated = tr(s.getType() == ContractType.BUY ? "book_signal_button" : "book_deposit_button", market);
+				priceFormated = tr(s.getType() == ContractType.BUY ? "book_confirm_dispute_button" : "book_deposit_dispute_button");
 				icon = null;
 			}
 			else if(s.getCreator().equals(g.getAddress()) && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
-				priceFormated = tr(s.getType() == ContractType.BUY ? "book_deposit_button" : "book_signal_button", market);
+				priceFormated = tr(s.getType() == ContractType.BUY ? "book_deposit_dispute_button" : "book_confirm_dispute_button");
 				icon = null;
 			}
 			b.setText(priceFormated);
