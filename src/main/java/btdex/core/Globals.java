@@ -220,7 +220,7 @@ public class Globals {
 			
 			try {
 				Market userTokenMarket = new MarketBurstToken(userTokenID, NS);
-				addUserMarket(userTokenMarket);
+				addUserMarket(userTokenMarket, false);
 			}
 			catch (Exception e) {
 			}
@@ -244,14 +244,16 @@ public class Globals {
 		}
 	}
 	
-	public void removeUserMarket(Market m) {
+	public void removeUserMarket(Market m, boolean save) {
 		Markets.removeUserMarket(m);
-		saveUserMarkets();
+		if(save)
+			saveUserMarkets();
 	}
 	
-	public void addUserMarket(Market m) {
+	public void addUserMarket(Market m, boolean save) {
 		Markets.addUserMarket(m);
-		saveUserMarkets();
+		if(save)
+			saveUserMarkets();
 	}
 
 	public void addAccount(MarketAccount ac) {
