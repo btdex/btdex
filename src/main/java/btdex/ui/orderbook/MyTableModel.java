@@ -1,0 +1,47 @@
+package btdex.ui.orderbook;
+
+import btdex.locale.Translation;
+
+import javax.swing.table.DefaultTableModel;
+
+import static btdex.locale.Translation.tr;
+
+class MyTableModel extends DefaultTableModel {
+    private static final long serialVersionUID = 1L;
+
+    private final OrderBook orderBook;
+    int COLS[];
+    public MyTableModel(OrderBook orderBook, int[] cols) {
+        this.orderBook = orderBook;
+        this.COLS = cols;
+    }
+
+    public int getColumnCount() {
+        return OrderBookSettings.columnNames.length;
+    }
+
+    public String getColumnName(int col) {
+        boolean isToken = orderBook.market.getTokenID()!=null;
+
+        String colName = OrderBookSettings.columnNames[COLS[col]];
+        if(col == COLS[OrderBookSettings.COL_PRICE])
+            colName = tr("book_price", isToken ? "BURST" : orderBook.market);
+        else if(col == COLS[OrderBookSettings.COL_TOTAL])
+            colName = tr("book_total", isToken ? "BURST" : orderBook.market);
+        else if(col == COLS[OrderBookSettings.COL_SIZE]) {
+            if(isToken)
+                colName = Translation.tr("book_size", orderBook.market);
+            else
+                colName = tr("book_size", "BURST") + " (" + tr("book_deposit") + ")";
+        }
+        else if((col == COLS[OrderBookSettings.COL_CONTRACT]) && isToken)
+            colName = tr("book_order");
+        else
+            colName = tr(colName);
+        return colName;
+    }
+
+    public boolean isCellEditable(int row, int col) {
+        return col == COLS[OrderBookSettings.COL_CONTRACT] || col == COLS[OrderBookSettings.COL_PRICE];
+    }
+}

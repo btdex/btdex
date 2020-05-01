@@ -22,6 +22,7 @@ import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.Markets;
 import btdex.core.NumberFormatting;
+import btdex.ui.orderbook.OrderBook;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.response.Block;
 import burst.kit.entity.response.Transaction;
