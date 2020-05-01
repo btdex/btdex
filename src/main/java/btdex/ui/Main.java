@@ -618,7 +618,7 @@ public class Main extends JFrame implements ActionListener {
 			String response = JOptionPane.showInputDialog(this, tr("main_exit_message", g.getAddress().getRawAddress()),
 					tr("main_exit"), JOptionPane.OK_CANCEL_OPTION);
 			if(response != null) {
-				if(!response.equals(g.getAddress().getRawAddress().substring(0, 4))) {
+				if(!response.equalsIgnoreCase(g.getAddress().getRawAddress().substring(0, 4))) {
 					Toast.makeText(this, tr("main_exit_error"), Toast.Style.ERROR).display();
 					return;
 				}					
