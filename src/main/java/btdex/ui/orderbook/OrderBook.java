@@ -311,6 +311,8 @@ public class OrderBook extends JPanel {
 		
 		// Check for unconfirmed transactions with asset stuff
 		Transaction[] utx = BurstNode.getInstance().getUnconfirmedTransactions();
+		if(utx == null)
+			return;
 		for(Transaction tx : utx) {
 			if(!tx.getSender().equals(g.getAddress()))
 				continue;
