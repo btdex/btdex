@@ -40,7 +40,7 @@ public class Faucet extends Thread {
 
 	static final int MAX_REQUESTS_PER_BLOCK = 2;
 
-	static BurstValue FEE = BurstValue.fromPlanck(735000);
+	static BurstValue FEE = BurstValue.fromPlanck(Constants.FEE_QUANT);
 
 	private Socket socket;
 	private boolean exceeded;
