@@ -499,11 +499,23 @@ public class Main extends JFrame implements ActionListener {
 			Globals g = Globals.getInstance();
 			BurstNode bn = BurstNode.getInstance();
 			
+			if(transactionsPanel.isVisible() || showingSplash)
+				transactionsPanel.update();
+			if(orderBook.isVisible() || historyPanel.isVisible() || showingSplash) {
+				orderBook.update();
+				historyPanel.update();
+			}
+			
 			Exception nodeException = bn.getNodeException();
 			if(nodeException != null) {
-				nodeSelector.setIcon(ICON_DISCONNECTED);
-				String errorMessage = tr("main_error", nodeException.getLocalizedMessage());
-				statusLabel.setText(errorMessage);
+				
+				if(!(nodeException.getCause() instanceof BRSError) || ((BRSError) nodeException.getCause()).getCode() != 5) {
+					// not the unknown account exception, show the error
+					nodeSelector.setIcon(ICON_DISCONNECTED);
+					String errorMessage = tr("main_error", nodeException.getLocalizedMessage());
+					statusLabel.setText(errorMessage);
+				}
+				// otherwise all fine, just move on
 				if(showingSplash) {
 					showingSplash = false;
 					pulsingButton.stopPulsing();
@@ -555,13 +567,6 @@ public class Main extends JFrame implements ActionListener {
 
 			balanceLabel.setText(NumberFormatting.BURST.format(balance));
 			lockedBalanceLabel.setText(tr("main_plus_locked", NumberFormatting.BURST.format(locked)));
-
-			if(transactionsPanel.isVisible() || showingSplash)
-				transactionsPanel.update();
-			if(orderBook.isVisible() || historyPanel.isVisible() || showingSplash) {
-				orderBook.update();
-				historyPanel.update();
-			}
 
 			Market tokenMarket = token;
 			Market m = (Market) marketComboBox.getSelectedItem();

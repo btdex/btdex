@@ -133,25 +133,6 @@ public class BurstNode {
 				
 				lastBlock = null;
 
-				// Check if the node has the expected block
-				if(checkBlock == null && g.isTestnet())
-					checkBlock = NS.getBlock(BurstID.fromLong(Constants.CHECK_BLOCK_TESTNET)).blockingGet();
-				try {
-					account = NS.getAccount(g.getAddress()).blockingGet();
-				}
-				catch (Exception e) {
-					if(e.getCause() instanceof BRSError) {
-						BRSError error = (BRSError) e.getCause();
-						if(error.getCode() != 5) { // unknown account
-							nodeError = e;
-							return;
-						}
-					}
-					else {
-						nodeError = e;
-						return;
-					}
-				}
 				suggestedFee = g.getNS().suggestFee().blockingGet();
 				
 				for(Market m : Markets.getMarkets()) {
@@ -185,6 +166,17 @@ public class BurstNode {
 					assetTrades.put(m, trades);
 					askOrders.put(m, asks);
 					bidOrders.put(m, bids);
+				}
+				
+				// Check if the node has the expected block
+				if(checkBlock == null && g.isTestnet())
+					checkBlock = NS.getBlock(BurstID.fromLong(Constants.CHECK_BLOCK_TESTNET)).blockingGet();
+				try {
+					account = NS.getAccount(g.getAddress()).blockingGet();
+				}
+				catch (Exception e) {
+					nodeError = e;
+					return;
 				}
 				txs = NS.getAccountTransactions(g.getAddress()).blockingGet();
 				
