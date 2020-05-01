@@ -116,7 +116,6 @@ public class Main extends JFrame implements ActionListener {
 		byte[] entropy = new byte[Words.TWELVE.byteLength()];
 		new SecureRandom().nextBytes(entropy);
 		new MnemonicGenerator(English.INSTANCE).createMnemonic(entropy, sb::append);
-		System.out.println(sb.toString()); //TODO remove this in final release
 
 		new Main();
 	}
