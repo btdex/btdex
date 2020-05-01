@@ -128,8 +128,10 @@ public class TransactionsPanel extends JPanel {
 		
 		Block latest = bn.getLatestBlock();
 		Date now = new Date();
-		int mins = 4 - (int) ((now.getTime() - latest.getTimestamp().getAsDate().getTime())/1000 / 60);
-		statusLabel.setText(mins > 0 ? tr("txs_next_block", mins) : tr("txs_next_block_late"));
+		if(latest != null) {
+			int mins = 4 - (int) ((now.getTime() - latest.getTimestamp().getAsDate().getTime())/1000 / 60);
+			statusLabel.setText(mins > 0 ? tr("txs_next_block", mins) : tr("txs_next_block_late"));
+		}
 
 		try {
 			// Get all unconf. txs, not only for this account, this way we can catch the

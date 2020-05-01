@@ -24,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -251,8 +252,8 @@ public class OrderBook extends JPanel {
 			
 			String marketName = market.getTokenID() != null ? market.toString() : "BURST";
 			String basisCurrency = market.getTokenID() != null ? "BURST" : market.toString(); 
-			scrollPaneBid.setBorder(BorderFactory.createTitledBorder(tr("book_people_buying",
-					marketName, basisCurrency)));
+			scrollPaneBid.setBorder(BorderFactory.createTitledBorder(null, tr("book_people_buying",
+					marketName, basisCurrency), TitledBorder.TRAILING, TitledBorder.DEFAULT_POSITION));
 			scrollPaneAsk.setBorder(BorderFactory.createTitledBorder(tr("book_people_selling",
 					marketName, basisCurrency)));
 			
