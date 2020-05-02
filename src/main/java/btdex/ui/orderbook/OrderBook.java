@@ -19,7 +19,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -60,15 +59,15 @@ public class OrderBook extends JPanel {
 	private ArrayList<ContractState> contracts = new ArrayList<>();
 	private ArrayList<ContractState> contractsBuy = new ArrayList<>();
 
-	Market market = null, newMarket;
+	private Market market = null, newMarket;
 
 	private JScrollPane scrollPaneBid;
 
 	private JScrollPane scrollPaneAsk;
 
 	public static final ButtonCellRenderer BUTTON_RENDERER = new ButtonCellRenderer();
-	public static final ButtonCellEditor BUTTON_EDITOR = new ButtonCellEditor();
 
+	public static final ButtonCellEditor BUTTON_EDITOR = new ButtonCellEditor();
 	public OrderBook(Main main, Market m) {
 		super(new BorderLayout());
 
@@ -181,61 +180,6 @@ public class OrderBook extends JPanel {
 		setMarket(m);
 	}
 
-	public class ActionButton extends JButton{
-
-		private static final long serialVersionUID = 1L;
-		private AssetOrder order;
-		private ContractState contract;
-		private boolean isToken;
-
-		private boolean cancel;
-
-		public ActionButton(String text, ContractState contract, boolean cancel) {
-			this(text, null, contract, cancel, false);
-		}
-
-		public ActionButton(String text, AssetOrder order, boolean cancel) {
-			this(text, order, null, cancel, true);
-		}
-		public ActionButton(String text, AssetOrder order, ContractState contract, boolean cancel, boolean isToken) {
-			super(text);
-			this.order = order;
-			this.contract = contract;
-			this.cancel = cancel;
-			this.isToken = isToken;
-
-			addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
-
-					if((isToken && order.getAssetId() == null) ||
-							(!isToken && contract.hasPending())) {
-						JOptionPane.showMessageDialog(getParent(), tr("offer_wait_confirm"),
-								tr("offer_processing"), JOptionPane.WARNING_MESSAGE);
-						return;
-					}
-
-					JDialog dlg = null;
-					if(cancel) {
-						dlg = new CancelOrderDialog(f, market, order, contract);
-					}
-					else {
-						if(isToken)
-							dlg = new PlaceTokenOrderDialog(f, market, order);
-						else
-							dlg = new PlaceOrderDialog(f, market, contract, false);
-					}
-					dlg.setLocationRelativeTo(OrderBook.this);
-					dlg.setVisible(true);
-
-					BUTTON_EDITOR.stopCellEditing();
-				}
-			});
-		}
-
-	}
-
 	public void setMarket(Market m) {
 		newMarket = m;
 	}
@@ -249,19 +193,19 @@ public class OrderBook extends JPanel {
 	public void update() {
 		if(newMarket != market) {
 			market = newMarket;
-			
+
 			String marketName = market.getTokenID() != null ? market.toString() : "BURST";
-			String basisCurrency = market.getTokenID() != null ? "BURST" : market.toString(); 
+			String basisCurrency = market.getTokenID() != null ? "BURST" : market.toString();
 			scrollPaneBid.setBorder(BorderFactory.createTitledBorder(null, tr("book_people_buying",
 					marketName, basisCurrency), TitledBorder.TRAILING, TitledBorder.DEFAULT_POSITION));
 			scrollPaneAsk.setBorder(BorderFactory.createTitledBorder(tr("book_people_selling",
 					marketName, basisCurrency)));
-			
+
 			modelBid.setRowCount(0);
 			modelBid.fireTableDataChanged();
 			modelAsk.setRowCount(0);
 			modelAsk.fireTableDataChanged();
-			
+
 			if(market.getTokenID() != null) {
 				buyButton.setText(tr("book_buy_button", market));
 				sellButton.setText(tr("book_sell_button", market));
@@ -270,7 +214,7 @@ public class OrderBook extends JPanel {
 				buyButton.setText(tr("book_buy_button", "BURST"));
 				sellButton.setText(tr("book_sell_button", "BURST"));
 			}
-			
+
 			// update the column headers
 			for (int c = 0; c < OrderBookSettings.columnNames.length; c++) {
 				tableBid.getColumnModel().getColumn(c).setHeaderValue(modelBid.getColumnName(c));
@@ -297,7 +241,7 @@ public class OrderBook extends JPanel {
 		ArrayList<AssetOrder> askOrders = new ArrayList<>();
 		AssetOrder[] bids = bn.getAssetBids(market);
 		AssetOrder[] asks = bn.getAssetAsks(market);
-		
+
 		for (int i = 0; asks != null && i < asks.length; i++) {
 			if(onlyMine && asks[i].getAccountAddress().getSignedLongId() != g.getAddress().getSignedLongId())
 				continue;
@@ -308,7 +252,7 @@ public class OrderBook extends JPanel {
 				continue;
 			bidOrders.add(bids[i]);
 		}
-		
+
 		// Check for unconfirmed transactions with asset stuff
 		Transaction[] utx = BurstNode.getInstance().getUnconfirmedTransactions();
 		if(utx == null)
@@ -411,9 +355,9 @@ public class OrderBook extends JPanel {
 				continue;
 
 			String priceFormated = NumberFormatting.BURST.format(price*market.getFactor());
-			JButton b = new ActionButton(priceFormated, o, false);
+			JButton b = new ActionButton(this, priceFormated, o, false);
 			if(o.getAccountAddress().equals(g.getAddress()) && o.getAssetId() != null) {
-				b = new ActionButton(priceFormated, o, true);
+				b = new ActionButton(this, priceFormated, o, true);
 				b.setIcon(cancelIcon);
 			}
 			if(o.getId() == null || o.getAssetId() == null) {
@@ -430,7 +374,7 @@ public class OrderBook extends JPanel {
 			if(o.getId()!=null) {
 				exp = new ExplorerButton(o.getId().getID(), copyIcon, expIcon, BUTTON_EDITOR);
 				if(o.getAccountAddress().equals(g.getAddress()) && o.getAssetId() != null) {
-					JButton cancel = new ActionButton("", o, true);
+					JButton cancel = new ActionButton(this, "", o, true);
 					cancel.setIcon(cancelIcon);
 					exp.add(cancel, BorderLayout.WEST);
 				}
@@ -450,7 +394,7 @@ public class OrderBook extends JPanel {
 		for(ContractState s : allContracts) {
 			if(s.getType() == ContractType.INVALID)
 				continue;
-			
+
 			// add your own contracts but not yet configured if they have balance (so you can withdraw)
 			// this should never happen on normal circumstances
 			if(s.getCreator().equals(g.getAddress()) && s.getMarket() == 0 && s.getBalance().longValue() > 0L) {
@@ -464,7 +408,7 @@ public class OrderBook extends JPanel {
 			// only contracts for this market
 			if(s.getMarket() != market.getID())
 				continue;
-			
+
 			if(onlyMine && !s.getCreator().equals(g.getAddress()) && s.getTaker()!=g.getAddress().getSignedLongId())
 				continue;
 
@@ -507,7 +451,7 @@ public class OrderBook extends JPanel {
 		addContracts(modelAsk, contracts, OrderBookSettings.ASK_COLS);
 		addContracts(modelBid, contractsBuy, OrderBookSettings.BID_COLS);
 	}
-	
+
 	private void addContracts(DefaultTableModel model, ArrayList<ContractState> contracts, int []cols) {
 		Globals g = Globals.getInstance();
 		pendingIconRotating.clearCells(model);
@@ -519,7 +463,7 @@ public class OrderBook extends JPanel {
 
 			String priceFormated = market.format(s.getRate());
 			Icon icon = s.getCreator().equals(g.getAddress()) ? editIcon : null; // takeIcon;
-			JButton b = new ActionButton("", s, false);
+			JButton b = new ActionButton(this,"", s, false);
 			if(s.hasPending()) {
 				if(s.getRate() == 0)
 					priceFormated = tr("book_pending_button");
@@ -557,13 +501,13 @@ public class OrderBook extends JPanel {
 				model.setValueAt(null, row, cols[OrderBookSettings.COL_SIZE]);
 				model.setValueAt(null, row, cols[OrderBookSettings.COL_TOTAL]);
 			}
-			
+
 			ExplorerButton exp = new ExplorerButton(s.getAddress().getRawAddress(), copyIcon, expIcon,
-					ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(), s.getAddress().getFullAddress(), BUTTON_EDITOR); 
+					ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(), s.getAddress().getFullAddress(), BUTTON_EDITOR);
 			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId()
 					&& s.getBalance().longValue() > 0 && s.getState() < SellContract.STATE_WAITING_PAYMT
 					&& !s.hasPending()) {
-				ActionButton withDrawButton = new ActionButton("", s, true);
+				ActionButton withDrawButton = new ActionButton(this,"", s, true);
 				withDrawButton.setToolTipText(tr("book_withdraw"));
 				withDrawButton.setIcon(cancelIcon);
 				exp.add(withDrawButton, BorderLayout.WEST);
@@ -574,7 +518,11 @@ public class OrderBook extends JPanel {
 			//					s.getCreator().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : s.getCreator().getRawAddress(), copyIcon, expIcon,
 			//					ExplorerButton.TYPE_ADDRESS, s.getCreator().getID(), s.getCreator().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
 
-			//			model.setValueAt(s.getSecurity(), row, COL_SECURITY);			
+			//			model.setValueAt(s.getSecurity(), row, COL_SECURITY);
 		}
+	}
+
+	public Market getMarket() {
+		return market;
 	}
 }

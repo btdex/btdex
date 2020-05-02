@@ -8,7 +8,7 @@ import javax.swing.table.TableCellRenderer;
 class MyTable extends JTable {
     private static final long serialVersionUID = 3251005544025726619L;
 
-    int COLS[];
+    private int COLS[];
 
     public MyTable(DefaultTableModel model, int cols[]) {
         super(model);

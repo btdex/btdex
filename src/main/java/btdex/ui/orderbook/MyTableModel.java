@@ -10,7 +10,8 @@ class MyTableModel extends DefaultTableModel {
     private static final long serialVersionUID = 1L;
 
     private final OrderBook orderBook;
-    int COLS[];
+    private int COLS[];
+
     public MyTableModel(OrderBook orderBook, int[] cols) {
         this.orderBook = orderBook;
         this.COLS = cols;
@@ -21,16 +22,16 @@ class MyTableModel extends DefaultTableModel {
     }
 
     public String getColumnName(int col) {
-        boolean isToken = orderBook.market.getTokenID()!=null;
+        boolean isToken = orderBook.getMarket().getTokenID()!=null;
 
         String colName = OrderBookSettings.columnNames[COLS[col]];
         if(col == COLS[OrderBookSettings.COL_PRICE])
-            colName = tr("book_price", isToken ? "BURST" : orderBook.market);
+            colName = tr("book_price", isToken ? "BURST" : orderBook.getMarket());
         else if(col == COLS[OrderBookSettings.COL_TOTAL])
-            colName = tr("book_total", isToken ? "BURST" : orderBook.market);
+            colName = tr("book_total", isToken ? "BURST" : orderBook.getMarket());
         else if(col == COLS[OrderBookSettings.COL_SIZE]) {
             if(isToken)
-                colName = Translation.tr("book_size", orderBook.market);
+                colName = Translation.tr("book_size", orderBook.getMarket());
             else
                 colName = tr("book_size", "BURST") + " (" + tr("book_deposit") + ")";
         }
