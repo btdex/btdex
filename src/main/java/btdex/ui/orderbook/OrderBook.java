@@ -314,7 +314,7 @@ public class OrderBook extends JPanel {
 		bidOrders.sort(new Comparator<AssetOrder>() {
 			@Override
 			public int compare(AssetOrder o1, AssetOrder o2) {
-				int cmp = (int)(o2.getPrice().longValue() - o1.getPrice().longValue());
+				int cmp = o2.getPrice().compareTo(o1.getPrice());
 				if(cmp == 0)
 					cmp = o1.getHeight() - o2.getHeight();
 				return cmp;
@@ -323,7 +323,7 @@ public class OrderBook extends JPanel {
 		askOrders.sort(new Comparator<AssetOrder>() {
 			@Override
 			public int compare(AssetOrder o1, AssetOrder o2) {
-				int cmp = (int)(o1.getPrice().longValue() - o2.getPrice().longValue());
+				int cmp = o1.getPrice().compareTo(o2.getPrice());
 				if(cmp == 0)
 					cmp = o1.getHeight() - o2.getHeight();
 				return cmp;
