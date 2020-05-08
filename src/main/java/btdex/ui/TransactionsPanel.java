@@ -85,8 +85,8 @@ public class TransactionsPanel extends JPanel {
 		table.setRowSelectionAllowed(false);
 		table.getTableHeader().setReorderingAllowed(false);
 		
-		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
-		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
+		copyIcon = IconFontSwing.buildIcon(Icons.COPY, 12, table.getForeground());
+		expIcon = IconFontSwing.buildIcon(Icons.EXPLORER, 12, table.getForeground());
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);

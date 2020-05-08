@@ -11,23 +11,19 @@ import java.util.HashSet;
 
 import javax.swing.JButton;
 
-import btdex.core.BurstNode;
-import btdex.core.ContractState;
-import btdex.core.Contracts;
-import btdex.core.Globals;
-import btdex.core.Market;
-import btdex.core.Markets;
+import btdex.core.*;
 import btdex.locale.Translation;
 import burst.kit.entity.response.AssetOrder;
+import jiconfont.IconCode;
 import jiconfont.icons.font_awesome.FontAwesomeBrands;
 import jiconfont.swing.IconFontSwing;
 
 public class SocialButton extends JButton implements ActionListener {
 	private static final long serialVersionUID = -7670367558338741748L;
-	
+
+	// TODO: add other media
 	private static final String TWITTER_URL = "https://twitter.com/intent/tweet?text=";
 	private static final String FACEBOOK_URL = "https://www.facebook.com/sharer/sharer.php?u=";
-	// TODO: add other media
 	
 	public enum Type {
 		TWITTER,
@@ -44,36 +40,36 @@ public class SocialButton extends JButton implements ActionListener {
 	
 	public SocialButton(Type type, Color color) {
 		this.type = type;
-		FontAwesomeBrands icon = null;
+		IconCode icon = null;
 		String name = null;
 		int size = 18;
 		switch (type) {
 		case FACEBOOK:
-			icon = FontAwesomeBrands.FACEBOOK;
+			icon = Icons.FACEBOOK;
 			name = "Facebook";
 			break;
 		case INSTAGRAM:
-			icon = FontAwesomeBrands.INSTAGRAM;
+			icon = Icons.INSTAGRAM;
 			name = "Instagram";
 			break;
 		case GOOGLE_PLUS:
-			icon = FontAwesomeBrands.GOOGLE_PLUS;
+			icon = Icons.GOOGLE_PLUS;
 			name = "Google Plus";
 			break;
 		case REDDIT:
-			icon = FontAwesomeBrands.REDDIT;
+			icon = Icons.REDDIT;
 			name = "Reddit";
 			break;
 		case TELEGRAM:
-			icon = FontAwesomeBrands.TELEGRAM;
+			icon = Icons.TELEGRAM;
 			name = "Reddit";
 			break;
 		case WHATSAPP:
-			icon = FontAwesomeBrands.WHATSAPP;
+			icon = Icons.WHATSAPP;
 			name = "Reddit";
 			break;
 		default:
-			icon = FontAwesomeBrands.TWITTER;
+			icon = Icons.TWITTER;
 			name = "Twitter";
 			tags = "\n#DEX #crypto @btdex_trade";
 			break;
@@ -151,7 +147,7 @@ public class SocialButton extends JButton implements ActionListener {
 			break;
 		}
 		try {
-			url += URLEncoder.encode(Translation.tr("social_text", pairs, "https://btdex.trade", closing), StandardCharsets.UTF_8.toString());
+			url += URLEncoder.encode(Translation.tr("social_text", pairs, Constants.WEBSITE_LINK, closing), StandardCharsets.UTF_8.toString());
 			Main.getInstance().browse(url);
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
