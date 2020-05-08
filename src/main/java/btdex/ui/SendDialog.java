@@ -36,12 +36,12 @@ import io.reactivex.Single;
 public class SendDialog extends JDialog implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
-	JTextField recipient;
-	JTextField message;
-	JTextField amount;
-	JPasswordField pin;
-	JSlider fee;
-	BurstValue selectedFee;
+	private JTextField recipient;
+	private JTextField message;
+	private JTextField amount;
+	private JPasswordField pin;
+	private JSlider fee;
+	private BurstValue selectedFee;
 
 	private JButton okButton;
 

@@ -33,14 +33,14 @@ import io.github.novacrypto.bip39.wordlists.English;
 public class Welcome extends JDialog implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
-	JTextArea passphrase;
+	private JTextArea passphrase;
 
-	JLabel introText;
+	private JLabel introText;
 
-	JPasswordField pin;
-	JPasswordField pinCheck;
+	private JPasswordField pin;
+	private JPasswordField pinCheck;
 
-	JCheckBox acceptBox, recoverBox;
+	private JCheckBox acceptBox, recoverBox;
 
 	private JButton okButton;
 	private JButton calcelButton;

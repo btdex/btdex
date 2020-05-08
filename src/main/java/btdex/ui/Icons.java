@@ -39,6 +39,14 @@ public class Icons {
     public static IconCode EDIT = FontAwesome.PENCIL;
     public static IconCode WITHDRAW = FontAwesome.RECYCLE;
 
+    public static IconCode FACEBOOK = FontAwesomeBrands.FACEBOOK;
+    public static IconCode INSTAGRAM = FontAwesomeBrands.INSTAGRAM;
+    public static IconCode GOOGLE_PLUS = FontAwesomeBrands.GOOGLE_PLUS;
+    public static IconCode REDDIT = FontAwesomeBrands.REDDIT;
+    public static IconCode TELEGRAM = FontAwesomeBrands.TELEGRAM;
+    public static IconCode WHATSAPP = FontAwesomeBrands.WHATSAPP;
+    public static IconCode TWITTER = FontAwesomeBrands.TWITTER;
+
     private int size = Constants.ICON_SIZE;
     private Color color = Color.BLACK;
     private HashMap<IconCode, Icon> icons = new HashMap<>();
