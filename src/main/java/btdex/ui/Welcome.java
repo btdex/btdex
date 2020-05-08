@@ -150,28 +150,13 @@ public class Welcome extends JDialog implements ActionListener {
 	}
 
 	private void newPass() {
-		String pass = null;
+		String pass;
+		StringBuilder sb = new StringBuilder();
+		byte[] entropy = new byte[Words.TWELVE.byteLength()];
+		new SecureRandom().nextBytes(entropy);
+		new MnemonicGenerator(English.INSTANCE).createMnemonic(entropy, sb::append);
+		pass = sb.toString();
 
-		while(true) {
-			StringBuilder sb = new StringBuilder();
-			byte[] entropy = new byte[Words.TWELVE.byteLength()];
-			new SecureRandom().nextBytes(entropy);
-			new MnemonicGenerator(English.INSTANCE).createMnemonic(entropy, sb::append);
-
-			Globals g = Globals.getInstance();
-
-			pass = sb.toString();
-			
-			// Check if this account exists, otherwise create a new pass
-			try {
-				BurstAddress addresss = Globals.BC.getBurstAddressFromPassphrase(pass);
-				g.getNS().getAccount(addresss).blockingGet();
-			}
-			catch (Exception e) {
-				// got an exception
-				break;
-			}
-		}
 		passphrase.setText(pass);
 	}
 
