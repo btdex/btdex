@@ -22,6 +22,8 @@ public class SocialButton extends JButton implements ActionListener {
 	private static final long serialVersionUID = -7670367558338741748L;
 
 	// TODO: add other media
+	private static final String TWITTER_URL = "https://twitter.com/intent/tweet?text=";
+	private static final String FACEBOOK_URL = "https://www.facebook.com/sharer/sharer.php?u=";
 	
 	public enum Type {
 		TWITTER,
@@ -137,11 +139,11 @@ public class SocialButton extends JButton implements ActionListener {
 		String url;
 		switch (type) {
 		case FACEBOOK:
-			url = Constants.FACEBOOK_URL;
+			url = FACEBOOK_URL;
 			break;
 			// TODO: add support for other medias
 		default:
-			url = Constants.TWITTER_URL;
+			url = TWITTER_URL;
 			break;
 		}
 		try {

@@ -55,9 +55,6 @@ public class Constants {
     public static final String DISCORD_LINK = "https://discord.gg/VQ6sFAY";
     public static final String GITHUB_LINK = "https://github.com/btdex/btdex";
 
-    public static final String TWITTER_URL = "https://twitter.com/intent/tweet?text=";
-    public static final String FACEBOOK_URL = "https://www.facebook.com/sharer/sharer.php?u=";
-
     public static final int ICON_SIZE = 24;
 
     public static final int UI_UPDATE_INTERVAL = 10000;
