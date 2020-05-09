@@ -24,6 +24,7 @@ public class Translation {
 		Locale.forLanguageTag("da"),
 		Locale.forLanguageTag("lt"),
 		Locale.forLanguageTag("ru"),
+		Locale.forLanguageTag("zh"),
 	};
 	
 	static {
