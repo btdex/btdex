@@ -61,47 +61,39 @@ public class Main extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 
-	Image icon, iconMono;
-
-	CardLayout cardLayout;
-	boolean showingSplash, notifiedLoadingContracts;
-	OrderBook orderBook;
-	TransactionsPanel transactionsPanel;
-	HistoryPanel historyPanel;
-	AccountsPanel accountsPanel;
-
-	JTabbedPane tabbedPane;
-
-	JLabel statusLabel;
-	JButton nodeSelector, explorerSelector;
-	ExplorerWrapper explorer;
-	
+	private Image icon, iconMono;
 	private Icon ICON_CONNECTED, ICON_DISCONNECTED, ICON_TESTNET;
+	private PulsingIcon pulsingButton;
+
+	private CardLayout cardLayout;
+	private boolean showingSplash, notifiedLoadingContracts;
+	private OrderBook orderBook;
+	private TransactionsPanel transactionsPanel;
+	private HistoryPanel historyPanel;
+	private AccountsPanel accountsPanel;
+
+	private JTabbedPane tabbedPane;
+	private JLabel statusLabel;
+	private JButton nodeSelector, explorerSelector;
+
+	private ExplorerWrapper explorer;
+	private ExplorerButton copyAddButton;
 
 	private JLabel balanceLabel;
 	private JLabel lockedBalanceLabel;
-
 	private JComboBox<Market> marketComboBox;
 	private JButton removeTokenButton;
 	private Market addMarketDummy;
-
 	private JButton sendButton;
-
-	private ExplorerButton copyAddButton;
+	private Market token;
 
 	private Desc tokenDesc;
-	
+
 	private JLabel balanceLabelToken;
-
 	private JLabel balanceLabelTokenPending;
-
 	private JButton sendButtonToken;
 
-	private Market token;
-	
 	private long lastUpdated;
-
-	private PulsingIcon pulsingButton;
 
 	private JButton signoutButton;
 
@@ -191,7 +183,7 @@ public class Main extends JFrame implements ActionListener {
 		JPanel bottomRight = new JPanel();
 		bottomAll.add(bottomRight, BorderLayout.LINE_END);
 		bottomAll.add(bottom, BorderLayout.LINE_START);
-		
+
 		marketComboBox = new JComboBox<Market>();
 		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, Constants.ICON_SIZE);
 		Color COLOR = marketComboBox.getForeground();
@@ -279,7 +271,7 @@ public class Main extends JFrame implements ActionListener {
 
 		marketComboBox.addActionListener(this);
 		orderBook = new OrderBook(this, (Market) marketComboBox.getSelectedItem());
-		
+
 		removeTokenButton = new JButton(i.get(Icons.TRASH));
 		removeTokenButton.setToolTipText(tr("main_remove_token_tip"));
 		removeTokenButton.addActionListener(this);
@@ -498,17 +490,17 @@ public class Main extends JFrame implements ActionListener {
 		try {
 			Globals g = Globals.getInstance();
 			BurstNode bn = BurstNode.getInstance();
-			
+
 			if(transactionsPanel.isVisible() || showingSplash)
 				transactionsPanel.update();
 			if(orderBook.isVisible() || historyPanel.isVisible() || showingSplash) {
 				orderBook.update();
 				historyPanel.update();
 			}
-			
+
 			Exception nodeException = bn.getNodeException();
 			if(nodeException != null) {
-				
+
 				if(!(nodeException.getCause() instanceof BRSError) || ((BRSError) nodeException.getCause()).getCode() != 5) {
 					// not the unknown account exception, show the error
 					nodeSelector.setIcon(ICON_DISCONNECTED);
@@ -538,7 +530,7 @@ public class Main extends JFrame implements ActionListener {
 					statusLabel.setText(error);
 				}
 			}
-			
+
 			Account ac = bn.getAccount();
 			if(ac == null)
 				return;
@@ -546,7 +538,7 @@ public class Main extends JFrame implements ActionListener {
 			// Locked value in *market* and possibly other Burst coin stuff.
 			locked = balance - ac.getUnconfirmedBalance().longValue();
 			balance -= locked;
-			
+
 			// Add the amounts on smart contract trades on the locked balance
 			for(ContractState s : Contracts.getContracts()) {
 				if(s.getState() == SellContract.STATE_FINISHED)
@@ -561,7 +553,7 @@ public class Main extends JFrame implements ActionListener {
 					if(s.getType() == ContractType.SELL)
 						locked += s.getAmountNQT();
 					else if(s.getType() == ContractType.BUY)
-						locked += s.getSecurityNQT() + s.getSecurityNQT();					
+						locked += s.getSecurityNQT() + s.getSecurityNQT();
 				}
 			}
 
@@ -573,7 +565,7 @@ public class Main extends JFrame implements ActionListener {
 			if(m.getTokenID()!=null && m!=token)
 				tokenMarket = m;
 			AssetBalance tokenBalanceAccount = bn.getAssetBalances(tokenMarket);
-			
+
 			long tokenBalance = 0;
 			long tokenLocked = 0;
 			if (tokenBalanceAccount != null) {
@@ -617,7 +609,7 @@ public class Main extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Market m = (Market) marketComboBox.getSelectedItem();
-		
+
 		if(e.getSource() == signoutButton) {
 			Globals g = Globals.getInstance();
 			String response = JOptionPane.showInputDialog(this, tr("main_exit_message", g.getAddress().getRawAddress()),
@@ -626,7 +618,7 @@ public class Main extends JFrame implements ActionListener {
 				if(!response.equalsIgnoreCase(g.getAddress().getRawAddress().substring(0, 4))) {
 					Toast.makeText(this, tr("main_exit_error"), Toast.Style.ERROR).display();
 					return;
-				}					
+				}
 				try {
 					g.clearConfs();
 					System.exit(0);
@@ -636,20 +628,20 @@ public class Main extends JFrame implements ActionListener {
 				}
 			}
 		}
-		
+
 		if(e.getSource() == removeTokenButton) {
 			int response = JOptionPane.showConfirmDialog(this, tr("main_remove_token_message", m.toString()),
 					tr("main_remove_token"), JOptionPane.YES_NO_OPTION);
 			if(response == JOptionPane.YES_OPTION) {
 				marketComboBox.setSelectedIndex(0);
-				
+
 				marketComboBox.removeItem(m);
 				Globals.getInstance().removeUserMarket(m, true);
 				BurstNode.getInstance().update();
 				return;
 			}
 		}
-		
+
 		if (e.getSource() == marketComboBox) {
 			if(m == addMarketDummy) {
 				String response = JOptionPane.showInputDialog(this, tr("main_add_token_message"),
@@ -661,10 +653,10 @@ public class Main extends JFrame implements ActionListener {
 						marketComboBox.removeItem(addMarketDummy);
 						marketComboBox.addItem(newMarket);
 						marketComboBox.addItem(addMarketDummy);
-						
+
 						Globals.getInstance().addUserMarket(newMarket, true);
 						BurstNode.getInstance().update();
-						
+
 						marketComboBox.setSelectedItem(newMarket);
 						Toast.makeText(this, tr("main_add_token_success", response), Toast.Style.SUCCESS).display();
 						return;
@@ -673,64 +665,64 @@ public class Main extends JFrame implements ActionListener {
 						Toast.makeText(this, tr("main_add_token_invalid", response), Toast.Style.ERROR).display();
 					}
 				}
-				
+
 				marketComboBox.setSelectedIndex(0);
 				return;
 			}
-			
+
 			orderBook.setMarket(m);
 			historyPanel.setMarket(m);
 			// this is a custom token
 			removeTokenButton.setVisible(Markets.getUserMarkets().contains(m));
-			
+
 			if(m.getTokenID() == null) {
-				// not a token market, show TRT in the token field 
+				// not a token market, show TRT in the token field
 				tokenDesc.setDesc(tr("main_balance", token));
-				
+
 				if(!Globals.getInstance().isTestnet()) {
 					// FIXME: remove this when operational
 					Toast.makeText(this, tr("main_cross_chain_testnet_only"), Toast.Style.ERROR).display();
 				}
 				else if(Contracts.isLoading()) {
-					Toast.makeText(this, tr("main_cross_chain_loading"), 8000, Toast.Style.NORMAL).display();					
+					Toast.makeText(this, tr("main_cross_chain_loading"), 8000, Toast.Style.NORMAL).display();
 				}
 			}
 			else {
-				// this is a token market, show it on the token field 
+				// this is a token market, show it on the token field
 				tokenDesc.setDesc(tr("main_balance", m));
 				balanceLabelToken.setText(m.format(0));
 				balanceLabelTokenPending.setText(" ");
 				sendButtonToken.setToolTipText(tr("main_send", m.toString()));
 			}
-			
+
 			update();
 		}
 		else if (e.getSource() == sendButton) {
 			SendDialog dlg = new SendDialog(this, null);
 
 			dlg.setLocationRelativeTo(Main.this);
-			dlg.setVisible(true);			
+			dlg.setVisible(true);
 		}
 		else if (e.getSource() == sendButtonToken) {
 			SendDialog dlg = new SendDialog(this, m.getTokenID()==null ? token : m);
 
 			dlg.setLocationRelativeTo(Main.this);
-			dlg.setVisible(true);			
+			dlg.setVisible(true);
 		}
 		else if (e.getSource() == nodeSelector) {
-			
+
 			Globals g = Globals.getInstance();
-			
+
 			String[] list = {BT.NODE_BURSTCOIN_RO, BT.NODE_BURST_ALLIANCE,
 					BT.NODE_BURST_TEAM, Constants.NODE_LOCALHOST};
 			if(g.isTestnet()){
 				list = new String[]{Constants.NODE_TESTNET2, BT.NODE_TESTNET, BT.NODE_TESTNET_MEGASH, BT.NODE_LOCAL_TESTNET };
 			}
-			
+
 			JComboBox<String> nodeComboBox = new JComboBox<String>(list);
 			nodeComboBox.setEditable(true);
 			int ret = JOptionPane.showConfirmDialog(this, nodeComboBox, tr("main_select_node"), JOptionPane.OK_CANCEL_OPTION);
-			
+
 			if(ret == JOptionPane.OK_OPTION) {
 				g.setNode(nodeComboBox.getSelectedItem().toString());
 				try {
@@ -739,32 +731,32 @@ public class Main extends JFrame implements ActionListener {
 					ex.printStackTrace();
 					Toast.makeText(this, ex.getMessage(), Toast.Style.ERROR).display();
 				}
-				
+
 				nodeSelector.setText(g.getNode());
 				update();
 			}
 		}
-		
+
 		else if (e.getSource() == explorerSelector) {
 			Globals g = Globals.getInstance();
-			
+
 			JComboBox<ExplorerWrapper> explorerCombo = new JComboBox<ExplorerWrapper>();
 			explorerCombo.addItem(ExplorerWrapper.burstDevtrue());
 			if(!g.isTestnet())
 				explorerCombo.addItem(ExplorerWrapper.burstcoinRo());
 			explorerCombo.addItem(ExplorerWrapper.burstcoinNetwork());
-			
+
 			for (int i = 0; i < explorerCombo.getItemCount(); i++) {
 				if(explorerCombo.getItemAt(i).toString().equals(g.getExplorer()))
 					explorerCombo.setSelectedIndex(i);
 			}
-			
+
 			int ret = JOptionPane.showConfirmDialog(this, explorerCombo, tr("main_select_explorer"), JOptionPane.OK_CANCEL_OPTION);
-			
+
 			if(ret == JOptionPane.OK_OPTION) {
 				explorer = (ExplorerWrapper) explorerCombo.getSelectedItem();
 				explorerSelector.setText(explorer.toString());
-				
+
 				g.setExplorer(explorer.getKey());
 				try {
 					g.saveConfs();
@@ -774,5 +766,9 @@ public class Main extends JFrame implements ActionListener {
 				}
 			}
 		}
+	}
+
+	public ExplorerWrapper getExplorer() {
+		return explorer;
 	}
 }
