@@ -72,7 +72,7 @@ public class ExplorerButton extends JPanel {
 		explorerButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ExplorerWrapper exp = Main.getInstance().explorer;
+				ExplorerWrapper exp = Main.getInstance().getExplorer();
 				
 				switch (ExplorerButton.this.type) {
 				case TYPE_ADDRESS:
