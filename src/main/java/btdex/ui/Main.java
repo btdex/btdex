@@ -58,11 +58,9 @@ import jiconfont.swing.IconFontSwing;
 import okhttp3.Response;
 
 public class Main extends JFrame implements ActionListener {
-
 	private static final long serialVersionUID = 1L;
 
 	private Image icon, iconMono;
-	private Icon ICON_CONNECTED, ICON_DISCONNECTED, ICON_TESTNET;
 	private PulsingIcon pulsingButton;
 
 	private CardLayout cardLayout;
@@ -210,10 +208,6 @@ public class Main extends JFrame implements ActionListener {
 		transactionsPanel = new TransactionsPanel();
 		historyPanel = new HistoryPanel(this, (Market) marketComboBox.getSelectedItem(), orderBook);
 		accountsPanel = new AccountsPanel(this);
-
-		ICON_CONNECTED = i.get(Icons.CONNECTED);
-		ICON_TESTNET = i.get(Icons.TESTNET);
-		ICON_DISCONNECTED = i.get(Icons.DISCONNECTED);
 
 		copyAddButton = new ExplorerButton("", i.get(Icons.COPY), i.get(Icons.EXPLORER));
 		copyAddButton.getMainButton().setFont(largeFont);
@@ -511,6 +505,10 @@ public class Main extends JFrame implements ActionListener {
 	}
 
 	private void updateUI() {
+		Icon ICON_CONNECTED = i.get(Icons.CONNECTED);
+		Icon ICON_TESTNET = i.get(Icons.TESTNET);
+		Icon ICON_DISCONNECTED = i.get(Icons.DISCONNECTED);
+
 		// Update at every 10 seconds
 		if(System.currentTimeMillis() - lastUpdated < Constants.UI_UPDATE_INTERVAL) {
 			return;
