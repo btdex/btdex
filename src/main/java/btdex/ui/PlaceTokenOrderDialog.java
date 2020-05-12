@@ -45,14 +45,14 @@ import io.reactivex.Single;
 public class PlaceTokenOrderDialog extends JDialog implements ActionListener, DocumentListener {
 	private static final long serialVersionUID = 1L;
 
-	Market market;
+	private Market market;
 
-	JTextField amountField, priceField, totalField;
+	private JTextField amountField, priceField, totalField;
 
-	JTextPane conditions;
-	JCheckBox acceptBox;
+	private JTextPane conditions;
+	private JCheckBox acceptBox;
 
-	JPasswordField pinField;
+	private JPasswordField pinField;
 
 	private JButton okButton;
 	private JButton cancelButton;

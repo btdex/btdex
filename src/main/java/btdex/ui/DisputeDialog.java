@@ -47,26 +47,26 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 	private static final String BUTTON_TEXT = "[B]";
 	public static final String HTML_STYLE = "<style>body{font: Dialog, Arial, sans-serif;}</style>";
 
-	Market market;
+	private Market market;
 
-	JTextField amountField, priceField, totalField;
-	JSlider security;
-	JSlider yourAmountYouSlider, yourAmountOtherSlider;
-	JSlider otherAmountYouSlider, otherAmountOtherSlider;
-	Desc yourAmountYouDesc, yourAmountOtherDesc;
-	Desc otherAmountYouDesc, otherAmountOtherDesc;
-	long amount, amountToCreator, amountToTaker;
-	long suggestToYou, suggestToOther;
+	private JTextField amountField, priceField, totalField;
+	private JSlider security;
+	private JSlider yourAmountYouSlider, yourAmountOtherSlider;
+	private JSlider otherAmountYouSlider, otherAmountOtherSlider;
+	private Desc yourAmountYouDesc, yourAmountOtherDesc;
+	private Desc otherAmountYouDesc, otherAmountOtherDesc;
+	private long amount, amountToCreator, amountToTaker;
+	private long suggestToYou, suggestToOther;
 
-	ClipboardAndQRButton addressButton;
+	private ClipboardAndQRButton addressButton;
 
-	ContractState contract;
+	private ContractState contract;
 
-	JTextPane conditions;
-	JCheckBox acceptBox;
-	JCheckBox acceptOtherTermsBox;
+	private JTextPane conditions;
+	private JCheckBox acceptBox;
+	private JCheckBox acceptOtherTermsBox;
 
-	JPasswordField pinField;
+	private JPasswordField pinField;
 
 	private JButton okButton;
 	private JButton cancelButton;

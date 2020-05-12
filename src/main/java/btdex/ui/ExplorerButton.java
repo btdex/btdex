@@ -22,8 +22,8 @@ public class ExplorerButton extends JPanel {
 	public static final int TYPE_ADDRESS = 0;
 	public static final int TYPE_TRANSACTION = 1;
 	
-	JButton mainButton;
-	JButton explorerButton;
+	private JButton mainButton;
+	private JButton explorerButton;
 
 	public ExplorerButton(String text, Icon icon, Icon icon2) {
 		this(text, icon, icon2, null);

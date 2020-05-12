@@ -37,10 +37,10 @@ public class TransactionsPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
-	JTable table;
-	JLabel statusLabel;
-	DefaultTableModel model;
-	Icon copyIcon, expIcon;
+	private JTable table;
+	private JLabel statusLabel;
+	private DefaultTableModel model;
+	private Icon copyIcon, expIcon;
 
 	public static final int COL_ID = 0;
 	public static final int COL_TIME = 1;

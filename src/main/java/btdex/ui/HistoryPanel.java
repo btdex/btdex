@@ -47,11 +47,11 @@ public class HistoryPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
-	JTable table;
-	DefaultTableModel model;
-	Icon copyIcon, expIcon, upIcon, downIcon;
-	JCheckBox listOnlyMine;
-	JLabel lastPrice;
+	private JTable table;
+	private DefaultTableModel model;
+	private Icon copyIcon, expIcon, upIcon, downIcon;
+	private JCheckBox listOnlyMine;
+	private JLabel lastPrice;
 	private OrderBook book;
 	
 	private JToggleButton timeButtons[];
@@ -61,7 +61,7 @@ public class HistoryPanel extends JPanel {
 	public static final Color RED = Color.decode("#BE474A");
 	public static final Color GREEN = Color.decode("#29BF76");
 
-	Market market = null, newMarket;
+	private Market market = null, newMarket;
 
 	private JFreeChart chart;
 

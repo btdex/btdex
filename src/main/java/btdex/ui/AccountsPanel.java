@@ -39,8 +39,8 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 
 	private static final long serialVersionUID = 1L;
 
-	JTable table;
-	DefaultTableModel model;
+	private JTable table;
+	private DefaultTableModel model;
 	
 	private Market market;
 

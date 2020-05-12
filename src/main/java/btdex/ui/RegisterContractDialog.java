@@ -40,12 +40,12 @@ import io.reactivex.Single;
 public class RegisterContractDialog extends JDialog implements ActionListener, ChangeListener {
 	private static final long serialVersionUID = 1L;
 
-	JTextPane conditions;
-	JCheckBox acceptBox;
+	private JTextPane conditions;
+	private JCheckBox acceptBox;
 
-	JSpinner numOfContractsSpinner;
+	private JSpinner numOfContractsSpinner;
 
-	JPasswordField pin;
+	private JPasswordField pin;
 
 	private JButton okButton;
 	private JButton cancelButton;

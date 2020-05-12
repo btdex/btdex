@@ -62,7 +62,7 @@ public class ClipboardAndQRButton extends JPanel {
 		});
 	}
 	
-	public int getIntFromColor(Color c){
+	private int getIntFromColor(Color c){
 	    int red = (c.getRed() << 16) & 0x00FF0000; //Shift red 16-bits and mask out other stuff
 	    int green = (c.getGreen() << 8) & 0x0000FF00; //Shift Green 8-bits and mask out other stuff
 	    int blue = c.getBlue() & 0x000000FF; //Mask out anything not blue.

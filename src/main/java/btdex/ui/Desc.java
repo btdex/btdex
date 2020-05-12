@@ -9,7 +9,7 @@ import javax.swing.JPanel;
 public class Desc extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
-	JLabel label;
+	private JLabel label;
 
 	public Desc(String desc, Component child) {
 		this(desc, child, null);

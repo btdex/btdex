@@ -31,14 +31,14 @@ import io.reactivex.Single;
 public class CancelOrderDialog extends JDialog implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
-	Market market;
-	AssetOrder order;
-	ContractState state;
+	private Market market;
+	private AssetOrder order;
+	private ContractState state;
 
-	JTextPane conditions;
-	JCheckBox acceptBox;
+	private JTextPane conditions;
+	private JCheckBox acceptBox;
 
-	JPasswordField pin;
+	private JPasswordField pin;
 
 	private JButton okButton;
 	private JButton calcelButton;

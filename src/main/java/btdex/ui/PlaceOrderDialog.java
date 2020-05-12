@@ -51,20 +51,20 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	private static final String BUTTON_TEXT = "[B]";
 	public static final String HTML_STYLE = "<style>body {font: Dialog, Arial, sans-serif;} </style>";
 
-	Market market;
+	private Market market;
 
-	JComboBox<MarketAccount> accountComboBox;
-	JTextField accountDetails;
-	JTextField amountField, priceField, totalField;
-	JSlider security;
-	ClipboardAndQRButton addressButton;
+	private JComboBox<MarketAccount> accountComboBox;
+	private JTextField accountDetails;
+	private JTextField amountField, priceField, totalField;
+	private JSlider security;
+	private ClipboardAndQRButton addressButton;
 
-	ContractState contract;
+	private ContractState contract;
 
-	JTextPane conditions;
-	JCheckBox acceptBox;
+	private JTextPane conditions;
+	private JCheckBox acceptBox;
 
-	JPasswordField pinField;
+	private JPasswordField pinField;
 
 	private JButton okButton;
 	private JButton cancelButton;
@@ -519,10 +519,10 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		priceValue = null;
 
 		MarketAccount account = isTake && !isBuy ? market.parseAccount(contract.getMarketAccount()) : (MarketAccount) accountComboBox.getSelectedItem();
-		
+
 		if(priceField.getText().length()==0 || amountField.getText().length()==0)
 			return;
-		
+
 		if(account != null && account.getFields().get(MarketCrypto.ADDRESS) != null)
 			addressButton.setURI(account.getFields().get(MarketCrypto.ADDRESS));
 
