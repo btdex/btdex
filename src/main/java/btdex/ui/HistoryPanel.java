@@ -133,10 +133,10 @@ public class HistoryPanel extends JPanel {
 
 		setMarket(market);
 
-		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
-		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
-		upIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_UP, 18, Constants.GREEN);
-		downIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_DOWN, 18, Constants.RED);
+		copyIcon = IconFontSwing.buildIcon(Icons.COPY, 12, table.getForeground());
+		expIcon = IconFontSwing.buildIcon(Icons.EXPLORER, 12, table.getForeground());
+		upIcon = IconFontSwing.buildIcon(Icons.ARROW_UP, 18, Constants.GREEN);
+		downIcon = IconFontSwing.buildIcon(Icons.ARROW_DOWN, 18, Constants.RED);
 		
 		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		top.add(topRight, BorderLayout.LINE_END);

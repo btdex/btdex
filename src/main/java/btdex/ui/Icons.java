@@ -38,6 +38,8 @@ public class Icons {
     public static IconCode SPINNER = FontAwesome.SPINNER;
     public static IconCode EDIT = FontAwesome.PENCIL;
     public static IconCode WITHDRAW = FontAwesome.RECYCLE;
+    public static IconCode ARROW_UP = FontAwesome.ARROW_UP;
+    public static IconCode ARROW_DOWN = FontAwesome.ARROW_DOWN;
 
     public static IconCode FACEBOOK = FontAwesomeBrands.FACEBOOK;
     public static IconCode INSTAGRAM = FontAwesomeBrands.INSTAGRAM;
