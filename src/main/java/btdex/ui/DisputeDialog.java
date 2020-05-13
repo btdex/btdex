@@ -379,17 +379,17 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		if(isBuy) {
 			header(tr(isCreator ? "disp_orig_buy_creator" : "disp_orig_buy_taker",
 					totalField.getText(), market,
-					HistoryPanel.DATE_FORMAT.format(deadline.getTime()),
+					Constants.DATE_FORMAT.format(deadline.getTime()),
 					contract.getMarketAccount(),
-					HistoryPanel.DATE_FORMAT.format(deadline2.getTime())
+					Constants.DATE_FORMAT.format(deadline2.getTime())
 					));
 		}
 		else {
 			header(tr(isCreator ? "disp_orig_sell_creator" : "disp_orig_sell_taker",
 					totalField.getText(), market,
-					HistoryPanel.DATE_FORMAT.format(deadline.getTime()),
+					Constants.DATE_FORMAT.format(deadline.getTime()),
 					contract.getMarketAccount(),
-					HistoryPanel.DATE_FORMAT.format(deadline2.getTime())
+					Constants.DATE_FORMAT.format(deadline2.getTime())
 					));
 		}
 		append(tr("disp_orig_burst_deposits",

@@ -58,14 +58,9 @@ public class HistoryPanel extends JPanel {
 
 	private static final int NCANDLES = 80;
 
-	public static final Color RED = Color.decode("#BE474A");
-	public static final Color GREEN = Color.decode("#29BF76");
-
 	private Market market = null, newMarket;
 
 	private JFreeChart chart;
-
-	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss yyyy-MM-dd");
 
 	public static final int COL_PRICE = 0;
 	public static final int COL_AMOUNT = 1;
@@ -140,8 +135,8 @@ public class HistoryPanel extends JPanel {
 
 		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
 		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
-		upIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_UP, 18, HistoryPanel.GREEN);
-		downIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_DOWN, 18, HistoryPanel.RED);
+		upIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_UP, 18, Constants.GREEN);
+		downIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_DOWN, 18, Constants.RED);
 		
 		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		top.add(topRight, BorderLayout.LINE_END);
@@ -193,8 +188,8 @@ public class HistoryPanel extends JPanel {
 		chart.getXYPlot().getDomainAxis().setTickLabelPaint(table.getForeground());
 		chart.getXYPlot().getDomainAxis().setLabelPaint(table.getForeground());
 		CandlestickRenderer r = (CandlestickRenderer) chart.getXYPlot().getRenderer();
-		r.setDownPaint(RED);
-		r.setUpPaint(GREEN);
+		r.setDownPaint(Constants.RED);
+		r.setUpPaint(Constants.GREEN);
 		r.setSeriesPaint(0, table.getForeground());
 
 		JScrollPane scrollPane = new JScrollPane(table);
@@ -270,7 +265,7 @@ public class HistoryPanel extends JPanel {
 			String priceLabel = NumberFormatting.BURST.format(lastTrade.getPrice().longValue()*market.getFactor()) + " BURST";
 			lastPrice.setText(priceLabel);
 			lastPrice.setIcon(lastIsUp ? upIcon : downIcon);
-			lastPrice.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
+			lastPrice.setForeground(lastIsUp ? Constants.GREEN : Constants.RED);
 			book.setLastPrice(lastPrice.getText(), lastPrice.getIcon(), lastPrice.getForeground());
 		}
 		else {
@@ -322,7 +317,7 @@ public class HistoryPanel extends JPanel {
 
 			model.setValueAt(NumberFormatting.BURST.format(price*market.getFactor()), row, COL_PRICE);
 			model.setValueAt(market.format(amount), row, COL_AMOUNT);
-			model.setValueAt(DATE_FORMAT.format(tr.getTimestamp().getAsDate()), row, COL_TIME);
+			model.setValueAt(Constants.DATE_FORMAT.format(tr.getTimestamp().getAsDate()), row, COL_TIME);
 
 			row++;
 		}
@@ -419,7 +414,7 @@ public class HistoryPanel extends JPanel {
 			String priceLabel = market.getNumberFormat().format(lastTrade.getRate()) + " " + market;
 			lastPrice.setText(priceLabel);
 			lastPrice.setIcon(lastIsUp ? upIcon : downIcon);
-			lastPrice.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
+			lastPrice.setForeground(lastIsUp ? Constants.GREEN : Constants.RED);
 			book.setLastPrice(lastPrice.getText(), lastPrice.getIcon(), lastPrice.getForeground());
 		}
 		else {
@@ -465,7 +460,7 @@ public class HistoryPanel extends JPanel {
 
 			model.setValueAt(market.getNumberFormat().format(price), row, COL_PRICE);
 			model.setValueAt(NumberFormatting.BURST.format(amount), row, COL_AMOUNT);
-			model.setValueAt(DATE_FORMAT.format(tr.getTimestamp().getAsDate()), row, COL_TIME);
+			model.setValueAt(Constants.DATE_FORMAT.format(tr.getTimestamp().getAsDate()), row, COL_TIME);
 
 			row++;
 		}

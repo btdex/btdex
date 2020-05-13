@@ -4,6 +4,9 @@ import com.google.gson.Gson;
 
 import okhttp3.MediaType;
 
+import java.awt.*;
+import java.text.SimpleDateFormat;
+
 public class Constants {
     public static final String NODE_LOCALHOST = "http://localhost:8125";
     public static final String NODE_TESTNET2 = "https://testnet-2.burst-alliance.org:6876";
@@ -58,5 +61,10 @@ public class Constants {
     public static final int ICON_SIZE = 24;
 
     public static final int UI_UPDATE_INTERVAL = 10000;
+
+    public static final Color RED = Color.decode("#BE474A");
+    public static final Color GREEN = Color.decode("#29BF76");
+
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss yyyy-MM-dd");
 
 }

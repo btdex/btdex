@@ -576,11 +576,11 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 							contract.getMarketAccount() + BUTTON_TEXT));
 					append(tr("offer_terms_signaling_details",
 							amountField.getText(), contract.getSecurity(),
-							HistoryPanel.DATE_FORMAT.format(deadline.getTime()),
+							Constants.DATE_FORMAT.format(deadline.getTime()),
 							NumberFormatting.BURST.format(suggestedFee.longValue() +
 									contract.getActivationFee()),
 							market,
-							HistoryPanel.DATE_FORMAT.format(deadline2.getTime())
+							Constants.DATE_FORMAT.format(deadline2.getTime())
 							));
 				}
 				else {
@@ -591,7 +591,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					    deadline.add(Calendar.HOUR_OF_DAY, 24);
 						header(tr("offer_terms_buy_deposit",
 								totalField.getText(), market,
-								HistoryPanel.DATE_FORMAT.format(deadline.getTime()),
+								Constants.DATE_FORMAT.format(deadline.getTime()),
 								contract.getMarketAccount() + BUTTON_TEXT));
 					}
 					else {
@@ -600,7 +600,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					    deadline.add(Calendar.HOUR_OF_DAY, market.getPaymentTimeout(account.getFields()));
 						header(tr("offer_terms_need_transfer",
 								totalField.getText(), market,
-								HistoryPanel.DATE_FORMAT.format(deadline.getTime()),
+								Constants.DATE_FORMAT.format(deadline.getTime()),
 								contract.getMarketAccount() + BUTTON_TEXT));
 					}
 					append(tr("offer_terms_need_transfer_details",

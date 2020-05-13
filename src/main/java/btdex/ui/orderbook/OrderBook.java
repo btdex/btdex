@@ -62,25 +62,83 @@ public class OrderBook extends JPanel {
 	private Market market = null, newMarket;
 
 	private JScrollPane scrollPaneBid;
-
 	private JScrollPane scrollPaneAsk;
 
 	public static final ButtonCellRenderer BUTTON_RENDERER = new ButtonCellRenderer();
-
 	public static final ButtonCellEditor BUTTON_EDITOR = new ButtonCellEditor();
+
 	public OrderBook(Main main, Market m) {
 		super(new BorderLayout());
 
-		listOnlyMine = new JCheckBox(tr("book_mine_only"));
-		listOnlyMine.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				main.update();
-			}
-		});
-
 		market = m;
 
+		createTableAskAndBid();
+		createIcons();
+		add(createTopPanel(main), BorderLayout.PAGE_START);
+
+		JPanel tablesPanel = new JPanel(new GridLayout(OrderBookSettings.GRID_ROWS,OrderBookSettings.GRID_COLUMNS));
+		tablesPanel.add(scrollPaneBid);
+		tablesPanel.add(scrollPaneAsk);
+		add(tablesPanel, BorderLayout.CENTER);
+
+		market = null;
+		setMarket(m);
+	}
+
+	private JPanel createTopPanel(Main main) {
+		JPanel top = new JPanel(new BorderLayout());
+		JPanel topLeft = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		top.add(topLeft, BorderLayout.LINE_START);
+		topLeft.add(lastPrice = new JLabel());
+		lastPrice.setToolTipText(tr("book_last_price"));
+		topLeft.add(createBuyButton());
+		topLeft.add(createSellButton());
+		topLeft.add(createCheckBoxMineOnly(main));
+
+		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		top.add(topRight, BorderLayout.LINE_END);
+		topRight.add(new SocialButton(SocialButton.Type.TWITTER, tableBid.getForeground()));
+//		topRight.add(new SocialButton(SocialButton.Type.INSTAGRAM, table.getForeground()));
+//		topRight.add(new SocialButton(SocialButton.Type.FACEBOOK, table.getForeground()));
+//		topRight.add(new SocialButton(SocialButton.Type.GOOGLE_PLUS, table.getForeground()));
+
+		return top;
+	}
+
+	private JButton createSellButton() {
+		sellButton = new JButton();
+		sellButton.setBackground(Constants.RED);
+		sellButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
+				JDialog dlg = market.getTokenID()!= null ? new PlaceTokenOrderDialog(f, market, firstBid)
+						: new PlaceOrderDialog(f, market, null, false);
+
+				dlg.setLocationRelativeTo(OrderBook.this);
+				dlg.setVisible(true);
+			}
+		});
+		return sellButton;
+	}
+
+	private JButton createBuyButton() {
+		buyButton = new JButton();
+		buyButton.setBackground(Constants.GREEN); //todo
+		buyButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
+				JDialog dlg = market.getTokenID()!= null ? new PlaceTokenOrderDialog(f, market, firstAsk):
+						new PlaceOrderDialog(f, market, null, true);
+				dlg.setLocationRelativeTo(OrderBook.this);
+				dlg.setVisible(true);
+			}
+		});
+		return buyButton;
+	}
+
+	private void createTableAskAndBid() {
 		tableBid = new MyTable(modelBid = new MyTableModel(this, OrderBookSettings.BID_COLS), OrderBookSettings.BID_COLS);
 		tableAsk = new MyTable(modelAsk = new MyTableModel(this, OrderBookSettings.ASK_COLS), OrderBookSettings.ASK_COLS);
 		ROW_HEIGHT = tableBid.getRowHeight()+10;
@@ -90,15 +148,6 @@ public class OrderBook extends JPanel {
 		tableAsk.setRowSelectionAllowed(false);
 		tableBid.getTableHeader().setReorderingAllowed(false);
 		tableAsk.getTableHeader().setReorderingAllowed(false);
-
-		Icons ics = new Icons(tableBid.getForeground(), 12);
-		copyIcon = ics.get(Icons.COPY);
-		expIcon = ics.get(Icons.EXPLORER);
-		cancelIcon = ics.get(Icons.CANCEL);
-		pendingIcon = ics.get(Icons.SPINNER);
-		pendingIconRotating = new RotatingIcon(pendingIcon);
-		editIcon = ics.get(Icons.EDIT);
-		withdrawIcon = ics.get(Icons.WITHDRAW);
 
 		scrollPaneBid = new JScrollPane(tableBid);
 		tableBid.setFillsViewportHeight(true);
@@ -128,56 +177,28 @@ public class OrderBook extends JPanel {
 
 		tableBid.getColumnModel().getColumn(OrderBookSettings.BID_COLS[OrderBookSettings.COL_CONTRACT]).setPreferredWidth(OrderBookSettings.COL_WIDE);
 		tableAsk.getColumnModel().getColumn(OrderBookSettings.ASK_COLS[OrderBookSettings.COL_CONTRACT]).setPreferredWidth(OrderBookSettings.COL_WIDE);
+	}
 
-		JPanel top = new JPanel(new BorderLayout());
-		JPanel topLeft = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		top.add(topLeft, BorderLayout.LINE_START);
-		topLeft.add(lastPrice = new JLabel());
-		lastPrice.setToolTipText(tr("book_last_price"));
-		topLeft.add(buyButton = new JButton());
-		topLeft.add(sellButton = new JButton());
-		topLeft.add(listOnlyMine);
+	private void createIcons() {
+		Icons ics = new Icons(tableBid.getForeground(), OrderBookSettings.ICONS_SIZE);
+		copyIcon = ics.get(Icons.COPY);
+		expIcon = ics.get(Icons.EXPLORER);
+		cancelIcon = ics.get(Icons.CANCEL);
+		pendingIcon = ics.get(Icons.SPINNER);
+		pendingIconRotating = new RotatingIcon(pendingIcon);
+		editIcon = ics.get(Icons.EDIT);
+		withdrawIcon = ics.get(Icons.WITHDRAW);
+	}
 
-		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-		top.add(topRight, BorderLayout.LINE_END);
-		topRight.add(new SocialButton(SocialButton.Type.TWITTER, tableBid.getForeground()));
-//		topRight.add(new SocialButton(SocialButton.Type.INSTAGRAM, table.getForeground()));
-//		topRight.add(new SocialButton(SocialButton.Type.FACEBOOK, table.getForeground()));
-//		topRight.add(new SocialButton(SocialButton.Type.GOOGLE_PLUS, table.getForeground()));
-
-		buyButton.setBackground(HistoryPanel.GREEN);
-		sellButton.setBackground(HistoryPanel.RED);
-		buyButton.addActionListener(new ActionListener() {
+	private JCheckBox createCheckBoxMineOnly(Main main) {
+		listOnlyMine = new JCheckBox(tr("book_mine_only"));
+		listOnlyMine.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
-				JDialog dlg = market.getTokenID()!= null ? new PlaceTokenOrderDialog(f, market, firstAsk):
-						new PlaceOrderDialog(f, market, null, true);
-				dlg.setLocationRelativeTo(OrderBook.this);
-				dlg.setVisible(true);
+				main.update();
 			}
 		});
-		sellButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
-				JDialog dlg = market.getTokenID()!= null ? new PlaceTokenOrderDialog(f, market, firstBid)
-						: new PlaceOrderDialog(f, market, null, false);
-
-				dlg.setLocationRelativeTo(OrderBook.this);
-				dlg.setVisible(true);
-			}
-		});
-
-		add(top, BorderLayout.PAGE_START);
-
-		JPanel tablesPanel = new JPanel(new GridLayout(0,2));
-		tablesPanel.add(scrollPaneBid);
-		tablesPanel.add(scrollPaneAsk);
-		add(tablesPanel, BorderLayout.CENTER);
-
-		market = null;
-		setMarket(m);
+		return listOnlyMine;
 	}
 
 	public void setMarket(Market m) {
@@ -364,7 +385,7 @@ public class OrderBook extends JPanel {
 				b.setIcon(pendingIconRotating);
 				pendingIconRotating.addCell(model, row, cols[OrderBookSettings.COL_PRICE]);
 			}
-			b.setBackground(o.getType() == AssetOrder.OrderType.ASK ? HistoryPanel.RED : HistoryPanel.GREEN);
+			b.setBackground(o.getType() == AssetOrder.OrderType.ASK ? Constants.RED : Constants.GREEN);
 			model.setValueAt(b, row, cols[OrderBookSettings.COL_PRICE]);
 
 			model.setValueAt(market.format(amountToken), row, cols[OrderBookSettings.COL_SIZE]);
@@ -485,7 +506,7 @@ public class OrderBook extends JPanel {
 			}
 			b.setText(priceFormated);
 			b.setIcon(icon);
-			b.setBackground(s.getType() == ContractType.BUY ? HistoryPanel.GREEN : HistoryPanel.RED);
+			b.setBackground(s.getType() == ContractType.BUY ? Constants.GREEN : Constants.RED);
 			model.setValueAt(b, row, cols[OrderBookSettings.COL_PRICE]);
 
 			if(s.getSecurityNQT() > 0 && s.getAmountNQT() > 0 && s.getRate() > 0) {

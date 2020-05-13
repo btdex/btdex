@@ -286,7 +286,7 @@ public class TransactionsPanel extends JPanel {
 			model.setValueAt(amountFormatted, row, COL_AMOUNT);
 			model.setValueAt(tx.getFee().toUnformattedString(), row, COL_FEE);
 			model.setValueAt(type, row, COL_TYPE);
-			model.setValueAt(HistoryPanel.DATE_FORMAT.format(tx.getTimestamp().getAsDate()), row, COL_TIME);
+			model.setValueAt(Constants.DATE_FORMAT.format(tx.getTimestamp().getAsDate()), row, COL_TIME);
 		}
 	}
 }
