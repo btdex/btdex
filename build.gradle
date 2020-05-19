@@ -52,6 +52,8 @@ dependencies {
     implementation 'io.github.monero-ecosystem:monero-java:0.2.1'
 
     implementation 'fr.marcwrobel:jbanking:1.0'
+    
+    implementation 'com.github.aionnetwork:ledger4j:40c4ad3bbb'
 
     // Use JUnit test framework
     testImplementation("org.junit.platform:junit-platform-engine:1.6.1")

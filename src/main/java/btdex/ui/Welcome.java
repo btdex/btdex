@@ -1,6 +1,7 @@
 package btdex.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -23,9 +24,13 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
+import org.aion.ledger.LedgerDevice;
+import org.aion.ledger.LedgerUtilities;
+import org.bouncycastle.util.encoders.Hex;
+
+import btdex.core.BurstLedger;
 import btdex.core.Globals;
 import static btdex.locale.Translation.tr;
-import burst.kit.entity.BurstAddress;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
 import io.github.novacrypto.bip39.wordlists.English;
@@ -44,6 +49,7 @@ public class Welcome extends JDialog implements ActionListener {
 
 	private JButton okButton;
 	private JButton calcelButton;
+	private JButton useLedgerButton;
 	private boolean resetPin;
 
 	private int ret;
@@ -66,11 +72,18 @@ public class Welcome extends JDialog implements ActionListener {
 		JPanel panel = new JPanel(new GridLayout(0, 2, 4, 4));
 
 		if(!resetPin) {
-			String intro = "<html><h2>" + tr("welc_intro_header") + "</h2>" +
-					tr("welc_intro_text") + "<br><br>" +
-					tr("welc_intro_pin");
+			JPanel introPanel = new JPanel(new BorderLayout());
+			String title = "<html><h2>" + tr("welc_intro_header") + "</h2>";
+			introPanel.add(new JLabel(title), BorderLayout.PAGE_START);
+			String intro = "<html>" + tr("welc_intro_text") + "<br><br>" + tr("welc_intro_pin");
 			introText = new JLabel(intro);
-			introText.setPreferredSize(new Dimension(60, 180));
+			introText.setPreferredSize(new Dimension(60, 120));
+			introPanel.add(introText, BorderLayout.PAGE_END);
+			
+			useLedgerButton = new JButton(tr("welc_use_ledger"));
+			useLedgerButton.addActionListener(this);
+			introPanel.add(useLedgerButton, BorderLayout.CENTER);
+			topPanel.add(introPanel, BorderLayout.CENTER);
 		}
 
 		passphrase = new JTextArea(2, 40);
@@ -80,9 +93,6 @@ public class Welcome extends JDialog implements ActionListener {
 
 		pin = new JPasswordField(12);
 		pinCheck = new JPasswordField(12);
-
-		if(introText!=null)
-			topPanel.add(introText, BorderLayout.PAGE_START);
 
 		acceptBox = new JCheckBox(tr("welc_wrote"));
 		recoverBox = new JCheckBox(tr("welc_reuse"));
@@ -97,13 +107,14 @@ public class Welcome extends JDialog implements ActionListener {
 		recoveryPanel.add(passphrase, BorderLayout.CENTER);
 		recoveryPanel.add(acceptBox, BorderLayout.PAGE_END);
 
-		topPanel.add(recoveryPanel, BorderLayout.CENTER);
+		topPanel.add(recoveryPanel, BorderLayout.PAGE_END);
 
 		// Create a button
 		JPanel buttonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
 		calcelButton = new JButton(tr("dlg_cancel"));
 		okButton = new JButton(tr("dlg_ok"));
+		getRootPane().setDefaultButton(okButton);
 
 		calcelButton.addActionListener(this);
 		okButton.addActionListener(this);
@@ -166,6 +177,43 @@ public class Welcome extends JDialog implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		if(e.getSource() == useLedgerButton) {
+			String error = null;
+			try {
+				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+				// Check for the Burst app
+				if(!BurstLedger.isAppAvailable()) {
+					// magic number do not match
+					error = tr("ledger_error");
+				}
+				
+				// TODO: think about asking the user which index should be used
+				int index = 1;
+				
+				if(error == null) {
+					// get the public key
+					byte[] pubKey = BurstLedger.getPublicKey((byte)index);
+					if(pubKey != null) {
+						Globals.getInstance().setKeys(pubKey, index);
+						Globals.getInstance().saveConfs();
+						
+						// all good
+						ret = 1;
+						setVisible(false);
+					}
+					else
+						error = tr("ledger_error");
+				}
+				
+			} catch (Exception e1) {
+				error = tr("ledger_error");
+				e1.printStackTrace();
+			}
+			setCursor(Cursor.getDefaultCursor());
+			if(error != null)
+				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(useLedgerButton);
+		}
 		if(e.getSource() == recoverBox) {
 			if(recoverBox.isSelected()) {
 				passphrase.setText("");

@@ -419,6 +419,7 @@ public class Main extends JFrame implements ActionListener {
 				welcome.setVisible(true);
 			}
 		});
+		resetPinButton.setVisible(!Globals.getInstance().usingLedger());
 		return resetPinButton;
 	}
 

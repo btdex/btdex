@@ -33,6 +33,7 @@ public class Globals {
 
 	private boolean testnet = false;
 	private BurstAddress address;
+	private int ledgerIndex;
 	
 	private Mediators mediators;
 
@@ -64,6 +65,9 @@ public class Globals {
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
 			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET2 : BT.NODE_BURSTCOIN_RO));
 			BT.activateCIP20(true);
+			
+			// possible ledger account index
+			ledgerIndex = Integer.parseInt(conf.getProperty(Constants.PROP_LEDGER, "-1"));
 
 			// load the markets
 			Markets.loadStandardMarkets(testnet, NS);
@@ -78,6 +82,14 @@ public class Globals {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public boolean usingLedger() {
+		return ledgerIndex >= 0;
+	}
+	
+	public int getLedgerIndex() {
+		return ledgerIndex;
 	}
 	
 	public Mediators getMediators() {
@@ -115,6 +127,18 @@ public class Globals {
 		f.delete();
 	}
 
+	/**
+	 * Set the public key and index of a ledger device
+	 * @param pubKey
+	 * @param index
+	 */
+	public void setKeys(byte []pubKey, int index) {
+		conf.setProperty(Constants.PROP_PUBKEY, Globals.BC.toHexString(pubKey));
+		conf.setProperty(Constants.PROP_LEDGER, Integer.toString(index));		
+
+		address = BC.getBurstAddressFromPublic(pubKey);
+	}
+	
 	public void setKeys(byte []pubKey, byte []privKey, char []pin) throws Exception {
 		byte[] pinKey = BC.getSha256().digest(new String(pin).getBytes("UTF-8"));
 		byte[] encPrivKey = Globals.BC.aesEncrypt(privKey, pinKey);
@@ -142,6 +166,13 @@ public class Globals {
 		}
 	}
 
+	/**
+	 * Signs a transaction using the user PIN (not by hardware wallet device)
+	 * @param pin
+	 * @param unsigned
+	 * @return
+	 * @throws Exception
+	 */
 	public byte[] signTransaction(char []pin, byte[]unsigned) throws Exception {
 		byte[] pinKey = BC.getSha256().digest(new String(pin).getBytes("UTF-8"));
 		String encPrivKey = conf.getProperty(Constants.PROP_ENC_PRIVKEY);

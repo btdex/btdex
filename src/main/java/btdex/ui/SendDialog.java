@@ -1,5 +1,7 @@
 package btdex.ui;
 
+import static btdex.locale.Translation.tr;
+
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
@@ -25,7 +27,7 @@ import btdex.core.Constants;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
-import static btdex.locale.Translation.tr;
+import btdex.ui.LedgerSigner.CallBack;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
@@ -33,12 +35,14 @@ import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
-public class SendDialog extends JDialog implements ActionListener {
+public class SendDialog extends JDialog implements ActionListener, CallBack {
 	private static final long serialVersionUID = 1L;
 
 	private JTextField recipient;
 	private JTextField message;
 	private JTextField amount;
+	private JTextField ledgerStatus;
+	private byte[] unsigned;
 	private JPasswordField pin;
 	private JSlider fee;
 	private BurstValue selectedFee;
@@ -113,7 +117,14 @@ public class SendDialog extends JDialog implements ActionListener {
 		calcelButton.addActionListener(this);
 		okButton.addActionListener(this);
 
-		buttonPane.add(new Desc(tr("dlg_pin"), pin));
+		if(Globals.getInstance().usingLedger()) {
+			ledgerStatus = new JTextField(20);
+			ledgerStatus.setEditable(false);
+			buttonPane.add(new Desc(tr("ledger_status"), ledgerStatus));
+			LedgerSigner.getInstance().setCallBack(this);
+		}
+		else
+			buttonPane.add(new Desc(tr("dlg_pin"), pin));
 		buttonPane.add(new Desc(" ", calcelButton));
 		buttonPane.add(new Desc(" ", okButton));
 
@@ -152,7 +163,7 @@ public class SendDialog extends JDialog implements ActionListener {
 			if(recID == null)
 				error = tr("send_invalid_recipient");
 
-			if(error == null && !g.checkPIN(pin.getPassword())) {
+			if(error == null && !g.usingLedger() && !g.checkPIN(pin.getPassword())) {
 				error = tr("dlg_invalid_pin");
 				pin.requestFocus();
 			}
@@ -190,16 +201,22 @@ public class SendDialog extends JDialog implements ActionListener {
 							BurstValue.fromBurst(amountNumber.doubleValue()),
 							selectedFee, Constants.BURST_DEADLINE, msg);
 					}
-
-					Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
-								byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
-								return g.getNS().broadcastTransaction(signedTransactionBytes);
-							});
-					TransactionBroadcast tb = tx.blockingGet();
-					setVisible(false);
-
-					Toast.makeText((JFrame) this.getOwner(),
-							tr("send_tx_broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
+					
+					unsigned = utx.blockingGet();
+					if(g.usingLedger()) {
+						LedgerSigner.getInstance().requestSign(unsigned, g.getLedgerIndex());
+						okButton.setEnabled(false);
+						recipient.setEnabled(false);
+						message.setEnabled(false);
+						amount.setEnabled(false);
+						fee.setEnabled(false);
+						
+						Toast.makeText((JFrame) this.getOwner(), tr("ledger_authorize"), Toast.Style.NORMAL).display(okButton);
+						
+						return;
+					}
+					byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsigned);
+					reportSigned(signedTransactionBytes);
 				}
 				catch (Exception ex) {
 					Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
@@ -207,5 +224,35 @@ public class SendDialog extends JDialog implements ActionListener {
 				setCursor(Cursor.getDefaultCursor());
 			}
 		}
+	}
+
+	@Override
+	public void ledgerStatus(String txt) {
+		ledgerStatus.setText(txt);
+	}
+
+	@Override
+	public void reportSigned(byte[] signed) {
+		if(!isVisible())
+			return; // already closed by cancel, so we will not broadcast anyway
+		
+		if(signed == null) {
+			okButton.setEnabled(true);
+			recipient.setEnabled(true);
+			message.setEnabled(true);
+			amount.setEnabled(true);
+			fee.setEnabled(true);
+
+			setCursor(Cursor.getDefaultCursor());
+			
+			Toast.makeText((JFrame) this.getOwner(), tr("ledger_denied"), Toast.Style.ERROR).display();
+			
+			return;
+		}
+		TransactionBroadcast tb = Globals.getInstance().getNS().broadcastTransaction(signed).blockingGet();
+		setVisible(false);
+
+		Toast.makeText((JFrame) this.getOwner(),
+				tr("send_tx_broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
 	}
 }
