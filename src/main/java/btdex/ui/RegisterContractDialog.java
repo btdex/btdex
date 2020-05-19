@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
@@ -29,15 +30,16 @@ import javax.swing.event.ChangeListener;
 import bt.BT;
 import bt.compiler.Compiler;
 import btdex.core.*;
+import btdex.ledger.LedgerSigner;
+import btdex.ledger.LedgerSigner.CallBack;
 
 import static btdex.locale.Translation.tr;
 import btdex.sc.SellContract;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.TransactionBroadcast;
-import io.reactivex.Single;
 
-public class RegisterContractDialog extends JDialog implements ActionListener, ChangeListener {
+public class RegisterContractDialog extends JDialog implements ActionListener, ChangeListener, CallBack {
 	private static final long serialVersionUID = 1L;
 
 	JTextPane conditions;
@@ -46,6 +48,9 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 	JSpinner numOfContractsSpinner;
 
 	JPasswordField pin;
+	private JTextField ledgerStatus;
+	private byte[] unsigned;
+	private int nsigned, ncontracts;
 
 	private JButton okButton;
 	private JButton cancelButton;
@@ -84,7 +89,14 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 		cancelButton.addActionListener(this);
 		okButton.addActionListener(this);
 
-		buttonPane.add(new Desc(tr("dlg_pin"), pin));
+		if(Globals.getInstance().usingLedger()) {
+			ledgerStatus = new JTextField(26);
+			ledgerStatus.setEditable(false);
+			buttonPane.add(new Desc(tr("ledger_status"), ledgerStatus));
+			LedgerSigner.getInstance().setCallBack(this);
+		}
+		else
+			buttonPane.add(new Desc(tr("dlg_pin"), pin));
 		buttonPane.add(new Desc(" ", cancelButton));
 		buttonPane.add(new Desc(" ", okButton));
 
@@ -128,7 +140,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 				acceptBox.requestFocus();
 			}
 
-			if(error == null && !g.checkPIN(pin.getPassword())) {
+			if(error == null && !g.usingLedger() && !g.checkPIN(pin.getPassword())) {
 				error = tr("dlg_invalid_pin");
 				pin.requestFocus();
 			}
@@ -138,46 +150,64 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 				return;
 			}
 
-			// all set, lets register the contract
+			// all set, lets register the contracts
 			try {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-				int ncontracts = Integer.parseInt(numOfContractsSpinner.getValue().toString());
+				ncontracts = Integer.parseInt(numOfContractsSpinner.getValue().toString());
+				nsigned = 0;
 
-				for (int c = 0; c < ncontracts; c++) {
-					long data[] = Contracts.getNewContractData(g.isTestnet());
-
-					ByteBuffer dataBuffer = ByteBuffer.allocate(data==null ? 0 : data.length*8);
-					dataBuffer.order(ByteOrder.LITTLE_ENDIAN);
-					for (int i = 0; data!=null && i < data.length; i++) {
-						dataBuffer.putLong(data[i]);
-					}
-
-					byte[] creationBytes = BurstCrypto.getInstance().getATCreationBytes((short)2,
-							contract.getCode(), dataBuffer.array(), (short)contract.getDataPages(), (short)1, (short)1,
-							BurstValue.fromPlanck(SellContract.ACTIVATION_FEE));
-
-					Single<TransactionBroadcast> tx = g.getNS().generateCreateATTransaction(g.getPubKey(),
-							BT.getMinRegisteringFee(contract),
-							Constants.BURST_DEADLINE, "BTDEX", "BTDEX sell contract " + System.currentTimeMillis(), creationBytes)
-							.flatMap(unsignedTransactionBytes -> {
-								byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
-								return g.getNS().broadcastTransaction(signedTransactionBytes);
-							});
-
-					TransactionBroadcast tb = tx.blockingGet();
-					tb.getTransactionId();
-					setVisible(false);
-
-					Toast.makeText((JFrame) this.getOwner(),
-							tr("send_tx_broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();	
-				}
+				requestSign();
 			}
 			catch (Exception ex) {
 				Toast.makeText((JFrame) this.getOwner(), ex.getMessage(), Toast.Style.ERROR).display(okButton);
 			}
 			setCursor(Cursor.getDefaultCursor());
 		}
+	}
+	
+	private void requestSign() {
+		if(nsigned == ncontracts) {
+			setVisible(false);
+			return;
+		}
+		
+		Globals g = Globals.getInstance();
+		
+		long data[] = Contracts.getNewContractData(g.isTestnet());
+
+		ByteBuffer dataBuffer = ByteBuffer.allocate(data==null ? 0 : data.length*8);
+		dataBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		for (int i = 0; data!=null && i < data.length; i++) {
+			dataBuffer.putLong(data[i]);
+		}
+
+		byte[] creationBytes = BurstCrypto.getInstance().getATCreationBytes((short)2,
+				contract.getCode(), dataBuffer.array(), (short)contract.getDataPages(), (short)1, (short)1,
+				BurstValue.fromPlanck(SellContract.ACTIVATION_FEE));
+
+		unsigned = g.getNS().generateCreateATTransaction(g.getPubKey(),
+				BT.getMinRegisteringFee(contract),
+				Constants.BURST_DEADLINE, "BTDEX", "BTDEX sell contract " + System.currentTimeMillis(), creationBytes).blockingGet();
+		
+		if(g.usingLedger()) {
+			LedgerSigner.getInstance().requestSign(unsigned, null, g.getLedgerIndex());
+			okButton.setEnabled(false);
+			
+			Toast.makeText((JFrame) this.getOwner(), tr("ledger_authorize"), Toast.Style.NORMAL).display(okButton);
+		}
+		else {
+			byte[] signedTransactionBytes;
+			try {
+				signedTransactionBytes = g.signTransaction(pin.getPassword(), unsigned);
+				reportSigned(signedTransactionBytes, null);
+			} catch (Exception e) {
+				e.printStackTrace();
+				nsigned = ncontracts;
+				return;
+			}
+		}
+		nsigned++;
 	}
 
 	@Override
@@ -191,5 +221,37 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 				tr(isBuy ? "reg_buying" : "reg_selling") ));
 		conditions.setText(terms.toString());
 		conditions.setCaretPosition(0);
+	}
+	
+	@Override
+	public void ledgerStatus(String txt) {
+		ledgerStatus.setText(txt);
+	}
+
+	@Override
+	public void reportSigned(byte[] signed, byte[] signed2) {
+		if(!isVisible())
+			return; // already closed by cancel, so we will not broadcast anyway
+		
+		if(signed == null) {
+			// when coming from the hardware wallet
+			okButton.setEnabled(true);
+			numOfContractsSpinner.setEnabled(true);
+
+			setCursor(Cursor.getDefaultCursor());
+			
+			Toast.makeText((JFrame) this.getOwner(), tr("ledger_denied"), Toast.Style.ERROR).display(okButton);
+			
+			nsigned = ncontracts;
+			
+			return;
+		}
+		
+		TransactionBroadcast tb = Globals.getInstance().getNS().broadcastTransaction(signed).blockingGet();
+		Toast.makeText((JFrame) this.getOwner(),
+				tr("send_tx_broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
+		
+		// request the next signature
+		requestSign();
 	}
 }

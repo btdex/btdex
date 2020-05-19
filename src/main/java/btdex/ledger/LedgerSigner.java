@@ -22,8 +22,10 @@ public class LedgerSigner extends TimerTask {
 	
 	private CallBack caller;
 	private byte[] unsigned;
+	private byte[] unsigned2;
 	private int index;
 	private byte[] signed;
+	private byte[] signed2;
 	
 	public interface CallBack {
 		/**
@@ -36,7 +38,7 @@ public class LedgerSigner extends TimerTask {
 		 * Got the signature or null on an exception or denied.
 		 * @param signed
 		 */
-		public void reportSigned(byte []signed);
+		public void reportSigned(byte []signed, byte []signed2);
 	}
 	
 	public static LedgerSigner getInstance() {
@@ -47,7 +49,7 @@ public class LedgerSigner extends TimerTask {
 	
 	private LedgerSigner() {
 		try {
-			// start the node updater thread
+			// start the dongle monitoring thread
 			Timer timer = new Timer("ledger status update");
 			timer.schedule(this, 0, 1000);
 		}
@@ -59,11 +61,19 @@ public class LedgerSigner extends TimerTask {
 	public void setCallBack(CallBack caller) {
 		this.caller = caller;
 	}
-	
-	public void requestSign(byte []unsigned, int index) {
+
+	/**
+	 * Request up to two signatures (second is optional) for the given account index.
+	 * 
+	 * @param unsigned
+	 * @param unsigned2
+	 * @param index
+	 */
+	public void requestSign(byte []unsigned, byte unsigned2[], int index) {
 		this.unsigned = unsigned;
+		this.unsigned2 = unsigned2;
 		this.index = index;
-		this.signed = null;
+		this.signed = this.signed2 = null;
 	}
 	
 	@Override
@@ -86,7 +96,11 @@ public class LedgerSigner extends TimerTask {
 				try {
 					signed = BurstLedger.sign(unsigned, (byte)index);
 					unsigned = null;
-					SwingUtilities.invokeLater(() -> caller.reportSigned(signed));
+					if(unsigned2 != null) {
+						signed2 = BurstLedger.sign(unsigned2, (byte)index);
+						unsigned2 = null;
+					}
+					SwingUtilities.invokeLater(() -> caller.reportSigned(signed, signed2));
 					return;
 				} catch (Exception e) {
 					e.printStackTrace();

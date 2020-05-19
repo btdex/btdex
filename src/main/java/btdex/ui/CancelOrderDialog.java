@@ -192,7 +192,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener, CallBa
 				
 				unsigned = utx.blockingGet();
 				if(g.usingLedger()) {
-					LedgerSigner.getInstance().requestSign(unsigned, g.getLedgerIndex());
+					LedgerSigner.getInstance().requestSign(unsigned, null, g.getLedgerIndex());
 					okButton.setEnabled(false);
 					
 					Toast.makeText((JFrame) this.getOwner(), tr("ledger_authorize"), Toast.Style.NORMAL).display(okButton);
@@ -200,7 +200,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener, CallBa
 					return;
 				}
 				byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsigned);
-				reportSigned(signedTransactionBytes);
+				reportSigned(signedTransactionBytes, null);
 			}
 			catch (Exception ex) {
 				ex.printStackTrace();
@@ -216,7 +216,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener, CallBa
 	}
 
 	@Override
-	public void reportSigned(byte[] signed) {
+	public void reportSigned(byte[] signed, byte[] signed2) {
 		if(!isVisible())
 			return; // already closed by cancel, so we will not broadcast anyway
 		

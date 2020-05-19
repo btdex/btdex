@@ -35,6 +35,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import btdex.core.*;
+import btdex.ledger.LedgerSigner;
+import btdex.ledger.LedgerSigner.CallBack;
+
 import com.google.gson.JsonObject;
 
 import bt.BT;
@@ -45,7 +48,7 @@ import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
-public class PlaceOrderDialog extends JDialog implements ActionListener, DocumentListener {
+public class PlaceOrderDialog extends JDialog implements ActionListener, DocumentListener, CallBack {
 	private static final long serialVersionUID = 1L;
 	
 	private static final String BUTTON_TEXT = "[B]";
@@ -64,6 +67,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	JTextPane conditions;
 	JCheckBox acceptBox;
 
+	private JTextField ledgerStatus;
+	private byte[] unsigned;
+	private byte[] unsigned2;
 	JPasswordField pinField;
 
 	private JButton okButton;
@@ -211,7 +217,14 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		disputeButton.setVisible(false);
 
 		buttonPane.add(new Desc(" ", disputeButton));
-		buttonPane.add(pinDesc = new Desc(tr("dlg_pin"), pinField));
+		if(Globals.getInstance().usingLedger()) {
+			ledgerStatus = new JTextField(26);
+			ledgerStatus.setEditable(false);
+			buttonPane.add(new Desc(tr("ledger_status"), ledgerStatus));
+			LedgerSigner.getInstance().setCallBack(this);
+		}
+		else
+			buttonPane.add(pinDesc = new Desc(tr("dlg_pin"), pinField));
 		buttonPane.add(new Desc(" ", cancelButton));
 		buttonPane.add(new Desc(" ", okButton));
 
@@ -373,7 +386,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					error = tr("offer_no_changes");
 			}
 
-			if(error == null && !g.checkPIN(pinField.getPassword())) {
+			if(error == null && !g.usingLedger() && !g.checkPIN(pinField.getPassword())) {
 				error = tr("dlg_invalid_pin");
 				pinField.requestFocus();
 			}
@@ -388,7 +401,6 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
 				Single<byte[]> utx = null;
-				Single<TransactionBroadcast> updateTx = null;
 
 				BurstValue configureFee = suggestedFee;
 				if(!isUpdate && !isTake && !isTaken) {
@@ -412,11 +424,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 							amountToSend, suggestedFee,
 							Constants.BURST_DEADLINE, message);
-
-					updateTx = utx.flatMap(unsignedTransactionBytes -> {
-						byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
-						return g.getNS().broadcastTransaction(signedTransactionBytes);
-					});
+					
+					unsigned = utx.blockingGet();
 
 					// make sure the price setting goes first setting an extra priority for it
 					configureFee = suggestedFee.add(BurstValue.fromPlanck(Constants.FEE_QUANT));
@@ -475,21 +484,23 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 							Constants.BURST_DEADLINE, messageString);
 				}					
 
-				Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
-					byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
-					return g.getNS().broadcastTransaction(signedTransactionBytes);
-				});
-				TransactionBroadcast tb = tx.blockingGet();
-				tb.getTransactionId();
-
-				// Send the update transaction only if the price setting was already sent
-				if(updateTx!=null) {
-					updateTx.blockingGet();
+				if(unsigned == null)
+					unsigned = utx.blockingGet();
+				else
+					unsigned2 = utx.blockingGet();
+				
+				if(g.usingLedger()) {
+					LedgerSigner.getInstance().requestSign(unsigned, unsigned2, g.getLedgerIndex());
+					okButton.setEnabled(false);
+					
+					Toast.makeText((JFrame) this.getOwner(), tr("ledger_authorize"), Toast.Style.NORMAL).display(okButton);
+					return;
 				}
-
-				setVisible(false);
-				Toast.makeText((JFrame) this.getOwner(),
-						tr("send_tx_broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
+				byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsigned);
+				byte[] signedTransactionBytes2 = null;
+				if(unsigned2!=null)
+					signedTransactionBytes2 = g.signTransaction(pinField.getPassword(), signedTransactionBytes2);
+				reportSigned(signedTransactionBytes, signedTransactionBytes2);
 			}
 			catch (Exception ex) {
 				ex.printStackTrace();
@@ -717,4 +728,36 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		somethingChanged();
 	}
 
+	@Override
+	public void ledgerStatus(String txt) {
+		ledgerStatus.setText(txt);
+	}
+
+	@Override
+	public void reportSigned(byte[] signed, byte[] signed2) {
+		if(!isVisible())
+			return; // already closed by cancel, so we will not broadcast anyway
+		
+		if(signed == null || (unsigned2!=null && signed2 == null)) {
+			// when coming from the hardware wallet
+			okButton.setEnabled(true);
+
+			setCursor(Cursor.getDefaultCursor());
+			
+			Toast.makeText((JFrame) this.getOwner(), tr("ledger_denied"), Toast.Style.ERROR).display(okButton);
+			
+			return;
+		}
+
+		TransactionBroadcast tb = Globals.getInstance().getNS().broadcastTransaction(signed).blockingGet();
+		String txs = tb.getTransactionId().toString();
+		if(signed2!=null) {
+			TransactionBroadcast tb2 = Globals.getInstance().getNS().broadcastTransaction(signed).blockingGet();
+			txs += ", " + tb2.getTransactionId().toString();
+		}
+		setVisible(false);
+		
+		Toast.makeText((JFrame) this.getOwner(),
+				tr("send_tx_broadcast", txs), Toast.Style.SUCCESS).display();
+	}
 }

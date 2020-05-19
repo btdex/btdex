@@ -251,7 +251,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 
 				unsigned = utx.blockingGet();
 				if(g.usingLedger()) {
-					LedgerSigner.getInstance().requestSign(unsigned, g.getLedgerIndex());
+					LedgerSigner.getInstance().requestSign(unsigned, null, g.getLedgerIndex());
 					okButton.setEnabled(false);
 					priceField.setEnabled(false);
 					amountField.setEnabled(false);
@@ -262,7 +262,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 				}
 				
 				byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsigned);
-				reportSigned(signedTransactionBytes);
+				reportSigned(signedTransactionBytes, null);
 			}
 			catch (Exception ex) {
 				ex.printStackTrace();
@@ -338,7 +338,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 	}
 
 	@Override
-	public void reportSigned(byte[] signed) {
+	public void reportSigned(byte[] signed, byte[] signed2) {
 		if(!isVisible())
 			return; // already closed by cancel, so we will not broadcast anyway
 		
