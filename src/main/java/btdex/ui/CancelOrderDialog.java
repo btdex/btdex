@@ -23,7 +23,8 @@ import javax.swing.border.EmptyBorder;
 
 import bt.BT;
 import btdex.core.*;
-import btdex.ui.LedgerSigner.CallBack;
+import btdex.ledger.LedgerSigner;
+import btdex.ledger.LedgerSigner.CallBack;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.FeeSuggestion;

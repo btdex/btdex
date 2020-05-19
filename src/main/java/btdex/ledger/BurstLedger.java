@@ -1,4 +1,4 @@
-package btdex.core;
+package btdex.ledger;
 
 import java.nio.ByteBuffer;
 
@@ -8,7 +8,8 @@ import org.aion.ledger.LedgerUtilities;
 /**
  * Wrapper class for Burstcoin App on Ledger Nano S devices.
  * 
- * All calls are blocking, so you need to work around it.
+ * All calls are blocking, so you need to work around it, for instance using
+ * the {@link LedgerSigner} class.
  *  
  * @author jjos
  *

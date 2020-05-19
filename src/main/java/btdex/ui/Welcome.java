@@ -28,8 +28,9 @@ import org.aion.ledger.LedgerDevice;
 import org.aion.ledger.LedgerUtilities;
 import org.bouncycastle.util.encoders.Hex;
 
-import btdex.core.BurstLedger;
 import btdex.core.Globals;
+import btdex.ledger.BurstLedger;
+
 import static btdex.locale.Translation.tr;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;

@@ -1,13 +1,21 @@
-package btdex.ui;
+package btdex.ledger;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.SwingUtilities;
 
-import btdex.core.BurstLedger;
 import btdex.locale.Translation;
 
+/**
+ * A class for monitoring and signing messages with Burstcoin Ledger app.
+ * 
+ * There is a background thread running so calls are not blocking.
+ * The signature reported back via the {@link CallBack} interface.
+ * 
+ * @author jjos
+ *
+ */
 public class LedgerSigner extends TimerTask {
 	
 	private static LedgerSigner instance;

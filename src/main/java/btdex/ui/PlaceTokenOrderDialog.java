@@ -31,13 +31,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import bt.Contract;
-import btdex.core.BurstLedger;
 import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
-import btdex.ui.LedgerSigner.CallBack;
+import btdex.ledger.BurstLedger;
+import btdex.ledger.LedgerSigner;
+import btdex.ledger.LedgerSigner.CallBack;
 
 import static btdex.locale.Translation.tr;
 import burst.kit.entity.BurstValue;
