@@ -232,7 +232,7 @@ public class Main extends JFrame implements ActionListener {
 		tabbedPane.addTab(tr("main_order_book"), i.get(Icons.ORDER_BOOK), orderBook);
 		tabbedPane.addTab(tr("main_trade_history"), i.get(Icons.TRADE), historyPanel);
 
-		if(g.isTestnet()) {
+		if(g.isTestnet() && !g.usingLedger()) {
 			// FIXME: accounts on testnet only for now
 			tabbedPane.addTab(tr("main_accounts"), i.get(Icons.ACCOUNT), accountsPanel);
 			tabbedPane.addTab(tr("main_chat"), i.get(Icons.CHAT), new ChatPanel());
