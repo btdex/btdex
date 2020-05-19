@@ -192,11 +192,11 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		}
 
 		if(e.getSource()==buyToken || e.getSource()==sellToken) {
-			buyToken.setBackground(buyToken.isSelected() ? HistoryPanel.GREEN : this.getBackground());
-			sellToken.setBackground(sellToken.isSelected() ? HistoryPanel.RED : this.getBackground());
+			buyToken.setBackground(buyToken.isSelected() ? Constants.GREEN : this.getBackground());
+			sellToken.setBackground(sellToken.isSelected() ? Constants.RED : this.getBackground());
 			
 			okButton.setText(tr(buyToken.isSelected() ? "offer_confirm_limit_buy" : "offer_confirm_limit_sell"));
-			okButton.setBackground(buyToken.isSelected() ? HistoryPanel.GREEN : HistoryPanel.RED);
+			okButton.setBackground(buyToken.isSelected() ? Constants.GREEN : Constants.RED);
 			somethingChanged();
 		}
 
