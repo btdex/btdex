@@ -46,6 +46,8 @@ public class Icons {
     public static IconCode TELEGRAM = FontAwesomeBrands.TELEGRAM;
     public static IconCode WHATSAPP = FontAwesomeBrands.WHATSAPP;
     public static IconCode TWITTER = FontAwesomeBrands.TWITTER;
+    
+    public static IconCode LEDGER = FontAwesome.USB;
 
     private int size = Constants.ICON_SIZE;
     private Color color = Color.BLACK;

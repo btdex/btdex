@@ -41,7 +41,7 @@ public class LedgerSigner extends TimerTask {
 		try {
 			// start the node updater thread
 			Timer timer = new Timer("ledger status update");
-			timer.schedule(this, 0, 500);
+			timer.schedule(this, 0, 1000);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -60,29 +60,34 @@ public class LedgerSigner extends TimerTask {
 	
 	@Override
 	public void run() {
-		if(caller == null)
-			return;
-		
-		if(!BurstLedger.isDeviceAvailable()) {
-			SwingUtilities.invokeLater(() -> caller.ledgerStatus(Translation.tr("ledger_no_device")));
-			return;
-		}
-		if(!BurstLedger.isAppAvailable()) {
-			SwingUtilities.invokeLater(() -> caller.ledgerStatus(Translation.tr("ledger_no_app")));
-			return;
-		}
-		
-		if(unsigned!=null) {
-			SwingUtilities.invokeLater(() -> caller.ledgerStatus(Translation.tr("ledger_authorize")));
-			try {
-				signed = BurstLedger.sign(unsigned, (byte)index);
-				unsigned = null;
-				SwingUtilities.invokeLater(() -> caller.reportSigned(signed));
+		try {
+			if(caller == null)
 				return;
-			} catch (Exception e) {
-				e.printStackTrace();
+
+			if(!BurstLedger.isDeviceAvailable()) {
+				SwingUtilities.invokeLater(() -> caller.ledgerStatus(Translation.tr("ledger_no_device")));
+				return;
 			}
+			if(!BurstLedger.isAppAvailable()) {
+				SwingUtilities.invokeLater(() -> caller.ledgerStatus(Translation.tr("ledger_no_app")));
+				return;
+			}
+
+			if(unsigned!=null) {
+				SwingUtilities.invokeLater(() -> caller.ledgerStatus(Translation.tr("ledger_authorize")));
+				try {
+					signed = BurstLedger.sign(unsigned, (byte)index);
+					unsigned = null;
+					SwingUtilities.invokeLater(() -> caller.reportSigned(signed));
+					return;
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			SwingUtilities.invokeLater(() -> caller.ledgerStatus(Translation.tr("ledger_available")));
 		}
-		SwingUtilities.invokeLater(() -> caller.ledgerStatus(Translation.tr("ledger_available")));
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

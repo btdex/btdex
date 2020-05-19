@@ -118,7 +118,7 @@ public class SendDialog extends JDialog implements ActionListener, CallBack {
 		okButton.addActionListener(this);
 
 		if(Globals.getInstance().usingLedger()) {
-			ledgerStatus = new JTextField(20);
+			ledgerStatus = new JTextField(26);
 			ledgerStatus.setEditable(false);
 			buttonPane.add(new Desc(tr("ledger_status"), ledgerStatus));
 			LedgerSigner.getInstance().setCallBack(this);
@@ -237,6 +237,7 @@ public class SendDialog extends JDialog implements ActionListener, CallBack {
 			return; // already closed by cancel, so we will not broadcast anyway
 		
 		if(signed == null) {
+			// when coming from the hardware wallet
 			okButton.setEnabled(true);
 			recipient.setEnabled(true);
 			message.setEnabled(true);
@@ -245,7 +246,7 @@ public class SendDialog extends JDialog implements ActionListener, CallBack {
 
 			setCursor(Cursor.getDefaultCursor());
 			
-			Toast.makeText((JFrame) this.getOwner(), tr("ledger_denied"), Toast.Style.ERROR).display();
+			Toast.makeText((JFrame) this.getOwner(), tr("ledger_denied"), Toast.Style.ERROR).display(okButton);
 			
 			return;
 		}

@@ -31,8 +31,14 @@ public class BurstLedger {
 	private static LedgerDevice dev = null;
 	
 	private static void findDevice() throws Exception {
-		if(dev == null)
-			dev = LedgerUtilities.findLedgerDevice();
+		if(dev == null) {
+			dev = LedgerUtilities.findLedgerDevice();			
+//			if(dev != null) {
+//				Runtime.getRuntime().addShutdownHook(
+//						new Thread(() -> dev.close())
+//				);
+//			}
+		}
 	}
 	
 	public static boolean isDeviceAvailable() {
@@ -51,8 +57,9 @@ public class BurstLedger {
 	 * @return true if the Burstcoin app is open on the device.
 	 */
 	public static boolean isAppAvailable() {
+		if(!isDeviceAvailable())
+			return false;
 		try {
-			findDevice();
 
 			ByteBuffer buff = ByteBuffer.allocate(5);
 			buff.put(CLA);
@@ -76,7 +83,8 @@ public class BurstLedger {
 	 * @throws Exception
 	 */
 	public static byte[] getVersion() throws Exception {
-		findDevice();
+		if(!isDeviceAvailable())
+			return null;
 		
 		ByteBuffer buff = ByteBuffer.allocate(5);
 		
@@ -97,7 +105,8 @@ public class BurstLedger {
 	 * @throws Exception
 	 */
 	public static byte[] getPublicKey(byte index) throws Exception {
-		findDevice();
+		if(!isDeviceAvailable())
+			return null;
 		
 		ByteBuffer buff = ByteBuffer.allocate(8);
 		
@@ -132,7 +141,8 @@ public class BurstLedger {
 	 * @throws Exception
 	 */
 	public static byte[] sign(byte []utx, byte index) throws Exception {
-		findDevice();
+		if(!isDeviceAvailable())
+			return null;
 		
 		ByteBuffer buff = ByteBuffer.allocate(255);
 
