@@ -17,28 +17,32 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 
 import bt.BT;
 import btdex.core.*;
+import btdex.ui.LedgerSigner.CallBack;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
-public class CancelOrderDialog extends JDialog implements ActionListener {
+public class CancelOrderDialog extends JDialog implements ActionListener, CallBack {
 	private static final long serialVersionUID = 1L;
 
-	private Market market;
-	private AssetOrder order;
-	private ContractState state;
+	Market market;
+	AssetOrder order;
+	ContractState state;
 
-	private JTextPane conditions;
-	private JCheckBox acceptBox;
+	JTextPane conditions;
+	JCheckBox acceptBox;
 
-	private JPasswordField pin;
+	private JTextField ledgerStatus;
+	private byte[] unsigned;
+	JPasswordField pin;
 
 	private JButton okButton;
 	private JButton calcelButton;
@@ -79,7 +83,14 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 		calcelButton.addActionListener(this);
 		okButton.addActionListener(this);
 
-		buttonPane.add(new Desc(tr("dlg_pin"), pin));
+		if(Globals.getInstance().usingLedger()) {
+			ledgerStatus = new JTextField(26);
+			ledgerStatus.setEditable(false);
+			buttonPane.add(new Desc(tr("ledger_status"), ledgerStatus));
+			LedgerSigner.getInstance().setCallBack(this);
+		}
+		else
+			buttonPane.add(new Desc(tr("dlg_pin"), pin));
 		buttonPane.add(new Desc(" ", calcelButton));
 		buttonPane.add(new Desc(" ", okButton));
 
@@ -144,7 +155,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 				acceptBox.requestFocus();
 			}
 			
-			if(error == null && !g.checkPIN(pin.getPassword())) {
+			if(error == null && !g.usingLedger() && !g.checkPIN(pin.getPassword())) {
 				error = tr("dlg_invalid_pin");
 				pin.requestFocus();
 			}
@@ -153,7 +164,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(okButton);
 				return;
 			}
-
+			
 			// all set, lets cancel the order
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
@@ -178,18 +189,17 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 							Constants.BURST_DEADLINE, message);
 				}
 				
-				Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
-					byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
-					return g.getNS().broadcastTransaction(signedTransactionBytes);
-				});
-
-				TransactionBroadcast tb = tx.blockingGet();
-				tb.getTransactionId();
-				setVisible(false);
-
-				Toast.makeText((JFrame) this.getOwner(),
-						tr("send_tx_broadcast", tb.getTransactionId().toString()),
-						Toast.Style.SUCCESS).display();
+				unsigned = utx.blockingGet();
+				if(g.usingLedger()) {
+					LedgerSigner.getInstance().requestSign(unsigned, g.getLedgerIndex());
+					okButton.setEnabled(false);
+					
+					Toast.makeText((JFrame) this.getOwner(), tr("ledger_authorize"), Toast.Style.NORMAL).display(okButton);
+					
+					return;
+				}
+				byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsigned);
+				reportSigned(signedTransactionBytes);
 			}
 			catch (Exception ex) {
 				ex.printStackTrace();
@@ -197,5 +207,33 @@ public class CancelOrderDialog extends JDialog implements ActionListener {
 			}
 			setCursor(Cursor.getDefaultCursor());
 		}
+	}
+
+	@Override
+	public void ledgerStatus(String txt) {
+		ledgerStatus.setText(txt);
+	}
+
+	@Override
+	public void reportSigned(byte[] signed) {
+		if(!isVisible())
+			return; // already closed by cancel, so we will not broadcast anyway
+		
+		if(signed == null) {
+			// when coming from the hardware wallet
+			okButton.setEnabled(true);
+
+			setCursor(Cursor.getDefaultCursor());
+			
+			Toast.makeText((JFrame) this.getOwner(), tr("ledger_denied"), Toast.Style.ERROR).display(okButton);
+			
+			return;
+		}
+
+		TransactionBroadcast tb = Globals.getInstance().getNS().broadcastTransaction(signed).blockingGet();
+		setVisible(false);
+		
+		Toast.makeText((JFrame) this.getOwner(),
+				tr("send_tx_broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
 	}
 }

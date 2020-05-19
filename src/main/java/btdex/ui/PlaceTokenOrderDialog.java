@@ -31,28 +31,33 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import bt.Contract;
+import btdex.core.BurstLedger;
 import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
+import btdex.ui.LedgerSigner.CallBack;
+
 import static btdex.locale.Translation.tr;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
-public class PlaceTokenOrderDialog extends JDialog implements ActionListener, DocumentListener {
+public class PlaceTokenOrderDialog extends JDialog implements ActionListener, DocumentListener, CallBack {
 	private static final long serialVersionUID = 1L;
 
-	private Market market;
+	Market market;
 
-	private JTextField amountField, priceField, totalField;
+	JTextField amountField, priceField, totalField;
 
-	private JTextPane conditions;
-	private JCheckBox acceptBox;
+	JTextPane conditions;
+	JCheckBox acceptBox;
 
-	private JPasswordField pinField;
+	JPasswordField pinField;
+	private JTextField ledgerStatus;
+	private byte[] unsigned;
 
 	private JButton okButton;
 	private JButton cancelButton;
@@ -122,7 +127,14 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		cancelButton.addActionListener(this);
 		okButton.addActionListener(this);
 
-		buttonPane.add(new Desc(tr("dlg_pin"), pinField));
+		if(Globals.getInstance().usingLedger()) {
+			ledgerStatus = new JTextField(26);
+			ledgerStatus.setEditable(false);
+			buttonPane.add(new Desc(tr("ledger_status"), ledgerStatus));
+			LedgerSigner.getInstance().setCallBack(this);
+		}
+		else
+			buttonPane.add(new Desc(tr("dlg_pin"), pinField));
 		buttonPane.add(new Desc(" ", cancelButton));
 		buttonPane.add(new Desc(" ", okButton));
 
@@ -180,11 +192,11 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		}
 
 		if(e.getSource()==buyToken || e.getSource()==sellToken) {
-			buyToken.setBackground(buyToken.isSelected() ? Constants.GREEN : this.getBackground());
-			sellToken.setBackground(sellToken.isSelected() ? Constants.RED : this.getBackground());
+			buyToken.setBackground(buyToken.isSelected() ? HistoryPanel.GREEN : this.getBackground());
+			sellToken.setBackground(sellToken.isSelected() ? HistoryPanel.RED : this.getBackground());
 			
 			okButton.setText(tr(buyToken.isSelected() ? "offer_confirm_limit_buy" : "offer_confirm_limit_sell"));
-			okButton.setBackground(buyToken.isSelected() ? Constants.GREEN : Constants.RED);
+			okButton.setBackground(buyToken.isSelected() ? HistoryPanel.GREEN : HistoryPanel.RED);
 			somethingChanged();
 		}
 
@@ -204,7 +216,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 				acceptBox.requestFocus();
 			}
 
-			if(error == null && !g.checkPIN(pinField.getPassword())) {
+			if(error == null && !g.usingLedger() && !g.checkPIN(pinField.getPassword())) {
 				error = tr("dlg_invalid_pin");
 				pinField.requestFocus();
 			}
@@ -212,6 +224,15 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			if(error!=null) {
 				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(okButton);
 				return;
+			}
+			
+			if(g.usingLedger()) {
+				if(BurstLedger.isAppAvailable())
+					Toast.makeText((JFrame) this.getOwner(), tr("ledger_auth"), Toast.Style.NORMAL).display(okButton);
+				else {
+					Toast.makeText((JFrame) this.getOwner(), tr("ledger_error"), Toast.Style.ERROR).display(okButton);
+					return;
+				}
 			}
 
 			// all set, lets place the order
@@ -227,17 +248,20 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 					utx = g.getNS().generatePlaceBidOrderTransaction(g.getPubKey(), market.getTokenID(),
 							amountValue, priceValue, suggestedFee, Constants.BURST_DEADLINE);
 
-				Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
-					byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
-					return g.getNS().broadcastTransaction(signedTransactionBytes);
-				});
-				TransactionBroadcast tb = tx.blockingGet();
-				tb.getTransactionId();
-
-				setVisible(false);
-
-				Toast.makeText((JFrame) this.getOwner(),
-						tr("send_tx_broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
+				unsigned = utx.blockingGet();
+				if(g.usingLedger()) {
+					LedgerSigner.getInstance().requestSign(unsigned, g.getLedgerIndex());
+					okButton.setEnabled(false);
+					priceField.setEnabled(false);
+					amountField.setEnabled(false);
+					
+					Toast.makeText((JFrame) this.getOwner(), tr("ledger_authorize"), Toast.Style.NORMAL).display(okButton);
+					
+					return;
+				}
+				
+				byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsigned);
+				reportSigned(signedTransactionBytes);
 			}
 			catch (Exception ex) {
 				ex.printStackTrace();
@@ -305,5 +329,34 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 	@Override
 	public void changedUpdate(DocumentEvent e) {
 		somethingChanged();
+	}
+
+	@Override
+	public void ledgerStatus(String txt) {
+		ledgerStatus.setText(txt);
+	}
+
+	@Override
+	public void reportSigned(byte[] signed) {
+		if(!isVisible())
+			return; // already closed by cancel, so we will not broadcast anyway
+		
+		if(signed == null) {
+			// when coming from the hardware wallet
+			okButton.setEnabled(true);
+			priceField.setEnabled(true);
+			amountField.setEnabled(true);
+
+			setCursor(Cursor.getDefaultCursor());
+			
+			Toast.makeText((JFrame) this.getOwner(), tr("ledger_denied"), Toast.Style.ERROR).display(okButton);
+			
+			return;
+		}
+		TransactionBroadcast tb = Globals.getInstance().getNS().broadcastTransaction(signed).blockingGet();
+		setVisible(false);
+
+		Toast.makeText((JFrame) this.getOwner(),
+				tr("send_tx_broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
 	}
 }

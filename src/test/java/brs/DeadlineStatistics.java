@@ -1,5 +1,7 @@
 package brs;
 
+import java.util.ArrayList;
+
 import bt.BT;
 import burst.kit.entity.response.Block;
 
@@ -16,59 +18,63 @@ public class DeadlineStatistics {
 		// Select the node: mainnet or testnet
 		BT.setNodeAddress(BT.NODE_BURSTCOIN_RO);
 //		BT.setNodeAddress(BT.NODE_TESTNET);
+//		BT.setNodeAddress(BT.NODE_LOCAL_TESTNET);
 		
 		// How many blocks in the past should the analysis start:
-		int start = 10000;
+		int start = 0;
 		
-		int SQRT_FACTOR = 16;
-		int LN_FACTOR = 45;
-
 		int PAGE_SIZE = 90;
+		int NBLOCKS = 360;
 		
 		int smallestDeadline = Integer.MAX_VALUE;
 		int largestDeadline = 0;
 		
-		long avDeadline = 0;
+		float avDeadline = 0;
 		int counter = 0;
 		
-		System.out.println("height\tdeadline\tdeadline sqrt\tdeadline ln\ttarget");
+		ArrayList<Block> blockList = new ArrayList<>(NBLOCKS);
 		
-		while(counter < 360) {
-			
+		while(counter < NBLOCKS) {
 			Block[] blocks = BT.getNode().getBlocks(start, start+PAGE_SIZE).blockingGet();
 			start += PAGE_SIZE;
-
+			
 			for(int i = 1; i<blocks.length; i++) {
-				Block next = blocks[i];
-				Block b = blocks[i-1];
-
-				int deadline = b.getTimestamp().getTimestamp() - next.getTimestamp().getTimestamp();
-				
-				int deadlineSqrt = (int)(Math.sqrt(deadline) * SQRT_FACTOR);
-				int deadlineLn = (int)(Math.log(deadline) * LN_FACTOR);
-				
-				smallestDeadline = Math.min(smallestDeadline, deadline);
-				largestDeadline = Math.max(largestDeadline, deadline);
-
-				avDeadline += deadline;
+				blockList.add(blocks[i]);
 				counter ++;
-
-				System.out.println(b.getHeight() + "\t" + deadline + "\t" +
-						deadlineSqrt + "\t" + deadlineLn + "\t" + b.getBaseTarget());
 			}
 		}
+		
+		System.out.println("height\tdeadline\ttarget");
+		for(int i = 1; i<blockList.size(); i++) {
+			Block next = blockList.get(i);
+			Block b = blockList.get(i-1);
+
+			int deadline = b.getTimestamp().getTimestamp() - next.getTimestamp().getTimestamp();
+
+			smallestDeadline = Math.min(smallestDeadline, deadline);
+			largestDeadline = Math.max(largestDeadline, deadline);
+
+			avDeadline += deadline;
+			System.out.println(b.getHeight() + "\t" + deadline + "\t" + b.getBaseTarget());
+		}
 		avDeadline /= counter;
+		
+		double stdDev = 0;
+		for(int i = 1; i<blockList.size(); i++) {
+			Block next = blockList.get(i);
+			Block b = blockList.get(i-1);
+
+			int deadline = b.getTimestamp().getTimestamp() - next.getTimestamp().getTimestamp();
+			
+			double dev = deadline-avDeadline;
+			stdDev += dev*dev;
+		}
+		stdDev = Math.sqrt(stdDev/counter);
+		
 		System.out.println("average deadline: " + avDeadline);
 		System.out.println("smallest deadline: " + smallestDeadline);
 		System.out.println("largest deadline: " + largestDeadline);
-
-		System.out.println("average deadline sqrt: " + (int)(Math.sqrt(avDeadline) * SQRT_FACTOR));
-		System.out.println("smallest deadline sqrt: " + (int)(Math.sqrt(smallestDeadline) * SQRT_FACTOR));
-		System.out.println("largest deadline sqrt: " + (int)(Math.sqrt(largestDeadline) * SQRT_FACTOR));
-
-		System.out.println("average deadline ln: " + (int)(Math.log(avDeadline) * LN_FACTOR));
-		System.out.println("smallest deadline ln: " + (int)(Math.log(smallestDeadline) * LN_FACTOR));
-		System.out.println("largest deadline ln: " + (int)(Math.log(largestDeadline) * LN_FACTOR));
+		System.out.println("deadline std dev: " + stdDev);
 
 		System.exit(0);
 	}
