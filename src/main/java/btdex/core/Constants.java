@@ -1,5 +1,6 @@
 package btdex.core;
 
+import btdex.ui.Icons;
 import com.google.gson.Gson;
 
 import okhttp3.MediaType;
@@ -61,6 +62,9 @@ public class Constants {
     public static final int ICON_SIZE = 24;
 
     public static final int UI_UPDATE_INTERVAL = 10000;
+    public static final int UI_MINIMUM_WIDTH = 1200;
+    public static final int UI_MINIUMUM_HEIGH = 600;
+
 
     public static final Color RED = Color.decode("#BE474A");
     public static final Color GREEN = Color.decode("#29BF76");

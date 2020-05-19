@@ -36,6 +36,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import btdex.core.*;
+import btdex.ui.historypanel.HistoryPanel;
 import btdex.ui.orderbook.OrderBook;
 import com.bulenkov.darcula.DarculaLaf;
 
@@ -98,6 +99,9 @@ public class Main extends JFrame implements ActionListener {
 	private Icons i;
 
 	private static Main instance;
+	private Icon icon_connected;
+	private Icon icon_testnet;
+	private Icon icon_disconnected;
 
 	public static Main getInstance() {
 		return instance;
@@ -170,6 +174,9 @@ public class Main extends JFrame implements ActionListener {
 		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, Constants.ICON_SIZE);
 		Color COLOR = marketComboBox.getForeground();
 		i = new Icons(COLOR, Constants.ICON_SIZE);
+		icon_connected = i.get(Icons.CONNECTED);
+		icon_testnet = i.get(Icons.TESTNET);
+		icon_disconnected = i.get(Icons.DISCONNECTED);
 
 		marketComboBox.setToolTipText(tr("main_select_market"));
 		marketComboBox.setFont(largeFont);
@@ -274,7 +281,7 @@ public class Main extends JFrame implements ActionListener {
 		bottomAll.add(statusLabel, BorderLayout.CENTER);
 
 		pack();
-		setMinimumSize(new Dimension(1280, 600));
+		setMinimumSize(new Dimension(Constants.UI_MINIMUM_WIDTH, Constants.UI_MINIUMUM_HEIGH));
 		setLocationRelativeTo(null);
 		cardLayout.last(getContentPane());
 		showingSplash = true;
@@ -505,10 +512,6 @@ public class Main extends JFrame implements ActionListener {
 	}
 
 	private void updateUI() {
-		Icon ICON_CONNECTED = i.get(Icons.CONNECTED);
-		Icon ICON_TESTNET = i.get(Icons.TESTNET);
-		Icon ICON_DISCONNECTED = i.get(Icons.DISCONNECTED);
-
 		// Update at every 10 seconds
 		if(System.currentTimeMillis() - lastUpdated < Constants.UI_UPDATE_INTERVAL) {
 			return;
@@ -532,7 +535,7 @@ public class Main extends JFrame implements ActionListener {
 
 				if(!(nodeException.getCause() instanceof BRSError) || ((BRSError) nodeException.getCause()).getCode() != 5) {
 					// not the unknown account exception, show the error
-					nodeSelector.setIcon(ICON_DISCONNECTED);
+					nodeSelector.setIcon(icon_disconnected);
 					String errorMessage = tr("main_error", nodeException.getLocalizedMessage());
 					statusLabel.setText(errorMessage);
 				}
@@ -555,7 +558,7 @@ public class Main extends JFrame implements ActionListener {
 					String error = tr("main_invalid_testnet_node", g.getNode());
 					Toast.makeText(Main.this, error, Toast.Style.ERROR).display();
 
-					nodeSelector.setIcon(ICON_DISCONNECTED);
+					nodeSelector.setIcon(icon_disconnected);
 					statusLabel.setText(error);
 				}
 			}
@@ -616,12 +619,12 @@ public class Main extends JFrame implements ActionListener {
 
 			// all fine status label with the latest block
 			statusLabel.setText("");
-			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
+			nodeSelector.setIcon(g.isTestnet() ? icon_testnet : icon_connected);
 		}
 		catch (RuntimeException rex) {
 			rex.printStackTrace();
 
-			nodeSelector.setIcon(ICON_DISCONNECTED);
+			nodeSelector.setIcon(icon_disconnected);
 			statusLabel.setText(tr("main_error", rex.getMessage()));
 		}
 		if(showingSplash) {
