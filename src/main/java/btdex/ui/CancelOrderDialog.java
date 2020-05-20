@@ -23,15 +23,15 @@ import javax.swing.border.EmptyBorder;
 
 import bt.BT;
 import btdex.core.*;
-import btdex.ledger.LedgerSigner;
-import btdex.ledger.LedgerSigner.CallBack;
+import btdex.ledger.LedgerService;
+import btdex.ledger.LedgerService.SignCallBack;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
-public class CancelOrderDialog extends JDialog implements ActionListener, CallBack {
+public class CancelOrderDialog extends JDialog implements ActionListener, SignCallBack {
 	private static final long serialVersionUID = 1L;
 
 	Market market;
@@ -88,7 +88,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener, CallBa
 			ledgerStatus = new JTextField(26);
 			ledgerStatus.setEditable(false);
 			buttonPane.add(new Desc(tr("ledger_status"), ledgerStatus));
-			LedgerSigner.getInstance().setCallBack(this);
+			LedgerService.getInstance().setCallBack(this);
 		}
 		else
 			buttonPane.add(new Desc(tr("dlg_pin"), pin));
@@ -192,7 +192,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener, CallBa
 				
 				unsigned = utx.blockingGet();
 				if(g.usingLedger()) {
-					LedgerSigner.getInstance().requestSign(unsigned, null, g.getLedgerIndex());
+					LedgerService.getInstance().requestSign(unsigned, null, g.getLedgerIndex());
 					okButton.setEnabled(false);
 					
 					Toast.makeText((JFrame) this.getOwner(), tr("ledger_authorize"), Toast.Style.NORMAL).display(okButton);

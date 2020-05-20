@@ -53,7 +53,7 @@ dependencies {
 
     implementation 'fr.marcwrobel:jbanking:1.0'
     
-    implementation 'com.github.jjos2372:ledger4j:3103c57170'
+    implementation 'com.github.jjos2372:ledger4j:ce3e9ed515'
 
     // Use JUnit test framework
     testImplementation("org.junit.platform:junit-platform-engine:1.6.1")

@@ -37,8 +37,8 @@ import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
 import btdex.ledger.BurstLedger;
-import btdex.ledger.LedgerSigner;
-import btdex.ledger.LedgerSigner.CallBack;
+import btdex.ledger.LedgerService;
+import btdex.ledger.LedgerService.SignCallBack;
 
 import static btdex.locale.Translation.tr;
 import burst.kit.entity.BurstValue;
@@ -46,7 +46,7 @@ import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
-public class PlaceTokenOrderDialog extends JDialog implements ActionListener, DocumentListener, CallBack {
+public class PlaceTokenOrderDialog extends JDialog implements ActionListener, DocumentListener, SignCallBack {
 	private static final long serialVersionUID = 1L;
 
 	Market market;
@@ -132,7 +132,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			ledgerStatus = new JTextField(26);
 			ledgerStatus.setEditable(false);
 			buttonPane.add(new Desc(tr("ledger_status"), ledgerStatus));
-			LedgerSigner.getInstance().setCallBack(this);
+			LedgerService.getInstance().setCallBack(this);
 		}
 		else
 			buttonPane.add(new Desc(tr("dlg_pin"), pinField));
@@ -251,7 +251,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 
 				unsigned = utx.blockingGet();
 				if(g.usingLedger()) {
-					LedgerSigner.getInstance().requestSign(unsigned, null, g.getLedgerIndex());
+					LedgerService.getInstance().requestSign(unsigned, null, g.getLedgerIndex());
 					okButton.setEnabled(false);
 					priceField.setEnabled(false);
 					amountField.setEnabled(false);

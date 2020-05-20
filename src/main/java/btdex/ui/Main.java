@@ -529,6 +529,8 @@ public class Main extends JFrame implements ActionListener {
 				orderBook.update();
 				historyPanel.update();
 			}
+			
+			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 
 			Exception nodeException = bn.getNodeException();
 			if(nodeException != null) {

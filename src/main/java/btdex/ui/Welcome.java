@@ -1,5 +1,7 @@
 package btdex.ui;
 
+import static btdex.locale.Translation.tr;
+
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -18,21 +20,23 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JSpinner;
 import javax.swing.JTextArea;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import btdex.core.Globals;
-import btdex.ledger.BurstLedger;
-
-import static btdex.locale.Translation.tr;
+import btdex.ledger.LedgerService;
+import btdex.ledger.LedgerService.PubKeyCallBack;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
 import io.github.novacrypto.bip39.wordlists.English;
 
-public class Welcome extends JDialog implements ActionListener {
+public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 	private static final long serialVersionUID = 1L;
 
 	private JTextArea passphrase;
@@ -175,41 +179,22 @@ public class Welcome extends JDialog implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == useLedgerButton) {
-			String error = null;
-			try {
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-				// Check for the Burst app
-				if(!BurstLedger.isAppAvailable()) {
-					// magic number do not match
-					error = tr("ledger_error");
-				}
-				
-				// TODO: think about asking the user which index should be used
-				int index = 1;
-				
-				if(error == null) {
-					// get the public key
-					byte[] pubKey = BurstLedger.getPublicKey((byte)index);
-					if(pubKey != null) {
-						Globals.getInstance().setKeys(pubKey, index);
-						Globals.getInstance().saveConfs();
-						
-						// all good
-						ret = 1;
-						setVisible(false);
-					}
-					else
-						error = tr("ledger_error");
-				}
-				
-			} catch (Exception e1) {
-				error = tr("ledger_error");
-				e1.printStackTrace();
+			JSpinner spinner = new JSpinner(new SpinnerNumberModel(0, 0, 128, 1));
+			JPanel spinnerPannel = new JPanel(new BorderLayout());
+			spinnerPannel.add(new JLabel("<html>" + tr("ledger_account_index_message")), BorderLayout.CENTER);
+			spinnerPannel.add(spinner, BorderLayout.PAGE_END);
+			int option = JOptionPane.showOptionDialog(this, spinnerPannel, tr("ledger_account_index"),
+					JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+			if (option == JOptionPane.CANCEL_OPTION) {
+				return;
 			}
+			int index = (Integer)spinner.getValue();
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				
+			LedgerService.getInstance().setCallBack(this, index);
 			setCursor(Cursor.getDefaultCursor());
-			if(error != null)
-				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(useLedgerButton);
+			return;
 		}
 		if(e.getSource() == recoverBox) {
 			if(recoverBox.isSelected()) {
@@ -280,5 +265,34 @@ public class Welcome extends JDialog implements ActionListener {
 				setVisible(false);
 			}
 		}
+	}
+
+	@Override
+	public void returnedError(String error) {
+		// Clear the call back
+		LedgerService.getInstance().setCallBack(null, 0);
+		
+		Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(useLedgerButton);
+		setCursor(Cursor.getDefaultCursor());
+	}
+
+	@Override
+	public void returnedKey(byte[] pubKey, int index) {
+		// Clear the call back
+		LedgerService.getInstance().setCallBack(null, 0);
+		
+		Globals g = Globals.getInstance();
+		g.setKeys(pubKey, index);
+		
+		Toast.makeText((JFrame) this.getOwner(), tr("ledger_check_address", g.getAddress().getFullAddress()),
+				Toast.Style.NORMAL).display(useLedgerButton);
+		try {
+			Globals.getInstance().saveConfs();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}		
+		// all good
+		ret = 1;
+		setVisible(false);
 	}
 }
