@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 
 import org.aion.ledger.LedgerDevice;
 import org.aion.ledger.LedgerUtilities;
+import org.aion.ledger.exceptions.CommsException;
 
 /**
  * Wrapper class for Burstcoin App on Ledger Nano S devices.
@@ -74,9 +75,19 @@ public class BurstLedger {
 
 			// Check for the magic numbers
 			return output.length == 7 && output[4] == 0x0a && output[5] == 0x0b && output[6] == 0x0c;
-		} catch (Exception e) {
-			return false;
 		}
+		catch (CommsException e) {
+			// e.printStackTrace();
+			if(dev!=null) {
+				// try to close and open again as it apparently cannot recover after this
+				dev.close();
+				dev = null;
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 	
 	/**

@@ -24,10 +24,6 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
-import org.aion.ledger.LedgerDevice;
-import org.aion.ledger.LedgerUtilities;
-import org.bouncycastle.util.encoders.Hex;
-
 import btdex.core.Globals;
 import btdex.ledger.BurstLedger;
 
