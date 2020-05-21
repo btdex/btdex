@@ -134,7 +134,8 @@ public class Globals {
 	 */
 	public void setKeys(byte []pubKey, int index) {
 		conf.setProperty(Constants.PROP_PUBKEY, Globals.BC.toHexString(pubKey));
-		conf.setProperty(Constants.PROP_LEDGER, Integer.toString(index));		
+		conf.setProperty(Constants.PROP_LEDGER, Integer.toString(index));
+		this.ledgerIndex = index;
 
 		address = BC.getBurstAddressFromPublic(pubKey);
 	}
