@@ -284,7 +284,7 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 		Globals g = Globals.getInstance();
 		g.setKeys(pubKey, index);
 		
-		Toast.makeText((JFrame) this.getOwner(), tr("ledger_check_address", g.getAddress().getFullAddress()),
+		Toast.makeText((JFrame) this.getOwner(), tr("ledger_show_address"),
 				Toast.LENGTH_LONG, Toast.Style.NORMAL).display(useLedgerButton);
 		try {
 			Globals.getInstance().saveConfs();

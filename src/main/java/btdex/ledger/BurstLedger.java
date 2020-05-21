@@ -18,6 +18,7 @@ import org.aion.ledger.exceptions.CommsException;
 public class BurstLedger {
 	private static final byte CLA = (byte)0x80;
 	private static final byte ZERO = (byte)0x00;
+	private static final byte ONE = (byte)0x01;
 	
 	private static final byte INS_GET_VERSION = (byte)0x01;
 	private static final byte INS_AUTH_SIGN_TXN = (byte)0x03;
@@ -115,10 +116,11 @@ public class BurstLedger {
 	/**
 	 * Shows the BURST- address for the given index on the device
 	 * @param index
+	 * @param block
 	 * @return the public key for the given account index
 	 * @throws Exception
 	 */
-	public static void showAddress(byte index) throws Exception {
+	public static void showAddress(byte index, boolean block) throws Exception {
 		if(!isDeviceAvailable())
 			return;
 		
@@ -126,7 +128,7 @@ public class BurstLedger {
 		
 		buff.put(CLA);
 		buff.put(INS_SHOW_ADDRESS);
-		buff.put(ZERO); // P1
+		buff.put(block ? ZERO : ONE); // P1 (block or not)
 		buff.put(ZERO); // P2
 		buff.put((byte) 3); // LEN
 		buff.put(ZERO); // account
