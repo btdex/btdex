@@ -213,6 +213,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener, SignCa
 	@Override
 	public void ledgerStatus(String txt) {
 		ledgerStatus.setText(txt);
+		ledgerStatus.setCaretPosition(0);
 	}
 
 	@Override

@@ -335,6 +335,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 	@Override
 	public void ledgerStatus(String txt) {
 		ledgerStatus.setText(txt);
+		ledgerStatus.setCaretPosition(0);
 	}
 
 	@Override

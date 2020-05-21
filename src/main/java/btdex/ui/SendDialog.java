@@ -230,6 +230,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 	@Override
 	public void ledgerStatus(String txt) {
 		ledgerStatus.setText(txt);
+		ledgerStatus.setCaretPosition(0);
 	}
 
 	@Override
