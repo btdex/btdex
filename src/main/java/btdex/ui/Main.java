@@ -65,7 +65,7 @@ public class Main extends JFrame implements ActionListener {
 	private PulsingIcon pulsingButton;
 
 	private CardLayout cardLayout;
-	private boolean showingSplash, notifiedLoadingContracts;
+	private boolean showingSplash;
 	private OrderBook orderBook;
 	private TransactionsPanel transactionsPanel;
 	private HistoryPanel historyPanel;
@@ -97,6 +97,8 @@ public class Main extends JFrame implements ActionListener {
 	private JButton signoutButton;
 	private String version = "dev";
 	private Icons i;
+
+	private JButton resetPinButton;
 
 	private static Main instance;
 	private Icon icon_connected;
@@ -297,6 +299,8 @@ public class Main extends JFrame implements ActionListener {
 				System.exit(0);
 				return;
 			}
+			
+			resetPinButton.setVisible(!g.usingLedger());
 		}
 		copyAddButton.getMainButton().setText(g.getAddress().getRawAddress());
 		copyAddButton.setAddress(g.getAddress().getID(), g.getAddress().getFullAddress());
@@ -408,7 +412,7 @@ public class Main extends JFrame implements ActionListener {
 	}
 
 	private JButton createResetPinButton() {
-		JButton resetPinButton = new JButton(i.get(Icons.RESET_PIN));
+		resetPinButton = new JButton(i.get(Icons.RESET_PIN));
 		resetPinButton.setToolTipText(tr("main_reset_pin"));
 		resetPinButton.setVerticalAlignment(SwingConstants.CENTER);
 		resetPinButton.addActionListener(new ActionListener() {
@@ -647,7 +651,8 @@ public class Main extends JFrame implements ActionListener {
 
 		if(e.getSource() == signoutButton) {
 			Globals g = Globals.getInstance();
-			String response = JOptionPane.showInputDialog(this, tr("main_exit_message", g.getAddress().getRawAddress()),
+			String response = JOptionPane.showInputDialog(this,
+					tr(g.usingLedger() ? "main_exit_message_ledger" : "main_exit_message", g.getAddress().getRawAddress()),
 					tr("main_exit"), JOptionPane.OK_CANCEL_OPTION);
 			if(response != null) {
 				if(!response.equalsIgnoreCase(g.getAddress().getRawAddress().substring(0, 4))) {
