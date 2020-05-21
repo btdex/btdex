@@ -1,14 +1,16 @@
-package btdex.core;
+package btdex.ledger;
 
 import java.nio.ByteBuffer;
 
 import org.aion.ledger.LedgerDevice;
 import org.aion.ledger.LedgerUtilities;
+import org.aion.ledger.exceptions.CommsException;
 
 /**
  * Wrapper class for Burstcoin App on Ledger Nano S devices.
  * 
- * All calls are blocking, so you need to work around it.
+ * All calls are blocking, so you need to work around it, for instance using
+ * the {@link LedgerService} class.
  *  
  * @author jjos
  *
@@ -19,8 +21,7 @@ public class BurstLedger {
 	
 	private static final byte INS_GET_VERSION = (byte)0x01;
 	private static final byte INS_AUTH_SIGN_TXN = (byte)0x03;
-	// private static final byte INS_ENCRYPT_DECRYPT_MSG = (byte)0x04;
-	// private static final byte INS_SHOW_ADDRESS = (byte)0x05;
+	private static final byte INS_SHOW_ADDRESS = (byte)0x05;
 	private static final byte INS_GET_PUBLIC_KEY = (byte)0x06;
 	
 	private static final byte P1_SIGN_INIT = (byte)0x01;
@@ -33,11 +34,6 @@ public class BurstLedger {
 	private static void findDevice() throws Exception {
 		if(dev == null) {
 			dev = LedgerUtilities.findLedgerDevice();			
-//			if(dev != null) {
-//				Runtime.getRuntime().addShutdownHook(
-//						new Thread(() -> dev.close())
-//				);
-//			}
 		}
 	}
 	
@@ -73,9 +69,26 @@ public class BurstLedger {
 
 			// Check for the magic numbers
 			return output.length == 7 && output[4] == 0x0a && output[5] == 0x0b && output[6] == 0x0c;
-		} catch (Exception e) {
-			return false;
 		}
+		catch (CommsException e) {
+			if(e.getResponseCode() == CommsException.RESP_INCORRECT_APP)
+				return false; // just the app is not open
+			
+			if(dev!=null) {
+				// try to close and open again as it apparently cannot recover after this
+				dev.close();
+				dev = null;
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			if(dev!=null) {
+				// try to close and open again as it apparently cannot recover after this
+				dev.close();
+				dev = null;
+			}
+		}
+		return false;
 	}
 	
 	/**
@@ -98,6 +111,33 @@ public class BurstLedger {
 		
 		return dev.exchange(buff.array());
 	}
+	
+	/**
+	 * Shows the BURST- address for the given index on the device
+	 * @param index
+	 * @return the public key for the given account index
+	 * @throws Exception
+	 */
+	public static void showAddress(byte index) throws Exception {
+		if(!isDeviceAvailable())
+			return;
+		
+		ByteBuffer buff = ByteBuffer.allocate(8);
+		
+		buff.put(CLA);
+		buff.put(INS_SHOW_ADDRESS);
+		buff.put(ZERO); // P1
+		buff.put(ZERO); // P2
+		buff.put((byte) 3); // LEN
+		buff.put(ZERO); // account
+		buff.put(ZERO); // change
+		buff.put(index); // index
+		
+		buff.clear();
+		
+		dev.exchange(buff.array());
+	}
+
 	
 	/**
 	 * @param index

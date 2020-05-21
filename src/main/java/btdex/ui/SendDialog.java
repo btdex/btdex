@@ -27,7 +27,8 @@ import btdex.core.Constants;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
-import btdex.ui.LedgerSigner.CallBack;
+import btdex.ledger.LedgerService;
+import btdex.ledger.LedgerService.SignCallBack;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
@@ -35,7 +36,7 @@ import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
-public class SendDialog extends JDialog implements ActionListener, CallBack {
+public class SendDialog extends JDialog implements ActionListener, SignCallBack {
 	private static final long serialVersionUID = 1L;
 
 	private JTextField recipient;
@@ -121,7 +122,7 @@ public class SendDialog extends JDialog implements ActionListener, CallBack {
 			ledgerStatus = new JTextField(26);
 			ledgerStatus.setEditable(false);
 			buttonPane.add(new Desc(tr("ledger_status"), ledgerStatus));
-			LedgerSigner.getInstance().setCallBack(this);
+			LedgerService.getInstance().setCallBack(this);
 		}
 		else
 			buttonPane.add(new Desc(tr("dlg_pin"), pin));
@@ -204,7 +205,7 @@ public class SendDialog extends JDialog implements ActionListener, CallBack {
 					
 					unsigned = utx.blockingGet();
 					if(g.usingLedger()) {
-						LedgerSigner.getInstance().requestSign(unsigned, g.getLedgerIndex());
+						LedgerService.getInstance().requestSign(unsigned, null, g.getLedgerIndex());
 						okButton.setEnabled(false);
 						recipient.setEnabled(false);
 						message.setEnabled(false);
@@ -216,7 +217,7 @@ public class SendDialog extends JDialog implements ActionListener, CallBack {
 						return;
 					}
 					byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsigned);
-					reportSigned(signedTransactionBytes);
+					reportSigned(signedTransactionBytes, null);
 				}
 				catch (Exception ex) {
 					Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
@@ -229,10 +230,11 @@ public class SendDialog extends JDialog implements ActionListener, CallBack {
 	@Override
 	public void ledgerStatus(String txt) {
 		ledgerStatus.setText(txt);
+		ledgerStatus.setCaretPosition(0);
 	}
 
 	@Override
-	public void reportSigned(byte[] signed) {
+	public void reportSigned(byte[] signed, byte[] signed2) {
 		if(!isVisible())
 			return; // already closed by cancel, so we will not broadcast anyway
 		

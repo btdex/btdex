@@ -266,22 +266,27 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		if(b == true) {
 			if(!Globals.getInstance().isTestnet()) {
 				JOptionPane.showMessageDialog(getParent(), tr("offer_not_open_yet"),
-						"Error", JOptionPane.ERROR_MESSAGE);
+						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			if(Globals.getInstance().usingLedger()) {
+				JOptionPane.showMessageDialog(getParent(), tr("ledger_no_offer"),
+						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 			if(Contracts.isLoading()) {
 				JOptionPane.showMessageDialog(getParent(), tr("main_cross_chain_loading"),
-						"Error", JOptionPane.ERROR_MESSAGE);
+						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 			if(accountComboBox.getItemCount()==0 && (isBuy && isTake || !isBuy && !isTake)) {
 				JOptionPane.showMessageDialog(getParent(), tr("offer_register_account_first", market),
-						"Error", JOptionPane.ERROR_MESSAGE);
+						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 			if(contract!=null && contract.hasPending()) {
 				JOptionPane.showMessageDialog(getParent(), tr("offer_wait_confirm"),
-						"Error", JOptionPane.ERROR_MESSAGE);
+						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 			if(contract!=null && contract.getState() > SellContract.STATE_DISPUTE) {

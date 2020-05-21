@@ -233,7 +233,7 @@ public class Main extends JFrame implements ActionListener {
 		tabbedPane.addTab(tr("main_order_book"), i.get(Icons.ORDER_BOOK), orderBook);
 		tabbedPane.addTab(tr("main_trade_history"), i.get(Icons.TRADE), historyPanel);
 
-		if(g.isTestnet()) {
+		if(g.isTestnet() && !g.usingLedger()) {
 			// FIXME: accounts on testnet only for now
 			tabbedPane.addTab(tr("main_accounts"), i.get(Icons.ACCOUNT), accountsPanel);
 			tabbedPane.addTab(tr("main_chat"), i.get(Icons.CHAT), new ChatPanel());
@@ -530,6 +530,8 @@ public class Main extends JFrame implements ActionListener {
 				orderBook.update();
 				historyPanel.update();
 			}
+			
+			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 
 			Exception nodeException = bn.getNodeException();
 			if(nodeException != null) {
