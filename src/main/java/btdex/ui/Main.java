@@ -531,7 +531,7 @@ public class Main extends JFrame implements ActionListener {
 				historyPanel.update();
 			}
 			
-			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
+			nodeSelector.setIcon(g.isTestnet() ? icon_testnet : icon_connected);
 
 			Exception nodeException = bn.getNodeException();
 			if(nodeException != null) {
