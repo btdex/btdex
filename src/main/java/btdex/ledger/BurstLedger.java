@@ -192,15 +192,17 @@ public class BurstLedger {
 		int pos = 0;			
 		while(utx.length > pos) {
 			int delta = Math.min(250, utx.length-pos);
-			buff.put(CLA);
-			buff.put(INS_AUTH_SIGN_TXN);
+			
 			int P1 = pos == 0 ? P1_SIGN_INIT : P1_SIGN_CONTINUE;
 			if(utx.length == pos + delta)
 				P1 |= P1_SIGN_AUTHORIZE;
+			
+			buff.put(CLA);
+			buff.put(INS_AUTH_SIGN_TXN);
 			buff.put((byte) P1); // P1
 			buff.put(ZERO); // P2
 			buff.put((byte) delta); // LEN
-			buff.put(utx, 0, delta);
+			buff.put(utx, pos, delta);
 			buff.clear();
 			byte []out = dev.exchange(buff.array());
 			if(out.length < 1 || (out[0] != 0 && out[0] != 15))
