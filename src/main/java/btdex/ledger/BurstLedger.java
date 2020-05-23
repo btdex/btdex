@@ -211,7 +211,7 @@ public class BurstLedger {
 			pos += delta;
 		}
 
-		// Finish the call and get
+		// Finish the call and get the signature
 		buff.put(CLA);
 		buff.put(INS_AUTH_SIGN_TXN);
 		buff.put(P1_SIGN_FINISH); // P1
