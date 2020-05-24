@@ -18,7 +18,6 @@ import org.aion.ledger.exceptions.CommsException;
 public class BurstLedger {
 	private static final byte CLA = (byte)0x80;
 	private static final byte ZERO = (byte)0x00;
-	private static final byte ONE = (byte)0x01;
 	
 	private static final byte INS_GET_VERSION = (byte)0x01;
 	private static final byte INS_AUTH_SIGN_TXN = (byte)0x03;
@@ -29,6 +28,8 @@ public class BurstLedger {
 	private static final byte P1_SIGN_CONTINUE = (byte)0x02;
 	private static final byte P1_SIGN_AUTHORIZE = (byte)0x10;
 	private static final byte P1_SIGN_FINISH = (byte)0x03;
+	
+	private static final byte P1_SHOW_ADDRES_RETURN_KEY = (byte)0x01;
 	
 	private static LedgerDevice dev = null;
 	
@@ -116,19 +117,18 @@ public class BurstLedger {
 	/**
 	 * Shows the BURST- address for the given index on the device
 	 * @param index
-	 * @param block
 	 * @return the public key for the given account index
 	 * @throws Exception
 	 */
-	public static void showAddress(byte index, boolean block) throws Exception {
+	public static byte[] showAddress(byte index) throws Exception {
 		if(!isDeviceAvailable())
-			return;
+			return null;
 		
 		ByteBuffer buff = ByteBuffer.allocate(8);
 		
 		buff.put(CLA);
 		buff.put(INS_SHOW_ADDRESS);
-		buff.put(block ? ZERO : ONE); // P1 (block or not)
+		buff.put(P1_SHOW_ADDRES_RETURN_KEY); // P1 (we want the key)
 		buff.put(ZERO); // P2
 		buff.put((byte) 3); // LEN
 		buff.put(ZERO); // account
@@ -137,7 +137,15 @@ public class BurstLedger {
 		
 		buff.clear();
 		
-		dev.exchange(buff.array());
+		byte[] out = dev.exchange(buff.array());
+		
+		if(out.length > 32) {
+			ByteBuffer key = ByteBuffer.allocate(32);
+			key.put(out, 1, 32);
+			key.clear();
+			return key.array();
+		}
+		return null;
 	}
 
 	
@@ -192,15 +200,17 @@ public class BurstLedger {
 		int pos = 0;			
 		while(utx.length > pos) {
 			int delta = Math.min(250, utx.length-pos);
-			buff.put(CLA);
-			buff.put(INS_AUTH_SIGN_TXN);
+			
 			int P1 = pos == 0 ? P1_SIGN_INIT : P1_SIGN_CONTINUE;
 			if(utx.length == pos + delta)
 				P1 |= P1_SIGN_AUTHORIZE;
+			
+			buff.put(CLA);
+			buff.put(INS_AUTH_SIGN_TXN);
 			buff.put((byte) P1); // P1
 			buff.put(ZERO); // P2
 			buff.put((byte) delta); // LEN
-			buff.put(utx, 0, delta);
+			buff.put(utx, pos, delta);
 			buff.clear();
 			byte []out = dev.exchange(buff.array());
 			if(out.length < 1 || (out[0] != 0 && out[0] != 15))
@@ -209,7 +219,7 @@ public class BurstLedger {
 			pos += delta;
 		}
 
-		// Finish the call and get
+		// Finish the call and get the signature
 		buff.put(CLA);
 		buff.put(INS_AUTH_SIGN_TXN);
 		buff.put(P1_SIGN_FINISH); // P1

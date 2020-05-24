@@ -110,9 +110,8 @@ public class LedgerService extends TimerTask {
 					SwingUtilities.invokeLater(() -> pubKeyCaller.returnedError(Translation.tr("ledger_no_app")));
 				}
 				else {
-					byte[] pubKey = BurstLedger.getPublicKey((byte)index);
+					byte[] pubKey = BurstLedger.showAddress((byte)index);
 					SwingUtilities.invokeLater(() -> pubKeyCaller.returnedKey(pubKey, index));
-					BurstLedger.showAddress((byte)index, false);
 				}
 				return;
 			}
