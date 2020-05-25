@@ -43,9 +43,9 @@ public class TestLedger {
 	@Test
 	public void testOrdinary() throws Exception {
 		
-		byte index = 0;
+		byte index = 1;
 		
-		BurstNodeService NS = BurstNodeService.getInstance(BT.NODE_TESTNET);
+		BurstNodeService NS = BurstNodeService.getInstance("https://testnet-2.burst-alliance.org:6876/");
 		BurstCrypto BC = BurstCrypto.getInstance();
 		
 		byte[] pubKey = BurstLedger.getPublicKey(index);
@@ -76,7 +76,7 @@ public class TestLedger {
 	
 	@Test
 	public void testMessage() throws Exception {
-		byte index = 0;
+		byte index = 2;
 		
 		BurstNodeService NS = BurstNodeService.getInstance(BT.NODE_TESTNET);
 		BurstCrypto BC = BurstCrypto.getInstance();
@@ -110,7 +110,7 @@ public class TestLedger {
 
 	@Test
 	public void testLongMessage() throws Exception {
-		byte index = 0;
+		byte index = 1;
 		
 		BurstNodeService NS = BurstNodeService.getInstance(BT.NODE_TESTNET);
 		BurstCrypto BC = BurstCrypto.getInstance();
@@ -146,7 +146,7 @@ public class TestLedger {
 	
 	@Test
 	public void testMultiOut() throws Exception {
-		byte index = 0;
+		byte index = 2;
 		
 		BurstNodeService NS = BurstNodeService.getInstance(BT.NODE_TESTNET);
 		BurstCrypto BC = BurstCrypto.getInstance();
@@ -183,7 +183,7 @@ public class TestLedger {
 
 	@Test
 	public void testMultiOutSame() throws Exception {
-		byte index = 0;
+		byte index = 1;
 		
 		BurstNodeService NS = BurstNodeService.getInstance(BT.NODE_TESTNET);
 		BurstCrypto BC = BurstCrypto.getInstance();

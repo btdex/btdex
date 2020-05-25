@@ -193,7 +193,6 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				
 			LedgerService.getInstance().setCallBack(this, index);
-			setCursor(Cursor.getDefaultCursor());
 			return;
 		}
 		if(e.getSource() == recoverBox) {
@@ -278,9 +277,6 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 
 	@Override
 	public void returnedKey(byte[] pubKey, int index) {
-		// Clear the call back
-		LedgerService.getInstance().setCallBack(null, 0);
-		
 		Globals g = Globals.getInstance();
 		g.setKeys(pubKey, index);
 		

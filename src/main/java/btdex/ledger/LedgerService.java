@@ -21,6 +21,7 @@ public class LedgerService extends TimerTask {
 	private static LedgerService instance;
 	
 	private PubKeyCallBack pubKeyCaller;
+	private boolean waitingKey;
 	private SignCallBack signCaller;
 	private byte[] unsigned;
 	private byte[] unsigned2;
@@ -78,8 +79,9 @@ public class LedgerService extends TimerTask {
 	}
 	
 	public void setCallBack(PubKeyCallBack caller, int index) {
-		this.pubKeyCaller = caller;
+		this.waitingKey = caller != null;
 		this.index = index;
+		this.pubKeyCaller = caller;
 	}
 
 	/**
@@ -99,10 +101,10 @@ public class LedgerService extends TimerTask {
 	@Override
 	public void run() {
 		try {
-			if(signCaller == null && pubKeyCaller == null)
+			if(signCaller == null && !waitingKey)
 				return;
 			
-			if(pubKeyCaller != null) {
+			if(waitingKey) {
 				if(!BurstLedger.isDeviceAvailable()) {
 					SwingUtilities.invokeLater(() -> pubKeyCaller.returnedError(Translation.tr("ledger_no_device")));
 				}
@@ -111,7 +113,10 @@ public class LedgerService extends TimerTask {
 				}
 				else {
 					byte[] pubKey = BurstLedger.showAddress((byte)index);
-					SwingUtilities.invokeLater(() -> pubKeyCaller.returnedKey(pubKey, index));
+					if(pubKey!=null) {
+						waitingKey = false;
+						SwingUtilities.invokeLater(() -> pubKeyCaller.returnedKey(pubKey, index));
+					}
 				}
 				return;
 			}
