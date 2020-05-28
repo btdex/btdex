@@ -120,7 +120,7 @@ public class ContractState {
 
 		BurstID first = null;
 		BurstID idLimit = BurstID.fromLong(g.isTestnet() ?
-				"9601465021860021685" : "17916279999448178140");
+				"12494358857357719882" : "17916279999448178140");
 
 		// reverse order to get the more recent ones first
 		for (int i = atIDs.length - 1; i >= 0; i--) {
