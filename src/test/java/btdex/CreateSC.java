@@ -41,6 +41,7 @@ public class CreateSC {
 
         this.amount = BurstValue.fromBurst(amount);
         this.security = BurstValue.fromBurst(security);
+        BT.activateCIP20(true);
         this.compiled = BT.compileContract(sc);
         this.sc = sc;
     }
@@ -52,7 +53,7 @@ public class CreateSC {
         mediator2 = mediatorsID[1];
         mediatorOnePassword = getMediatorPassword(mediator1);
         mediatorTwoPassword = getMediatorPassword(mediator2);
-
+        BT.activateCIP20(true);
         this.compiled = BT.compileContract(sc);
         this.sc = sc;
     }

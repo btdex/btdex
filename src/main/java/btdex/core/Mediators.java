@@ -8,6 +8,7 @@ import java.util.Random;
 public class Mediators {
     private BurstID[] mediators;
 
+
     public Mediators(Boolean testnet) {
         String[] mediators = (testnet) ? Constants.MEDIATORS_TESTNET : Constants.MEDIATORS;
 
@@ -29,22 +30,32 @@ public class Mediators {
     }
 
     public BurstID[] getTwoRandomMediators() {
-    	Globals g = Globals.getInstance();
+
         Random rand = new Random();
         BurstID[] randomMediators = new BurstID[2];
-        
+
         randomMediators[0] = mediators[rand.nextInt(mediators.length)];
-        while(randomMediators[0].getSignedLongId() == g.getAddress().getSignedLongId()) {
+        while(isMediatorCreator(randomMediators[0])) {
             // make sure we don't mediate our own contract
-            randomMediators[1] = mediators[rand.nextInt(mediators.length)];
+            randomMediators[0] = mediators[rand.nextInt(mediators.length)];
         }
         randomMediators[1] = mediators[rand.nextInt(mediators.length)];
         while(randomMediators[1] == randomMediators[0] ||
-        		randomMediators[1].getSignedLongId() == g.getAddress().getSignedLongId()) {
+                isMediatorCreator(randomMediators[1])) {
             // make sure we have 2 different mediators and that we do not mediate our own contract
             randomMediators[1] = mediators[rand.nextInt(mediators.length)];
         }
         return randomMediators;
+    }
+
+    private Boolean isMediatorCreator(BurstID mediator) {
+        try {
+            Globals g = Globals.getInstance();
+            if(mediator.getSignedLongId() == g.getAddress().getSignedLongId()) return true;
+        } catch (Exception e) {
+            System.out.println("Mediators.class -> don't get instance");
+        }
+        return false;
     }
 
     private boolean isMediatorAccepted(ContractState contract, long mediator) {

@@ -88,11 +88,11 @@ public class TestCreateUpdateTakeReopen {
         // should now be open
         state = BuyContract.STATE_OPEN;
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
-        assertEquals(state, state_chain);
+        assertEquals(state, state_chain, "Field State");
 
         amount_chain = BT.getContractFieldValue(contract, compiled.getField("amount").getAddress());
         security_chain = BT.getContractFieldValue(contract, compiled.getField("security").getAddress());
-        assertEquals(wantsToBuyInPlanks, amount_chain);
+        assertEquals(wantsToBuyInPlanks, amount_chain, "Wants to buy in planks versus amount in chain");
         assertTrue(security < security_chain);
 
         balance = BT.getContractBalance(contract).longValue();
@@ -172,6 +172,6 @@ public class TestCreateUpdateTakeReopen {
 
         balance = BT.getContractBalance(contract).longValue();
 
-        assertEquals(security_chain - paidFeeForSCstep, balance);
+        assertEquals(security_chain - paidFeeForSCstep, balance, "Paid fees for setup");
     }
 }
