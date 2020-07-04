@@ -41,13 +41,13 @@ public class MediationPanel extends JPanel {
 	
 	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss yyyy-MM-dd");
 
-	public static final int COL_MARKET = 1;
-	public static final int COL_PRICE = 2;
-	public static final int COL_AMOUNT = 3;
-	public static final int COL_CONTRACT = 4;
-	public static final int COL_MAKER = 5;
-	public static final int COL_TAKER = 6;
-	public static final int COL_MEDIATE = 7;
+	public static final int COL_MARKET = 0;
+	public static final int COL_PRICE = 1;
+	public static final int COL_AMOUNT = 2;
+	public static final int COL_CONTRACT = 3;
+	public static final int COL_MAKER = 4;
+	public static final int COL_TAKER = 5;
+	public static final int COL_MEDIATE = 6;
 
 	String[] columnNames = {
 			"acc_market_col",

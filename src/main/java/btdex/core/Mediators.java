@@ -51,8 +51,12 @@ public class Mediators {
     	if(contract.getCreator().getSignedLongId() == mediator)
     		return false;
     	
-        for (BurstID m : mediators) {
-            if(m.getSignedLongId() == mediator)
+        return isMediator(mediator);
+    }
+    
+    public boolean isMediator(long id) {
+    	for (BurstID m : mediators) {
+            if(m.getSignedLongId() == id)
                 return true;
         }
         return false;
