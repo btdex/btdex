@@ -30,6 +30,7 @@ public class DeadlineStatistics {
 		int largestDeadline = 0;
 		
 		float avDeadline = 0;
+		float avEC = 0;
 		int counter = 0;
 		
 		ArrayList<Block> blockList = new ArrayList<>(NBLOCKS);
@@ -44,7 +45,7 @@ public class DeadlineStatistics {
 			}
 		}
 		
-		System.out.println("height\tdeadline\ttarget");
+		System.out.println("height\tdeadline\ttarget\tEC");
 		for(int i = 1; i<blockList.size(); i++) {
 			Block next = blockList.get(i);
 			Block b = blockList.get(i-1);
@@ -55,9 +56,12 @@ public class DeadlineStatistics {
 			largestDeadline = Math.max(largestDeadline, deadline);
 
 			avDeadline += deadline;
-			System.out.println(b.getHeight() + "\t" + deadline + "\t" + b.getBaseTarget());
+			float EC = 18325193796f/b.getBaseTarget();
+			avEC += EC;
+			System.out.println(b.getHeight() + "\t" + deadline + "\t" + b.getBaseTarget() + "\t" + EC);
 		}
-		avDeadline /= counter;
+        avDeadline /= counter;
+        avEC /= counter;
 		
 		double stdDev = 0;
 		for(int i = 1; i<blockList.size(); i++) {
@@ -71,7 +75,8 @@ public class DeadlineStatistics {
 		}
 		stdDev = Math.sqrt(stdDev/counter);
 		
-		System.out.println("average deadline: " + avDeadline);
+        System.out.println("average deadline: " + avDeadline);
+        System.out.println("average EC: " + avEC);
 		System.out.println("smallest deadline: " + smallestDeadline);
 		System.out.println("largest deadline: " + largestDeadline);
 		System.out.println("deadline std dev: " + stdDev);
