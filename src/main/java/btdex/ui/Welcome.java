@@ -83,7 +83,8 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 			
 			useLedgerButton = new JButton(tr("welc_use_ledger"));
 			useLedgerButton.addActionListener(this);
-			introPanel.add(useLedgerButton, BorderLayout.CENTER);
+			if(Globals.getInstance().isLedgerEnabled())
+				introPanel.add(useLedgerButton, BorderLayout.CENTER);
 			topPanel.add(introPanel, BorderLayout.CENTER);
 		}
 

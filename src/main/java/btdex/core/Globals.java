@@ -31,6 +31,7 @@ public class Globals {
 
 	private ArrayList<MarketAccount> accounts = new ArrayList<>();
 
+	private boolean ledgerEnabled = false;
 	private boolean testnet = false;
 	private BurstAddress address;
 	private int ledgerIndex;
@@ -67,6 +68,7 @@ public class Globals {
 			BT.activateCIP20(true);
 			
 			// possible ledger account index
+			ledgerEnabled = Boolean.parseBoolean(conf.getProperty(Constants.PROP_LEDGER_ENABLED, "false"));
 			ledgerIndex = Integer.parseInt(conf.getProperty(Constants.PROP_LEDGER, "-1"));
 
 			// load the markets
@@ -84,8 +86,12 @@ public class Globals {
 		}
 	}
 	
+	public boolean isLedgerEnabled() {
+		return ledgerEnabled;
+	}
+	
 	public boolean usingLedger() {
-		return ledgerIndex >= 0;
+		return ledgerEnabled && ledgerIndex >= 0;
 	}
 	
 	public int getLedgerIndex() {

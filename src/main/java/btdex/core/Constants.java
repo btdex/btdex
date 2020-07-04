@@ -11,6 +11,7 @@ public class Constants {
     public static final String PROP_LANG = "lang";
     public static final String PROP_NODE = "node";
     public static final String PROP_TESTNET = "testnet";
+    public static final String PROP_LEDGER_ENABLED = "ledgerEnabled";
     public static final String PROP_ACCOUNT = "account";
     public static final String PROP_ENC_PRIVKEY = "encPrivKey";
     public static final String PROP_PUBKEY = "pubKey";
