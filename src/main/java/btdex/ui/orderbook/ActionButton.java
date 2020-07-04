@@ -15,12 +15,6 @@ import static btdex.locale.Translation.tr;
 public class ActionButton extends JButton {
 
     private static final long serialVersionUID = 1L;
-    private final OrderBook orderBook;
-    private AssetOrder order;
-    private ContractState contract;
-    private boolean isToken;
-
-    private boolean cancel;
 
     public ActionButton(OrderBook orderBook, String text, ContractState contract, boolean cancel) {
         this(orderBook, text, null, contract, cancel, false);
@@ -31,11 +25,6 @@ public class ActionButton extends JButton {
     }
     public ActionButton(OrderBook orderBook, String text, AssetOrder order, ContractState contract, boolean cancel, boolean isToken) {
         super(text);
-        this.orderBook = orderBook;
-        this.order = order;
-        this.contract = contract;
-        this.cancel = cancel;
-        this.isToken = isToken;
 
         addActionListener(new ActionListener() {
             @Override
