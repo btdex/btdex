@@ -47,4 +47,12 @@ public class Markets {
     public static Market getToken() {
         return token;
     }
+    
+    public static Market findMarket(long id) {
+    	for(Market m : markets) {
+    		if(m.getID() == id)
+    			return m;
+    	}
+    	return null;
+    }
 }

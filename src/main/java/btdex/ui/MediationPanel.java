@@ -1,0 +1,189 @@
+package btdex.ui;
+
+import static btdex.locale.Translation.tr;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+
+import btdex.core.ContractState;
+import btdex.core.ContractType;
+import btdex.core.Contracts;
+import btdex.core.Globals;
+import btdex.core.Market;
+import btdex.core.Markets;
+import btdex.core.NumberFormatting;
+import btdex.sc.SellContract;
+import btdex.ui.orderbook.OrderBook;
+import burst.kit.entity.BurstAddress;
+import jiconfont.icons.font_awesome.FontAwesome;
+import jiconfont.swing.IconFontSwing;
+
+public class MediationPanel extends JPanel {
+
+	private static final long serialVersionUID = 1L;
+
+	JTable table;
+	DefaultTableModel model;
+	Icon copyIcon, expIcon, upIcon, downIcon;
+	
+	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss yyyy-MM-dd");
+
+	public static final int COL_MARKET = 1;
+	public static final int COL_PRICE = 2;
+	public static final int COL_AMOUNT = 3;
+	public static final int COL_CONTRACT = 4;
+	public static final int COL_MAKER = 5;
+	public static final int COL_TAKER = 6;
+	public static final int COL_MEDIATE = 7;
+
+	String[] columnNames = {
+			"acc_market_col",
+			"book_price",
+			"book_size",
+			"book_contract",
+			"med_maker",
+			"med_taker",
+			"",
+	};
+
+	class MyTableModel extends DefaultTableModel {
+		private static final long serialVersionUID = 1L;
+
+		public int getColumnCount() {
+			return columnNames.length;
+		}
+
+		public String getColumnName(int col) {
+			String colName = columnNames[col];
+			
+			if(col == COL_PRICE || col == COL_AMOUNT)
+				colName = tr(colName, "");
+			else
+				colName = tr(colName);
+			return colName;
+		}
+
+		public boolean isCellEditable(int row, int col) {
+			return col == COL_CONTRACT || col == COL_MAKER || col == COL_TAKER || col == COL_MEDIATE;
+		}
+	}
+
+	public MediationPanel(Main main) {
+		super(new BorderLayout());
+
+		JPanel top = new JPanel(new BorderLayout());
+		JPanel topLeft = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		top.add(topLeft, BorderLayout.LINE_START);
+
+		table = new JTable(model = new MyTableModel());
+		table.setRowSelectionAllowed(false);
+		table.getTableHeader().setReorderingAllowed(false);
+		table.setRowHeight(table.getRowHeight()+10);
+		table.setPreferredScrollableViewportSize(new Dimension(200, 200));
+
+		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
+		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
+		
+		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		top.add(topRight, BorderLayout.LINE_END);
+		topRight.add(new SocialButton(SocialButton.Type.TWITTER, table.getForeground()));
+
+		JScrollPane scrollPane = new JScrollPane(table);
+		table.setFillsViewportHeight(true);
+
+		// Center header and all columns
+		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+		centerRenderer.setHorizontalAlignment( JLabel.CENTER );
+		for (int i = 0; i < table.getColumnCount(); i++) {
+			table.getColumnModel().getColumn(i).setCellRenderer( centerRenderer );			
+		}
+		JTableHeader jtableHeader = table.getTableHeader();
+		DefaultTableCellRenderer rend = (DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer();
+		rend.setHorizontalAlignment(JLabel.CENTER);
+		jtableHeader.setDefaultRenderer(rend);
+
+		table.setAutoCreateColumnsFromModel(false);
+
+		table.getColumnModel().getColumn(COL_CONTRACT).setCellRenderer(OrderBook.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_CONTRACT).setCellEditor(OrderBook.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_MAKER).setCellRenderer(OrderBook.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_MAKER).setCellEditor(OrderBook.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_TAKER).setCellRenderer(OrderBook.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_TAKER).setCellEditor(OrderBook.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_MEDIATE).setCellRenderer(OrderBook.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_MEDIATE).setCellEditor(OrderBook.BUTTON_EDITOR);
+		//
+		table.getColumnModel().getColumn(COL_CONTRACT).setPreferredWidth(200);
+		table.getColumnModel().getColumn(COL_MAKER).setPreferredWidth(200);
+		table.getColumnModel().getColumn(COL_TAKER).setPreferredWidth(200);
+
+		add(top, BorderLayout.PAGE_START);
+		add(scrollPane, BorderLayout.CENTER);
+	}
+
+	public void update() {
+		Globals g = Globals.getInstance();
+
+		Collection<ContractState> allContracts = Contracts.getContracts();
+		ArrayList<ContractState> contracts = new ArrayList<>();
+		
+		// Only open orders with a taker and under our supervision
+		for(ContractState s : allContracts) {
+			if(s.getState() == SellContract.STATE_FINISHED || s.getTaker() == 0L)
+				continue;
+			if(s.getMediator1()!=g.getAddress().getSignedLongId() && s.getMediator2()!=g.getAddress().getSignedLongId())
+				continue;
+			if(Markets.findMarket(s.getMarket()) == null)
+				continue;
+
+			contracts.add(s);
+		}
+
+		model.setRowCount(contracts.size());
+
+		// Update the contents
+		for (int row = 0, i=0; i < contracts.size(); i++) {
+			ContractState s = contracts.get(row);
+			
+			Market market = Markets.findMarket(s.getMarket());
+			
+			long amount = s.getAmountNQT();
+			double price = (double)s.getRate() / market.getFactor();
+			
+			String type = tr(s.getType() == ContractType.BUY ? "offer_buy_burst_for" : "offer_sell_burst_for", market.toString());
+			model.setValueAt(type, row, COL_MARKET);
+			
+			BurstAddress maker = s.getCreator();
+			BurstAddress taker = BurstAddress.fromId(s.getTaker());
+
+			model.setValueAt(new ExplorerButton(maker.getRawAddress(), copyIcon, expIcon,
+							ExplorerButton.TYPE_ADDRESS, maker.getID(), maker.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_MAKER);
+			model.setValueAt(new ExplorerButton(taker.getRawAddress(), copyIcon, expIcon,
+							ExplorerButton.TYPE_ADDRESS, taker.getID(), taker.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_TAKER);
+
+			model.setValueAt(new ExplorerButton(
+					s.getAddress().getRawAddress(), copyIcon, expIcon,
+							ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(),
+							s.getAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_CONTRACT);
+
+			model.setValueAt(market.getNumberFormat().format(price), row, COL_PRICE);
+			model.setValueAt(NumberFormatting.BURST.format(amount), row, COL_AMOUNT);
+
+			row++;
+		}
+		model.fireTableDataChanged();
+	}
+}
