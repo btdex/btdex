@@ -168,6 +168,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 					TransactionBroadcast tb = tx.blockingGet();
 					tb.getTransactionId();
 					setVisible(false);
+					Main.getInstance().showTransactionsPanel();
 
 					Toast.makeText((JFrame) this.getOwner(),
 							tr("send_tx_broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();	

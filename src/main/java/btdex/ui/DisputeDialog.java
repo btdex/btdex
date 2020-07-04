@@ -192,11 +192,12 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		pinField = new JPasswordField(12);
 		pinField.addActionListener(this);
 
-		mediatorButton = new JButton(tr("disp_contact_mediator"));
+		mediatorButton = new JButton(tr("dlg_support"));
 		cancelButton = new JButton(tr("dlg_cancel"));
 		okButton = new JButton(tr("dlg_ok"));
 		getRootPane().setDefaultButton(okButton);
 
+		mediatorButton.addActionListener(this);
 		cancelButton.addActionListener(this);
 		okButton.addActionListener(this);
 
@@ -261,6 +262,11 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 			setVisible(false);
 			return;
 		}
+		
+	    if(e.getSource() == mediatorButton) {
+	    	Main.getInstance().browse(Constants.DISCORD_LINK);
+            return;
+        }
 		
 		if(e.getSource() == acceptOtherTermsBox) {
 			if(acceptOtherTermsBox.isSelected()) {

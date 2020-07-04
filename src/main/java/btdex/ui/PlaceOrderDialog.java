@@ -536,8 +536,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			Number priceN = NumberFormatting.parse(priceField.getText());
 			Number amountN = NumberFormatting.parse(amountField.getText());
 
-			priceValue = BurstValue.fromPlanck((long)(priceN.doubleValue()*market.getFactor()));
-			amountValue = BurstValue.fromPlanck((long)(amountN.doubleValue()*Market.BURST_TO_PLANCK));
+			priceValue = BurstValue.fromBurst(priceN.doubleValue());
+			amountValue = BurstValue.fromBurst(amountN.doubleValue());
 
 			double totalValue = priceN.doubleValue()*amountN.doubleValue()*market.getFactor();
 			totalField.setText(market.format(Math.round(totalValue)));

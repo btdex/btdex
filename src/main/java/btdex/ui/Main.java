@@ -237,7 +237,7 @@ public class Main extends JFrame implements ActionListener {
 		if(g.isTestnet() && !g.usingLedger()) {
 			// FIXME: accounts on testnet only for now
 			tabbedPane.addTab(tr("main_accounts"), i.get(Icons.ACCOUNT), accountsPanel);
-			tabbedPane.addTab(tr("main_chat"), i.get(Icons.CHAT), new ChatPanel());
+			// tabbedPane.addTab(tr("main_chat"), i.get(Icons.CHAT), new ChatPanel());
 		}
 
 		tabbedPane.addTab(tr("main_transactions"), i.get(Icons.TRANSACTION), transactionsPanel);
@@ -360,6 +360,10 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 		timer.start();
+	}
+	
+	public void showTransactionsPanel() {
+		tabbedPane.setSelectedComponent(transactionsPanel);
 	}
 
 	public void browse(String url) {
