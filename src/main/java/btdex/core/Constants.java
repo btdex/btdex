@@ -35,7 +35,7 @@ public class Constants {
     public static final String DEF_CONF_FILE = "config.properties";
 
     public static final String[] MEDIATORS = {"TLYF-7EBX-FBLY-DFX86", "P3D9-QX3S-7YHZ-BYLZD"};
-    public static final String[] MEDIATORS_TESTNET = {"6ET8-WUKM-3HS8-CN4KM", "D3S9-8L56-UMLL-6EDFX"};
+    public static final String[] MEDIATORS_TESTNET = {"6ET8-WUKM-3HS8-CN4KM", "D3S9-8L56-UMLL-6EDFX", "E9UA-FX37-CHPE-568RD"};
 
     // FIXME: set the fee contract
     public static final long FEE_CONTRACT = 222222L;
