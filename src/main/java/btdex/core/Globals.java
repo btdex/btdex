@@ -98,6 +98,10 @@ public class Globals {
 		return ledgerIndex;
 	}
 	
+	public long getFeeContract() {
+		return isTestnet() ? Constants.FEE_CONTRACT_TESTNET : Constants.FEE_CONTRACT;
+	}
+	
 	public Mediators getMediators() {
 		return mediators;
 	}

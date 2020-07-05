@@ -189,7 +189,7 @@ public class Contracts {
 		BurstID[] med = mediators.getTwoRandomMediators();
 
 		long data[] = new long[3];
-		data[0] = Constants.FEE_CONTRACT;
+		data[0] = Globals.getInstance().getFeeContract();
 
 		data[1] = med[0].getSignedLongId();
 		data[2] = med[1].getSignedLongId();

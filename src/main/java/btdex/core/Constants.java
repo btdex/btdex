@@ -2,6 +2,7 @@ package btdex.core;
 
 import com.google.gson.Gson;
 
+import burst.kit.crypto.BurstCrypto;
 import okhttp3.MediaType;
 
 public class Constants {
@@ -37,8 +38,10 @@ public class Constants {
     public static final String[] MEDIATORS = {"TLYF-7EBX-FBLY-DFX86", "P3D9-QX3S-7YHZ-BYLZD"};
     public static final String[] MEDIATORS_TESTNET = {"6ET8-WUKM-3HS8-CN4KM", "D3S9-8L56-UMLL-6EDFX", "E9UA-FX37-CHPE-568RD"};
 
-    // FIXME: set the fee contract
-    public static final long FEE_CONTRACT = 222222L;
+    // FIXME: create a new secure address
+    public static final long FEE_CONTRACT = BurstCrypto.getInstance().rsDecode("G4XE-MB8T-WWZC-E4GFU").getSignedLongId();
+    
+    public static final long FEE_CONTRACT_TESTNET = BurstCrypto.getInstance().rsDecode("G4XE-MB8T-WWZC-E4GFU").getSignedLongId();
     
     public static final String BURST_SYMBOL = "\u0243";
 

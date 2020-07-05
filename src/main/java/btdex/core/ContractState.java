@@ -162,7 +162,7 @@ public class ContractState {
 				s.feeContract = s.getContractFieldValue("feeContract");
 
 				// Check if the immutable variables are valid
-				if (Constants.FEE_CONTRACT == s.getFeeContract()) {
+				if (g.getFeeContract() == s.getFeeContract()) {
 					s.updateState(at, null, false);
 					map.put(ad, s);
 				}

@@ -240,7 +240,7 @@ public class Main extends JFrame implements ActionListener {
 			// tabbedPane.addTab(tr("main_chat"), i.get(Icons.CHAT), new ChatPanel());
 		}
 		
-		if(g.getMediators().isMediator(g.getAddress().getSignedLongId())){
+		if(g.getAddress()!=null && g.getMediators().isMediator(g.getAddress().getSignedLongId())){
 			// this is a mediator, add the mediation tab
 			tabbedPane.addTab(tr("main_mediation"), null, new MediationPanel(this));
 		}
