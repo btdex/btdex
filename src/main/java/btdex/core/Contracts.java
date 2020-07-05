@@ -160,16 +160,19 @@ public class Contracts {
 			if(s.getType() == ContractType.SELL &&
 					s.getCreator().equals(g.getAddress()) && 
 					s.getState() == SellContract.STATE_FINISHED && !s.hasPending() &&
+					g.getMediators().areMediatorsAccepted(s) &&
 					s.getATVersion()>1)
 				updatedFreeContract = s;
 			else if(s.getType() == ContractType.BUY &&
 					s.getCreator().equals(g.getAddress()) && 
 					s.getState() == SellContract.STATE_FINISHED && !s.hasPending() &&
+					g.getMediators().areMediatorsAccepted(s) &&
 					s.getATVersion()>1)
 				updatedBuyFreeContract = s;
 			else if(s.getType() == ContractType.NO_DEPOSIT &&
 					s.getCreator().equals(g.getAddress()) &&
 					s.getState() == SellNoDepositContract.STATE_FINISHED && !s.hasPending() &&
+					g.getMediators().areMediatorsAccepted(s) &&
 					s.getATVersion()>1)
 				updatedFreeNoDepositContract = s;
 		}

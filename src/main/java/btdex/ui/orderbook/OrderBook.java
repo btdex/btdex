@@ -395,9 +395,9 @@ public class OrderBook extends JPanel {
 			if(s.getType() == ContractType.INVALID)
 				continue;
 
-			// add your own contracts but not yet configured if they have balance (so you can withdraw)
+			// add your own contracts (so you can withdraw no matter what)
 			// this should never happen on normal circumstances
-			if(s.getCreator().equals(g.getAddress()) && s.getMarket() == 0 && s.getBalance().longValue() > 0L) {
+			if(s.getCreator().equals(g.getAddress()) && s.getBalance().longValue() > 0L) {
 				if(s.getType() == ContractType.SELL)
 					contracts.add(s);
 				else if(s.getType() == ContractType.BUY)
@@ -406,7 +406,7 @@ public class OrderBook extends JPanel {
 			}
 
 			// only contracts for this market
-			if(s.getMarket() != market.getID())
+			if(s.getMarket() != market.getID() || !g.getMediators().areMediatorsAccepted(s))
 				continue;
 
 			if(onlyMine && !s.getCreator().equals(g.getAddress()) && s.getTaker()!=g.getAddress().getSignedLongId())

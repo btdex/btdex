@@ -181,6 +181,11 @@ public class MediationPanel extends JPanel {
 
 			model.setValueAt(market.getNumberFormat().format(price), row, COL_PRICE);
 			model.setValueAt(NumberFormatting.BURST.format(amount), row, COL_AMOUNT);
+			
+			if(s.getState() > SellContract.STATE_DISPUTE) {
+				// under dispute
+				
+			}
 
 			row++;
 		}
