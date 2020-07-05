@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import btdex.markets.MarketTRT;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.AssetBalance;
@@ -12,7 +13,6 @@ import burst.kit.entity.response.AssetTrade;
 import burst.kit.entity.response.Block;
 import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.entity.response.Transaction;
-import burst.kit.entity.response.http.BRSError;
 import burst.kit.service.BurstNodeService;
 
 /**
@@ -43,6 +43,8 @@ public class BurstNode {
 	private FeeSuggestion suggestedFee;
 	private BurstID lastBlock;
 	private Block latestBlock;
+	
+	private static Market TRT = new MarketTRT();
 	
 	static BurstNode INSTANCE;
 
@@ -135,6 +137,8 @@ public class BurstNode {
 
 				suggestedFee = g.getNS().suggestFee().blockingGet();
 				
+				Mediators mediators = g.getMediators();
+				
 				for(Market m : Markets.getMarkets()) {
 					if(m.getTokenID() == null)
 						continue;
@@ -152,6 +156,15 @@ public class BurstNode {
 							if(b.getAccountAddress().equals(g.getAddress())) {
 								balance = b;
 								break;
+							}
+							
+							if(m.getTokenID().equals(TRT.getTokenID())) {
+								for (int i = 0; i < mediators.getMediators().length; i++) {
+									BurstID mediator = mediators.getMediators()[i];
+									if(b.getAccountAddress().getBurstID().equals(mediator)) {
+										mediators.setMediatorBalance(i, b.getBalance());
+									}
+								}
 							}
 						}
 						first += delta;

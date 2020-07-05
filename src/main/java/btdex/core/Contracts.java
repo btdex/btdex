@@ -184,8 +184,8 @@ public class Contracts {
 		freeNoDepositContract = updatedFreeNoDepositContract;
 	}
 
-	public static long[] getNewContractData(Boolean testnet) {
-		Mediators mediators = new Mediators(testnet);
+	public static long[] getNewContractData() {
+		Mediators mediators = Globals.getInstance().getMediators();
 		BurstID[] med = mediators.getTwoRandomMediators();
 
 		long data[] = new long[3];

@@ -2,16 +2,21 @@ package btdex.core;
 
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstID;
+import burst.kit.entity.BurstValue;
 
 import java.util.Random;
 
 public class Mediators {
     private BurstID[] mediators;
+    private BurstValue[] mediatorBalances;
+    
+    private static final BurstValue MIN_TRT = BurstValue.fromPlanck(10000L * 1000000L);
 
     public Mediators(Boolean testnet) {
         String[] mediators = (testnet) ? Constants.MEDIATORS_TESTNET : Constants.MEDIATORS;
 
         this.mediators = convertStringToBurstID(mediators);
+        mediatorBalances = new BurstValue[mediators.length];
     }
 
     private BurstID[] convertStringToBurstID (String[] md) {
@@ -51,7 +56,15 @@ public class Mediators {
     	if(contract.getCreator().getSignedLongId() == mediator)
     		return false;
     	
-        return isMediator(mediator);
+    	for (int i = 0; i < mediators.length; i++) {
+    		if(mediators[i].getSignedLongId() == mediator && mediatorBalances[i]!=null && mediatorBalances[i].compareTo(MIN_TRT) >= 0)
+    			return true;
+		}
+        return false;
+    }
+    
+    public void setMediatorBalance(int i, BurstValue value) {
+    	mediatorBalances[i] = value;
     }
     
     public boolean isMediator(long id) {

@@ -145,7 +145,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 				int ncontracts = Integer.parseInt(numOfContractsSpinner.getValue().toString());
 
 				for (int c = 0; c < ncontracts; c++) {
-					long data[] = Contracts.getNewContractData(g.isTestnet());
+					long data[] = Contracts.getNewContractData();
 
 					ByteBuffer dataBuffer = ByteBuffer.allocate(data==null ? 0 : data.length*8);
 					dataBuffer.order(ByteOrder.LITTLE_ENDIAN);
