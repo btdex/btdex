@@ -12,6 +12,7 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.ConnectException;
 import java.net.URI;
 import java.security.SecureRandom;
 import java.util.Locale;
@@ -544,14 +545,21 @@ public class Main extends JFrame implements ActionListener {
 			}
 			
 			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
+			nodeSelector.setBackground(explorerSelector.getBackground());
 
 			Exception nodeException = bn.getNodeException();
 			if(nodeException != null) {
-
+				
 				if(!(nodeException.getCause() instanceof BRSError) || ((BRSError) nodeException.getCause()).getCode() != 5) {
 					// not the unknown account exception, show the error
 					nodeSelector.setIcon(ICON_DISCONNECTED);
 					String errorMessage = tr("main_error", nodeException.getLocalizedMessage());
+					
+					if(nodeException.getCause() instanceof ConnectException) {
+						errorMessage = tr("main_node_connection");
+						nodeSelector.setBackground(Color.RED);
+					}
+					
 					statusLabel.setText(errorMessage);
 				}
 				// otherwise all fine, just move on
@@ -574,6 +582,7 @@ public class Main extends JFrame implements ActionListener {
 					Toast.makeText(Main.this, error, Toast.Style.ERROR).display();
 
 					nodeSelector.setIcon(ICON_DISCONNECTED);
+					nodeSelector.setBackground(Color.RED);
 					statusLabel.setText(error);
 				}
 			}
@@ -635,6 +644,7 @@ public class Main extends JFrame implements ActionListener {
 			// all fine status label with the latest block
 			statusLabel.setText("");
 			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
+			nodeSelector.setBackground(explorerSelector.getBackground());
 		}
 		catch (RuntimeException rex) {
 			rex.printStackTrace();
