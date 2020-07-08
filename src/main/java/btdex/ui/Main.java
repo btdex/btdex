@@ -69,6 +69,7 @@ public class Main extends JFrame implements ActionListener {
 	private CardLayout cardLayout;
 	private boolean showingSplash;
 	private OrderBook orderBook;
+	private MediationPanel mediationPanel;
 	private TransactionsPanel transactionsPanel;
 	private HistoryPanel historyPanel;
 	private AccountsPanel accountsPanel;
@@ -243,7 +244,7 @@ public class Main extends JFrame implements ActionListener {
 		
 		if(g.getAddress()!=null && g.getMediators().isMediator(g.getAddress().getSignedLongId())){
 			// this is a mediator, add the mediation tab
-			tabbedPane.addTab(tr("main_mediation"), null, new MediationPanel(this));
+			tabbedPane.addTab(tr("main_mediation"), i.get(Icons.MEDIATION), mediationPanel = new MediationPanel(this));
 		}
 
 		tabbedPane.addTab(tr("main_transactions"), i.get(Icons.TRANSACTION), transactionsPanel);
@@ -543,6 +544,8 @@ public class Main extends JFrame implements ActionListener {
 				orderBook.update();
 				historyPanel.update();
 			}
+			if(mediationPanel!=null && mediationPanel.isVisible())
+				mediationPanel.update();
 			
 			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 			nodeSelector.setBackground(explorerSelector.getBackground());

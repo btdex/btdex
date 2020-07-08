@@ -65,6 +65,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 	JTextPane conditions;
 	JCheckBox acceptBox;
 	JCheckBox acceptOtherTermsBox;
+	JCheckBox acceptMakerTermsBox;
 
 	JPasswordField pinField;
 
@@ -72,7 +73,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 	private JButton cancelButton;
 	private JButton mediatorButton;
 
-	private boolean isBuy, isCreator;
+	private boolean isBuy, isCreator, isMediator;
 	private boolean hasOtherSuggestion, hasYourSuggestion;
 
 	private BurstValue suggestedFee;
@@ -87,6 +88,11 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		this.contract = contract;
 		this.isBuy = contract.getType() == ContractType.BUY;
 		this.isCreator = contract.getCreator().equals(g.getAddress());
+		this.isMediator = contract.getMediator1() == g.getAddress().getSignedLongId() || contract.getMediator2() == g.getAddress().getSignedLongId();
+		
+		if(this.isMediator)
+			this.isCreator = true; // so that "your" is the maker
+		
 		this.hasOtherSuggestion = (isCreator && contract.hasStateFlag(SellContract.STATE_TAKER_DISPUTE)) 
 				|| (!isCreator && contract.hasStateFlag(SellContract.STATE_CREATOR_DISPUTE));
 		this.hasYourSuggestion = (isCreator && contract.hasStateFlag(SellContract.STATE_CREATOR_DISPUTE)) 
@@ -151,15 +157,19 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		conditions.setEditable(false);
 		
 		acceptBox = new JCheckBox(tr("dlg_accept_terms"));
-		acceptOtherTermsBox = new JCheckBox(tr("disp_accept_other_suggestion"));
+		acceptOtherTermsBox = new JCheckBox(tr(isMediator ? "disp_accept_taker_suggestion" : "disp_accept_other_suggestion"));
 		acceptOtherTermsBox.addActionListener(this);
+		if(isMediator) {
+			acceptMakerTermsBox = new JCheckBox(tr("disp_accept_maker_suggestion"));
+			acceptMakerTermsBox.addActionListener(this);
+		}
 
 		// Dispute panels
 		JPanel otherPanel = new JPanel(new GridLayout(0, 2));
-		otherPanel.setBorder(BorderFactory.createTitledBorder(tr("disp_what_other_suggested")));
-		otherPanel.add(new JLabel(tr("disp_you_should_get")));
+		otherPanel.setBorder(BorderFactory.createTitledBorder(tr(isMediator ? "disp_what_taker_suggested" : "disp_what_other_suggested")));
+		otherPanel.add(new JLabel(tr(isMediator ? "disp_maker_should_get" : "disp_you_should_get")));
 		otherPanel.add(otherAmountYouDesc = new Desc("", otherAmountYouSlider = new JSlider(0, 100)));
-		otherPanel.add(new JLabel(tr("disp_other_should_get")));
+		otherPanel.add(new JLabel(tr(isMediator ? "disp_taker_should_get" : "disp_other_should_get")));
 		otherPanel.add(otherAmountOtherDesc = new Desc("", otherAmountOtherSlider = new JSlider(0, 100)));
 		otherAmountOtherSlider.setValue((int)(contract.getDisputeAmount(!isCreator, !isCreator)*100 / amount));
 		otherAmountYouSlider.setValue((int)(contract.getDisputeAmount(!isCreator, isCreator)*100 / amount));
@@ -170,18 +180,25 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		otherAmountYouSlider.setEnabled(false);
 
 		JPanel yourPanel = new JPanel(new BorderLayout());
-		yourPanel.setBorder(BorderFactory.createTitledBorder(tr("disp_what_you_suggest")));
+		yourPanel.setBorder(BorderFactory.createTitledBorder(tr(isMediator ? "disp_what_maker_suggest" : "disp_what_you_suggest")));
 		JPanel yourSuggestionPanel = new JPanel(new GridLayout(0, 2));
 		yourPanel.add(yourSuggestionPanel, BorderLayout.CENTER);
 		if(hasOtherSuggestion) {
 			yourPanel.add(acceptOtherTermsBox, BorderLayout.PAGE_START);
 		}
-		yourSuggestionPanel.add(new JLabel(tr("disp_you_should_get")));
+		yourSuggestionPanel.add(new JLabel(tr(isMediator ? "disp_maker_should_get" : "disp_you_should_get")));
 		yourSuggestionPanel.add(yourAmountYouDesc = new Desc("", yourAmountYouSlider = new JSlider(0, 100)));
-		yourSuggestionPanel.add(new JLabel(tr("disp_other_should_get")));
+		yourSuggestionPanel.add(new JLabel(tr(isMediator ? "disp_taker_should_get" : "disp_other_should_get")));
 		yourSuggestionPanel.add(yourAmountOtherDesc = new Desc("", yourAmountOtherSlider = new JSlider(0, 100)));
-		yourAmountYouSlider.addChangeListener(this);
-		yourAmountOtherSlider.addChangeListener(this);
+		
+		if(isMediator) {
+			yourAmountYouSlider.setEnabled(false);
+			yourAmountYouSlider.setEnabled(false);
+		}
+		else {
+			yourAmountYouSlider.addChangeListener(this);
+			yourAmountOtherSlider.addChangeListener(this);
+		}
 		
 		yourAmountYouSlider.setValue((int)(suggestToYou*100 / amount));
 		yourAmountOtherSlider.setValue((int)(suggestToOther*100 / amount));
@@ -227,7 +244,8 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		// Only show the other side proposal when there is one
 		if(hasOtherSuggestion)
 			bottomPanel.add(otherPanel, BorderLayout.PAGE_START);
-		bottomPanel.add(yourPanel, BorderLayout.CENTER);
+		if(!isMediator || hasYourSuggestion)
+			bottomPanel.add(yourPanel, BorderLayout.CENTER);
 		bottomPanel.add(buttonPane, BorderLayout.PAGE_END);
 
 		content.add(centerPanel, BorderLayout.CENTER);

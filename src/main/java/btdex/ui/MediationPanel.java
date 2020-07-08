@@ -5,11 +5,14 @@ import static btdex.locale.Translation.tr;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.swing.Icon;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -38,6 +41,7 @@ public class MediationPanel extends JPanel {
 	JTable table;
 	DefaultTableModel model;
 	Icon copyIcon, expIcon, upIcon, downIcon;
+	JCheckBox listOnlyMine;
 	
 	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss yyyy-MM-dd");
 
@@ -56,7 +60,7 @@ public class MediationPanel extends JPanel {
 			"book_contract",
 			"med_maker",
 			"med_taker",
-			"",
+			"med_action",
 	};
 
 	class MyTableModel extends DefaultTableModel {
@@ -87,6 +91,14 @@ public class MediationPanel extends JPanel {
 		JPanel top = new JPanel(new BorderLayout());
 		JPanel topLeft = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		top.add(topLeft, BorderLayout.LINE_START);
+		
+		topLeft.add(listOnlyMine = new JCheckBox(tr("hist_list_mine_only")));
+		listOnlyMine.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				main.update();
+			}
+		});
 
 		table = new JTable(model = new MyTableModel());
 		table.setRowSelectionAllowed(false);
@@ -99,7 +111,6 @@ public class MediationPanel extends JPanel {
 		
 		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		top.add(topRight, BorderLayout.LINE_END);
-		topRight.add(new SocialButton(SocialButton.Type.TWITTER, table.getForeground()));
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
@@ -136,6 +147,8 @@ public class MediationPanel extends JPanel {
 
 	public void update() {
 		Globals g = Globals.getInstance();
+		
+		boolean onlyMine = listOnlyMine.isSelected();
 
 		Collection<ContractState> allContracts = Contracts.getContracts();
 		ArrayList<ContractState> contracts = new ArrayList<>();
@@ -144,7 +157,7 @@ public class MediationPanel extends JPanel {
 		for(ContractState s : allContracts) {
 			if(s.getState() == SellContract.STATE_FINISHED || s.getTaker() == 0L)
 				continue;
-			if(s.getMediator1()!=g.getAddress().getSignedLongId() && s.getMediator2()!=g.getAddress().getSignedLongId())
+			if(onlyMine && s.getMediator1()!=g.getAddress().getSignedLongId() && s.getMediator2()!=g.getAddress().getSignedLongId())
 				continue;
 			if(Markets.findMarket(s.getMarket()) == null)
 				continue;
@@ -163,7 +176,7 @@ public class MediationPanel extends JPanel {
 			long amount = s.getAmountNQT();
 			double price = (double)s.getRate() / market.getFactor();
 			
-			String type = tr(s.getType() == ContractType.BUY ? "offer_buy_burst_for" : "offer_sell_burst_for", market.toString());
+			String type = tr(s.getType() == ContractType.BUY ? "offer_buy_burst_with" : "offer_sell_burst_for", market.toString());
 			model.setValueAt(type, row, COL_MARKET);
 			
 			BurstAddress maker = s.getCreator();
