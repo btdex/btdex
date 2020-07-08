@@ -15,7 +15,6 @@ import jiconfont.swing.IconFontSwing;
 
 public class Icons {
     public static IconCode BTDEX = FontAwesome.HEART;
-    public static IconCode DISCORD = FontAwesomeBrands.DISCORD;
     public static IconCode RESET_PIN = FontAwesome.LOCK;
     public static IconCode VERSION = FontAwesome.CODE_FORK;
     public static IconCode SIGNOUT = FontAwesome.SIGN_OUT;
@@ -41,6 +40,7 @@ public class Icons {
     public static IconCode MEDIATION = FontAwesome.GAVEL;
     public static IconCode NEW_TOKEN = FontAwesome.TAG;
 
+    public static IconCode DISCORD = FontAwesomeBrands.DISCORD;
     public static IconCode FACEBOOK = FontAwesomeBrands.FACEBOOK;
     public static IconCode INSTAGRAM = FontAwesomeBrands.INSTAGRAM;
     public static IconCode GOOGLE_PLUS = FontAwesomeBrands.GOOGLE_PLUS;

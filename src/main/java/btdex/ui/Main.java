@@ -180,9 +180,10 @@ public class Main extends JFrame implements ActionListener {
 		marketComboBox.setToolTipText(tr("main_select_market"));
 		marketComboBox.setFont(largeFont);
 
-		bottomRight.add(createWebButton(), BorderLayout.LINE_END);
-		bottomRight.add(createDiscordButton(), BorderLayout.LINE_END);
-		bottomRight.add(createGithubButton(), BorderLayout.LINE_END);
+		bottomRight.add(createWebButton());
+		bottomRight.add(createDiscordButton());
+		bottomRight.add(createRedditButton());
+		bottomRight.add(createGithubButton());
 
 		signoutButton = new JButton(i.get(Icons.SIGNOUT));
 		signoutButton.setToolTipText(tr("main_exit_tip"));
@@ -466,6 +467,19 @@ public class Main extends JFrame implements ActionListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				browse(Constants.DISCORD_LINK);
+			}
+		});
+		return discordButton;
+	}
+
+	private JButton createRedditButton() {
+		JButton discordButton = new JButton(i.get(Icons.REDDIT));
+		discordButton.setToolTipText(tr("main_chat_reddit"));
+		discordButton.setVerticalAlignment(SwingConstants.CENTER);
+		discordButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				browse(Constants.REDDIT_LINK);
 			}
 		});
 		return discordButton;

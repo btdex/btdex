@@ -58,6 +58,7 @@ public class Constants {
     public static final String RELEASES_LINK = "https://github.com/btdex/btdex/releases";
     public static final String WEBSITE_LINK = "https://btdex.trade";
     public static final String DISCORD_LINK = "https://discord.gg/VQ6sFAY";
+    public static final String REDDIT_LINK = "https://www.reddit.com/r/BTDEX/";
     public static final String GITHUB_LINK = "https://github.com/btdex/btdex";
 
     public static final int ICON_SIZE = 24;
