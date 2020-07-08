@@ -60,6 +60,10 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 
 	private int ndecimals;
 
+	private String ticker;
+	
+	private int returnValue = JOptionPane.OK_OPTION;
+
 	public CreateTokenDialog(Window owner) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -84,6 +88,7 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 		totalSupplyField.getDocument().addDocumentListener(this);
 		
 		descriptionField = new JTextArea(4, 20);
+		descriptionField.setLineWrap(true);
 		
 		JPanel topDetails = new JPanel(new GridLayout(0, 3, 4, 4));
 		topDetails.add(new Desc(tr("token_ticker"), tickerField));
@@ -135,12 +140,30 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == cancelButton) {
+			returnValue = JOptionPane.CANCEL_OPTION;
 			setVisible(false);
 		}
 
 		if(e.getSource() == okButton || e.getSource() == pin) {
 			String error = null;
 			Globals g = Globals.getInstance();
+
+			if(error == null && (ticker==null || ticker.length()<3 || ticker.length()>8)) {
+				error = tr("token_invalid_ticker");
+			}
+			
+			if(error == null && totalSupplyLong <= 0) {
+				error = tr("token_invalid_supply");
+			}
+
+			if(error == null && (descriptionField.getText().length()>1000)) {
+				error = tr("token_max_desc_length");
+			}
+			
+			if(error!=null) {
+				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(okButton);
+				return;
+			}
 
 			if(error == null && !acceptBox.isSelected()) {
 				error = tr("dlg_accept_first");
@@ -151,25 +174,12 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 				error = tr("dlg_invalid_pin");
 				pin.requestFocus();
 			}
-			
-			if(error == null && tickerField.getText().length()>8) {
-				error = tr("token_max_ticker_length");
-			}
-			
-			if(error == null && descriptionField.getText().length()>1000) {
-				error = tr("token_max_desc_length");
-			}
-
-			if(error!=null) {
-				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(okButton);
-				return;
-			}
 
 			// all set, lets register the contract
 			try {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				
-				Single<TransactionBroadcast> tx = g.getNS().generateIssueAssetTransaction(g.getPubKey(), tickerField.getText(),
+				Single<TransactionBroadcast> tx = g.getNS().generateIssueAssetTransaction(g.getPubKey(), ticker,
 						descriptionField.getText(), BurstValue.fromPlanck(totalSupplyLong), ndecimals, BurstValue.fromBurst(1000), 1000)
 						.flatMap(unsignedTransactionBytes -> {
 							byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
@@ -179,12 +189,12 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 				setCursor(Cursor.getDefaultCursor());
 
 				JOptionPane.showMessageDialog(getParent(),
-						tr("token_create_success", tickerField.getText(), tb.getTransactionId().getID()),
+						tr("token_create_success", ticker, tb.getTransactionId().getID()),
 						tr("token_create"), JOptionPane.INFORMATION_MESSAGE);
 				
 				setVisible(false);
 				
-				MarketBurstToken newMarket = new MarketBurstToken(tb.getTransactionId(), tickerField.getText().toUpperCase(), ndecimals);
+				MarketBurstToken newMarket = new MarketBurstToken(tb.getTransactionId(), ticker, ndecimals);
 				Main.getInstance().addMarket(newMarket);
 			}
 			catch (Exception ex) {
@@ -192,6 +202,10 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 			}
 			setCursor(Cursor.getDefaultCursor());
 		}
+	}
+	
+	public int getReturnValue() {
+		return returnValue;
 	}
 
 	@Override
@@ -201,6 +215,8 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 	
 	private void somethingChanged() {
 		try {
+			ticker = tickerField.getText().trim().toUpperCase();
+			
 			ndecimals = Integer.parseInt(numOfDecimalPlacesSpinner.getValue().toString());
 			Number totalSupply = NumberFormatting.parse(totalSupplyField.getText());
 			
@@ -208,7 +224,7 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 
 			StringBuilder terms = new StringBuilder();
 			terms.append(tr("token_terms",
-					tickerField.getText().toUpperCase(),
+					ticker,
 					1000,
 					totalSupply,
 					ndecimals));

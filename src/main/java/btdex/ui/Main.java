@@ -84,8 +84,8 @@ public class Main extends JFrame implements ActionListener {
 	private JLabel balanceLabel;
 	private JLabel lockedBalanceLabel;
 	private JComboBox<Market> marketComboBox;
-	private JButton removeTokenButton, newTokenButton;
-	private Market addMarketDummy;
+	private JButton removeTokenButton;
+	private Market addMarketDummy, newMarketDummy;
 	private JButton sendButton;
 	private Market token;
 
@@ -202,6 +202,12 @@ public class Main extends JFrame implements ActionListener {
 				return tr("main_add_token_sign");
 			}
 		});
+		marketComboBox.addItem(newMarketDummy = new MarketBTC() {
+			@Override
+			public String toString() {
+				return tr("main_new_token_sign");
+			}
+		});
 		token = Markets.getToken();
 
 		marketComboBox.addActionListener(this);
@@ -211,10 +217,6 @@ public class Main extends JFrame implements ActionListener {
 		removeTokenButton.setToolTipText(tr("main_remove_token_tip"));
 		removeTokenButton.addActionListener(this);
 		removeTokenButton.setVisible(false);
-
-		newTokenButton = new JButton(i.get(Icons.NEW_TOKEN));
-		newTokenButton.setToolTipText(tr("main_create_token_tip"));
-		newTokenButton.addActionListener(this);
 
 		transactionsPanel = new TransactionsPanel();
 		historyPanel = new HistoryPanel(this, (Market) marketComboBox.getSelectedItem(), orderBook);
@@ -256,7 +258,6 @@ public class Main extends JFrame implements ActionListener {
 
 		top.add(new Desc(tr("main_market"), marketComboBox));
 		top.add(new Desc(" ", removeTokenButton));
-		top.add(new Desc(" ", newTokenButton));
 		top.add(new Desc(tr("main_your_burst_address"), copyAddButton));
 
 		balanceLabel = new JLabel("0");
@@ -688,8 +689,10 @@ public class Main extends JFrame implements ActionListener {
 	public void addMarket(MarketBurstToken newMarket) {
 		// Add at the end of the list
 		marketComboBox.removeItem(addMarketDummy);
+		marketComboBox.removeItem(newMarketDummy);
 		marketComboBox.addItem(newMarket);
 		marketComboBox.addItem(addMarketDummy);
+		marketComboBox.addItem(newMarketDummy);
 
 		Globals.getInstance().addUserMarket(newMarket, true);
 		BurstNode.getInstance().update();
@@ -735,13 +738,6 @@ public class Main extends JFrame implements ActionListener {
 			}
 		}
 
-		if(e.getSource() == newTokenButton) {
-			CreateTokenDialog dlg = new CreateTokenDialog(this);
-			dlg.setLocationRelativeTo(this);
-			dlg.setVisible(true);
-			return;
-		}
-		
 		if (e.getSource() == marketComboBox) {
 			if(m == addMarketDummy) {
 				String response = JOptionPane.showInputDialog(this, tr("main_add_token_message"),
@@ -758,6 +754,15 @@ public class Main extends JFrame implements ActionListener {
 				}
 
 				marketComboBox.setSelectedIndex(0);
+				return;
+			}
+			if(m == newMarketDummy) {
+				CreateTokenDialog dlg = new CreateTokenDialog(this);
+				dlg.setLocationRelativeTo(this);
+				dlg.setVisible(true);
+				
+				if(dlg.getReturnValue() == JOptionPane.CANCEL_OPTION)
+					marketComboBox.setSelectedIndex(0);
 				return;
 			}
 
