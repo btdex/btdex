@@ -34,6 +34,17 @@ public class MarketBurstToken extends Market {
 		this.NF = NumberFormatting.NF(Math.min(1, decimals), decimals);
 	}
 	
+	public MarketBurstToken(BurstID id, String ticker, int decimals) {
+		tokenID = id;
+		this.ticker = ticker;
+		this.decimals = decimals;
+		factor = 1L;
+		for (int i = 0; i < decimals; i++) {
+			factor *= 10L;
+		}
+		this.NF = NumberFormatting.NF(Math.min(1, decimals), decimals);
+	}
+	
 	public String toString() {
 		return ticker;
 	}

@@ -143,42 +143,47 @@ public class BurstNode {
 					if(m.getTokenID() == null)
 						continue;
 					
-					AssetBalance balance = null;
+					try{
+						AssetBalance balance = null;
 
-					Integer first = 0;
-					Integer delta = 400;
-					while(true) {
-						AssetBalance[] accounts = NS.getAssetBalances(m.getTokenID(), first, first+delta).blockingGet();
-						if(accounts == null || accounts.length == 0)
-							break;
-						
-						for(AssetBalance b : accounts) {
-							if(b.getAccountAddress().equals(g.getAddress())) {
-								balance = b;
+						Integer first = 0;
+						Integer delta = 400;
+						while(true) {
+							AssetBalance[] accounts = NS.getAssetBalances(m.getTokenID(), first, first+delta).blockingGet();
+							if(accounts == null || accounts.length == 0)
 								break;
-							}
-							
-							if(m.getTokenID().equals(TRT.getTokenID())) {
-								for (int i = 0; i < mediators.getMediators().length; i++) {
-									BurstID mediator = mediators.getMediators()[i];
-									if(b.getAccountAddress().getBurstID().equals(mediator)) {
-										mediators.setMediatorBalance(i, b.getBalance());
+
+							for(AssetBalance b : accounts) {
+								if(b.getAccountAddress().equals(g.getAddress())) {
+									balance = b;
+									break;
+								}
+
+								if(m.getTokenID().equals(TRT.getTokenID())) {
+									for (int i = 0; i < mediators.getMediators().length; i++) {
+										BurstID mediator = mediators.getMediators()[i];
+										if(b.getAccountAddress().getBurstID().equals(mediator)) {
+											mediators.setMediatorBalance(i, b.getBalance());
+										}
 									}
 								}
 							}
+							first += delta;
 						}
-						first += delta;
-					}
-					
-					
-					AssetTrade[] trades = NS.getAssetTrades(m.getTokenID(), null, 0, 200).blockingGet();
-					AssetOrder[] asks = NS.getAskOrders(m.getTokenID()).blockingGet();
-					AssetOrder[] bids = NS.getBidOrders(m.getTokenID()).blockingGet();
 
-					assetBalances.put(m, balance);
-					assetTrades.put(m, trades);
-					askOrders.put(m, asks);
-					bidOrders.put(m, bids);
+
+						AssetTrade[] trades = NS.getAssetTrades(m.getTokenID(), null, 0, 200).blockingGet();
+						AssetOrder[] asks = NS.getAskOrders(m.getTokenID()).blockingGet();
+						AssetOrder[] bids = NS.getBidOrders(m.getTokenID()).blockingGet();
+
+						assetBalances.put(m, balance);
+						assetTrades.put(m, trades);
+						askOrders.put(m, asks);
+						bidOrders.put(m, bids);
+					}
+					catch (Exception e) {
+						break;
+					}
 				}
 				
 				// Check if the node has the expected block

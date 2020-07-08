@@ -84,7 +84,7 @@ public class Main extends JFrame implements ActionListener {
 	private JLabel balanceLabel;
 	private JLabel lockedBalanceLabel;
 	private JComboBox<Market> marketComboBox;
-	private JButton removeTokenButton;
+	private JButton removeTokenButton, newTokenButton;
 	private Market addMarketDummy;
 	private JButton sendButton;
 	private Market token;
@@ -211,6 +211,10 @@ public class Main extends JFrame implements ActionListener {
 		removeTokenButton.addActionListener(this);
 		removeTokenButton.setVisible(false);
 
+		newTokenButton = new JButton(i.get(Icons.NEW_TOKEN));
+		newTokenButton.setToolTipText(tr("main_create_token_tip"));
+		newTokenButton.addActionListener(this);
+
 		transactionsPanel = new TransactionsPanel();
 		historyPanel = new HistoryPanel(this, (Market) marketComboBox.getSelectedItem(), orderBook);
 		accountsPanel = new AccountsPanel(this);
@@ -251,6 +255,7 @@ public class Main extends JFrame implements ActionListener {
 
 		top.add(new Desc(tr("main_market"), marketComboBox));
 		top.add(new Desc(" ", removeTokenButton));
+		top.add(new Desc(" ", newTokenButton));
 		top.add(new Desc(tr("main_your_burst_address"), copyAddButton));
 
 		balanceLabel = new JLabel("0");
@@ -665,6 +670,19 @@ public class Main extends JFrame implements ActionListener {
 				Toast.makeText(this, tr("main_cross_chain_loading"), 8000, Toast.Style.SUCCESS).display();
 		}
 	}
+	
+	public void addMarket(MarketBurstToken newMarket) {
+		// Add at the end of the list
+		marketComboBox.removeItem(addMarketDummy);
+		marketComboBox.addItem(newMarket);
+		marketComboBox.addItem(addMarketDummy);
+
+		Globals.getInstance().addUserMarket(newMarket, true);
+		BurstNode.getInstance().update();
+
+		marketComboBox.setSelectedItem(newMarket);
+		Toast.makeText(this, tr("main_add_token_success", newMarket.getTokenID().getID()), Toast.Style.SUCCESS).display();
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -703,23 +721,21 @@ public class Main extends JFrame implements ActionListener {
 			}
 		}
 
+		if(e.getSource() == newTokenButton) {
+			CreateTokenDialog dlg = new CreateTokenDialog(this);
+			dlg.setLocationRelativeTo(this);
+			dlg.setVisible(true);
+			return;
+		}
+		
 		if (e.getSource() == marketComboBox) {
 			if(m == addMarketDummy) {
 				String response = JOptionPane.showInputDialog(this, tr("main_add_token_message"),
 						tr("main_add_token"), JOptionPane.OK_CANCEL_OPTION);
 				if(response != null) {
-					Market newMarket = new MarketBurstToken(response, Globals.getInstance().getNS());
+					MarketBurstToken newMarket = new MarketBurstToken(response, Globals.getInstance().getNS());
 					if(newMarket.getFactor() != 0) {
-						// this is a valid market, add at the end of the list
-						marketComboBox.removeItem(addMarketDummy);
-						marketComboBox.addItem(newMarket);
-						marketComboBox.addItem(addMarketDummy);
-
-						Globals.getInstance().addUserMarket(newMarket, true);
-						BurstNode.getInstance().update();
-
-						marketComboBox.setSelectedItem(newMarket);
-						Toast.makeText(this, tr("main_add_token_success", response), Toast.Style.SUCCESS).display();
+						addMarket(newMarket);
 						return;
 					}
 					else {
