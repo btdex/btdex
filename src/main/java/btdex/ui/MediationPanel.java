@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -29,6 +30,7 @@ import btdex.core.Market;
 import btdex.core.Markets;
 import btdex.core.NumberFormatting;
 import btdex.sc.SellContract;
+import btdex.ui.orderbook.ActionButton;
 import btdex.ui.orderbook.OrderBook;
 import burst.kit.entity.BurstAddress;
 import jiconfont.icons.font_awesome.FontAwesome;
@@ -195,10 +197,17 @@ public class MediationPanel extends JPanel {
 			model.setValueAt(market.getNumberFormat().format(price), row, COL_PRICE);
 			model.setValueAt(NumberFormatting.BURST.format(amount), row, COL_AMOUNT);
 			
+			
+			JButton b = new ActionButton(this, market, tr("med_details"), null, s, false, false);
 			if(s.getState() > SellContract.STATE_DISPUTE) {
-				// under dispute
-				
+				// under mediation
+				b.setBackground(HistoryPanel.RED);
+				if(s.getMediator1() == g.getAddress().getSignedLongId() || s.getMediator2() == g.getAddress().getSignedLongId() ){
+					// under dispute and we are the mediator
+					b.setText(tr("med_mediate"));
+				}
 			}
+			model.setValueAt(b, row, COL_MEDIATE);
 
 			row++;
 		}
