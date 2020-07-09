@@ -182,13 +182,14 @@ public class BurstNode {
 						bidOrders.put(m, bids);
 					}
 					catch (Exception e) {
-						break;
+						e.printStackTrace();
 					}
 				}
 				
 				// Check if the node has the expected block
-				if(checkBlock == null && g.isTestnet())
-					checkBlock = NS.getBlock(BurstID.fromLong(Constants.CHECK_BLOCK_TESTNET)).blockingGet();
+				if(checkBlock == null) {
+					checkBlock = NS.getBlock(Constants.CHECK_HEIGHT).blockingGet();
+				}
 				try {
 					account = NS.getAccount(g.getAddress()).blockingGet();
 				}

@@ -596,18 +596,23 @@ public class Main extends JFrame implements ActionListener {
 			}
 
 			// Check if the node has the expected block
-			if(g.isTestnet()) {
-				Block checkBlock = bn.getCheckBlock();
-				if(checkBlock == null)
-					return;
-				if(checkBlock.getHeight() != Constants.CHECK_HEIGHT_TESTNET) {
-					String error = tr("main_invalid_testnet_node", g.getNode());
-					Toast.makeText(Main.this, error, Toast.Style.ERROR).display();
+			Block checkBlock = bn.getCheckBlock();
+			if(checkBlock == null)
+				return;
+			if(!checkBlock.getId().getClass().equals(g.isTestnet() ? Constants.CHECK_BLOCK_TESTNET : Constants.CHECK_BLOCK)) {
+				String error = tr("main_invalid_node", g.getNode());
+				Toast.makeText(Main.this, error, Toast.Style.ERROR).display();
 
-					nodeSelector.setIcon(ICON_DISCONNECTED);
-					nodeSelector.setBackground(Color.RED);
-					statusLabel.setText(error);
+				nodeSelector.setIcon(ICON_DISCONNECTED);
+				nodeSelector.setBackground(Color.RED);
+				statusLabel.setText(error);
+				
+				if(showingSplash) {
+					showingSplash = false;
+					pulsingButton.stopPulsing();
+					cardLayout.first(getContentPane());
 				}
+				return;
 			}
 
 			Account ac = bn.getAccount();
