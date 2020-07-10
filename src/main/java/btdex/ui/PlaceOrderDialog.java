@@ -264,12 +264,17 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	@Override
 	public void setVisible(boolean b) {
 		if(b == true) {
-			if(!Globals.getInstance().isTestnet()) {
+			Globals g = Globals.getInstance();
+			
+			boolean isMediator = g.getMediators().isMediator(g.getAddress().getSignedLongId());
+			
+			if(!g.isTestnet()) {
+				// TODO: remove this check when
 				JOptionPane.showMessageDialog(getParent(), tr("offer_not_open_yet"),
 						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if(Globals.getInstance().usingLedger()) {
+			if(g.usingLedger()) {
 				JOptionPane.showMessageDialog(getParent(), tr("ledger_no_offer"),
 						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
@@ -279,7 +284,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if(accountComboBox.getItemCount()==0 && (isBuy && isTake || !isBuy && !isTake)) {
+			if(!isMediator && accountComboBox.getItemCount()==0 && (isBuy && isTake || !isBuy && !isTake)) {
 				JOptionPane.showMessageDialog(getParent(), tr("offer_register_account_first", market),
 						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
@@ -289,7 +294,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if(contract!=null && contract.getState() > SellContract.STATE_DISPUTE) {
+			if(contract!=null && (isMediator || contract.getState() > SellContract.STATE_DISPUTE)) {
 				DisputeDialog dispute = new DisputeDialog(this.getOwner(), market, contract);
 				dispute.setLocationRelativeTo(this);
 				dispute.setVisible(true);
@@ -297,7 +302,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				return;
 			}
 			
-			if(Globals.getInstance().isTestnet())
+			if(g.isTestnet())
 				Toast.makeText((JFrame) this.getOwner(), tr("offer_testnet_warning"), Toast.Style.NORMAL).display();
 
 			if(contract == null)

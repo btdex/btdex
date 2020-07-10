@@ -73,7 +73,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 	private JButton cancelButton;
 	private JButton mediatorButton;
 
-	private boolean isBuy, isCreator, isMediator;
+	private boolean isBuy, isCreator, isMediator, isMediating;
 	private boolean hasOtherSuggestion, hasYourSuggestion;
 
 	private BurstValue suggestedFee;
@@ -88,7 +88,10 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		this.contract = contract;
 		this.isBuy = contract.getType() == ContractType.BUY;
 		this.isCreator = contract.getCreator().equals(g.getAddress());
-		this.isMediator = contract.getMediator1() == g.getAddress().getSignedLongId() || contract.getMediator2() == g.getAddress().getSignedLongId();
+		this.isMediator = g.getMediators().isMediator(g.getAddress().getSignedLongId());
+		this.isMediating = contract.getState() > SellContract.STATE_DISPUTE &&
+				(contract.getMediator1() == g.getAddress().getSignedLongId() ||
+				contract.getMediator2() == g.getAddress().getSignedLongId());
 		
 		if(this.isMediator)
 			this.isCreator = true; // so that "your" is the maker
@@ -115,7 +118,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 			suggestToOther = contract.getDisputeAmount(isCreator, !isCreator);
 		}
 
-		setTitle(tr("disp_title"));
+		setTitle(tr(isMediating ? "disp_title_mediate" : isMediator ? "disp_title_details" : "disp_title"));
 
 		this.market = market;
 
@@ -218,7 +221,9 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		cancelButton.addActionListener(this);
 		okButton.addActionListener(this);
 
-		buttonPane.add(new Desc(" ", mediatorButton));
+		if(!isMediator) {
+			buttonPane.add(new Desc(" ", mediatorButton));
+		}
 		buttonPane.add(new Desc(tr("dlg_pin"), pinField));
 		buttonPane.add(new Desc(" ", cancelButton));
 		buttonPane.add(new Desc(" ", okButton));
@@ -227,7 +232,8 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		content.setBorder(new EmptyBorder(4, 4, 4, 4));
 
 		JPanel conditionsPanel = new JPanel(new BorderLayout());
-		conditionsPanel.setBorder(BorderFactory.createTitledBorder(tr("disp_terms")));
+		conditionsPanel.setBorder(BorderFactory.createTitledBorder(tr("dlg_terms_and_conditions") +
+				(isMediator ? " (YOU is the offer MAKER)" : "")));
 		JScrollPane scroll = new JScrollPane(conditions);
 		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -420,8 +426,10 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 				NumberFormatting.BURST.format(isCreator ? amountToCreator : amountToTaker),
 				NumberFormatting.BURST.format(isCreator ? amountToTaker : amountToCreator)
 				));
-		append(tr("disp_dispute_terms", suggestedFee.add(BurstValue.fromPlanck(contract.getActivationFee())).toUnformattedString()));
-		append(tr("disp_mediating", suggestedFee.add(BurstValue.fromPlanck(contract.getActivationFee())).toUnformattedString()));
+		if(contract.getState() > SellContract.STATE_DISPUTE)
+			append(tr("disp_dispute_terms", suggestedFee.add(BurstValue.fromPlanck(contract.getActivationFee())).toUnformattedString()));
+		if(!isMediator)
+			append(tr("disp_mediating", suggestedFee.add(BurstValue.fromPlanck(contract.getActivationFee())).toUnformattedString()));
 
 		// checking it has the balance before requesting the deposit
 		if(unexpectedState) {
