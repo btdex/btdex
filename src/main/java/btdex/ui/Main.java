@@ -599,7 +599,7 @@ public class Main extends JFrame implements ActionListener {
 			Block checkBlock = bn.getCheckBlock();
 			if(checkBlock == null)
 				return;
-			if(!checkBlock.getId().getClass().equals(g.isTestnet() ? Constants.CHECK_BLOCK_TESTNET : Constants.CHECK_BLOCK)) {
+			if(!checkBlock.getId().getID().equals(g.isTestnet() ? Constants.CHECK_BLOCK_TESTNET : Constants.CHECK_BLOCK)) {
 				String error = tr("main_invalid_node", g.getNode());
 				Toast.makeText(Main.this, error, Toast.Style.ERROR).display();
 
