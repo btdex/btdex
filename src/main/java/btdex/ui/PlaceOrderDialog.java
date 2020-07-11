@@ -221,7 +221,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		content.setBorder(new EmptyBorder(4, 4, 4, 4));
 
 		// We need the top panel
-		if(!isSignal && ( (!isTake && !isBuy) || (isTake && isBuy)))
+		if(!isSignal && !isTaken && ( (!isTake && !isBuy) || (isTake && isBuy)))
 			content.add(accountPanel, BorderLayout.PAGE_START);
 
 		JPanel conditionsPanel = new JPanel(new BorderLayout());

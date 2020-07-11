@@ -63,6 +63,7 @@ public class Constants {
     public static final String GITHUB_LINK = "https://github.com/btdex/btdex";
 
     public static final int ICON_SIZE = 24;
+    public static final int ICON_SIZE_SMALL = 18;
 
     public static final int UI_UPDATE_INTERVAL = 10000;
 

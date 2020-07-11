@@ -71,7 +71,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 
 	private JButton okButton;
 	private JButton cancelButton;
-	private JButton mediatorButton;
+	private JButton supportDiscord, supportReddit;
 
 	private boolean isBuy, isCreator, isMediator, isMediating;
 	private boolean hasOtherSuggestion, hasYourSuggestion;
@@ -162,7 +162,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		acceptBox = new JCheckBox(tr("dlg_accept_terms"));
 		acceptOtherTermsBox = new JCheckBox(tr(isMediator ? "disp_accept_taker_suggestion" : "disp_accept_other_suggestion"));
 		acceptOtherTermsBox.addActionListener(this);
-		if(isMediator) {
+		if(isMediating) {
 			acceptMakerTermsBox = new JCheckBox(tr("disp_accept_maker_suggestion"));
 			acceptMakerTermsBox.addActionListener(this);
 		}
@@ -183,10 +183,10 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		otherAmountYouSlider.setEnabled(false);
 
 		JPanel yourPanel = new JPanel(new BorderLayout());
-		yourPanel.setBorder(BorderFactory.createTitledBorder(tr(isMediator ? "disp_what_maker_suggest" : "disp_what_you_suggest")));
+		yourPanel.setBorder(BorderFactory.createTitledBorder(tr(isMediator ? "disp_what_maker_suggested" : "disp_what_you_suggest")));
 		JPanel yourSuggestionPanel = new JPanel(new GridLayout(0, 2));
 		yourPanel.add(yourSuggestionPanel, BorderLayout.CENTER);
-		if(hasOtherSuggestion) {
+		if(hasOtherSuggestion && !isMediator) {
 			yourPanel.add(acceptOtherTermsBox, BorderLayout.PAGE_START);
 		}
 		yourSuggestionPanel.add(new JLabel(tr(isMediator ? "disp_maker_should_get" : "disp_you_should_get")));
@@ -196,12 +196,10 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		
 		if(isMediator) {
 			yourAmountYouSlider.setEnabled(false);
-			yourAmountYouSlider.setEnabled(false);
+			yourAmountOtherSlider.setEnabled(false);
 		}
-		else {
-			yourAmountYouSlider.addChangeListener(this);
-			yourAmountOtherSlider.addChangeListener(this);
-		}
+		yourAmountYouSlider.addChangeListener(this);
+		yourAmountOtherSlider.addChangeListener(this);
 		
 		yourAmountYouSlider.setValue((int)(suggestToYou*100 / amount));
 		yourAmountOtherSlider.setValue((int)(suggestToOther*100 / amount));
@@ -212,17 +210,23 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		pinField = new JPasswordField(12);
 		pinField.addActionListener(this);
 
-		mediatorButton = new JButton(tr("dlg_support"));
+		Icons i = new Icons(amountField.getForeground(), Constants.ICON_SIZE_SMALL);
+		supportDiscord = new JButton(tr("dlg_support"), i.get(Icons.DISCORD));
+		supportDiscord.setToolTipText(tr("dlg_support_discord"));
+		supportReddit = new JButton(tr("dlg_support"), i.get(Icons.REDDIT));
+		supportReddit.setToolTipText(tr("dlg_support_reddit"));
 		cancelButton = new JButton(tr("dlg_cancel"));
 		okButton = new JButton(tr("dlg_ok"));
 		getRootPane().setDefaultButton(okButton);
 
-		mediatorButton.addActionListener(this);
+		supportDiscord.addActionListener(this);
+		supportReddit.addActionListener(this);
 		cancelButton.addActionListener(this);
 		okButton.addActionListener(this);
 
 		if(!isMediator) {
-			buttonPane.add(new Desc(" ", mediatorButton));
+			buttonPane.add(new Desc(" ", supportDiscord));
+			buttonPane.add(new Desc(" ", supportReddit));
 		}
 		buttonPane.add(new Desc(tr("dlg_pin"), pinField));
 		buttonPane.add(new Desc(" ", cancelButton));
@@ -247,11 +251,13 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		centerPanel.add(conditionsPanel, BorderLayout.CENTER);
 
 		JPanel bottomPanel = new JPanel(new BorderLayout());
+		JPanel suggestionsPanel = new JPanel(new GridLayout(0, 1));
+		bottomPanel.add(suggestionsPanel, BorderLayout.PAGE_START);
 		// Only show the other side proposal when there is one
 		if(hasOtherSuggestion)
-			bottomPanel.add(otherPanel, BorderLayout.PAGE_START);
+			suggestionsPanel.add(otherPanel, BorderLayout.PAGE_START);
 		if(!isMediator || hasYourSuggestion)
-			bottomPanel.add(yourPanel, BorderLayout.CENTER);
+			suggestionsPanel.add(yourPanel, BorderLayout.CENTER);
 		bottomPanel.add(buttonPane, BorderLayout.PAGE_END);
 
 		content.add(centerPanel, BorderLayout.CENTER);
@@ -287,8 +293,12 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 			return;
 		}
 		
-	    if(e.getSource() == mediatorButton) {
+	    if(e.getSource() == supportDiscord) {
 	    	Main.getInstance().browse(Constants.DISCORD_LINK);
+            return;
+        }
+	    if(e.getSource() == supportReddit) {
+	    	Main.getInstance().browse(Constants.REDDIT_LINK);
             return;
         }
 		
@@ -426,8 +436,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 				NumberFormatting.BURST.format(isCreator ? amountToCreator : amountToTaker),
 				NumberFormatting.BURST.format(isCreator ? amountToTaker : amountToCreator)
 				));
-		if(contract.getState() > SellContract.STATE_DISPUTE)
-			append(tr("disp_dispute_terms", suggestedFee.add(BurstValue.fromPlanck(contract.getActivationFee())).toUnformattedString()));
+		append(tr("disp_dispute_terms", suggestedFee.add(BurstValue.fromPlanck(contract.getActivationFee())).toUnformattedString()));
 		if(!isMediator)
 			append(tr("disp_mediating", suggestedFee.add(BurstValue.fromPlanck(contract.getActivationFee())).toUnformattedString()));
 
