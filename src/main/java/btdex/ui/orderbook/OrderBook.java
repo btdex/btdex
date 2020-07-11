@@ -210,10 +210,6 @@ public class OrderBook extends JPanel {
 				buyButton.setText(tr("book_buy_button", market));
 				sellButton.setText(tr("book_sell_button", market));
 			}
-			else {
-				buyButton.setText(tr("book_buy_button", "BURST"));
-				sellButton.setText(tr("book_sell_button", "BURST"));
-			}
 
 			// update the column headers
 			for (int c = 0; c < OrderBookSettings.columnNames.length; c++) {
@@ -385,6 +381,20 @@ public class OrderBook extends JPanel {
 
 	private void updateContracts() {
 		Globals g = Globals.getInstance();
+		
+		buyButton.setText(tr("book_buy_button", "BURST"));
+		sellButton.setText(tr("book_sell_button", "BURST"));
+		if(Contracts.getFreeBuyContract()==null || Contracts.getFreeContract()==null) {
+			// check for the pending transaction to see if we are waiting for the contract
+			Transaction[] utx = BurstNode.getInstance().getUnconfirmedTransactions();
+			for (Transaction tx : utx) {
+				if(tx.getType() == 22 && tx.getSubtype() == 0) {
+					// this is a SC create transaction
+					buyButton.setText(tr("book_pending_contract"));
+					sellButton.setText(tr("book_pending_contract"));
+				}
+			}
+		}
 
 		Collection<ContractState> allContracts = Contracts.getContracts();
 		contracts.clear();
