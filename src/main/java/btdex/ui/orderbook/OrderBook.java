@@ -388,7 +388,7 @@ public class OrderBook extends JPanel {
 			// check for the pending transaction to see if we are waiting for the contract
 			Transaction[] utx = BurstNode.getInstance().getUnconfirmedTransactions();
 			for (Transaction tx : utx) {
-				if(tx.getType() == 22 && tx.getSubtype() == 0) {
+				if(tx.getSender().equals(g.getAddress()) && tx.getType() == 22 && tx.getSubtype() == 0) {
 					// this is a SC create transaction
 					buyButton.setText(tr("book_pending_contract"));
 					sellButton.setText(tr("book_pending_contract"));
