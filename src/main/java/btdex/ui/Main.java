@@ -248,7 +248,7 @@ public class Main extends JFrame implements ActionListener {
 			tabbedPane.addTab(tr("main_accounts"), i.get(Icons.ACCOUNT), accountsPanel);
 			// tabbedPane.addTab(tr("main_chat"), i.get(Icons.CHAT), new ChatPanel());
 		}
-		
+
 		if(g.getAddress()!=null && g.getMediators().isMediator(g.getAddress().getSignedLongId())){
 			// this is a mediator, add the mediation tab
 			tabbedPane.addTab(tr("main_mediation"), i.get(Icons.MEDIATION), mediationPanel = new MediationPanel(this));
@@ -312,7 +312,7 @@ public class Main extends JFrame implements ActionListener {
 				System.exit(0);
 				return;
 			}
-			
+
 			resetPinButton.setVisible(!g.usingLedger());
 		}
 		copyAddButton.getMainButton().setText(g.getAddress().getRawAddress());
@@ -375,7 +375,7 @@ public class Main extends JFrame implements ActionListener {
 		});
 		timer.start();
 	}
-	
+
 	public void showTransactionsPanel() {
 		tabbedPane.setSelectedComponent(transactionsPanel);
 	}
@@ -566,23 +566,23 @@ public class Main extends JFrame implements ActionListener {
 			}
 			if(mediationPanel!=null && mediationPanel.isVisible())
 				mediationPanel.update();
-			
+
 			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 			nodeSelector.setBackground(explorerSelector.getBackground());
 
 			Exception nodeException = bn.getNodeException();
 			if(nodeException != null) {
-				
+
 				if(!(nodeException.getCause() instanceof BRSError) || ((BRSError) nodeException.getCause()).getCode() != 5) {
 					// not the unknown account exception, show the error
 					nodeSelector.setIcon(ICON_DISCONNECTED);
 					String errorMessage = tr("main_error", nodeException.getLocalizedMessage());
-					
+
 					if(nodeException.getCause() instanceof ConnectException) {
 						errorMessage = tr("main_node_connection");
 						nodeSelector.setBackground(Color.RED);
 					}
-					
+
 					statusLabel.setText(errorMessage);
 				}
 				// otherwise all fine, just move on
@@ -606,7 +606,7 @@ public class Main extends JFrame implements ActionListener {
 				nodeSelector.setIcon(ICON_DISCONNECTED);
 				nodeSelector.setBackground(Color.RED);
 				statusLabel.setText(error);
-				
+
 				if(showingSplash) {
 					showingSplash = false;
 					pulsingButton.stopPulsing();
@@ -690,7 +690,7 @@ public class Main extends JFrame implements ActionListener {
 				Toast.makeText(this, tr("main_cross_chain_loading"), 8000, Toast.Style.SUCCESS).display();
 		}
 	}
-	
+
 	public void addMarket(MarketBurstToken newMarket) {
 		// Add at the end of the list
 		marketComboBox.removeItem(addMarketDummy);
@@ -765,7 +765,7 @@ public class Main extends JFrame implements ActionListener {
 				CreateTokenDialog dlg = new CreateTokenDialog(this);
 				dlg.setLocationRelativeTo(this);
 				dlg.setVisible(true);
-				
+
 				if(dlg.getReturnValue() == JOptionPane.CANCEL_OPTION)
 					marketComboBox.setSelectedIndex(0);
 				return;
@@ -842,7 +842,7 @@ public class Main extends JFrame implements ActionListener {
 			Globals g = Globals.getInstance();
 
 			JComboBox<ExplorerWrapper> explorerCombo = new JComboBox<ExplorerWrapper>();
-			explorerCombo.addItem(ExplorerWrapper.burstDevtrue());
+			explorerCombo.addItem(ExplorerWrapper.burstScanNet());
 			if(!g.isTestnet())
 				explorerCombo.addItem(ExplorerWrapper.burstcoinRo());
 			explorerCombo.addItem(ExplorerWrapper.burstcoinNetwork());

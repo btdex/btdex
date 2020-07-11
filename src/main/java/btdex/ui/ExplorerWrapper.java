@@ -4,36 +4,36 @@ import btdex.core.Globals;
 
 /**
  * Class handling an *open explorer* action.
- * 
+ *
  * By default, this implementation just copy to clipboard the given argument.
- * 
+ *
  * @author jjos
  *
  */
 public class ExplorerWrapper {
-	
+
 	private String baseURL, key;
 	private String accountPath, transactionPath;
-	
+
 	public static final String BURSTCOIN_NETWORK = "burstcoin.network";
 	public static final String BURSTCOIN_RO = "burstcoin.ro";
-	public static final String BURST_DEVTRUE = "burst.devtrue";
-	
+	public static final String BURSTSCAN_NET = "burstscan.net";
+
 	public static ExplorerWrapper getExplorer(String exp) {
 		if(exp!=null) {
 			switch (exp) {
 			case BURSTCOIN_RO:
 				if(!Globals.getInstance().isTestnet())
 					return burstcoinRo();
-			case BURST_DEVTRUE:
-				return burstDevtrue();
+			case BURSTSCAN_NET:
+				return burstScanNet();
 			case BURSTCOIN_NETWORK:
 				return burstcoinNetwork();
 			}
 		}
-		return burstDevtrue();
+		return burstScanNet();
 	}
-	
+
 	public static ExplorerWrapper burstcoinNetwork() {
 		String baseURL = Globals.getInstance().isTestnet() ?
 				"https://testnet.explorer.burstcoin.network" : "https://explorer.burstcoin.network";
@@ -46,10 +46,10 @@ public class ExplorerWrapper {
 				"/account/", "/transaction/");
 	}
 
-	public static ExplorerWrapper burstDevtrue() {
+	public static ExplorerWrapper burstScanNet() {
 		String baseURL = Globals.getInstance().isTestnet() ?
-				"http://explorer.testnet.burst.devtrue.net" : "https://explorer.burst.devtrue.net";
-		return new ExplorerWrapper(BURST_DEVTRUE, baseURL,
+				"https://testnet.burstscan.net" : "https://burstscan.net";
+		return new ExplorerWrapper(BURSTSCAN_NET, baseURL,
 				"/address/", "/tx/");
 	}
 
@@ -59,20 +59,20 @@ public class ExplorerWrapper {
 		this.accountPath = accountPath;
 		this.transactionPath = transactionPath;
 	}
-	
+
 	@Override
 	public String toString() {
 		return key;
 	}
-	
+
 	public String getKey() {
 		return key;
 	}
-	
+
 	public String openAddress(String addressRS, String addressId) {
 		return baseURL + accountPath + addressId;
 	}
-	
+
 	public String openTransaction(String transaction) {
 		return baseURL + transactionPath + transaction;
 	}

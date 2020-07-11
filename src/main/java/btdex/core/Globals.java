@@ -35,7 +35,7 @@ public class Globals {
 	private boolean testnet = false;
 	private BurstAddress address;
 	private int ledgerIndex;
-	
+
 	private Mediators mediators;
 
 	static Globals INSTANCE;
@@ -66,7 +66,7 @@ public class Globals {
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
 			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET2 : BT.NODE_BURSTCOIN_RO));
 			BT.activateCIP20(true);
-			
+
 			// possible ledger account index
 			ledgerEnabled = Boolean.parseBoolean(conf.getProperty(Constants.PROP_LEDGER_ENABLED, "false"));
 			ledgerIndex = Integer.parseInt(conf.getProperty(Constants.PROP_LEDGER, "-1"));
@@ -74,7 +74,7 @@ public class Globals {
 			// load the markets
 			Markets.loadStandardMarkets(testnet, NS);
 			loadUserMarkets();
-			
+
 			mediators = new Mediators(testnet);
 
 			checkPublicKey();
@@ -85,23 +85,23 @@ public class Globals {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public boolean isLedgerEnabled() {
 		return ledgerEnabled;
 	}
-	
+
 	public boolean usingLedger() {
 		return ledgerEnabled && ledgerIndex >= 0;
 	}
-	
+
 	public int getLedgerIndex() {
 		return ledgerIndex;
 	}
-	
+
 	public long getFeeContract() {
 		return isTestnet() ? Constants.FEE_CONTRACT_TESTNET : Constants.FEE_CONTRACT;
 	}
-	
+
 	public Mediators getMediators() {
 		return mediators;
 	}
@@ -149,7 +149,7 @@ public class Globals {
 
 		address = BC.getBurstAddressFromPublic(pubKey);
 	}
-	
+
 	public void setKeys(byte []pubKey, byte []privKey, char []pin) throws Exception {
 		byte[] pinKey = BC.getSha256().digest(new String(pin).getBytes("UTF-8"));
 		byte[] encPrivKey = Globals.BC.aesEncrypt(privKey, pinKey);
@@ -252,14 +252,14 @@ public class Globals {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void loadUserMarkets() {
 		int userToken = 1;
 		while(true) {
 			String userTokenID = conf.getProperty(Constants.PROP_USER_TOKEN_ID + userToken);
 			if(userTokenID == null || userTokenID.length() == 0)
 				break;
-			
+
 			try {
 				Market userTokenMarket = new MarketBurstToken(userTokenID, NS);
 				addUserMarket(userTokenMarket, false);
@@ -269,7 +269,7 @@ public class Globals {
 			userToken++;
 		}
 	}
-	
+
 	private void saveUserMarkets() {
 		int i = 1;
 		for (; i <= Markets.getUserMarkets().size(); i++) {
@@ -285,13 +285,13 @@ public class Globals {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void removeUserMarket(Market m, boolean save) {
 		Markets.removeUserMarket(m);
 		if(save)
 			saveUserMarkets();
 	}
-	
+
 	public void addUserMarket(Market m, boolean save) {
 		Markets.addUserMarket(m);
 		if(save)
@@ -311,7 +311,7 @@ public class Globals {
 	public BurstAddress getAddress() {
 		return address;
 	}
-	
+
 	public byte[] getPubKey() {
 		return BC.parseHexString(conf.getProperty(Constants.PROP_PUBKEY));
 	}
@@ -323,7 +323,7 @@ public class Globals {
 	public void setLanguage(String lang) {
 		conf.setProperty(Constants.PROP_LANG, lang);
 	}
-	
+
 	public String getLanguage() {
 		return conf.getProperty(Constants.PROP_LANG);
 	}
@@ -333,15 +333,15 @@ public class Globals {
 
 		NS = BurstNodeService.getInstance(node);
 	}
-	
+
 	public String getExplorer() {
-		return conf.getProperty(Constants.PROP_EXPLORER, ExplorerWrapper.BURST_DEVTRUE);
+		return conf.getProperty(Constants.PROP_EXPLORER, ExplorerWrapper.BURSTSCAN_NET);
 	}
-	
+
 	public void setExplorer(String value) {
 		conf.setProperty(Constants.PROP_EXPLORER, value);
 	}
-	
+
 	public Response activate() throws IOException {
 		OkHttpClient client = new OkHttpClient();
 
