@@ -130,7 +130,7 @@ public class TransactionsPanel extends JPanel {
 		Date now = new Date();
 		if(latest != null) {
 			int mins = 4 - (int) ((now.getTime() - latest.getTimestamp().getAsDate().getTime())/1000 / 60);
-			statusLabel.setText(mins > 0 ? tr("txs_next_block", mins) : tr("txs_next_block_late"));
+			statusLabel.setText(mins > 1 ? tr("txs_next_block", mins) : tr("txs_next_block_late"));
 		}
 
 		try {
