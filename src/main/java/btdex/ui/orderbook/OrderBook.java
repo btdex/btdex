@@ -397,7 +397,7 @@ public class OrderBook extends JPanel {
 
 			// add your own contracts (so you can withdraw no matter what)
 			// this should never happen on normal circumstances
-			if(s.getCreator().equals(g.getAddress()) && s.getBalance().longValue() > 0L) {
+			if(s.getCreator().equals(g.getAddress()) && s.getBalance().longValue() > 0L && s.getMarket() == 0L) {
 				if(s.getType() == ContractType.SELL)
 					contracts.add(s);
 				else if(s.getType() == ContractType.BUY)
