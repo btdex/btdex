@@ -42,6 +42,7 @@ import bt.Contract;
 import btdex.markets.MarketCrypto;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstValue;
+import burst.kit.entity.response.Account;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
@@ -396,6 +397,13 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			// all set, lets place the order
 			try {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				
+				Account ac = BurstNode.getInstance().getAccount();
+				if(ac == null) {
+					Toast.makeText((JFrame) this.getOwner(), tr("dlg_not_enough_balance"), Toast.Style.ERROR).display(okButton);
+					return;
+				}
+				BurstValue balance = ac.getUnconfirmedBalance();
 
 				Single<byte[]> utx = null;
 				Single<TransactionBroadcast> updateTx = null;
@@ -418,6 +426,15 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					BurstValue amountToSend = BurstValue.fromPlanck(securityAmount + contract.getNewOfferFee());
 					if(!isBuy)
 						amountToSend = amountToSend.add(amountValue);
+					
+					// Checking if we will have balance for all transactions needed
+					BurstValue balanceNeeded = amountToSend.add(suggestedFee.multiply(2))
+							.add(BurstValue.fromPlanck(Constants.FEE_QUANT));
+					if(balance.compareTo(balanceNeeded) < 0) {
+						Toast.makeText((JFrame) this.getOwner(), tr("dlg_not_enough_balance"), Toast.Style.ERROR).display(okButton);
+						setCursor(Cursor.getDefaultCursor());
+						return;
+					}
 
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 							amountToSend, suggestedFee,
@@ -446,6 +463,15 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					BurstValue amountToSend = BurstValue.fromPlanck(contract.getSecurityNQT() + contract.getActivationFee());
 					if(isBuy) {
 						amountToSend = amountToSend.add(BurstValue.fromPlanck(contract.getAmountNQT()));
+						
+						// Checking if we will have balance for all transactions needed
+						BurstValue balanceNeeded = amountToSend.add(configureFee.multiply(2))
+								.add(BurstValue.fromPlanck(Constants.FEE_QUANT));
+						if(balance.compareTo(balanceNeeded) < 0) {
+							Toast.makeText((JFrame) this.getOwner(), tr("dlg_not_enough_balance"), Toast.Style.ERROR).display(okButton);
+							setCursor(Cursor.getDefaultCursor());
+							return;
+						}
 						
 						// also send the address we want to receive the amount
 						JsonObject messageJson = new JsonObject();
