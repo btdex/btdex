@@ -216,7 +216,10 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		supportReddit = new JButton(tr("dlg_support"), i.get(Icons.REDDIT));
 		supportReddit.setToolTipText(tr("dlg_support_reddit"));
 		cancelButton = new JButton(tr("dlg_cancel"));
-		okButton = new JButton(tr("dlg_ok"));
+		okButton = new JButton(tr("disp_open_dispute"));
+		if(contract.getState() > SellContract.STATE_DISPUTE)
+			okButton = new JButton(tr("disp_update_dispute"));
+		
 		getRootPane().setDefaultButton(okButton);
 
 		supportDiscord.addActionListener(this);
