@@ -57,6 +57,8 @@ import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.icons.font_awesome.FontAwesomeBrands;
 import jiconfont.swing.IconFontSwing;
 import okhttp3.Response;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Main extends JFrame implements ActionListener {
 
@@ -102,6 +104,8 @@ public class Main extends JFrame implements ActionListener {
 	private Icons i;
 
 	private JButton resetPinButton;
+
+	private Logger logger = LogManager.getLogger();
 
 	private static Main instance;
 
@@ -552,7 +556,7 @@ public class Main extends JFrame implements ActionListener {
 			return;
 		}
 		lastUpdated = System.currentTimeMillis();
-
+		logger.trace("Updating UI...");
 		long balance = 0, locked = 0;
 		try {
 			Globals g = Globals.getInstance();

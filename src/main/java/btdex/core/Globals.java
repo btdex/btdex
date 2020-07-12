@@ -20,6 +20,13 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.builder.api.*;
+import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 
 public class Globals {
 
@@ -30,6 +37,8 @@ public class Globals {
 	private Properties conf = new Properties();
 
 	private ArrayList<MarketAccount> accounts = new ArrayList<>();
+
+	private Logger logger;
 
 	private boolean ledgerEnabled = false;
 	private boolean testnet = false;
@@ -63,6 +72,10 @@ public class Globals {
 				}
 			}
 
+			configLogger(conf.getProperty(Constants.PROP_LOGGER, "OFF"));
+			logger = LogManager.getLogger();
+			logger.debug("Logger configured");
+			logger.debug("System properties: " + System.getProperties());
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
 			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET2 : BT.NODE_BURSTCOIN_RO));
 			BT.activateCIP20(true);
@@ -363,4 +376,45 @@ public class Globals {
 	public boolean isTestnet() {
 		return testnet;
 	}
+
+	private static void configLogger(String level) {
+		level = level.trim().toUpperCase();
+		Level l = Level.getLevel(level);
+		if(l == null) {
+			l = Level.OFF;
+			System.out.println("Incorrect logging level, defaulting to OFF");
+		}
+		ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
+		//These 2 lines for log4j config builder logging
+		builder.setStatusLevel(Level.ERROR);
+		builder.setConfigurationName("BTDEX");
+		//Create a console appender
+		AppenderComponentBuilder appenderBuilder = builder.newAppender("Stdout", "CONSOLE").addAttribute("target",
+			ConsoleAppender.Target.SYSTEM_OUT);
+		appenderBuilder.add(builder.newLayout("PatternLayout")
+			.addAttribute("pattern", "%d [%t] %-5level: %logger %msg%n%throwable"));
+		builder.add(appenderBuilder);
+		// create a rolling file appender
+		LayoutComponentBuilder layoutBuilder = builder.newLayout("PatternLayout")
+			.addAttribute("pattern", "%d [%t] %-5level: %msg%n");
+
+		ComponentBuilder triggeringPolicy = builder.newComponent("Policies")
+			.addComponent(builder.newComponent("TimeBasedTriggeringPolicy"))
+			.addComponent(builder.newComponent("SizeBasedTriggeringPolicy").addAttribute("size", "1M"));
+		appenderBuilder = builder.newAppender("rolling", "RollingFile")
+			.addAttribute("fileName", "log/btdex.log")
+			.addAttribute("filePattern", "log/archive/btdex-%d{yyyy-MM-dd}-%i.log")
+			.add(layoutBuilder)
+			.addComponent(triggeringPolicy);
+		builder.add(appenderBuilder);
+
+		builder.add(builder.newLogger("btdex", l)
+			.add(builder.newAppenderRef("Stdout"))
+			.add( builder.newAppenderRef("rolling"))
+			.addAttribute("additivity", false));
+		builder.add(builder.newRootLogger(Level.ERROR).add(builder.newAppenderRef("Stdout")));
+
+		Configurator.initialize(builder.build());
+	}
+
 }

@@ -7,6 +7,7 @@ plugins {
     id "nebula.ospackage" version "8.2.0"
     id 'org.gradle.crypto.checksum' version '1.2.0'
     id 'com.palantir.git-version' version '0.12.2'
+	id 'io.spring.dependency-management' version '1.0.1.RELEASE' //for logging - log4j
 }
 
 java {
@@ -22,11 +23,17 @@ repositories {
     maven { url 'https://jitpack.io' }
 }
 
+dependencyManagement {
+	imports {
+		mavenBom 'org.apache.logging.log4j:log4j-bom:2.13.3'
+	}
+}
+
 dependencies {
     //implementation 'com.github.burst-apps-team:burstkit4j:734c9f83bf'
     //implementation 'com.github.shefass:burstkit4j:a5086e5746'
     implementation 'com.github.jjos2372:burstkit4j:573d136a95'
-    
+
     //implementation 'com.github.jjos2372:blocktalk:-SNAPSHOT'
     implementation 'com.github.jjos2372:blocktalk:bd8a97d7a8'
 
@@ -46,14 +53,18 @@ dependencies {
     implementation 'io.github.novacrypto:BIP39:2019.01.27'
 
     implementation 'jfree:jfreechart:1.0.13'
-    
+
     implementation 'com.github.kenglxn.QRGen:javase:2.6.0'
 
     implementation 'io.github.monero-ecosystem:monero-java:0.2.1'
 
     implementation 'fr.marcwrobel:jbanking:1.0'
-    
+
     implementation 'com.github.jjos2372:ledger4j:06fb465b5a'
+
+	//logging
+	compile 'org.apache.logging.log4j:log4j-api'
+	compile 'org.apache.logging.log4j:log4j-core'
 
     // Use JUnit test framework
     testImplementation("org.junit.platform:junit-platform-engine:1.6.1")

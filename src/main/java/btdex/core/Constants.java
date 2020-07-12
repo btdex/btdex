@@ -11,6 +11,7 @@ public class Constants {
 
     public static final String PROP_LANG = "lang";
     public static final String PROP_NODE = "node";
+    public static final String PROP_LOGGER = "logger";
     public static final String PROP_TESTNET = "testnet";
     public static final String PROP_LEDGER_ENABLED = "ledgerEnabled";
     public static final String PROP_ACCOUNT = "account";
@@ -19,20 +20,20 @@ public class Constants {
     public static final String PROP_LEDGER = "ledger";
 
     public static final String PROP_USER_TOKEN_ID = "userTokenID";
-    
+
     public static final String PROP_EXPLORER = "explorer";
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    
+
     public static final Gson GSON = new Gson();
 
     public static final String FAUCET_TESTNET =
             "https://burst-account-activator-testnet.ohager.now.sh/api/activate";
     public static final String FAUCET = "https://burst-account-activator.now.sh/api/activate";
-    
+
     public static final String CHECK_BLOCK_TESTNET = "12645549025663958301";
     public static final String CHECK_BLOCK = "8868708821622932189";
-    public static final int CHECK_HEIGHT = 150_000;    
+    public static final int CHECK_HEIGHT = 150_000;
 
     public static final String DEF_CONF_FILE = "config.properties";
 
@@ -41,18 +42,18 @@ public class Constants {
 
     // FIXME: create a new secure address
     public static final long FEE_CONTRACT = BurstCrypto.getInstance().rsDecode("G4XE-MB8T-WWZC-E4GFU").getSignedLongId();
-    
+
     public static final long FEE_CONTRACT_TESTNET = BurstCrypto.getInstance().rsDecode("G4XE-MB8T-WWZC-E4GFU").getSignedLongId();
-    
+
     public static final String BURST_SYMBOL = "\u0243";
 
     public static final String BURST_TICKER = "BURST";
-    
+
     // Number of confirmations needed for SC update to be taken into account
     public static final int PRICE_NCONF = 1;
-    
+
 	public static final int FEE_QUANT = 735000;
-	
+
 	// Deadline in minutes to be used on transactions
 	public static final int BURST_DEADLINE = 1440;
 
