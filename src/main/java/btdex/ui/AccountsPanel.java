@@ -211,7 +211,7 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 				market.validate(fields);
 			}
 			catch (Exception ex) {
-				Toast.makeText(main, ex.getMessage(), Toast.Style.ERROR).display(okButton);
+				Toast.makeText(main, ex.getMessage(), Toast.Style.ERROR).display();
 				return;
 			}
 
