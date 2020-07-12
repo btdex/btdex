@@ -213,8 +213,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 		buttonPane.add(new Desc(" ", disputeButton));
 		buttonPane.add(pinDesc = new Desc(tr("dlg_pin"), pinField));
-		buttonPane.add(new Desc(" ", cancelButton));
 		buttonPane.add(new Desc(" ", okButton));
+		buttonPane.add(new Desc(" ", cancelButton));
 
 		// set action listener on the button
 

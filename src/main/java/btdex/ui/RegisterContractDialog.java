@@ -85,8 +85,8 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 		okButton.addActionListener(this);
 
 		buttonPane.add(new Desc(tr("dlg_pin"), pin));
-		buttonPane.add(new Desc(" ", cancelButton));
 		buttonPane.add(new Desc(" ", okButton));
+		buttonPane.add(new Desc(" ", cancelButton));
 
 		JPanel content = (JPanel)getContentPane();
 		content.setBorder(new EmptyBorder(4, 4, 4, 4));

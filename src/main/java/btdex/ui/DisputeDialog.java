@@ -231,9 +231,11 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 			buttonPane.add(new Desc(" ", supportDiscord));
 			buttonPane.add(new Desc(" ", supportReddit));
 		}
-		buttonPane.add(new Desc(tr("dlg_pin"), pinField));
+		if(!isMediator || isMediating) {
+			buttonPane.add(new Desc(tr("dlg_pin"), pinField));
+			buttonPane.add(new Desc(" ", okButton));
+		}
 		buttonPane.add(new Desc(" ", cancelButton));
-		buttonPane.add(new Desc(" ", okButton));
 
 		JPanel content = (JPanel)getContentPane();
 		content.setBorder(new EmptyBorder(4, 4, 4, 4));
@@ -247,7 +249,9 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		scroll.setPreferredSize(conditions.getPreferredSize());
 		conditionsPanel.add(scroll, BorderLayout.CENTER);
 		
-		conditionsPanel.add(acceptBox, BorderLayout.PAGE_END);
+		if(!isMediator) {
+			conditionsPanel.add(acceptBox, BorderLayout.PAGE_END);
+		}
 
 		JPanel centerPanel = new JPanel(new BorderLayout());
 		centerPanel.add(fieldPanel, BorderLayout.PAGE_START);
@@ -328,7 +332,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 				//					error = tr("offer_no_changes");
 			}
 			
-			if(error == null && !acceptBox.isSelected()) {
+			if(error == null && !isMediator && !acceptBox.isSelected()) {
 				error = tr("dlg_accept_first");
 				errorComp = acceptBox;
 				acceptBox.requestFocus();

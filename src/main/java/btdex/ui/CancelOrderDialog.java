@@ -92,8 +92,8 @@ public class CancelOrderDialog extends JDialog implements ActionListener, SignCa
 		}
 		else
 			buttonPane.add(new Desc(tr("dlg_pin"), pin));
-		buttonPane.add(new Desc(" ", calcelButton));
 		buttonPane.add(new Desc(" ", okButton));
+		buttonPane.add(new Desc(" ", calcelButton));
 
 		// set action listener on the button
 
