@@ -13,6 +13,7 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.security.SecureRandom;
 import java.util.Locale;
@@ -582,7 +583,8 @@ public class Main extends JFrame implements ActionListener {
 					nodeSelector.setIcon(ICON_DISCONNECTED);
 					String errorMessage = tr("main_error", nodeException.getLocalizedMessage());
 
-					if(nodeException.getCause() instanceof ConnectException) {
+					if(nodeException.getCause() instanceof ConnectException ||
+							nodeException.getCause() instanceof SocketTimeoutException) {
 						errorMessage = tr("main_node_connection");
 						nodeSelector.setBackground(Color.RED);
 					}
