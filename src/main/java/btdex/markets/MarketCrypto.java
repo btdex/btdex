@@ -30,7 +30,7 @@ public abstract class MarketCrypto extends Market {
 	
 	@Override
 	public String getFieldDescription(String key) {
-		return tr("mkt_address");
+		return tr("mkt_address", toString());
 	}
 	
 	@Override

@@ -265,6 +265,7 @@ public class AccountsPanel extends JPanel implements ActionListener, ListSelecti
 		}			
 		SpringUtilities.makeCompactGrid(formPanel, fields.size(), 2, 0, 0, PAD, PAD);
 		validate();
+		formPanel.repaint();
 	}
 
 	@Override
