@@ -366,8 +366,11 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			if(error == null && (amountValue == null || amountValue.longValue() <= 0)) {
 				error = tr("send_invalid_amount");
 			}
-			if(error == null && amountValue.longValue() <= 10 * Contract.ONE_BURST) {
-				error = tr("offer_too_small");
+			if(error == null && amountValue.longValue() < Constants.MIN_OFFER) {
+				error = tr("offer_too_small", NumberFormatting.BURST.format(Constants.MIN_OFFER));
+			}
+			if(error == null && amountValue.longValue() > Constants.MAX_OFFER) {
+				error = tr("offer_too_large", NumberFormatting.BURST.format(Constants.MAX_OFFER));
 			}
 
 			if(error == null && !acceptBox.isSelected()) {

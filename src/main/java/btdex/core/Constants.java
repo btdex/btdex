@@ -2,6 +2,7 @@ package btdex.core;
 
 import com.google.gson.Gson;
 
+import bt.Contract;
 import burst.kit.crypto.BurstCrypto;
 import okhttp3.MediaType;
 
@@ -67,5 +68,8 @@ public class Constants {
     public static final int ICON_SIZE_SMALL = 18;
 
     public static final int UI_UPDATE_INTERVAL = 10000;
+    
+    public static final long MIN_OFFER = 10 * Contract.ONE_BURST;
+    public static final long MAX_OFFER = 50_000 * Contract.ONE_BURST;
 
 }

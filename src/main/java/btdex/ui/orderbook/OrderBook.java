@@ -414,6 +414,9 @@ public class OrderBook extends JPanel {
 					contractsBuy.add(s);
 				continue;
 			}
+			
+			if(s.getAmountNQT() < Constants.MIN_OFFER || s.getAmountNQT() > Constants.MAX_OFFER)
+				continue;
 
 			// only contracts for this market
 			if(s.getMarket() != market.getID() || !g.getMediators().areMediatorsAccepted(s))
