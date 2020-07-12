@@ -174,6 +174,11 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 				error = tr("dlg_invalid_pin");
 				pin.requestFocus();
 			}
+			
+			if(error!=null) {
+				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(okButton);
+				return;
+			}
 
 			// all set, lets register the contract
 			try {
