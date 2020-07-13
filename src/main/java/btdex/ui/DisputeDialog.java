@@ -3,6 +3,7 @@ package btdex.ui;
 import static btdex.locale.Translation.tr;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -57,6 +58,8 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 	Desc yourAmountYouDesc, yourAmountOtherDesc;
 	Desc otherAmountYouDesc, otherAmountOtherDesc;
 	Desc mediatorAmountMakerDesc, mediatorAmountTakerDesc;
+	JLabel amountToFeeContractLabel;
+	long amountToFeeContract;
 	long amount, amountToCreator, amountToTaker;
 	long suggestToYou, suggestToOther;
 
@@ -214,6 +217,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 			mediatorSuggestionPanel.add(new JLabel(tr("disp_taker_should_get")));
 			mediatorSuggestionPanel.add(mediatorAmountTakerDesc = new Desc("", mediatorAmountTakerSlider = new JSlider(0, 100)));
 			mediatorSuggestionPanel.add(new JLabel(tr("disp_amount_to_fee")));
+			mediatorSuggestionPanel.add(amountToFeeContractLabel = new JLabel());
 			
 			mediatorAmountMakerSlider.addChangeListener(this);
 			mediatorAmountTakerSlider.addChangeListener(this);
@@ -389,6 +393,10 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 				acceptBox.requestFocus();
 			}
 
+			if(error == null && isMediating && amountToFeeContract < 0) {
+				error = tr("med_invalid_amounts");
+			}
+
 			if(error == null && !g.checkPIN(pinField.getPassword())) {
 				error = tr("dlg_invalid_pin");
 				pinField.requestFocus();
@@ -405,6 +413,11 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 
 				long amountToCreator = amount * (isCreator ? yourAmountYouSlider.getValue() : yourAmountOtherSlider.getValue()) / 100;
 				long amountToTaker = amount - amountToCreator;
+				
+				if(isMediating) {
+					amountToCreator = amount*mediatorAmountMakerSlider.getValue() / 100;
+					amountToTaker = amount*mediatorAmountTakerSlider.getValue() / 100;
+				}
 
 				// we are sending the dispute message with our amounts
 				byte[] message = BT.callMethodMessage(contract.getMethod("dispute"), amountToCreator, amountToTaker);
@@ -535,6 +548,12 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		}
 		if(e.getSource() == mediatorAmountTakerSlider) {
 			mediatorAmountTakerDesc.setDesc(NumberFormatting.BURST.format(amount*mediatorAmountTakerSlider.getValue() / 100) + " BURST");
+		}
+		if(e.getSource() == mediatorAmountMakerSlider || e.getSource() == mediatorAmountTakerSlider) {
+			int amountToSides = mediatorAmountMakerSlider.getValue() + mediatorAmountTakerSlider.getValue();
+			amountToFeeContract = (100-amountToSides)*amount / 100;
+			amountToFeeContractLabel.setText(NumberFormatting.BURST.format(amountToFeeContract) + " BURST");
+			amountToFeeContractLabel.setForeground(amountToSides > 100 ? Color.RED : mediatorAmountTakerSlider.getForeground());
 		}
 	}
 }
