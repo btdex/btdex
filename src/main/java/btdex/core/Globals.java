@@ -384,37 +384,40 @@ public class Globals {
 			l = Level.OFF;
 			System.out.println("Incorrect logging level, defaulting to OFF");
 		}
-		ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
-		//These 2 lines for log4j config builder logging
-		builder.setStatusLevel(Level.ERROR);
-		builder.setConfigurationName("BTDEX");
-		//Create a console appender
-		AppenderComponentBuilder appenderBuilder = builder.newAppender("Stdout", "CONSOLE").addAttribute("target",
-			ConsoleAppender.Target.SYSTEM_OUT);
-		appenderBuilder.add(builder.newLayout("PatternLayout")
-			.addAttribute("pattern", "%d [%t] %-5level: %logger %msg%n%throwable"));
-		builder.add(appenderBuilder);
-		// create a rolling file appender
-		LayoutComponentBuilder layoutBuilder = builder.newLayout("PatternLayout")
-			.addAttribute("pattern", "%d [%t] %-5level: %msg%n");
+		if(!l.equals(Level.OFF)){
+			ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
+			//These 2 lines for log4j config builder logging
+			builder.setStatusLevel(Level.ERROR);
+			builder.setConfigurationName("BTDEX");
+			//Create a console appender
+			AppenderComponentBuilder appenderBuilder = builder.newAppender("Stdout", "CONSOLE").addAttribute("target",
+				ConsoleAppender.Target.SYSTEM_OUT);
+			appenderBuilder.add(builder.newLayout("PatternLayout")
+				.addAttribute("pattern", "%d [%t] %-5level: %logger %msg%n%throwable"));
+			builder.add(appenderBuilder);
+			// create a rolling file appender
+			LayoutComponentBuilder layoutBuilder = builder.newLayout("PatternLayout")
+				.addAttribute("pattern", "%d [%t] %-5level: %msg%n");
 
-		ComponentBuilder triggeringPolicy = builder.newComponent("Policies")
-			.addComponent(builder.newComponent("TimeBasedTriggeringPolicy"))
-			.addComponent(builder.newComponent("SizeBasedTriggeringPolicy").addAttribute("size", "1M"));
-		appenderBuilder = builder.newAppender("rolling", "RollingFile")
-			.addAttribute("fileName", "log/btdex.log")
-			.addAttribute("filePattern", "log/archive/btdex-%d{yyyy-MM-dd}-%i.log")
-			.add(layoutBuilder)
-			.addComponent(triggeringPolicy);
-		builder.add(appenderBuilder);
+			ComponentBuilder triggeringPolicy = builder.newComponent("Policies")
+				.addComponent(builder.newComponent("TimeBasedTriggeringPolicy"))
+				.addComponent(builder.newComponent("SizeBasedTriggeringPolicy").addAttribute("size", "1M"));
+			appenderBuilder = builder.newAppender("rolling", "RollingFile")
+				.addAttribute("fileName", "log/btdex.log")
+				.addAttribute("filePattern", "log/archive/btdex-%d{yyyy-MM-dd}-%i.log")
+				.add(layoutBuilder)
+				.addComponent(triggeringPolicy);
+			builder.add(appenderBuilder);
 
-		builder.add(builder.newLogger("btdex", l)
-			.add(builder.newAppenderRef("Stdout"))
-			.add( builder.newAppenderRef("rolling"))
-			.addAttribute("additivity", false));
-		builder.add(builder.newRootLogger(Level.ERROR).add(builder.newAppenderRef("Stdout")));
+			builder.add(builder.newLogger("btdex", l)
+				.add(builder.newAppenderRef("Stdout"))
+				.add( builder.newAppenderRef("rolling"))
+				.addAttribute("additivity", false));
+			builder.add(builder.newRootLogger(Level.ERROR).add(builder.newAppenderRef("Stdout")));
 
-		Configurator.initialize(builder.build());
+			Configurator.initialize(builder.build());
+		}
+
 	}
 
 }
