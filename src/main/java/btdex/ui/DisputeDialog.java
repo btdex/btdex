@@ -53,8 +53,10 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 	JSlider security;
 	JSlider yourAmountYouSlider, yourAmountOtherSlider;
 	JSlider otherAmountYouSlider, otherAmountOtherSlider;
+	JSlider mediatorAmountMakerSlider, mediatorAmountTakerSlider;
 	Desc yourAmountYouDesc, yourAmountOtherDesc;
 	Desc otherAmountYouDesc, otherAmountOtherDesc;
+	Desc mediatorAmountMakerDesc, mediatorAmountTakerDesc;
 	long amount, amountToCreator, amountToTaker;
 	long suggestToYou, suggestToOther;
 
@@ -194,6 +196,32 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		yourSuggestionPanel.add(new JLabel(tr(isMediator ? "disp_taker_should_get" : "disp_other_should_get")));
 		yourSuggestionPanel.add(yourAmountOtherDesc = new Desc("", yourAmountOtherSlider = new JSlider(0, 100)));
 		
+
+		JPanel mediatorPanel = new JPanel(new BorderLayout());
+		if(isMediating) {
+			mediatorPanel.setBorder(BorderFactory.createTitledBorder(tr("disp_mediator_decision")));
+			JPanel useSuggestionsPanel = new JPanel(new FlowLayout());
+			mediatorPanel.add(useSuggestionsPanel, BorderLayout.PAGE_START);
+			if(hasOtherSuggestion)
+				useSuggestionsPanel.add(acceptOtherTermsBox);
+			if(hasYourSuggestion)
+				useSuggestionsPanel.add(acceptMakerTermsBox);
+			
+			JPanel mediatorSuggestionPanel = new JPanel(new GridLayout(0, 2));
+			mediatorPanel.add(mediatorSuggestionPanel, BorderLayout.CENTER);
+			mediatorSuggestionPanel.add(new JLabel(tr("disp_maker_should_get")));
+			mediatorSuggestionPanel.add(mediatorAmountMakerDesc = new Desc("", mediatorAmountMakerSlider = new JSlider(0, 100)));
+			mediatorSuggestionPanel.add(new JLabel(tr("disp_taker_should_get")));
+			mediatorSuggestionPanel.add(mediatorAmountTakerDesc = new Desc("", mediatorAmountTakerSlider = new JSlider(0, 100)));
+			mediatorSuggestionPanel.add(new JLabel(tr("disp_amount_to_fee")));
+			
+			mediatorAmountMakerSlider.addChangeListener(this);
+			mediatorAmountTakerSlider.addChangeListener(this);
+			
+			mediatorAmountMakerSlider.setValue(0);
+			mediatorAmountTakerSlider.setValue(0);
+		}
+		
 		if(isMediator) {
 			yourAmountYouSlider.setEnabled(false);
 			yourAmountOtherSlider.setEnabled(false);
@@ -218,7 +246,9 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		cancelButton = new JButton(tr("dlg_cancel"));
 		okButton = new JButton(tr("disp_open_dispute"));
 		if(contract.getState() > SellContract.STATE_DISPUTE)
-			okButton = new JButton(tr("disp_update_dispute"));
+			okButton.setText(tr("disp_update_dispute"));
+		if(isMediating)
+			okButton.setText(tr("disp_settle"));
 		
 		getRootPane().setDefaultButton(okButton);
 
@@ -262,9 +292,11 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		bottomPanel.add(suggestionsPanel, BorderLayout.PAGE_START);
 		// Only show the other side proposal when there is one
 		if(hasOtherSuggestion)
-			suggestionsPanel.add(otherPanel, BorderLayout.PAGE_START);
+			suggestionsPanel.add(otherPanel);
 		if(!isMediator || hasYourSuggestion)
-			suggestionsPanel.add(yourPanel, BorderLayout.CENTER);
+			suggestionsPanel.add(yourPanel);
+		if(isMediating)
+			suggestionsPanel.add(mediatorPanel);
 		bottomPanel.add(buttonPane, BorderLayout.PAGE_END);
 
 		content.add(centerPanel, BorderLayout.CENTER);
@@ -310,12 +342,31 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
         }
 		
 		if(e.getSource() == acceptOtherTermsBox) {
+			if(isMediating) {
+				if(acceptOtherTermsBox.isSelected()) {
+					acceptMakerTermsBox.setSelected(false);
+					mediatorAmountMakerSlider.setValue(otherAmountYouSlider.getValue());
+					mediatorAmountTakerSlider.setValue(otherAmountOtherSlider.getValue());
+				}
+				mediatorAmountMakerSlider.setEnabled(!acceptOtherTermsBox.isSelected());
+				mediatorAmountTakerSlider.setEnabled(!acceptOtherTermsBox.isSelected());
+				return;
+			}
 			if(acceptOtherTermsBox.isSelected()) {
-				yourAmountOtherSlider.setValue(otherAmountOtherSlider.getValue());;
-				yourAmountYouSlider.setValue(otherAmountYouSlider.getValue());				
+				yourAmountOtherSlider.setValue(otherAmountOtherSlider.getValue());
+				yourAmountYouSlider.setValue(otherAmountYouSlider.getValue());
 			}
 			yourAmountOtherSlider.setEnabled(!acceptOtherTermsBox.isSelected());
 			yourAmountYouSlider.setEnabled(!acceptOtherTermsBox.isSelected());
+		}
+		if(e.getSource() == acceptMakerTermsBox) {
+			if(acceptMakerTermsBox.isSelected()) {
+				acceptOtherTermsBox.setSelected(false);
+				mediatorAmountMakerSlider.setValue(yourAmountYouSlider.getValue());
+				mediatorAmountTakerSlider.setValue(yourAmountOtherSlider.getValue());
+			}
+			mediatorAmountMakerSlider.setEnabled(!acceptMakerTermsBox.isSelected());
+			mediatorAmountTakerSlider.setEnabled(!acceptMakerTermsBox.isSelected());
 		}
 
 		if(e.getSource() == okButton || e.getSource() == pinField) {
@@ -478,6 +529,12 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		if(e.getSource() == yourAmountOtherSlider) {
 			yourAmountOtherDesc.setDesc(NumberFormatting.BURST.format(amount*yourAmountOtherSlider.getValue() / 100) + " BURST");
 			yourAmountYouSlider.setValue(100-yourAmountOtherSlider.getValue());
+		}
+		if(e.getSource() == mediatorAmountMakerSlider) {
+			mediatorAmountMakerDesc.setDesc(NumberFormatting.BURST.format(amount*mediatorAmountMakerSlider.getValue() / 100) + " BURST");
+		}
+		if(e.getSource() == mediatorAmountTakerSlider) {
+			mediatorAmountTakerDesc.setDesc(NumberFormatting.BURST.format(amount*mediatorAmountTakerSlider.getValue() / 100) + " BURST");
 		}
 	}
 }
