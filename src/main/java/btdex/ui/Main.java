@@ -39,6 +39,7 @@ import javax.swing.event.ChangeListener;
 
 import btdex.core.*;
 import btdex.ui.orderbook.OrderBook;
+import burst.kit.entity.BurstAddress;
 import com.bulenkov.darcula.DarculaLaf;
 
 import bt.BT;
@@ -327,7 +328,8 @@ public class Main extends JFrame implements ActionListener {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		boolean newAccount = false;
 		try {
-			g.getNS().getAccount(g.getAddress()).blockingGet();
+			Account address = g.getNS().getAccount(g.getAddress()).blockingGet();
+			logger.info("Active address {}", address.getId().getFullAddress());
 		}
 		catch (Exception e) {
 			setCursor(Cursor.getDefaultCursor());
@@ -379,6 +381,7 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 		timer.start();
+		logger.info("updateUI timer started");
 	}
 
 	public void showTransactionsPanel() {
@@ -403,7 +406,9 @@ public class Main extends JFrame implements ActionListener {
 			Properties versionProp = new Properties();
 			versionProp.load(Main.class.getResourceAsStream("/version.properties"));
 			version = versionProp.getProperty("version");
+			logger.info("Local resources, Version {}", version);
 		} catch (Exception ex) {
+			logger.error("Error in reading local resources :" + ex.getLocalizedMessage());
 			ex.printStackTrace();
 		}
 	}
@@ -415,7 +420,9 @@ public class Main extends JFrame implements ActionListener {
 		try {
 			DarculaLaf laf = new DarculaLaf();
 			UIManager.setLookAndFeel(laf);
+			logger.debug("UI manager {} created", laf.getDescription());
 		} catch (UnsupportedLookAndFeelException e) {
+			logger.error("Error: " + e.getLocalizedMessage());
 			e.printStackTrace();
 		}
 	}
@@ -427,6 +434,7 @@ public class Main extends JFrame implements ActionListener {
 		versionButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				logger.debug("Version Button clicked");
 				browse(Constants.RELEASES_LINK);
 			}
 		});
@@ -440,6 +448,7 @@ public class Main extends JFrame implements ActionListener {
 		resetPinButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				logger.debug("Reset Pin Button clicked");
 				Welcome welcome = new Welcome(Main.this, true);
 
 				welcome.setLocationRelativeTo(Main.this);
@@ -459,6 +468,7 @@ public class Main extends JFrame implements ActionListener {
 		webButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				logger.debug("Web Button clicked");
 				browse(Constants.WEBSITE_LINK);
 			}
 		});
@@ -472,6 +482,7 @@ public class Main extends JFrame implements ActionListener {
 		discordButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				logger.debug("Discord Button clicked");
 				browse(Constants.DISCORD_LINK);
 			}
 		});
@@ -485,6 +496,7 @@ public class Main extends JFrame implements ActionListener {
 		discordButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				logger.debug("Reddit Button clicked");
 				browse(Constants.REDDIT_LINK);
 			}
 		});
@@ -498,6 +510,7 @@ public class Main extends JFrame implements ActionListener {
 		githubButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				logger.debug("Github Button clicked");
 				browse(Constants.GITHUB_LINK);
 			}
 		});
@@ -519,16 +532,19 @@ public class Main extends JFrame implements ActionListener {
 		langButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				logger.debug("Lang Button clicked");
 				JPopupMenu menu = new JPopupMenu();
 				for(Locale l : Translation.getSupportedLanguages()) {
 					JMenuItem item = new JMenuItem(l.getDisplayLanguage(Translation.getCurrentLocale()));
 					item.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
+							logger.debug("Language selected");
 							g.setLanguage(l.getLanguage());
 							try {
 								g.saveConfs();
 							} catch (Exception e1) {
+								logger.error("Error: {}", e1.getLocalizedMessage());
 								e1.printStackTrace();
 							}
 							JOptionPane.showMessageDialog(Main.this,
@@ -561,6 +577,7 @@ public class Main extends JFrame implements ActionListener {
 		long balance = 0, locked = 0;
 		try {
 			Globals g = Globals.getInstance();
+			logger.trace("Got globals instance, Node {}", g.getNode());
 			BurstNode bn = BurstNode.getInstance();
 
 			if(transactionsPanel.isVisible() || showingSplash)
@@ -577,7 +594,7 @@ public class Main extends JFrame implements ActionListener {
 
 			Exception nodeException = bn.getNodeException();
 			if(nodeException != null) {
-
+				logger.warn("nodeException {}", nodeException.getLocalizedMessage());
 				if(!(nodeException.getCause() instanceof BRSError) || ((BRSError) nodeException.getCause()).getCode() != 5) {
 					// not the unknown account exception, show the error
 					nodeSelector.setIcon(ICON_DISCONNECTED);
@@ -603,9 +620,13 @@ public class Main extends JFrame implements ActionListener {
 
 			// Check if the node has the expected block
 			Block checkBlock = bn.getCheckBlock();
-			if(checkBlock == null)
+			if(checkBlock == null) {
+				logger.debug("checkBlock equals to Null");
 				return;
-			if(!checkBlock.getId().getID().equals(g.isTestnet() ? Constants.CHECK_BLOCK_TESTNET : Constants.CHECK_BLOCK)) {
+			}
+			String checkBlockId = checkBlock.getId().getID();
+			if(!checkBlockId.equals(g.isTestnet() ? Constants.CHECK_BLOCK_TESTNET : Constants.CHECK_BLOCK)) {
+				logger.warn("Check block Id equals to {}, testnet {}, realnet {}", checkBlockId, Constants.CHECK_BLOCK_TESTNET, Constants.CHECK_BLOCK);
 				String error = tr("main_invalid_node", g.getNode());
 				Toast.makeText(Main.this, error, Toast.Style.ERROR).display();
 
@@ -617,6 +638,7 @@ public class Main extends JFrame implements ActionListener {
 					showingSplash = false;
 					pulsingButton.stopPulsing();
 					cardLayout.first(getContentPane());
+					logger.debug("Splash removed");
 				}
 				return;
 			}

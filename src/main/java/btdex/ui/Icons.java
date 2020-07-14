@@ -12,6 +12,8 @@ import jiconfont.IconCode;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.icons.font_awesome.FontAwesomeBrands;
 import jiconfont.swing.IconFontSwing;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Icons {
     public static IconCode BTDEX = FontAwesome.HEART;
@@ -48,16 +50,18 @@ public class Icons {
     public static IconCode TELEGRAM = FontAwesomeBrands.TELEGRAM;
     public static IconCode WHATSAPP = FontAwesomeBrands.WHATSAPP;
     public static IconCode TWITTER = FontAwesomeBrands.TWITTER;
-    
+
     public static IconCode LEDGER = FontAwesome.USB;
 
+	private static Logger logger = LogManager.getLogger();
     private int size = Constants.ICON_SIZE;
     private Color color = Color.BLACK;
     private HashMap<IconCode, Icon> icons = new HashMap<>();
-    
+
     public Icons(Color color, int size) {
     	this.color = color;
     	this.size = size;
+    	logger.debug("Icons color {} and size {}", color, size);
     }
 
     public Icon get(IconCode icon) {
@@ -72,6 +76,7 @@ public class Icons {
         try {
             return ImageIO.read(Main.class.getResourceAsStream("/icon.png"));
         } catch (Exception ex) {
+			logger.error("Error: " + ex.getLocalizedMessage());
             ex.printStackTrace();
         }
         return null;
@@ -81,6 +86,7 @@ public class Icons {
         try {
             return ImageIO.read(Main.class.getResourceAsStream("/icon-mono.png"));
         } catch (Exception ex) {
+			logger.error("Error: " + ex.getLocalizedMessage());
             ex.printStackTrace();
         }
         return null;
