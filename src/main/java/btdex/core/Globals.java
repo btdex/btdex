@@ -397,7 +397,7 @@ public class Globals {
 			builder.add(appenderBuilder);
 			// create a rolling file appender
 			LayoutComponentBuilder layoutBuilder = builder.newLayout("PatternLayout")
-				.addAttribute("pattern", "%d [%t] %-5level: %msg%n");
+				.addAttribute("pattern", "%d [%t] %-5level: %logger %msg%n");
 
 			ComponentBuilder triggeringPolicy = builder.newComponent("Policies")
 				.addComponent(builder.newComponent("TimeBasedTriggeringPolicy"))
