@@ -88,6 +88,7 @@ task versionProp()  {
 }
 
 jar {
+	// Needed by the loggin library
     manifest {
         attributes 'Multi-Release': 'true'
     }
