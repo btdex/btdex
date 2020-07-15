@@ -23,12 +23,6 @@ repositories {
     maven { url 'https://jitpack.io' }
 }
 
-dependencyManagement {
-	imports {
-		mavenBom 'org.apache.logging.log4j:log4j-bom:2.13.3'
-	}
-}
-
 dependencies {
     //implementation 'com.github.burst-apps-team:burstkit4j:734c9f83bf'
     //implementation 'com.github.shefass:burstkit4j:a5086e5746'
@@ -63,8 +57,8 @@ dependencies {
     implementation 'com.github.jjos2372:ledger4j:06fb465b5a'
 
 	//logging
-	compile 'org.apache.logging.log4j:log4j-api'
-	compile 'org.apache.logging.log4j:log4j-core'
+	implementation 'org.apache.logging.log4j:log4j-api:2.13.3'
+	implementation 'org.apache.logging.log4j:log4j-core:2.13.3'
 
     // Use JUnit test framework
     testImplementation("org.junit.platform:junit-platform-engine:1.6.1")
@@ -90,6 +84,12 @@ def details = versionDetails()
 task versionProp()  {
     doFirst {
         new File(sourceSets.main.output.resourcesDir, "/version.properties").text = "version:${details.lastTag}"
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Multi-Release': 'true'
     }
 }
 
