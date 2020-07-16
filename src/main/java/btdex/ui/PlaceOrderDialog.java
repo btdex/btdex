@@ -109,6 +109,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 		if(isTaken)
 			setTitle(tr(isDeposit ? "offer_deposit" : "offer_signal_was_received", market));
+		else if(contract != null && contract.getCreator().equals(g.getAddress()))
+			setTitle(tr("offer_update"));
 
 		this.market = market;
 
