@@ -112,7 +112,7 @@ public abstract class Market {
 	
 	public void setFieldValue(String key, JComponent editor, HashMap<String, String> fields) {
 		if(editor instanceof JTextField) {
-			fields.put(key, ((JTextField)editor).getText());
+			fields.put(key, ((JTextField)editor).getText().trim());
 		}
 	}
 	
