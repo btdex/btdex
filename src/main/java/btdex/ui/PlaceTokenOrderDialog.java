@@ -244,10 +244,10 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 
 				if(sellToken.isSelected())
 					utx = g.getNS().generatePlaceAskOrderTransaction(g.getPubKey(), market.getTokenID(),
-							amountValue, priceValue, suggestedFee, Constants.BURST_DEADLINE);
+							amountValue, priceValue, suggestedFee, Constants.BURST_EXCHANGE_DEADLINE);
 				else
 					utx = g.getNS().generatePlaceBidOrderTransaction(g.getPubKey(), market.getTokenID(),
-							amountValue, priceValue, suggestedFee, Constants.BURST_DEADLINE);
+							amountValue, priceValue, suggestedFee, Constants.BURST_EXCHANGE_DEADLINE);
 
 				unsigned = utx.blockingGet();
 				if(g.usingLedger()) {

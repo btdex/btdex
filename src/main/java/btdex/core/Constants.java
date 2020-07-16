@@ -56,7 +56,10 @@ public class Constants {
 	public static final int FEE_QUANT = 735000;
 
 	// Deadline in minutes to be used on transactions
-	public static final int BURST_DEADLINE = 1440;
+	public static final int BURST_SEND_DEADLINE = 1440;
+	
+	// Deadline in minutes to be used on exchange transactions
+	public static final int BURST_EXCHANGE_DEADLINE = 20;
 
     public static final String RELEASES_LINK = "https://github.com/btdex/btdex/releases";
     public static final String WEBSITE_LINK = "https://btdex.trade";

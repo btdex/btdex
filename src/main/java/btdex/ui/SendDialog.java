@@ -195,12 +195,12 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 					if(token!=null) {
 						utx = g.getNS().generateTransferAssetTransactionWithMessage(g.getPubKey(), BurstAddress.fromId(recID),
 								token.getTokenID(), BurstValue.fromPlanck((long)(amountNumber.doubleValue()*token.getFactor())),
-								selectedFee, Constants.BURST_DEADLINE, msg);
+								selectedFee, Constants.BURST_SEND_DEADLINE, msg);
 					}
 					else {
 						utx = g.getNS().generateTransactionWithMessage(BurstAddress.fromId(recID), g.getPubKey(),
 							BurstValue.fromBurst(amountNumber.doubleValue()),
-							selectedFee, Constants.BURST_DEADLINE, msg);
+							selectedFee, Constants.BURST_SEND_DEADLINE, msg);
 					}
 					
 					unsigned = utx.blockingGet();

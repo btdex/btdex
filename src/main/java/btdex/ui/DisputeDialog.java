@@ -425,7 +425,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 
 				Single<byte[]> utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 						amountToSend, suggestedFee,
-						Constants.BURST_DEADLINE, message);
+						Constants.BURST_EXCHANGE_DEADLINE, message);
 
 				Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
 					byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
