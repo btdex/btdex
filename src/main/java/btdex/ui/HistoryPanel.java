@@ -2,6 +2,7 @@ package btdex.ui;
 
 import static btdex.locale.Translation.tr;
 
+import java.awt.Font;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.ButtonGroup;
@@ -186,6 +188,8 @@ public class HistoryPanel extends JPanel {
 		chart.setBackgroundPaint(table.getBackground());
 		chart.setBorderPaint(table.getForeground());
 		chart.getXYPlot().setBackgroundPaint(table.getBackground());
+		if (Locale.getDefault().equals(Locale.SIMPLIFIED_CHINESE))
+			chart.getXYPlot().getDomainAxis().setTickLabelFont(new Font("微软雅黑", Font.PLAIN, 15));
 		NumberAxis raxis = (NumberAxis) chart.getXYPlot().getRangeAxis();
 		raxis.setAutoRangeIncludesZero(false);
 		raxis.setTickLabelPaint(table.getForeground());
