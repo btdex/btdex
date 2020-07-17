@@ -82,7 +82,9 @@ public class Globals {
 
 			// possible ledger account index
 			ledgerEnabled = Boolean.parseBoolean(conf.getProperty(Constants.PROP_LEDGER_ENABLED, "false"));
+			logger.debug("Conf. ledger enabled: {}", ledgerEnabled);
 			ledgerIndex = Integer.parseInt(conf.getProperty(Constants.PROP_LEDGER, "-1"));
+			logger.debug("Conf. ledger index: {}", ledgerIndex);
 
 			// load the markets
 			Markets.loadStandardMarkets(testnet, NS);
@@ -95,6 +97,7 @@ public class Globals {
 			loadAccounts();
 		}
 		catch (Exception e) {
+			logger.error("Error: {}", e.getLocalizedMessage());
 			e.printStackTrace();
 		}
 	}
@@ -121,15 +124,16 @@ public class Globals {
 
 	private void checkPublicKey() {
 		String publicKeyStr = conf.getProperty(Constants.PROP_PUBKEY);
+
 		if(publicKeyStr == null || publicKeyStr.length()!=64) {
 			// no public key or invalid, show the welcome screen
+			logger.debug("No public key detected or its length not 64 char");
 			conf.remove(Constants.PROP_PUBKEY);
 		}
 		else {
-			// get the updated public key and continue
-			publicKeyStr = conf.getProperty(Constants.PROP_PUBKEY);
-			byte []publicKey = BC.parseHexString(publicKeyStr);
+			byte[] publicKey = BC.parseHexString(publicKeyStr);
 			address = BC.getBurstAddressFromPublic(publicKey);
+			logger.debug("checkPublicKey() sets address to {}", address.getFullAddress());
 		}
 	}
 
@@ -143,11 +147,13 @@ public class Globals {
 			f.getParentFile().mkdirs();
 		FileOutputStream fos = new FileOutputStream(f);
 		conf.store(fos, "BTDEX configuration file, private key is encrypted, only edit if you know what you're doing");
+		logger.debug("Config saved");
 	}
 
 	public void clearConfs() throws Exception {
 		File f = new File(confFile);
 		f.delete();
+		logger.debug("Config cleared");
 	}
 
 	/**
@@ -183,9 +189,11 @@ public class Globals {
 			String encPrivKey = conf.getProperty(Constants.PROP_ENC_PRIVKEY);
 			byte []privKey = BC.aesDecrypt(BC.parseHexString(encPrivKey), pinKey);
 			String pubKey = BC.toHexString(BC.getPublicKey(privKey));
-
-			return pubKey.equals(conf.getProperty(Constants.PROP_PUBKEY));
+			Boolean result = pubKey.equals(conf.getProperty(Constants.PROP_PUBKEY));
+			logger.debug("PIN checked, result: {}", result);
+			return result;
 		} catch (Exception e) {
+			logger.error("Error: {}", e.getLocalizedMessage());
 			return false;
 		}
 	}
@@ -214,8 +222,11 @@ public class Globals {
 		int i = 1;
 		while(true) {
 			String accountMarket = conf.getProperty(Constants.PROP_ACCOUNT + i, null);
-			if(accountMarket == null || accountMarket.length()==0)
+
+			if(accountMarket == null || accountMarket.length()==0) {
+				logger.debug("No markets specified in the config file");
 				break;
+			}
 
 			String accountName = conf.getProperty(Constants.PROP_ACCOUNT + i + ".name", null);
 
@@ -224,11 +235,14 @@ public class Globals {
 			for (int j = 0; j < markets.size(); j++) {
 				if(markets.get(j).toString().equals(accountMarket)) {
 					m = markets.get(j);
+					logger.debug("Specified market {}", m.getID());
 					break;
 				}
 			}
-			if(m == null)
+			if(m == null) {
+				logger.warn("Specified market invalid or not in Markets");
 				break;
+			}
 
 			ArrayList<String> fieldNames = m.getFieldKeys();
 			HashMap<String, String> fields = new HashMap<>();
@@ -262,6 +276,7 @@ public class Globals {
 		try {
 			saveConfs();
 		} catch (Exception e) {
+			logger.error("Error: {}", e.getLocalizedMessage());
 			e.printStackTrace();
 		}
 	}
@@ -270,14 +285,17 @@ public class Globals {
 		int userToken = 1;
 		while(true) {
 			String userTokenID = conf.getProperty(Constants.PROP_USER_TOKEN_ID + userToken);
-			if(userTokenID == null || userTokenID.length() == 0)
+			if(userTokenID == null || userTokenID.length() == 0) {
+				logger.debug("User tokens not set in config file");
 				break;
+			}
 
 			try {
 				Market userTokenMarket = new MarketBurstToken(userTokenID, NS);
 				addUserMarket(userTokenMarket, false);
 			}
 			catch (Exception e) {
+				logger.error("Error: {}", e.getLocalizedMessage());
 			}
 			userToken++;
 		}
@@ -295,6 +313,7 @@ public class Globals {
 		try {
 			saveConfs();
 		} catch (Exception e) {
+			logger.error("Error: {}", e.getLocalizedMessage());
 			e.printStackTrace();
 		}
 	}

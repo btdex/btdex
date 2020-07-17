@@ -5,11 +5,15 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Code from https://raw.githubusercontent.com/timqi/btc_address_validator/master/BTCAddrValidator.java
  */
 public class BTCAddrValidator {
-	
+	private static Logger logger = LogManager.getLogger();
+
   public static final int[] BTC_HEADERS = {0, 5};
   public static final int[] DOGE_HEADERS = {0x1e, 0x16};
 
@@ -32,14 +36,14 @@ public class BTCAddrValidator {
     assert validate("34QjytsE8GVRbUBvYNheftqJ5CHfDHvQRD") == true;
     assert validate("3GsAUrD4dnCqtaTTUzzsQWoymHNkEFrgGF") == true;
     assert validate("3NagLCvw8fLwtoUrK7s2mJPy9k6hoyWvTU") == true;
-    
-    
+
+
     assert validate("DBXu2kgc3xtvCUWFcxFE3r9hEYgmuaaCyD", DOGE_HEADERS) == true;
     assert validate("DU7XJ1xeE1Xg8cRJmNvxLRjePAqmgFHebR", DOGE_HEADERS) == true;
     assert validate("DQpqATKHvJvMtZyEyz9eTEbj4S3tWJdaak", DOGE_HEADERS) == true;
     assert validate("DQqpATKHvJvMtZyEyz9eTEbj4S3tWJdaak", DOGE_HEADERS) == false;
     assert validate("DU7XJ1xeE1X8gcRJmNvxLRjePAqmgFHebR", DOGE_HEADERS) == false;
-    
+
     System.out.println("Test all passed");
   }
 
@@ -53,7 +57,8 @@ public class BTCAddrValidator {
     try {
       digest = MessageDigest.getInstance("SHA-256");
     } catch (NoSuchAlgorithmException e) {
-      throw new RuntimeException(e);
+    	logger.error("Error: {}", e.getLocalizedMessage());
+      	throw new RuntimeException(e);
     }
 
     for (int i = 0; i < INDEXES.length; i++) {
@@ -67,8 +72,11 @@ public class BTCAddrValidator {
   public static boolean validate(String addr) {
     try {
       int addressHeader = getAddressHeader(addr);
-      return (addressHeader == 0 || addressHeader == 5);
+      Boolean result = (addressHeader == 0 || addressHeader == 5);
+      logger.debug("Address validate result: {}", result);
+      return result;
     } catch (Exception x) {
+    	logger.error("Error: {}", x.getLocalizedMessage());
 //      x.printStackTrace();
     }
     return false;
@@ -77,13 +85,16 @@ public class BTCAddrValidator {
   public static boolean validate(String addr, int[]headers) {
 	    try {
 	      int addressHeader = getAddressHeader(addr);
-	      return (addressHeader == headers[0] || addressHeader == headers[1]);
+	      Boolean result = (addressHeader == headers[0] || addressHeader == headers[1]);
+	      logger.debug("Address validate result: {}", result);
+	      return result;
 	    } catch (Exception x) {
-//	      x.printStackTrace();
+	    	logger.error("Error: {}", x.getLocalizedMessage());
+//	      	x.printStackTrace();
 	    }
 	    return false;
 	  }
-  
+
   private static int getAddressHeader(String address) throws IOException {
     byte[] tmp = decodeChecked(address);
     return tmp[0] & 0xFF;
@@ -91,15 +102,20 @@ public class BTCAddrValidator {
 
   private static byte[] decodeChecked(String input) throws IOException {
     byte[] tmp = decode(input);
-    if (tmp.length < 4)
-      throw new IOException("BTC AddressFormatException Input too short");
+    if (tmp.length < 4){
+    	logger.error("BTC AddressFormatException Input too short");
+		throw new IOException("BTC AddressFormatException Input too short");
+	}
+
     byte[] bytes = copyOfRange(tmp, 0, tmp.length - 4);
     byte[] checksum = copyOfRange(tmp, tmp.length - 4, tmp.length);
 
     tmp = doubleDigest(bytes);
     byte[] hash = copyOfRange(tmp, 0, 4);
-    if (!Arrays.equals(checksum, hash))
-      throw new IOException("BTC AddressFormatException Checksum does not validate");
+    if (!Arrays.equals(checksum, hash)){
+		logger.error("BTC AddressFormatException Checksum does not validate");
+		throw new IOException("BTC AddressFormatException Checksum does not validate");
+	}
 
     return bytes;
   }
@@ -130,6 +146,7 @@ public class BTCAddrValidator {
         digit58 = INDEXES[c];
       }
       if (digit58 < 0) {
+      	logger.error("Bitcoin AddressFormatException Illegal character " + c + " at " + i);
         throw new IOException("Bitcoin AddressFormatException Illegal character " + c + " at " + i);
       }
 
