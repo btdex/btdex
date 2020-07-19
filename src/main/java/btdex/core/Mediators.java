@@ -67,7 +67,7 @@ public class Mediators {
 
     	for (int i = 0; i < mediators.length; i++) {
     		if(mediators[i].getSignedLongId() == mediator && mediatorBalances[i]!=null && mediatorBalances[i].compareTo(MIN_TRT) >= 0){
-				logger.debug("Mediator {} accepted", mediator);
+				logger.trace("Mediator {} accepted", mediator);
 				return true;
 			}
 
