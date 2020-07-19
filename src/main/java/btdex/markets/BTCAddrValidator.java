@@ -86,7 +86,7 @@ public class BTCAddrValidator {
 	    try {
 	      int addressHeader = getAddressHeader(addr);
 	      Boolean result = (addressHeader == headers[0] || addressHeader == headers[1]);
-	      logger.debug("Address validate result: {}", result);
+	      logger.trace("Address validate result: {}", result);
 	      return result;
 	    } catch (Exception x) {
 	    	logger.error("Error: {}", x.getLocalizedMessage());
