@@ -170,8 +170,12 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 			}
 			
 			String msg = null;
-			if(message.getText().length()>0)
+			if(message.getText().length()>0) {
 				msg = message.getText();
+				if(msg.length() > 1000) {
+					error = tr("send_invalid_message");
+				}
+			}
 
 			Number amountNumber = null;
 			if(error == null) {
