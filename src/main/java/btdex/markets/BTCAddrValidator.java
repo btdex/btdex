@@ -73,7 +73,7 @@ public class BTCAddrValidator {
     try {
       int addressHeader = getAddressHeader(addr);
       Boolean result = (addressHeader == 0 || addressHeader == 5);
-      logger.debug("Address validate result: {}", result);
+      logger.trace("Address validate result: {}", result);
       return result;
     } catch (Exception x) {
     	logger.error("Error: {}", x.getLocalizedMessage());
