@@ -284,7 +284,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			}
 			if(Contracts.isLoading()) {
 				JOptionPane.showMessageDialog(getParent(), tr("main_cross_chain_loading"),
-						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
+						tr("offer_processing"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 			if(!isMediator && accountComboBox.getItemCount()==0 && (isBuy && isTake || !isBuy && !isTake)) {
