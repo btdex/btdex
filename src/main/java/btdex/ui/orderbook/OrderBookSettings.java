@@ -9,6 +9,7 @@ public class OrderBookSettings {
     public static final int[] ASK_COLS = {3, 2, 1, 0};
     public static final int COL_WIDE = 100;
     public static final int COL_REGULAR = 75;
+    public static final int ICON_SIZE = 12;
     public static final String[] columnNames = {
             "book_contract",
             "book_total",

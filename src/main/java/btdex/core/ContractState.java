@@ -26,6 +26,9 @@ import burst.kit.entity.response.Transaction;
 import burst.kit.entity.response.TransactionAppendix;
 import burst.kit.entity.response.appendix.PlaintextMessageAppendix;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class ContractState {
 
 	private BurstAddress address;
@@ -44,7 +47,7 @@ public class ContractState {
 	private long security;
 	private long fee;
 	private long taker;
-	
+
 	private long lockMinutes;
 
 	private boolean hasPending;
@@ -61,10 +64,11 @@ public class ContractState {
 	private long marketHistory;
 	private int blockHistory;
 
+	private static Logger logger = LogManager.getLogger();
+
 	public ContractState(ContractType type) {
 		this.type = type;
 	}
-
 
 	public boolean hasStateFlag(long flag) {
 		return (state & flag) == flag;
@@ -270,6 +274,7 @@ public class ContractState {
 							}
 						}
 						catch (Exception e) {
+							logger.error("Error: {}", e.getLocalizedMessage());
 							// we ignore invalid messages
 						}
 					}
@@ -290,7 +295,7 @@ public class ContractState {
 		for(Transaction tx : txs) {
 			if(tx.getId().getSignedLongId() == lastTxId && takeBlock == 0)
 				break;
-			
+
 			// Only transactions for this contract
 			if(tx.getRecipient()==null || !tx.getRecipient().equals(getAddress()))
 				continue;
@@ -360,9 +365,10 @@ public class ContractState {
 							break;
 					}
 					catch (Exception e) {
+						logger.error("Error: {}", e.getLocalizedMessage());
 						// we ignore invalid messages
 					}
-					
+
 				}
 			}
 		}
@@ -380,11 +386,11 @@ public class ContractState {
 		for (int i = txs.length -1 ; i >= 0; i--) {
 			// in reverse order so we have the price available when we see the 'take'
 			Transaction tx = txs[i];
-			
+
 			// if we already have this one
 			if(tx.getBlockHeight() <= blockHistory)
 				continue;
-			
+
 			if(tx.getRecipient().equals(address)
 					&& tx.getAppendages()!=null && tx.getAppendages().length > 0
 					&& tx.getAppendages()[0] instanceof PlaintextMessageAppendix) {
@@ -403,10 +409,11 @@ public class ContractState {
 							rateHistory = Long.parseLong(rateJson.getAsString());
 					}
 					catch (Exception e) {
+						logger.error("Error: {}", e.getLocalizedMessage());
 						// we ignore invalid messages
 					}
 				}
-				else if(rateHistory > 0L && marketHistory > 0L // we only want to register trades we know the price 
+				else if(rateHistory > 0L && marketHistory > 0L // we only want to register trades we know the price
 						&& !appendMessage.isText() && appendMessage.getMessage().length() == 64
 						&& appendMessage.getMessage().startsWith(Contracts.getContractTakeHash(type))) {
 					// the take message (we are not so strict here as this is not vital information)
@@ -418,13 +425,13 @@ public class ContractState {
 					b.getLong(); // method hash
 					long security = b.getLong();
 					long amount = b.getLong();
-					
+
 					ContractTrade trade = new ContractTrade(this, tx.getBlockTimestamp(), tx.getSender(), rateHistory, security, amount, marketHistory);
 					trades.add(trade);
 				}
 			}
 		}
-		
+
 		blockHistory = txs[0].getBlockHeight();
 	}
 
@@ -448,7 +455,7 @@ public class ContractState {
 	public long getAmountNQT() {
 		return amount;
 	}
-	
+
 	public long getFeeNQT() {
 		return fee;
 	}
@@ -500,21 +507,21 @@ public class ContractState {
 	public long getState() {
 		return state;
 	}
-	
+
 	public long getLockMinutes() {
 		return lockMinutes;
 	}
-	
+
 	public int getATVersion() {
 		return at.getVersion();
 	}
-	
+
 	public long getDisputeAmount(boolean fromCreator, boolean toCreator) {
 		if(fromCreator)
 			return getContractFieldValue(toCreator ? "disputeCreatorAmountToCreator" : "disputeCreatorAmountToTaker");
 		return getContractFieldValue(toCreator ? "disputeTakerAmountToCreator" : "disputeTakerAmountToTaker");
 	}
-	
+
 	public ArrayList<ContractTrade> getTrades() {
 		return trades;
 	}

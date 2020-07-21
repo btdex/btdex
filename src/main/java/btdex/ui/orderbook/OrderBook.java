@@ -40,6 +40,9 @@ import burst.kit.entity.response.attachment.AskOrderPlacementAttachment;
 import burst.kit.entity.response.attachment.BidOrderCancellationAttachment;
 import burst.kit.entity.response.attachment.BidOrderPlacementAttachment;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class OrderBook extends JPanel {
 
 	private static final long serialVersionUID = 1L;
@@ -64,6 +67,8 @@ public class OrderBook extends JPanel {
 	private JScrollPane scrollPaneBid;
 
 	private JScrollPane scrollPaneAsk;
+
+	private static Logger logger = LogManager.getLogger();
 
 	public static final ButtonCellRenderer BUTTON_RENDERER = new ButtonCellRenderer();
 
@@ -91,7 +96,7 @@ public class OrderBook extends JPanel {
 		tableBid.getTableHeader().setReorderingAllowed(false);
 		tableAsk.getTableHeader().setReorderingAllowed(false);
 
-		Icons ics = new Icons(tableBid.getForeground(), 12);
+		Icons ics = new Icons(tableBid.getForeground(), OrderBookSettings.ICON_SIZE);
 		copyIcon = ics.get(Icons.COPY);
 		expIcon = ics.get(Icons.EXPLORER);
 		cancelIcon = ics.get(Icons.CANCEL);
@@ -182,20 +187,23 @@ public class OrderBook extends JPanel {
 
 	public void setMarket(Market m) {
 		newMarket = m;
+		logger.debug("Market {} set", newMarket.getID());
 	}
 
 	public void setLastPrice(String price, Icon icon, Color color) {
 		lastPrice.setText(price);
 		lastPrice.setIcon(icon);
 		lastPrice.setForeground(color);
+		logger.debug("lastPrice set");
 	}
 
 	public void update() {
+		logger.trace("starting update");
 		if(newMarket != market) {
 			market = newMarket;
 
-			String marketName = market.getTokenID() != null ? market.toString() : "BURST";
-			String basisCurrency = market.getTokenID() != null ? "BURST" : market.toString();
+			String marketName = market.getTokenID() != null ? market.toString() : Constants.BURST_TICKER;
+			String basisCurrency = market.getTokenID() != null ? Constants.BURST_TICKER : market.toString();
 			scrollPaneBid.setBorder(BorderFactory.createTitledBorder(null, tr("book_people_buying",
 					marketName, basisCurrency), TitledBorder.TRAILING, TitledBorder.DEFAULT_POSITION));
 			scrollPaneAsk.setBorder(BorderFactory.createTitledBorder(tr("book_people_selling",
@@ -381,7 +389,7 @@ public class OrderBook extends JPanel {
 
 	private void updateContracts() {
 		Globals g = Globals.getInstance();
-		
+
 		buyButton.setText(tr("book_buy_button", "BURST"));
 		sellButton.setText(tr("book_sell_button", "BURST"));
 		if(Contracts.getFreeBuyContract()==null || Contracts.getFreeContract()==null) {
@@ -414,7 +422,7 @@ public class OrderBook extends JPanel {
 					contractsBuy.add(s);
 				continue;
 			}
-			
+
 			if(s.getAmountNQT() < Constants.MIN_OFFER || s.getAmountNQT() > Constants.MAX_OFFER)
 				continue;
 

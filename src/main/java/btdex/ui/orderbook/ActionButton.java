@@ -11,11 +11,15 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import static btdex.locale.Translation.tr;
 
 public class ActionButton extends JButton {
 
     private static final long serialVersionUID = 1L;
+    private static Logger logger = LogManager.getLogger();
 
     public ActionButton(OrderBook orderBook, String text, ContractState contract, boolean cancel) {
         this(orderBook, orderBook.getMarket(), text, null, contract, cancel, false);
@@ -36,6 +40,7 @@ public class ActionButton extends JButton {
                         (!isToken && contract.hasPending())) {
                     JOptionPane.showMessageDialog(getParent(), tr("offer_wait_confirm"),
                             tr("offer_processing"), JOptionPane.WARNING_MESSAGE);
+					logger.debug("Showing WARNING_MESSAGE");
                     return;
                 }
 
