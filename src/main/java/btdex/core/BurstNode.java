@@ -189,7 +189,7 @@ public class BurstNode {
 						bidOrders.put(m, bids);
 					}
 					catch (Exception e) {
-						logger.error("Error: ", e.getLocalizedMessage());
+						logger.error("Error: {}", e.getLocalizedMessage());
 						e.printStackTrace();
 					}
 				}
@@ -203,7 +203,7 @@ public class BurstNode {
 				}
 				catch (Exception e) {
 					nodeError = e;
-					logger.error("Error: ", e.getLocalizedMessage());
+					logger.error("Error: {}", e.getLocalizedMessage());
 					return;
 				}
 				txs = NS.getAccountTransactions(g.getAddress()).blockingGet();
@@ -216,7 +216,7 @@ public class BurstNode {
 			catch (RuntimeException rex) {
 				rex.printStackTrace();
 				nodeError = rex;
-				logger.error("RuntimeException ", rex.getLocalizedMessage());
+				logger.error("RuntimeException {}", rex.getLocalizedMessage());
 			}
 		}
 	}
