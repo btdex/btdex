@@ -30,6 +30,7 @@ public class Translation {
 		Locale.forLanguageTag("lt"),
 		Locale.forLanguageTag("ru"),
 		Locale.forLanguageTag("zh"),
+		Locale.forLanguageTag("ms"),
 	};
 
 	static {

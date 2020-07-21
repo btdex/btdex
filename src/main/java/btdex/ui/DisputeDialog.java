@@ -317,12 +317,12 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		if(b == true) {
 			if(Contracts.isLoading()) {
 				JOptionPane.showMessageDialog(getParent(), tr("main_cross_chain_loading"),
-						"Error", JOptionPane.ERROR_MESSAGE);
+						tr("offer_processing"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 			if(contract.hasPending()) {
 				JOptionPane.showMessageDialog(getParent(), tr("offer_wait_confirm"),
-						"Error", JOptionPane.ERROR_MESSAGE);
+						tr("offer_processing"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 		}

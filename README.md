@@ -69,14 +69,14 @@ Edit your `config.properties` file and add the following lines:
 
 ```
 testnet=True
-node=http\://testnet.getburst.net\:6876
+node=http\://nivbox.co.uk\:6876
 ```
 ## Logging
 
 By default, logging turned off. Add/edit the following line to change logging level:
 
 ```
-logging=off
+logger=off
 ```
 ### Logging level
 Same logging level used to show log messages to console and save to file.<br><br>
