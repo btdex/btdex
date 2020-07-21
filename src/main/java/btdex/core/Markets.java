@@ -7,7 +7,6 @@ import btdex.markets.MarketDOGE;
 import btdex.markets.MarketETH;
 import btdex.markets.MarketLTC;
 import btdex.markets.MarketTRT;
-import btdex.markets.MarketXMR;
 import burst.kit.service.BurstNodeService;
 
 public class Markets {
@@ -22,7 +21,7 @@ public class Markets {
         markets.add(new MarketBTC());
         markets.add(new MarketETH());
         markets.add(new MarketLTC());
-        markets.add(new MarketXMR());
+//        markets.add(new MarketXMR());
         markets.add(new MarketDOGE());
     }
     
