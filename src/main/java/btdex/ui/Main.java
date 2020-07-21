@@ -39,7 +39,6 @@ import javax.swing.event.ChangeListener;
 
 import btdex.core.*;
 import btdex.ui.orderbook.OrderBook;
-import burst.kit.entity.BurstAddress;
 import com.bulenkov.darcula.DarculaLaf;
 
 import bt.BT;
@@ -663,9 +662,9 @@ public class Main extends JFrame implements ActionListener {
 				}
 				else if (s.getTaker() == g.getAddress().getSignedLongId()) {
 					if(s.getType() == ContractType.SELL)
-						locked += s.getAmountNQT();
+						locked += s.getSecurityNQT();
 					else if(s.getType() == ContractType.BUY)
-						locked += s.getSecurityNQT() + s.getSecurityNQT();
+						locked += s.getAmountNQT() + s.getSecurityNQT();
 				}
 			}
 
