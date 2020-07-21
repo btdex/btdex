@@ -16,6 +16,7 @@ import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.security.SecureRandom;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -700,6 +701,13 @@ public class Main extends JFrame implements ActionListener {
 			statusLabel.setText("");
 			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 			nodeSelector.setBackground(explorerSelector.getBackground());
+			
+			// check if the latest block is too much in the past
+			Date back8Minutes = new Date(System.currentTimeMillis() - 8*60_000);
+			if(bn.getLatestBlock().getTimestamp().getAsDate().before(back8Minutes)) {
+				statusLabel.setText(tr("main_node_not_sync"));
+				nodeSelector.setBackground(Color.RED);
+			}
 		}
 		catch (RuntimeException rex) {
 			rex.printStackTrace();
