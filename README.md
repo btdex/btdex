@@ -71,22 +71,26 @@ Edit your `config.properties` file and add the following lines:
 testnet=True
 node=http\://nivbox.co.uk\:6876
 ```
+
 ## Logging
 
-By default, logging turned off. Add/edit the following line to change logging level:
+By default, logging is disabled. Add/edit the following line on your `config.properties` to change the logging level:
 
 ```
 logger=off
 ```
+
 ### Logging level
-Same logging level used to show log messages to console and save to file.<br><br>
-OFF - The highest possible log level. This is intended for disabling logging.<br>
-FATAL - Indicates server errors that cause premature termination. These logs are expected to be immediately visible on the command line that you used for starting the server.<br>
-ERROR - Indicates other runtime errors or unexpected conditions. These logs are expected to be immediately visible on the command line that you used for starting the server.<br>
-WARN - Indicates the use of deprecated APIs, poor use of API, possible errors, and other runtime situations that are undesirable or unexpected but not necessarily wrong. These logs are expected to be immediately visible on the command line that you used for starting the server.<br>
-INFO - Indicates important runtime events, such as server startup/shutdown. These logs are expected to be immediately visible on the command line that you used for starting the server . It is recommended to keep these logs to a minimum.<br>
-DEBUG - Provides detailed information on the flow through the system. This information is expected to be written to logs only. Generally, most lines logged by your application should be written as DEBUG logs.<br>
-TRACE - Provides additional details on the behavior of events and services. This information is expected to be written to logs only.<br>
+
+The same logging level is used to print log messages to the console and as well as to log file, possible levels are:
+
+- `OFF` The highest possible log level. This is intended for disabling logging.
+- `FATAL` Indicates server errors that cause premature termination. These logs are expected to be immediately visible on the command line that you used for starting the server.
+- `ERROR` Indicates other runtime errors or unexpected conditions. These logs are expected to be immediately visible on the command line that you used for starting the server.
+- `WARN` Indicates the use of deprecated APIs, poor use of API, possible errors, and other runtime situations that are undesirable or unexpected but not necessarily wrong. These logs are expected to be immediately visible on the command line that you used for starting the server.
+- `INFO` Indicates important runtime events, such as server startup/shutdown. These logs are expected to be immediately visible on the command line that you used for starting the server . It is recommended to keep these logs to a minimum.
+- `DEBUG` Provides detailed information on the flow through the system. This information is expected to be written to logs only. Generally, most lines logged by your application should be written as DEBUG logs.
+- `TRACE` Provides additional details on the behavior of events and services. This information is expected to be written to logs only.<br>
 
 ## License
 [GPL license](LICENSE)
