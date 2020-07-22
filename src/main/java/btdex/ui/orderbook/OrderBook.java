@@ -194,7 +194,7 @@ public class OrderBook extends JPanel {
 		lastPrice.setText(price);
 		lastPrice.setIcon(icon);
 		lastPrice.setForeground(color);
-		logger.debug("lastPrice set");
+		logger.trace("lastPrice set");
 	}
 
 	public void update() {
@@ -423,7 +423,7 @@ public class OrderBook extends JPanel {
 				continue;
 			}
 
-			if(s.getAmountNQT() < Constants.MIN_OFFER || s.getAmountNQT() > Constants.MAX_OFFER)
+			if(!s.getCreator().equals(g.getAddress()) && (s.getAmountNQT() < Constants.MIN_OFFER || s.getAmountNQT() > Constants.MAX_OFFER))
 				continue;
 
 			// only contracts for this market

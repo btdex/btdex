@@ -77,6 +77,11 @@ public class ContractState {
 	public BurstTimestamp getTakeTimestamp() {
 		return takeTimestamp;
 	}
+	
+	@Override
+	public String toString() {
+		return address.toString() + ", " + market + ", " + rate;
+	}
 
 	public long getNewOfferFee() {
 		if(type == ContractType.SELL) {
@@ -125,7 +130,7 @@ public class ContractState {
 		BurstID first = null;
 		BurstID idLimit = BurstID.fromLong(g.isTestnet() ?
 				"12494358857357719882" : "17916279999448178140");
-
+		
 		// reverse order to get the more recent ones first
 		for (int i = atIDs.length - 1; i >= 0; i--) {
 			BurstAddress ad = atIDs[i];
@@ -164,6 +169,8 @@ public class ContractState {
 				s.mediator1 = s.getContractFieldValue("mediator1");
 				s.mediator2 = s.getContractFieldValue("mediator2");
 				s.feeContract = s.getContractFieldValue("feeContract");
+				
+				logger.debug("Contract {} added for {}", at.getId(), s.type);
 
 				// Check if the immutable variables are valid
 				if (g.getFeeContract() == s.getFeeContract()) {
@@ -274,8 +281,8 @@ public class ContractState {
 							}
 						}
 						catch (Exception e) {
-							logger.error("Error: {}", e.getLocalizedMessage());
 							// we ignore invalid messages
+							logger.trace(e.getLocalizedMessage());
 						}
 					}
 				}
@@ -305,6 +312,7 @@ public class ContractState {
 			if(tx.getConfirmations() < Constants.PRICE_NCONF) {
 				if(tx.getSender().equals(g.getAddress()) ||
 						(tx.getSender().getSignedLongId() == getTaker() && tx.getSender().equals(g.getAddress()) )) {
+					logger.debug("Pending tx for {}", getAddress());
 					hasPending = true;
 				}
 				else
@@ -356,6 +364,7 @@ public class ContractState {
 						// set this as the accepted last TxId
 						if(tx.getConfirmations() >= Constants.PRICE_NCONF && takeBlock == 0) {
 							lastTxId = tx.getId().getSignedLongId();
+							logger.debug("last tx={} for {}", tx.getId(), getAddress());
 
 							// done, only the more recent (2 confirmations) matters
 							break;
@@ -365,8 +374,8 @@ public class ContractState {
 							break;
 					}
 					catch (Exception e) {
-						logger.error("Error: {}", e.getLocalizedMessage());
 						// we ignore invalid messages
+						logger.trace(e.getLocalizedMessage());
 					}
 
 				}
@@ -409,7 +418,7 @@ public class ContractState {
 							rateHistory = Long.parseLong(rateJson.getAsString());
 					}
 					catch (Exception e) {
-						logger.error("Error: {}", e.getLocalizedMessage());
+						logger.trace(e.getLocalizedMessage());
 						// we ignore invalid messages
 					}
 				}

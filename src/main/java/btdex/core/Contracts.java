@@ -128,13 +128,13 @@ public class Contracts {
 
 	public static boolean checkContractCode(AT at, byte []code) {
 		if(at.getMachineCode().length < code.length) {
-			logger.warn("AT code {} less then {}",at.getMachineCode().length, code.length);
+			logger.trace("AT code {} less then {} for {}", at.getMachineCode().length, code.length, at.getId());
 			return false;
 		}
 
 		for (int i = 0; i < code.length; i++) {
 			if(at.getMachineCode()[i] != code[i]){
-				logger.warn("AT code do not match");
+				logger.trace("AT code do not match for {}", at.getId());
 				return false;
 			}
 		}
