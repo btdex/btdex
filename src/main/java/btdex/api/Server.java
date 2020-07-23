@@ -68,33 +68,63 @@ public class Server extends NanoHTTPD {
             	if(m.getTokenID()!=null) {
             		AssetTrade[] trades = bn.getAssetTrades(m);
             		if(trades != null && trades.length > 0)
-            			marketJson.addProperty("last_price", trades[0].getPrice().doubleValue()*m.getFactor());
+            			marketJson.addProperty("last_price", trades[0].getPrice().multiply(m.getFactor()).doubleValue());
             		
             		AssetOrder[] asks = bn.getAssetAsks(m);
             		if(asks != null && asks.length > 0)
-            			marketJson.addProperty("lowest_ask", asks[0].getPrice().doubleValue()*m.getFactor());
+            			marketJson.addProperty("lowest_ask", asks[0].getPrice().multiply(m.getFactor()).doubleValue());
             		AssetOrder[] bids = bn.getAssetBids(m);
             		if(bids != null && bids.length > 0)
-            			marketJson.addProperty("highest_bid", bids[0].getPrice().doubleValue()*m.getFactor());
+            			marketJson.addProperty("highest_bid", bids[0].getPrice().multiply(m.getFactor()).doubleValue());
+            		
+                	marketJson.addProperty("base_volume", bn.getBaseVolume24h(m).multiply(m.getFactor()).doubleValue());
+                	marketJson.addProperty("quote_volume", bn.getQuoteVolume24h(m).doubleValue());
+                	marketJson.addProperty("price_change_percent_24h", bn.getPriceChangePerc24h(m));
+                	marketJson.addProperty("highest_price_24h", bn.getHighestPrice24h(m).multiply(m.getFactor()).doubleValue());
+                	marketJson.addProperty("lowest_price_24h", bn.getLowestPrice24h(m).multiply(m.getFactor()).doubleValue());
+            	}
+            	else {
+            		// TODO cross-chain
             	}
             	pairsJson.add(marketJson);
             }
-            
             ret = pairsJson.toString();
-            
-//    json array...
-//    "trading_pairs": "ETC_BTC",
-//    "base_currency": "BTC",        
-//    "quote_currency": "USD",
-//    "last_price": 0.00067,
-//    "lowest_ask": 0.000681,
-//    "highest_bid": 0.00067,
-//    "base_volume": 1528.11,
-//    "quote_volume": 1.0282814600000003,
-//    "price_change_percent_24h": -1.3254786450662739,
-//    "highest_price_24h": 0.000676,
-//    "lowest_price_24h": 0.000666
-            
+        }
+        else if (uri.startsWith(API_PREFIX + "ticker")) {
+        	JsonObject retJson = new JsonObject();
+        	
+            for(Market m : Markets.getMarkets()) {
+            	String pair = m.getTokenID() != null ? Constants.BURST_TICKER + "_" + m.toString() : m.toString() + "_" + Constants.BURST_TICKER;
+            	
+            	JsonObject marketJson = new JsonObject();
+            	
+            	if(m.getTokenID() != null) {
+            		marketJson.addProperty("base_id", Market.UCA_ID_BURST);
+            	}
+            	else {
+            		marketJson.addProperty("quote_id", Market.UCA_ID_BURST);
+            		if(m.getUCA_ID() > 0)
+            			marketJson.addProperty("base_id", m.getUCA_ID());
+            	}
+            	
+            	if(m.getTokenID()!=null) {
+            		AssetTrade[] trades = bn.getAssetTrades(m);
+            		if(trades != null && trades.length > 0) {
+            			marketJson.addProperty("last_price", trades[0].getPrice().multiply(m.getFactor()).doubleValue());
+                    	marketJson.addProperty("is_frozen", 0);
+            		}
+            		else {
+                    	marketJson.addProperty("is_frozen", 1);
+            		}
+                	marketJson.addProperty("base_volume", bn.getBaseVolume24h(m).multiply(m.getFactor()).doubleValue());
+                	marketJson.addProperty("quote_volume", bn.getQuoteVolume24h(m).doubleValue());
+            	}
+            	else {
+            		// TODO cross-chain
+            	}
+            	retJson.add(pair, marketJson);
+            }
+            ret = retJson.toString();
         }
         else if (uri.startsWith(API_PREFIX + "orderbook")) {
             for(Market m : Markets.getMarkets()) {

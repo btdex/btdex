@@ -44,6 +44,11 @@ public class MarketBRL extends Market {
 	public long getID() {
 		return MARKET_BRL;
 	}
+	
+	@Override
+	public int getUCA_ID() {
+		return 0;
+	}
 
 	@Override
 	public ArrayList<String> getFieldKeys(){

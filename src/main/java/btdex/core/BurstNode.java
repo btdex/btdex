@@ -1,11 +1,13 @@
 package btdex.core;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import btdex.markets.MarketTRT;
 import burst.kit.entity.BurstID;
+import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.AssetBalance;
 import burst.kit.entity.response.AssetOrder;
@@ -38,6 +40,13 @@ public class BurstNode {
 	private HashMap<Market, AssetBalance> assetBalances = new HashMap<>();
 	private HashMap<Market, AssetOrder[]> askOrders = new HashMap<>();
 	private HashMap<Market, AssetOrder[]> bidOrders = new HashMap<>();
+	
+	private HashMap<Market, BurstValue> baseVolume24h = new HashMap<>();
+	private HashMap<Market, BurstValue> quoteVolume24h = new HashMap<>();
+	private HashMap<Market, Double> priceChangePerc24h = new HashMap<>();
+	private HashMap<Market, BurstValue> highestPrice24h = new HashMap<>();
+	private HashMap<Market, BurstValue> lowestPrice24h = new HashMap<>();	
+	
 	private Transaction[] txs;
 	private Transaction[] utxs;
 	private Block checkBlock;
@@ -86,6 +95,26 @@ public class BurstNode {
 
 	public AssetOrder[] getAssetAsks(Market m) {
 		return askOrders.get(m);
+	}
+	
+	public BurstValue getBaseVolume24h(Market m) {
+		return baseVolume24h.get(m);
+	}
+
+	public BurstValue getQuoteVolume24h(Market m) {
+		return quoteVolume24h.get(m);
+	}
+
+	public double getPriceChangePerc24h(Market m) {
+		return priceChangePerc24h.get(m);
+	}
+	
+	public BurstValue getHighestPrice24h(Market m) {
+		return highestPrice24h.get(m);
+	}
+	
+	public BurstValue getLowestPrice24h(Market m) {
+		return lowestPrice24h.get(m);
 	}
 
 	public Transaction[] getAccountTransactions() {
@@ -178,10 +207,34 @@ public class BurstNode {
 							first += delta;
 						}
 
-
 						AssetTrade[] trades = NS.getAssetTrades(m.getTokenID(), null, 0, 200).blockingGet();
 						AssetOrder[] asks = NS.getAskOrders(m.getTokenID()).blockingGet();
 						AssetOrder[] bids = NS.getBidOrders(m.getTokenID()).blockingGet();
+						
+						BurstValue lowestPrice = null;
+						BurstValue highestPrice = null;
+						Date past24h = new Date(System.currentTimeMillis() - 24 * 3600_000);
+						BurstValue baseVolume = BurstValue.fromPlanck(0L);
+						BurstValue quoteVolume = BurstValue.fromPlanck(0L);
+						double priceChangePerc = 0.0;
+						for(AssetTrade t : trades) {
+							if(t.getTimestamp().getAsDate().before(past24h)) {
+								priceChangePerc = 100d*(trades[0].getPrice().doubleValue() - t.getPrice().doubleValue())/trades[0].getPrice().doubleValue();
+								break;
+							}
+							if(lowestPrice == null || t.getPrice().compareTo(lowestPrice) < 0)
+								lowestPrice = t.getPrice();
+							if(highestPrice == null || t.getPrice().compareTo(highestPrice) > 0)
+								highestPrice = t.getPrice();
+							
+							baseVolume = baseVolume.add(t.getQuantity());
+							quoteVolume = quoteVolume.add(t.getQuantity().multiply(t.getPrice().longValue()));
+						}
+						lowestPrice24h.put(m, lowestPrice != null ? lowestPrice : trades[0].getPrice());
+						highestPrice24h.put(m, highestPrice != null ? highestPrice : trades[0].getPrice());
+						baseVolume24h.put(m, baseVolume);
+						quoteVolume24h.put(m, quoteVolume);
+						priceChangePerc24h.put(m, priceChangePerc);
 
 						assetBalances.put(m, balance);
 						assetTrades.put(m, trades);

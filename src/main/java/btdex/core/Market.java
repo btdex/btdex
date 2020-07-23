@@ -17,7 +17,7 @@ public abstract class Market {
 	public static long BURST_TO_PLANCK = 100000000L;
 	
 	// Unified crypto asset ID https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?CMC_PRO_API_KEY=UNIFIED-CRYPTOASSET-INDEX&listing_status=active
-	public static int UCA_BURST = 573;
+	public static int UCA_ID_BURST = 573;
 
 	public static long MARKET_BTC            = 0x000000001;
 	public static long MARKET_LTC            = 0x000000002;
@@ -63,6 +63,11 @@ public abstract class Market {
 	 * @return a unique ID for the market or 0 if is a BURST token, see {@link #getTokenID()}.
 	 */
 	public abstract long getID();
+
+	/**
+	 * @return the UCA_ID https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?CMC_PRO_API_KEY=UNIFIED-CRYPTOASSET-INDEX&listing_status=active
+	 */
+	public abstract int getUCA_ID();
 
 	/**
 	 * @return the formatted value (assuming value is in SATs)

@@ -17,6 +17,11 @@ public class MarketDOGE extends MarketCrypto {
 	}
 	
 	@Override
+	public int getUCA_ID() {
+		return 74;
+	}
+	
+	@Override
 	public NumberFormatting getNumberFormat() {
 		return NumberFormatting.BURST;
 	}

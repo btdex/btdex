@@ -18,6 +18,11 @@ public class MarketLTC extends MarketCrypto {
 	}
 	
 	@Override
+	public int getUCA_ID() {
+		return 2;
+	}
+	
+	@Override
 	public void validate(HashMap<String, String> fields) throws Exception {
 		super.validate(fields);
 		

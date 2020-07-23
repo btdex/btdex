@@ -84,6 +84,11 @@ public class MarketBurstToken extends Market {
 	}
 
 	@Override
+	public int getUCA_ID() {
+		return 0;
+	}
+
+	@Override
 	public ArrayList<String> getFieldKeys(){
 		return null;
 	}

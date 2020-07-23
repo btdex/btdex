@@ -29,6 +29,11 @@ public class MarketEUR extends Market {
 	}
 	
 	@Override
+	public int getUCA_ID() {
+		return 0;
+	}
+	
+	@Override
 	public ArrayList<String> getFieldKeys(){
 		ArrayList<String> fieldNames = new ArrayList<>();
 		fieldNames.add(METHOD);

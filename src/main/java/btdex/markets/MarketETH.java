@@ -16,6 +16,11 @@ public class MarketETH extends MarketCrypto {
 	public long getID() {
 		return MARKET_ETH;
 	}
+
+	@Override
+	public int getUCA_ID() {
+		return 1027;
+	}
 	
 	@Override
 	public void validate(HashMap<String, String> fields) throws Exception {

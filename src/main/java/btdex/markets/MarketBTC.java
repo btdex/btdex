@@ -15,6 +15,10 @@ public class MarketBTC extends MarketCrypto {
 		return MARKET_BTC;
 	}
 	
+	@Override
+	public int getUCA_ID() {
+		return 1;
+	}
 	
 	@Override
 	public void validate(HashMap<String, String> fields) throws Exception {
