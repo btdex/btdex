@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -19,7 +19,7 @@ import burst.kit.entity.response.AssetTrade;
 import fi.iki.elonen.NanoHTTPD;
 
 public class Server extends NanoHTTPD {
-    private static final Logger logger = LoggerFactory.getLogger(Server.class);
+    private static final Logger logger = LogManager.getLogger();;
     
     private static final String API_PREFIX = "/api/v1/";
 
