@@ -76,6 +76,8 @@ public class Globals {
 			logger = LogManager.getLogger();
 			logger.debug("Logger configured");
 			logger.debug("System properties: " + System.getProperties());
+			
+			logger.info("Using properties file {}", confFile);
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
 			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET2 : BT.NODE_BURSTCOIN_RO));
 			BT.activateCIP20(true);
