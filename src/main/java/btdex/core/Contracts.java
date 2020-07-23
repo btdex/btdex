@@ -78,11 +78,8 @@ public class Contracts {
             b.putLong(compilerBuy.getMethod("take").getHash());
             contractBuyTakeHash = Hex.toHexString(b.array());
 
-            // TODO: remove this condition on the future
-            if(Globals.getInstance().isTestnet()) {
-            	// start the update thread
-            	new UpdateThread().start();
-            }
+           	// start the update thread
+           	new UpdateThread().start();
         } catch (IOException e) {
         	logger.error("IOException: {}", e.getLocalizedMessage());
             e.printStackTrace();
