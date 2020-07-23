@@ -11,7 +11,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import btdex.core.BurstNode;
-import btdex.core.Globals;
+import btdex.core.Constants;
 import btdex.core.Market;
 import btdex.core.Markets;
 import burst.kit.entity.response.AssetOrder;
@@ -52,7 +52,6 @@ public class Server extends NanoHTTPD {
     }
 
     private String handleApiCall(String uri, Map<String, List<String>> params) {
-    	Globals g = Globals.getInstance();
     	BurstNode bn = BurstNode.getInstance();
     	String ret = null;
         
@@ -61,11 +60,23 @@ public class Server extends NanoHTTPD {
             
             for(Market m : Markets.getMarkets()) {
             	JsonObject marketJson = new JsonObject();
-            	marketJson.addProperty("trading_pairs", m.getTokenID() != null ? "BURST_" + m.toString() :
-            		m.toString() + "_BURST");
-            	marketJson.addProperty("base_currency", m.getTokenID() != null ? "BURST" : m.toString());
-            	marketJson.addProperty("quote_currency", m.getTokenID() != null ? "BURST" : m.toString());
-            	
+            	marketJson.addProperty("trading_pairs", m.getTokenID() != null ? Constants.BURST_TICKER + "_"  + m.toString() :
+            		m.toString() + "_" + Constants.BURST_TICKER);
+            	marketJson.addProperty("base_currency", m.getTokenID() != null ? Constants.BURST_TICKER : m.toString());
+            	marketJson.addProperty("quote_currency", m.getTokenID() != null ? m.toString() : Constants.BURST_TICKER);
+
+            	if(m.getTokenID()!=null) {
+            		AssetTrade[] trades = bn.getAssetTrades(m);
+            		if(trades != null && trades.length > 0)
+            			marketJson.addProperty("last_price", trades[0].getPrice().doubleValue()*m.getFactor());
+            		
+            		AssetOrder[] asks = bn.getAssetAsks(m);
+            		if(asks != null && asks.length > 0)
+            			marketJson.addProperty("lowest_ask", asks[0].getPrice().doubleValue()*m.getFactor());
+            		AssetOrder[] bids = bn.getAssetBids(m);
+            		if(bids != null && bids.length > 0)
+            			marketJson.addProperty("highest_bid", bids[0].getPrice().doubleValue()*m.getFactor());
+            	}
             	pairsJson.add(marketJson);
             }
             
@@ -87,7 +98,7 @@ public class Server extends NanoHTTPD {
         }
         else if (uri.startsWith(API_PREFIX + "orderbook")) {
             for(Market m : Markets.getMarkets()) {
-            	String pair = m.getTokenID() != null ? "BURST_" + m.toString() : m.toString() + "_BURST";
+            	String pair = m.getTokenID() != null ? Constants.BURST_TICKER + "_" + m.toString() : m.toString() + "_" + Constants.BURST_TICKER;
 
             	if(uri.endsWith(pair)) {
             		JsonObject retJson = new JsonObject();
