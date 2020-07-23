@@ -249,8 +249,7 @@ public class Main extends JFrame implements ActionListener {
 		tabbedPane.addTab(tr("main_order_book"), i.get(Icons.ORDER_BOOK), orderBook);
 		tabbedPane.addTab(tr("main_trade_history"), i.get(Icons.TRADE), historyPanel);
 
-		if(g.isTestnet() && !g.usingLedger()) {
-			// FIXME: accounts on testnet only for now
+		if(!g.usingLedger()) {
 			tabbedPane.addTab(tr("main_accounts"), i.get(Icons.ACCOUNT), accountsPanel);
 			// tabbedPane.addTab(tr("main_chat"), i.get(Icons.CHAT), new ChatPanel());
 		}
@@ -720,9 +719,7 @@ public class Main extends JFrame implements ActionListener {
 			pulsingButton.stopPulsing();
 			cardLayout.first(getContentPane());
 
-			// TODO: remove this check when operational
-			if(Globals.getInstance().isTestnet())
-				Toast.makeText(this, tr("main_cross_chain_loading"), 8000, Toast.Style.SUCCESS).display();
+			Toast.makeText(this, tr("main_cross_chain_loading"), 8000, Toast.Style.SUCCESS).display();
 		}
 	}
 
@@ -815,11 +812,7 @@ public class Main extends JFrame implements ActionListener {
 				// not a token market, show TRT in the token field
 				tokenDesc.setDesc(tr("main_balance", token));
 
-				if(!Globals.getInstance().isTestnet()) {
-					// FIXME: remove this when operational
-					Toast.makeText(this, tr("main_cross_chain_testnet_only"), Toast.Style.ERROR).display();
-				}
-				else if(Contracts.isLoading()) {
+				if(Contracts.isLoading()) {
 					Toast.makeText(this, tr("main_cross_chain_loading"), 8000, Toast.Style.NORMAL).display();
 				}
 			}

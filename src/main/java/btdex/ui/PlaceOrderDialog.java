@@ -271,12 +271,6 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			
 			boolean isMediator = g.getMediators().isMediator(g.getAddress().getSignedLongId());
 			
-			if(!g.isTestnet()) {
-				// TODO: remove this check when
-				JOptionPane.showMessageDialog(getParent(), tr("offer_not_open_yet"),
-						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
-				return;
-			}
 			if(g.usingLedger()) {
 				JOptionPane.showMessageDialog(getParent(), tr("ledger_no_offer"),
 						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
