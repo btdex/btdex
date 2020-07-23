@@ -1,5 +1,6 @@
 package btdex.api;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -7,8 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
+import btdex.core.BurstNode;
 import btdex.core.Globals;
+import btdex.core.Market;
+import btdex.core.Markets;
+import burst.kit.entity.response.AssetOrder;
+import burst.kit.entity.response.AssetTrade;
 import fi.iki.elonen.NanoHTTPD;
 
 public class Server extends NanoHTTPD {
@@ -18,7 +25,12 @@ public class Server extends NanoHTTPD {
 
     public Server(int port) {
         super(port);
-        logger.info("API server started at port {}", port);
+        try {
+			start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
+	        logger.info("API server started at port {}", port);
+		} catch (IOException e) {
+			logger.error(e.getLocalizedMessage());
+		}
     }
 
     @Override
@@ -41,10 +53,23 @@ public class Server extends NanoHTTPD {
 
     private String handleApiCall(String uri, Map<String, List<String>> params) {
     	Globals g = Globals.getInstance();
+    	BurstNode bn = BurstNode.getInstance();
     	String ret = null;
         
         if (uri.startsWith(API_PREFIX + "summary")) {
             JsonArray pairsJson = new JsonArray();
+            
+            for(Market m : Markets.getMarkets()) {
+            	JsonObject marketJson = new JsonObject();
+            	marketJson.addProperty("trading_pairs", m.getTokenID() != null ? "BURST_" + m.toString() :
+            		m.toString() + "_BURST");
+            	marketJson.addProperty("base_currency", m.getTokenID() != null ? "BURST" : m.toString());
+            	marketJson.addProperty("quote_currency", m.getTokenID() != null ? "BURST" : m.toString());
+            	
+            	pairsJson.add(marketJson);
+            }
+            
+            ret = pairsJson.toString();
             
 //    json array...
 //    "trading_pairs": "ETC_BTC",
@@ -59,59 +84,46 @@ public class Server extends NanoHTTPD {
 //    "highest_price_24h": 0.000676,
 //    "lowest_price_24h": 0.000666
             
-            return null;
-            
         }
-        else if (uri.startsWith(API_PREFIX + "ticker")) {
-        	
-//        	json array
-//        	{  
-//        		   "BTC_USDT":{  
-//        		      "base_id":"1",
-//        		      "quote_id":"825",
-//        		      "last_price":"10000",
-//        		      "quote_volume":"20000",
-//        		      "base_volume":"2",   
-//        		      "isFrozen":"0"
-//        		   },
-//				...
+        else if (uri.startsWith(API_PREFIX + "orderbook")) {
+            for(Market m : Markets.getMarkets()) {
+            	String pair = m.getTokenID() != null ? "BURST_" + m.toString() : m.toString() + "_BURST";
 
-        }
-        else if (uri.startsWith(API_PREFIX + "orderbook/")) {
-        	
-        	// one for every market pair
-        	if(uri.endsWith("BURST_BTC")) {
-        		
-        	}
-        	else if(uri.endsWith("BURST_LTC")) {
-        		
-        	}
-
-//        	{  
-//        		   "timestamp":"‭1585177482652‬",
-//        		   "bids":[  
-//        		      [  
-//        		         "12462000",
-//        		         "0.04548320"
-//        		      ],
-//        		      [  
-//        		         "12457000",
-//        		         "3.00000000"
-//        		      ]
-//        		   ],
-//        		   "asks":[  
-//        		      [  
-//        		         "12506000",
-//        		         "2.73042000"
-//        		      ],
-//        		      [  
-//        		         "12508000",
-//        		         "0.33660000"
-//        		      ]
-//        		   ]
-//        		}
-
-
+            	if(uri.endsWith(pair)) {
+            		JsonObject retJson = new JsonObject();
+            		// FIXME get the actual time
+            		retJson.addProperty("timestamp", System.currentTimeMillis());
+                    
+            		if(m.getTokenID() != null) {
+            			AssetOrder[] asks = bn.getAssetAsks(m);
+                        JsonArray asksJson = new JsonArray();
+            			for(AssetOrder o : asks) {
+            				JsonArray askJson = new JsonArray();
+            				// array with price and quantity
+            				askJson.add(o.getPrice().doubleValue());
+            				askJson.add(o.getQuantity().doubleValue());
+            				
+            				asksJson.add(askJson);
+            			}
+            			retJson.addProperty("asks", asksJson.toString());
+            			
+            			AssetOrder[] bids = bn.getAssetBids(m);
+                        JsonArray bidsJson = new JsonArray();
+            			for(AssetOrder o : bids) {
+            				JsonArray bidJson = new JsonArray();
+            				// array with price and quantity
+            				bidJson.add(o.getPrice().doubleValue());
+            				bidJson.add(o.getQuantity().doubleValue());
+            				
+            				bidsJson.add(bidJson);
+            			}
+            			retJson.addProperty("bids", bidsJson.toString());
+            		}
+            		
+                    ret = retJson.toString();
+                    break;
+            	}
+            }
         }
         else if (uri.startsWith(API_PREFIX + "trades/")) {
         	

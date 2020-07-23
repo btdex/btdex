@@ -11,6 +11,7 @@ import java.util.Properties;
 import com.google.gson.JsonObject;
 
 import bt.BT;
+import btdex.api.Server;
 import btdex.markets.MarketBurstToken;
 import btdex.ui.ExplorerWrapper;
 import burst.kit.crypto.BurstCrypto;
@@ -97,6 +98,11 @@ public class Globals {
 			checkPublicKey();
 
 			loadAccounts();
+			
+			int apiPort = Integer.parseInt(conf.getProperty(Constants.PROP_API_PORT, "-1"));
+			if(apiPort > 0) {
+				new Server(apiPort);
+			}
 		}
 		catch (Exception e) {
 			logger.error("Error: {}", e.getLocalizedMessage());

@@ -15,6 +15,9 @@ public abstract class Market {
 
 	public static long BTC_TO_SAT = 100000000L;
 	public static long BURST_TO_PLANCK = 100000000L;
+	
+	// Unified crypto asset ID https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?CMC_PRO_API_KEY=UNIFIED-CRYPTOASSET-INDEX&listing_status=active
+	public static int UCA_BURST = 573;
 
 	public static long MARKET_BTC            = 0x000000001;
 	public static long MARKET_LTC            = 0x000000002;
