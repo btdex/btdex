@@ -97,7 +97,6 @@ public class Globals {
 			loadAccounts();
 		}
 		catch (Exception e) {
-			logger.error("Error: {}", e.getLocalizedMessage());
 			e.printStackTrace();
 		}
 	}
