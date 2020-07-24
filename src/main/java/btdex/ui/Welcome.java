@@ -36,6 +36,9 @@ import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
 import io.github.novacrypto.bip39.wordlists.English;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 	private static final long serialVersionUID = 1L;
 
@@ -55,14 +58,16 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 
 	private int ret;
 
+	private static Logger logger = LogManager.getLogger();
+
 	public Welcome(JFrame owner) {
 		this(owner, false);
 	}
-	
+
 	public Welcome(JFrame owner, boolean resetPin) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		
+
 		this.resetPin = resetPin;
 
 		setTitle(tr(resetPin ? "welc_reset_pin" : "welc_welcome"));
@@ -80,7 +85,7 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 			introText = new JLabel(intro);
 			introText.setPreferredSize(new Dimension(60, 120));
 			introPanel.add(introText, BorderLayout.PAGE_END);
-			
+
 			useLedgerButton = new JButton(tr("welc_use_ledger"));
 			useLedgerButton.addActionListener(this);
 			if(Globals.getInstance().isLedgerEnabled())
@@ -141,7 +146,7 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 			passphrase.setText("");
 			passphrase.setEditable(true);
 			passphrase.requestFocus();
-			
+
 			recoverBox.setVisible(false);
 			acceptBox.setSelected(true);
 			acceptBox.setVisible(false);
@@ -149,6 +154,7 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 		else
 			newPass();
 		pack();
+		logger.trace("Welcome screen showed");
 
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -171,6 +177,7 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 		pass = sb.toString();
 
 		passphrase.setText(pass);
+		logger.trace("New pasw set");
 	}
 
 	public int getReturn() {
@@ -192,7 +199,7 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 			}
 			int index = (Integer)spinner.getValue();
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				
+
 			LedgerService.getInstance().setCallBack(this, index);
 			return;
 		}
@@ -223,7 +230,7 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 			}
 			else if(phrase.length()==0) {
 				error = tr("welc_phrase_empty");
-				passphrase.requestFocus();				
+				passphrase.requestFocus();
 			}
 			else if(pin.getPassword() == null || pin.getPassword().length < 4) {
 				error = tr("welc_min_pin");
@@ -236,11 +243,11 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 
 			if(error == null) {
 				Globals g = Globals.getInstance();
-				
+
 				// no error, so we have a new phrase
 				byte[] privKey = Globals.BC.getPrivateKey(phrase);
 				byte[] pubKey = Globals.BC.getPublicKey(privKey);
-				
+
 				try {
 					if(resetPin) {
 						if(!Arrays.equals(g.getPubKey(), pubKey)) {
@@ -254,9 +261,10 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 					}
 				} catch (Exception e1) {
 					error = e1.getMessage();
+					logger.error("Error 1: {}", e1.getLocalizedMessage());
 				}
 			}
-			
+
 			if(error!=null) {
 				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(okButton);
 			}
@@ -271,7 +279,7 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 	public void returnedError(String error) {
 		// Clear the call back
 		LedgerService.getInstance().setCallBack(null, 0);
-		
+
 		Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(useLedgerButton);
 		setCursor(Cursor.getDefaultCursor());
 	}
@@ -280,14 +288,14 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 	public void returnedKey(byte[] pubKey, int index) {
 		Globals g = Globals.getInstance();
 		g.setKeys(pubKey, index);
-		
+
 		Toast.makeText((JFrame) this.getOwner(), tr("ledger_show_address"),
 				Toast.LENGTH_LONG, Toast.Style.NORMAL).display(useLedgerButton);
 		try {
 			Globals.getInstance().saveConfs();
 		} catch (Exception e) {
 			e.printStackTrace();
-		}		
+		}
 		// all good
 		ret = 1;
 		setVisible(false);
