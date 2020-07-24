@@ -16,6 +16,7 @@ import btdex.core.Market;
 import btdex.core.Markets;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.AssetTrade;
+import burst.kit.entity.response.AssetTrade.TradeType;
 import fi.iki.elonen.NanoHTTPD;
 
 /**
@@ -58,6 +59,11 @@ public class Server extends NanoHTTPD {
     }
 
     private String handleApiCall(String uri, Map<String, List<String>> params) {
+    	logger.trace("api call uri: {}", uri);
+
+    	// Support both characters
+    	uri = uri.replace('-', '_');
+    	
     	BurstNode bn = BurstNode.getInstance();
     	String ret = null;
         
@@ -174,23 +180,33 @@ public class Server extends NanoHTTPD {
         }
         else if (uri.startsWith(API_PREFIX + "trades/")) {
         	
-        	// one for every market pair
-        	if(uri.endsWith("BURST_BTC")) {
-        		
-        	}
-        	else if(uri.endsWith("BURST_LTC")) {
-        		
-        	}
-        	
-//        	{         
-//        	      "trade_id":3523643,
-//        	      "price":"0.01",
-//        	      "base_volume":"569000",
-//        	      "quote_volume":"0.01000000",
-//        	      "timestamp":"‭1585177482652‬",
-//        	      "type":"sell"
-//        	   }
+            for(Market m : Markets.getMarkets()) {
+            	String pair = m.getTokenID() != null ? Constants.BURST_TICKER + "_" + m.toString() : m.toString() + "_" + Constants.BURST_TICKER;
 
+            	if(uri.endsWith(pair)) {
+            		JsonArray retJson = new JsonArray();
+                    
+            		if(m.getTokenID() != null) {
+            			AssetTrade[] trades = bn.getAssetTrades(m);
+                        
+            			for(AssetTrade t : trades) {
+            				JsonObject tradeJson = new JsonObject();
+            				
+            				tradeJson.addProperty("trade_id", t.getBidOrderId().getID() + "_" + t.getAskOrderId().getID());
+            				tradeJson.addProperty("price", t.getPrice().multiply(m.getFactor()).doubleValue());
+            				
+            				tradeJson.addProperty("base_volume", t.getQuantity().multiply(m.getFactor()).doubleValue());
+            				tradeJson.addProperty("quote_volume", t.getQuantity().multiply(t.getPrice().longValue()).doubleValue());
+            				tradeJson.addProperty("timestamp", t.getTimestamp().getAsDate().getTime());
+            				tradeJson.addProperty("type", t.getType() == TradeType.SELL ? "sell" : "buy");
+            				
+            				retJson.add(tradeJson);
+            			}
+            		}
+                    ret = retJson.toString();
+                    break;
+            	}
+            }
         }
         
         return ret;
