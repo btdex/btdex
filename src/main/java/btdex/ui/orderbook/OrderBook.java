@@ -398,8 +398,10 @@ public class OrderBook extends JPanel {
 			for (Transaction tx : utx) {
 				if(tx.getSender().equals(g.getAddress()) && tx.getType() == 22 && tx.getSubtype() == 0) {
 					// this is a SC create transaction
-					buyButton.setText(tr("book_pending_contract"));
-					sellButton.setText(tr("book_pending_contract"));
+					if(Contracts.getFreeBuyContract() == null)
+						buyButton.setText(tr("book_pending_contract"));
+					if(Contracts.getFreeContract() == null)
+						sellButton.setText(tr("book_pending_contract"));
 				}
 			}
 		}
