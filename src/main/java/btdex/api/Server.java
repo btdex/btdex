@@ -18,6 +18,12 @@ import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.AssetTrade;
 import fi.iki.elonen.NanoHTTPD;
 
+/**
+ * API with endpoints as recommended by coinmarketcap
+ * 
+ * @author jjos
+ *
+ */
 public class Server extends NanoHTTPD {
     private static final Logger logger = LogManager.getLogger();;
     
