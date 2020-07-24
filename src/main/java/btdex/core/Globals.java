@@ -174,6 +174,7 @@ public class Globals {
 		this.ledgerIndex = index;
 
 		address = BC.getBurstAddressFromPublic(pubKey);
+		logger.debug("Ledger keys set. Address from pubKey {}", address.getFullAddress());
 	}
 
 	public void setKeys(byte []pubKey, byte []privKey, char []pin) throws Exception {
@@ -184,6 +185,7 @@ public class Globals {
 		conf.setProperty(Constants.PROP_ENC_PRIVKEY, Globals.BC.toHexString(encPrivKey));
 
 		address = BC.getBurstAddressFromPublic(pubKey);
+		logger.debug("Ledger keys set. Address from pubKey {}", address.getFullAddress());
 	}
 
 	/**
@@ -282,6 +284,7 @@ public class Globals {
 
 		try {
 			saveConfs();
+			logger.debug("Accounts saved");
 		} catch (Exception e) {
 			logger.error("Error: {}", e.getLocalizedMessage());
 			e.printStackTrace();

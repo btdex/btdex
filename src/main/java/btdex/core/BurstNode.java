@@ -76,7 +76,7 @@ public class BurstNode {
 			logger.info("BurstNode update thread started");
 		}
 		catch (Exception e) {
-			logger.error("Error: {}", e.getLocalizedMessage());
+			logger.error("Error 1: {}", e.getLocalizedMessage());
 			e.printStackTrace();
 		}
 	}
@@ -242,7 +242,7 @@ public class BurstNode {
 						bidOrders.put(m, bids);
 					}
 					catch (Exception e) {
-						logger.error("Error: {}", e.getLocalizedMessage());
+						logger.error("Error 2: {}", e.getLocalizedMessage());
 						e.printStackTrace();
 					}
 				}
@@ -256,7 +256,7 @@ public class BurstNode {
 				}
 				catch (Exception e) {
 					nodeError = e;
-					logger.error("Error: {}", e.getLocalizedMessage());
+					logger.debug("Error 3: {}", e.getLocalizedMessage());
 					return;
 				}
 				txs = NS.getAccountTransactions(g.getAddress()).blockingGet();

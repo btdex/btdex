@@ -308,13 +308,14 @@ public class Main extends JFrame implements ActionListener {
 		setVisible(true);
 
 		if(g.getAddress()==null) {
-			// no public key or invalid, show the welcome screen
+			logger.debug("no public key or invalid, show the welcome screen");
 			Welcome welcome = new Welcome(this);
 
 			welcome.setLocationRelativeTo(this);
 			welcome.setVisible(true);
 			if(welcome.getReturn() == 0) {
 				System.exit(0);
+				logger.debug("welcome.getReturn() == 0, system.exit");
 				return;
 			}
 
@@ -392,6 +393,7 @@ public class Main extends JFrame implements ActionListener {
 			DesktopApi.browse(new URI(url));
 			Toast.makeText(Main.this, tr("main_opening_url", url.substring(0, Math.min(url.length(), 40)) + "..."), Toast.Style.SUCCESS).display();
 		} catch (Exception ex) {
+			logger.error(ex.getLocalizedMessage());
 			Toast.makeText(Main.this, ex.getMessage(), Toast.Style.ERROR).display();
 		}
 	}
@@ -700,7 +702,7 @@ public class Main extends JFrame implements ActionListener {
 			statusLabel.setText("");
 			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 			nodeSelector.setBackground(explorerSelector.getBackground());
-			
+
 			// check if the latest block is too much in the past
 			Date back8Minutes = new Date(System.currentTimeMillis() - 8*60_000);
 			if(bn.getLatestBlock().getTimestamp().getAsDate().before(back8Minutes)) {
