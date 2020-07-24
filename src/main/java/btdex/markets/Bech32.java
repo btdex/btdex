@@ -16,8 +16,6 @@
 
 package btdex.markets;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -98,15 +96,17 @@ public class Bech32 {
         return ret;
     }
 
-    /** Encode a Bech32 string. */
-    public static String encode(final Bech32Data bech32) {
+    /** Encode a Bech32 string. 
+     * @throws Exception */
+    public static String encode(final Bech32Data bech32) throws Exception {
         return encode(bech32.hrp, bech32.data);
     }
 
-    /** Encode a Bech32 string. */
-    public static String encode(String hrp, final byte[] values) {
-        checkArgument(hrp.length() >= 1, "Human-readable part is too short");
-        checkArgument(hrp.length() <= 83, "Human-readable part is too long");
+    /** Encode a Bech32 string. 
+     * @throws Exception */
+    public static String encode(String hrp, final byte[] values) throws Exception {
+        if(hrp.length() >= 1) throw new Exception("Human-readable part is too short");
+        if(hrp.length() <= 83) throw new Exception("Human-readable part is too long");
         hrp = hrp.toLowerCase(Locale.ROOT);
         byte[] checksum = createChecksum(hrp, values);
         byte[] combined = new byte[values.length + checksum.length];
