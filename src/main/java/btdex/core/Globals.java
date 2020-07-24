@@ -77,7 +77,7 @@ public class Globals {
 			logger.debug("Logger configured");
 			logger.debug("System properties: " + System.getProperties());
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
-			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET2 : BT.NODE_BURSTCOIN_RO));
+			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET2 : BT.NODE_BURST_ALLIANCE));
 			BT.activateCIP20(true);
 
 			// possible ledger account index
