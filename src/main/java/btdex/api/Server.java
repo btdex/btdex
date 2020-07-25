@@ -1,6 +1,8 @@
 package btdex.api;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -12,8 +14,13 @@ import com.google.gson.JsonObject;
 
 import btdex.core.BurstNode;
 import btdex.core.Constants;
+import btdex.core.ContractState;
+import btdex.core.ContractTrade;
+import btdex.core.ContractType;
+import btdex.core.Contracts;
 import btdex.core.Market;
 import btdex.core.Markets;
+import btdex.sc.SellContract;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.AssetTrade;
 import burst.kit.entity.response.AssetTrade.TradeType;
@@ -147,21 +154,21 @@ public class Server extends NanoHTTPD {
             		// FIXME get the actual time
             		retJson.addProperty("timestamp", System.currentTimeMillis());
                     
+                    JsonArray asksJson = new JsonArray();
+                    JsonArray bidsJson = new JsonArray();
+                    
             		if(m.getTokenID() != null) {
             			AssetOrder[] asks = bn.getAssetAsks(m);
-                        JsonArray asksJson = new JsonArray();
+            			AssetOrder[] bids = bn.getAssetBids(m);
+            			
             			for(AssetOrder o : asks) {
             				JsonArray askJson = new JsonArray();
             				// array with price and quantity
-            				askJson.add(o.getPrice().doubleValue());
-            				askJson.add(o.getQuantity().doubleValue());
+            				askJson.add(o.getPrice().multiply(m.getFactor()).doubleValue());
+            				askJson.add(o.getQuantity().multiply(m.getFactor()).doubleValue());
             				
             				asksJson.add(askJson);
             			}
-            			retJson.addProperty("asks", asksJson.toString());
-            			
-            			AssetOrder[] bids = bn.getAssetBids(m);
-                        JsonArray bidsJson = new JsonArray();
             			for(AssetOrder o : bids) {
             				JsonArray bidJson = new JsonArray();
             				// array with price and quantity
@@ -171,7 +178,54 @@ public class Server extends NanoHTTPD {
             				bidsJson.add(bidJson);
             			}
             			retJson.addProperty("bids", bidsJson.toString());
+            			retJson.addProperty("asks", asksJson.toString());
             		}
+            		else {
+            			ArrayList<ContractState> bidsArray = new ArrayList<>();
+            			ArrayList<ContractState> asksArray = new ArrayList<>();
+            			
+            			for(ContractState s: Contracts.getContracts()) {
+            				if(s.getMarket() != m.getID() || s.getState() != SellContract.STATE_OPEN)
+            					continue;
+            				if(s.getType() == ContractType.SELL)
+            					asksArray.add(s);
+            				else
+            					bidsArray.add(s);
+            			}
+            			
+            			// sort them out
+            			bidsArray.sort(new Comparator<ContractState>() {
+            				@Override
+            				public int compare(ContractState t1, ContractState t2) {
+            					return (int)(t2.getRate() - t1.getRate());
+            				}
+            			});
+            			asksArray.sort(new Comparator<ContractState>() {
+            				@Override
+            				public int compare(ContractState t1, ContractState t2) {
+            					return (int)(t1.getRate() - t2.getRate());
+            				}
+            			});
+            			
+            			for (ContractState s : asksArray) {
+            				JsonArray offerJson = new JsonArray();
+            				// array with price and quantity
+            				offerJson.add(s.getRate()/1e8);
+            				offerJson.add(s.getAmountNQT()/1e8);
+            				
+           					asksJson.add(offerJson);							
+						}
+            			for (ContractState s : bidsArray) {
+            				JsonArray offerJson = new JsonArray();
+            				// array with price and quantity
+            				offerJson.add(s.getRate()/1e8);
+            				offerJson.add(s.getAmountNQT()/1e8);
+            				
+           					bidsJson.add(offerJson);							
+						}
+            		}
+        			retJson.addProperty("bids", bidsJson.toString());
+        			retJson.addProperty("asks", asksJson.toString());
             		
                     ret = retJson.toString();
                     break;
