@@ -405,7 +405,7 @@ public class ContractState {
 					&& tx.getAppendages()[0] instanceof PlaintextMessageAppendix) {
 
 				PlaintextMessageAppendix appendMessage = (PlaintextMessageAppendix) tx.getAppendages()[0];
-				if(tx.getSender().equals(at.getCreator())) {
+				if(tx.getSender().equals(at.getCreator()) && appendMessage.getMessage().startsWith("{")) {
 					// price update
 					try {
 						String jsonData = appendMessage.getMessage();
@@ -418,7 +418,7 @@ public class ContractState {
 							rateHistory = Long.parseLong(rateJson.getAsString());
 					}
 					catch (Exception e) {
-						logger.trace(e.getLocalizedMessage());
+						logger.debug(e.getLocalizedMessage());
 						// we ignore invalid messages
 					}
 				}
