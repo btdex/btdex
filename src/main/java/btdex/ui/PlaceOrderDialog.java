@@ -38,7 +38,6 @@ import btdex.core.*;
 import com.google.gson.JsonObject;
 
 import bt.BT;
-import bt.Contract;
 import btdex.markets.MarketCrypto;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstValue;
@@ -281,7 +280,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						tr("offer_processing"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if(!isMediator && accountComboBox.getItemCount()==0 && (isBuy && isTake || !isBuy && !isTake)) {
+			if(!isMediator && accountComboBox.getItemCount()==0 && (isBuy && isTake && !isTaken || !isBuy && !isTake)) {
 				JOptionPane.showMessageDialog(getParent(), tr("offer_register_account_first", market),
 						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
@@ -560,6 +559,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		
 		if(account != null && account.getFields().get(MarketCrypto.ADDRESS) != null)
 			addressButton.setURI(account.getFields().get(MarketCrypto.ADDRESS));
+		if(contract != null && isTaken && contract.getMarketAccount() != null)
+			addressButton.setURI(contract.getMarketAccount());
 
 		try {
 			// Price is on the selected market
