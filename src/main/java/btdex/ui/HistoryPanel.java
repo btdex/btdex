@@ -11,8 +11,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -391,27 +389,14 @@ public class HistoryPanel extends JPanel {
 		Globals g = Globals.getInstance();
 		boolean myHistory = listOnlyMine.isSelected();
 
-		Collection<ContractState> allContracts = Contracts.getContracts();
 		ArrayList<ContractTrade> trades = new ArrayList<>();
-		
 		// build the trade list for this market
-		for(ContractState s : allContracts) {
-			for(ContractTrade t : s.getTrades()) {
-				if(t.getMarket() == market.getID()) {
-					trades.add(t);
-					// TODO: break if these trades are old enough
-				}
+		for(ContractTrade t : Contracts.getTrades()) {
+			if(t.getMarket() == market.getID()) {
+				trades.add(t);
+				// TODO: break if these trades are old enough
 			}
 		}
-		
-		// now we sort the trades on time
-		trades.sort(new Comparator<ContractTrade>() {
-			@Override
-			public int compare(ContractTrade t1, ContractTrade t2) {
-				int cmp = (int)(t2.getTimestamp().getAsDate().getTime() - t1.getTimestamp().getAsDate().getTime());
-				return cmp;
-			}
-		});
 		
 		ContractTrade lastTrade = trades.size() > 1 ? trades.get(0) : null;
 		boolean lastIsUp = true;

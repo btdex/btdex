@@ -435,7 +435,7 @@ public class ContractState {
 					long security = b.getLong();
 					long amount = b.getLong();
 
-					ContractTrade trade = new ContractTrade(this, tx.getBlockTimestamp(), tx.getSender(), rateHistory, security, amount, marketHistory);
+					ContractTrade trade = new ContractTrade(this, tx, rateHistory, security, amount, marketHistory);
 					trades.add(trade);
 				}
 			}

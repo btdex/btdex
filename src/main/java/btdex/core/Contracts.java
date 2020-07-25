@@ -3,7 +3,9 @@ package btdex.core;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 
 import org.bouncycastle.util.encoders.Hex;
@@ -31,6 +33,8 @@ public class Contracts {
 	private static BurstID mostRecentID;
 	private static BurstID lastBlock;
 	private static ContractState freeContract, freeNoDepositContract, freeBuyContract;
+	
+	private static ArrayList<ContractTrade> trades = new ArrayList<>();
 
 	private static Logger logger = LogManager.getLogger();
 
@@ -96,6 +100,10 @@ public class Contracts {
 		}
         return compilerSell;
     }
+    
+    public static ArrayList<ContractTrade> getTrades(){
+    	return trades;
+    }
 
     public static Compiler getContractNoDeposit() {
         return compilerNoDeposit;
@@ -160,6 +168,9 @@ public class Contracts {
 
 		// check for the pending transactions
 		Transaction[] utxs = g.getNS().getUnconfirmedTransactions(g.getAddress()).blockingGet();
+		
+		// build the trade history
+		ArrayList<ContractTrade> tradeHistory = new ArrayList<>();
 
 		// update the state of every contract
 		for(ContractState s : contractsMap.values()) {
@@ -183,8 +194,21 @@ public class Contracts {
 					g.getMediators().areMediatorsAccepted(s) &&
 					s.getATVersion()>1)
 				updatedFreeNoDepositContract = s;
+			
+			tradeHistory.addAll(s.getTrades());
 		}
 		lastBlock = latestBlocks[0].getId();
+		
+		// now we sort the trades on time
+		tradeHistory.sort(new Comparator<ContractTrade>() {
+			@Override
+			public int compare(ContractTrade t1, ContractTrade t2) {
+				return (int)(t2.getTimestamp().getAsDate().getTime() - t1.getTimestamp().getAsDate().getTime());
+			}
+		});
+		
+		// the list with all trades
+		trades = tradeHistory;
 
 		// TODO: maybe a lock around this
 		freeContract = updatedFreeContract;
