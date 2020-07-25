@@ -2,6 +2,7 @@ package btdex.markets;
 
 import java.util.HashMap;
 
+import btdex.core.Globals;
 import btdex.locale.Translation;
 
 public class MarketBTC extends MarketCrypto {
@@ -26,7 +27,16 @@ public class MarketBTC extends MarketCrypto {
 		
 		String addr = fields.get(ADDRESS);
 		
-		if(!BTCAddrValidator.validate(addr))
+		if(addr.startsWith(Globals.getInstance().isTestnet() ? "tc1" : "bc1")) {
+			try {
+				Bech32.decode(addr);
+			}
+			catch (Exception e) {
+				throw new Exception(Translation.tr("mkt_invalid_address", addr, toString()));
+			}
+		}
+		else if(!BTCAddrValidator.validate(addr)) {
 			throw new Exception(Translation.tr("mkt_invalid_address", addr, toString()));
+		}
 	}
 }
