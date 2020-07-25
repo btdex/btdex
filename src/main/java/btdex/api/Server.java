@@ -257,6 +257,22 @@ public class Server extends NanoHTTPD {
             				retJson.add(tradeJson);
             			}
             		}
+            		else {
+            			for(ContractTrade t: Contracts.getTrades()) {
+            				if(m.getID() != t.getMarket())
+            					continue;
+            				
+            				JsonObject tradeJson = new JsonObject();
+            				tradeJson.addProperty("trade_id", t.getTakeID().getID());
+            				tradeJson.addProperty("price", t.getRate()/1e8);
+            				tradeJson.addProperty("base_volume", t.getAmount()/1e8);
+            				tradeJson.addProperty("quote_volume", t.getRate()/1e8 * t.getAmount()/1e8);
+            				tradeJson.addProperty("timestamp", t.getTimestamp().getAsDate().getTime());
+            				tradeJson.addProperty("type", t.getContract().getType() == ContractType.SELL ? "sell" : "buy");
+            				
+            				retJson.add(tradeJson);
+            			}
+            		}
                     ret = retJson.toString();
                     break;
             	}
