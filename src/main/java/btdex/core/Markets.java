@@ -7,6 +7,7 @@ import btdex.markets.MarketDOGE;
 import btdex.markets.MarketETH;
 import btdex.markets.MarketLTC;
 import btdex.markets.MarketTRT;
+import btdex.markets.MarketXMR;
 import burst.kit.service.BurstNodeService;
 
 import org.apache.logging.log4j.LogManager;
@@ -30,8 +31,8 @@ public class Markets {
 		logger.info("ETH market loaded");
         markets.add(new MarketLTC());
 		logger.info("LTC market loaded");
-        //markets.add(new MarketXMR());
-		//logger.info("XMR market loaded");
+        markets.add(new MarketXMR());
+		logger.info("XMR market loaded");
         markets.add(new MarketDOGE());
 		logger.info("DOGE market loaded");
     }
