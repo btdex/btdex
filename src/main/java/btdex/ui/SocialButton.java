@@ -15,7 +15,6 @@ import btdex.core.*;
 import btdex.locale.Translation;
 import burst.kit.entity.response.AssetOrder;
 import jiconfont.IconCode;
-import jiconfont.icons.font_awesome.FontAwesomeBrands;
 import jiconfont.swing.IconFontSwing;
 
 public class SocialButton extends JButton implements ActionListener {
@@ -71,7 +70,7 @@ public class SocialButton extends JButton implements ActionListener {
 		default:
 			icon = Icons.TWITTER;
 			name = "Twitter";
-			tags = "\n#DEX #crypto @btdex_trade";
+			tags = "\n#DEX #crypto #NoKYCOnly #KYClite @btdex_trade";
 			break;
 		}
 		setIcon(IconFontSwing.buildIcon(icon, size, color));
