@@ -70,7 +70,7 @@ public class SocialButton extends JButton implements ActionListener {
 		default:
 			icon = Icons.TWITTER;
 			name = "Twitter";
-			tags = "\n#DEX #crypto #NoKYCOnly #KYClite @btdex_trade";
+			tags = "\n#DEX #DeFi #NoKYCOnly #KYClite @btdex_trade";
 			break;
 		}
 		setIcon(IconFontSwing.buildIcon(icon, size, color));
