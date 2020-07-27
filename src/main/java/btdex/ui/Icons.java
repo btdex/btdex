@@ -19,7 +19,7 @@ public class Icons {
     public static IconCode BTDEX = FontAwesome.HEART;
     public static IconCode RESET_PIN = FontAwesome.LOCK;
     public static IconCode VERSION = FontAwesome.CODE_FORK;
-    public static IconCode SIGNOUT = FontAwesome.SIGN_OUT;
+    public static IconCode RECYCLE = FontAwesome.RECYCLE;
     public static IconCode GITHUB = FontAwesomeBrands.GITHUB;
     public static IconCode TRASH = FontAwesome.TRASH;
     public static IconCode CONNECTED = FontAwesome.WIFI;

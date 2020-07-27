@@ -191,7 +191,7 @@ public class Main extends JFrame implements ActionListener {
 		bottomRight.add(createRedditButton());
 		bottomRight.add(createGithubButton());
 
-		signoutButton = new JButton(i.get(Icons.SIGNOUT));
+		signoutButton = new JButton(i.get(Icons.RECYCLE));
 		signoutButton.setToolTipText(tr("main_exit_tip"));
 		signoutButton.setVerticalAlignment(SwingConstants.CENTER);
 		signoutButton.addActionListener(this);
@@ -750,7 +750,8 @@ public class Main extends JFrame implements ActionListener {
 					tr(g.usingLedger() ? "main_exit_message_ledger" : "main_exit_message", g.getAddress().getRawAddress()),
 					tr("main_exit"), JOptionPane.OK_CANCEL_OPTION);
 			if(response != null) {
-				if(!response.equalsIgnoreCase(g.getAddress().getRawAddress().substring(0, 4))) {
+				String strAddress = g.getAddress().getRawAddress();
+				if(!response.equalsIgnoreCase(strAddress.substring(strAddress.length()-5))) {
 					Toast.makeText(this, tr("main_exit_error"), Toast.Style.ERROR).display();
 					return;
 				}
