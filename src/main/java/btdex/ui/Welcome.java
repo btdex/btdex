@@ -11,6 +11,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
@@ -23,6 +26,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
@@ -49,11 +53,12 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 	private JPasswordField pin;
 	private JPasswordField pinCheck;
 
-	private JCheckBox acceptBox, recoverBox;
+	private JCheckBox acceptBox, recoverBox, licenseBox;
 
 	private JButton okButton;
 	private JButton calcelButton;
 	private JButton useLedgerButton;
+	private JButton licenseButton;
 	private boolean resetPin;
 
 	private int ret;
@@ -129,9 +134,16 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 		panel.add(new Desc(tr("dlg_pin"), pin));
 		panel.add(new Desc(tr("welc_reenter_pin"), pinCheck));
 
-		//		buttonPane.add(acceptBox);
-		buttonPane.add(calcelButton);
+		if(!resetPin) {
+			licenseButton = new JButton(tr("welc_license"));
+			licenseButton.addActionListener(this);
+			licenseBox = new JCheckBox(tr("welc_accept_license"));
+			buttonPane.add(licenseBox);
+			buttonPane.add(licenseButton);
+		}
+
 		buttonPane.add(okButton);
+		buttonPane.add(calcelButton);
 
 		// set action listener on the button
 
@@ -203,6 +215,18 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 			LedgerService.getInstance().setCallBack(this, index);
 			return;
 		}
+		if(e.getSource() == licenseButton) {
+			JTextArea licenseText = new JTextArea(20, 45);
+			try {
+				String content = new String(Files.readAllBytes(Paths.get("LICENSE")));
+				licenseText.append(content);
+				licenseText.setCaretPosition(0);
+			} catch (IOException e1) {
+				logger.debug("Cannot read license file {}", e1.getLocalizedMessage());
+			}
+			JOptionPane.showMessageDialog(this, new JScrollPane(licenseText), tr("welc_license"), JOptionPane.WARNING_MESSAGE);
+			return;
+		}
 		if(e.getSource() == recoverBox) {
 			if(recoverBox.isSelected()) {
 				passphrase.setText("");
@@ -240,7 +264,11 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 				pin.requestFocus();
 				error = tr("welc_wrong_pin");
 			}
-
+			else if(licenseBox!=null && !licenseBox.isSelected()) {
+				error = tr("welc_must_accept_license");
+				licenseBox.requestFocus();
+			}
+			
 			if(error == null) {
 				Globals g = Globals.getInstance();
 
