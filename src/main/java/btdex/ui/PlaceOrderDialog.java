@@ -70,7 +70,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	private JButton cancelButton;
 	private JButton disputeButton;
 
-	private boolean isUpdate, isTake, isTaken, isBuy, isSignal, isDeposit;
+	private boolean isUpdate, isTake, isTaken, isBuy, isSignal, isDeposit, isMediator;
 
 	private BurstValue suggestedFee;
 
@@ -268,7 +268,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		if(b == true) {
 			Globals g = Globals.getInstance();
 			
-			boolean isMediator = g.getMediators().isMediator(g.getAddress().getSignedLongId());
+			isMediator = g.getMediators().isMediator(g.getAddress().getSignedLongId());
 			
 			if(g.usingLedger()) {
 				JOptionPane.showMessageDialog(getParent(), tr("ledger_no_offer"),
@@ -290,7 +290,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if(contract!=null && (isMediator || contract.getState() > SellContract.STATE_DISPUTE)) {
+			if(contract!=null && contract.getState() > SellContract.STATE_DISPUTE) {
 				DisputeDialog dispute = new DisputeDialog(this.getOwner(), market, contract);
 				dispute.setLocationRelativeTo(this);
 				dispute.setVisible(true);
@@ -357,6 +357,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 			if(error == null && (priceValue == null || priceValue.longValue() <= 0)) {
 				error = tr("offer_invalid_price");
+			}
+			if(error == null && isMediator) {
+				error = tr("offer_mediator_take");
 			}
 			if(error == null && (amountValue == null || amountValue.longValue() <= 0)) {
 				error = tr("send_invalid_amount");

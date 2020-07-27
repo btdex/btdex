@@ -60,19 +60,13 @@ public class Mediators {
     }
 
     private boolean isMediatorAccepted(ContractState contract, long mediator) {
-    	if(contract.getCreator().getSignedLongId() == mediator){
-			logger.debug("Mediator {} is not accepted to {} because it is order creator", mediator, contract.getAddress().toString());
-			return false;
-		}
-
     	for (int i = 0; i < mediators.length; i++) {
     		if(mediators[i].getSignedLongId() == mediator && mediatorBalances[i]!=null && mediatorBalances[i].compareTo(MIN_TRT) >= 0){
-				logger.trace("Mediator {} accepted at contract {}", mediator, contract.getAddress().toString());
+				logger.trace("Mediator {} accepted for contract {}", mediator, contract.getAddress().toString());
 				return true;
 			}
-
 		}
-		logger.debug("Mediator {} not accepted at contract {}", mediator, contract.getAddress().toString());
+		logger.debug("Mediator {} not accepted for contract {}", mediator, contract.getAddress().toString());
         return false;
     }
 
