@@ -249,12 +249,14 @@ public class Main extends JFrame implements ActionListener {
 		tabbedPane.addTab(tr("main_order_book"), i.get(Icons.ORDER_BOOK), orderBook);
 		tabbedPane.addTab(tr("main_trade_history"), i.get(Icons.TRADE), historyPanel);
 
+		boolean isMediator = g.getAddress()!=null && g.getMediators().isMediator(g.getAddress().getSignedLongId());
 		if(!g.usingLedger()) {
-			tabbedPane.addTab(tr("main_accounts"), i.get(Icons.ACCOUNT), accountsPanel);
+			if(!isMediator)
+				tabbedPane.addTab(tr("main_accounts"), i.get(Icons.ACCOUNT), accountsPanel);
 			// tabbedPane.addTab(tr("main_chat"), i.get(Icons.CHAT), new ChatPanel());
 		}
 
-		if(g.getAddress()!=null && g.getMediators().isMediator(g.getAddress().getSignedLongId())){
+		if(isMediator){
 			// this is a mediator, add the mediation tab
 			tabbedPane.addTab(tr("main_mediation"), i.get(Icons.MEDIATION), mediationPanel = new MediationPanel(this));
 		}
