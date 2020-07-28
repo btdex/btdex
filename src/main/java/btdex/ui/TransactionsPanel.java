@@ -32,7 +32,6 @@ import burst.kit.entity.response.attachment.BidOrderPlacementAttachment;
 import burst.kit.entity.response.attachment.MultiOutAttachment;
 import burst.kit.entity.response.attachment.MultiOutSameAttachment;
 import burst.kit.entity.response.http.BRSError;
-import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
 
 public class TransactionsPanel extends JPanel {
