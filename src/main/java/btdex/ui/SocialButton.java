@@ -41,7 +41,7 @@ public class SocialButton extends JButton implements ActionListener {
 		this.type = type;
 		IconCode icon = null;
 		String name = null;
-		int size = 18;
+		int size = Constants.ICON_SIZE_MED;
 		switch (type) {
 		case FACEBOOK:
 			icon = Icons.FACEBOOK;

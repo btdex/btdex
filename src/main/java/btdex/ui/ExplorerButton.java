@@ -21,6 +21,7 @@ public class ExplorerButton extends JPanel {
 	
 	public static final int TYPE_ADDRESS = 0;
 	public static final int TYPE_TRANSACTION = 1;
+	public static final int TYPE_TOKEN = 2;
 	
 	JButton mainButton;
 	JButton explorerButton;
@@ -81,6 +82,9 @@ public class ExplorerButton extends JPanel {
 				case TYPE_TRANSACTION:
 					Main.getInstance().browse(exp.openTransaction(ExplorerButton.this.id));
 					break;
+				case TYPE_TOKEN:
+					Main.getInstance().browse(exp.openToken(ExplorerButton.this.id));
+					break;
 				default:
 					break;
 				}
@@ -105,5 +109,12 @@ public class ExplorerButton extends JPanel {
 		this.type = TYPE_ADDRESS;
 		this.id = id;
 		this.addressRS = addressRS;
-	}	
+	}
+	
+	
+	public void setTokenID(String id) {
+		this.type = TYPE_TOKEN;
+		this.id = id;
+		this.addressRS = null;
+	}
 }

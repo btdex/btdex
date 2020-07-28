@@ -49,13 +49,15 @@ public class OrderBook extends JPanel {
 
 	private JTable tableBid, tableAsk;
 	private DefaultTableModel modelBid, modelAsk;
-	private Icon copyIcon, expIcon, cancelIcon, pendingIcon, editIcon, withdrawIcon;
+	private Icon copyIcon, expIcon, cancelIcon, pendingIcon, editIcon;
 	private RotatingIcon pendingIconRotating;
 
 	private JCheckBox listOnlyMine;
 	private JLabel lastPrice;
 	private JButton buyButton, sellButton;
 	private AssetOrder firstBid, firstAsk;
+	
+	private ExplorerButton tokenIdButton;
 
 	private int ROW_HEIGHT;
 
@@ -96,14 +98,13 @@ public class OrderBook extends JPanel {
 		tableBid.getTableHeader().setReorderingAllowed(false);
 		tableAsk.getTableHeader().setReorderingAllowed(false);
 
-		Icons ics = new Icons(tableBid.getForeground(), OrderBookSettings.ICON_SIZE);
+		Icons ics = new Icons(tableBid.getForeground(), Constants.ICON_SIZE_SMALL);
 		copyIcon = ics.get(Icons.COPY);
 		expIcon = ics.get(Icons.EXPLORER);
 		cancelIcon = ics.get(Icons.CANCEL);
 		pendingIcon = ics.get(Icons.SPINNER);
 		pendingIconRotating = new RotatingIcon(pendingIcon);
 		editIcon = ics.get(Icons.EDIT);
-		withdrawIcon = ics.get(Icons.WITHDRAW);
 
 		scrollPaneBid = new JScrollPane(tableBid);
 		tableBid.setFillsViewportHeight(true);
@@ -142,9 +143,14 @@ public class OrderBook extends JPanel {
 		topLeft.add(buyButton = new JButton());
 		topLeft.add(sellButton = new JButton());
 		topLeft.add(listOnlyMine);
+		
+		Icons iconMed = new Icons(tableBid.getForeground(), Constants.ICON_SIZE_MED);
+		tokenIdButton = new ExplorerButton("", iconMed.get(Icons.COPY), iconMed.get(Icons.EXPLORER), BUTTON_EDITOR);
+		tokenIdButton.setVisible(false);
 
 		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		top.add(topRight, BorderLayout.LINE_END);
+		topRight.add(tokenIdButton);
 		topRight.add(new SocialButton(SocialButton.Type.TWITTER, tableBid.getForeground()));
 //		topRight.add(new SocialButton(SocialButton.Type.INSTAGRAM, table.getForeground()));
 //		topRight.add(new SocialButton(SocialButton.Type.FACEBOOK, table.getForeground()));
@@ -186,8 +192,13 @@ public class OrderBook extends JPanel {
 	}
 
 	public void setMarket(Market m) {
+		logger.debug("Market {} set", m.toString());
 		newMarket = m;
-		logger.debug("Market {} set", newMarket.getID());
+		tokenIdButton.setVisible(m.getTokenID()!=null);
+		if(m.getTokenID()!=null) {
+			tokenIdButton.getMainButton().setText(tr("main_token_id", m.toString(), m.getTokenID().getID()));
+			tokenIdButton.setTokenID(m.getTokenID().getID());
+		}
 	}
 
 	public void setLastPrice(String price, Icon icon, Color color) {
