@@ -179,6 +179,8 @@ public class TransactionsPanel extends JPanel {
 			switch (tx.getType()) {
 			case 0: // PAYMENT
 				if(!tx.getSender().equals(g.getAddress())) {
+					if(tx.getSender().getBurstID().getSignedLongId() == Constants.TRT_DIVIDENDS)
+						type = tr("txs_trt_dividends");
 					switch (tx.getSubtype()) {
 					case 1: // MULTI-OUT
 						if(tx.getAttachment() instanceof MultiOutAttachment) {
