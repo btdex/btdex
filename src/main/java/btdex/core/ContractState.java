@@ -225,7 +225,7 @@ public class ContractState {
 		// check rate, type, etc. from transaction history
 		boolean hasPending = false;
 		if(!onlyUnconf) {
-			Transaction[] txs = g.getNS().getAccountTransactions(this.address).blockingGet();
+			Transaction[] txs = g.getNS().getAccountTransactions(this.address, null, null, false).blockingGet();
 			findCurrentTakeBlock(txs);
 			buildHistory(txs);
 			hasPending = processTransactions(txs);

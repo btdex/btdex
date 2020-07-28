@@ -29,6 +29,8 @@ import burst.kit.entity.response.Transaction;
 import burst.kit.entity.response.attachment.AskOrderPlacementAttachment;
 import burst.kit.entity.response.attachment.AssetTransferAttachment;
 import burst.kit.entity.response.attachment.BidOrderPlacementAttachment;
+import burst.kit.entity.response.attachment.MultiOutAttachment;
+import burst.kit.entity.response.attachment.MultiOutSameAttachment;
 import burst.kit.entity.response.http.BRSError;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
@@ -176,6 +178,25 @@ public class TransactionsPanel extends JPanel {
 			// Types defined at brs/TransactionType.java
 			String type = tr("txs_payment");
 			switch (tx.getType()) {
+			case 0: // PAYMENT
+				if(!tx.getSender().equals(g.getAddress())) {
+					switch (tx.getSubtype()) {
+					case 1: // MULTI-OUT
+						if(tx.getAttachment() instanceof MultiOutAttachment) {
+							MultiOutAttachment attach = (MultiOutAttachment) tx.getAttachment();
+							amountFormatted = NumberFormatting.BURST.format(
+									attach.getOutputs().get(g.getAddress()).longValue()) + " " + Constants.BURST_TICKER;
+						}
+						break;
+					case 2: // MULTI-SAME
+						if(tx.getAttachment() instanceof MultiOutSameAttachment) {
+							MultiOutSameAttachment attach = (MultiOutSameAttachment) tx.getAttachment();
+							amountFormatted = NumberFormatting.BURST.format(amount/attach.getRecipients().length) + " " + Constants.BURST_TICKER;
+						}						
+						break;
+					}
+				}
+				break;
 			case 1: // TYPE_PAYMENT
 				switch (tx.getSubtype()) {
 				case 1:

@@ -259,7 +259,7 @@ public class BurstNode {
 					logger.debug("Error 3: {}", e.getLocalizedMessage());
 					return;
 				}
-				txs = NS.getAccountTransactions(g.getAddress()).blockingGet();
+				txs = NS.getAccountTransactions(g.getAddress(), 0, 100, true).blockingGet();
 
 				// set we have this one updated
 				lastBlock = latestBlocks[0].getId();
