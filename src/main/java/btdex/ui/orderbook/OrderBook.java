@@ -145,7 +145,7 @@ public class OrderBook extends JPanel {
 		topLeft.add(listOnlyMine);
 		
 		Icons iconMed = new Icons(tableBid.getForeground(), Constants.ICON_SIZE_MED);
-		tokenIdButton = new ExplorerButton("", iconMed.get(Icons.COPY), iconMed.get(Icons.EXPLORER), BUTTON_EDITOR);
+		tokenIdButton = new ExplorerButton("", iconMed.get(Icons.COPY), iconMed.get(Icons.EXPLORER));
 		tokenIdButton.setVisible(false);
 
 		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));

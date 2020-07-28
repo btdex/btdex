@@ -83,6 +83,8 @@ public class HistoryPanel extends JPanel {
 			"hist_seller",
 	};
 
+	private ExplorerButton tokenIdButton;
+
 	class MyTableModel extends DefaultTableModel {
 		private static final long serialVersionUID = 1L;
 
@@ -136,15 +138,19 @@ public class HistoryPanel extends JPanel {
 		table.setRowHeight(table.getRowHeight()+10);
 		table.setPreferredScrollableViewportSize(new Dimension(200, 200));
 
-		setMarket(market);
-
-		copyIcon = IconFontSwing.buildIcon(FontAwesome.CLONE, 12, table.getForeground());
-		expIcon = IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, 12, table.getForeground());
-		upIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_UP, 18, HistoryPanel.GREEN);
-		downIcon = IconFontSwing.buildIcon(FontAwesome.ARROW_DOWN, 18, HistoryPanel.RED);
+		copyIcon = IconFontSwing.buildIcon(Icons.COPY, Constants.ICON_SIZE_SMALL, table.getForeground());
+		expIcon = IconFontSwing.buildIcon(Icons.EXPLORER, Constants.ICON_SIZE_SMALL, table.getForeground());
+		
+		upIcon = IconFontSwing.buildIcon(Icons.UP, Constants.ICON_SIZE_MED, HistoryPanel.GREEN);
+		downIcon = IconFontSwing.buildIcon(Icons.DOWN, Constants.ICON_SIZE_MED, HistoryPanel.RED);
+		
+		tokenIdButton = new ExplorerButton("", IconFontSwing.buildIcon(Icons.COPY, Constants.ICON_SIZE_MED, table.getForeground()),
+				IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, Constants.ICON_SIZE_MED, table.getForeground()));
+		tokenIdButton.setVisible(false);
 		
 		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		top.add(topRight, BorderLayout.LINE_END);
+		topRight.add(tokenIdButton);
 		topRight.add(new SocialButton(SocialButton.Type.TWITTER, table.getForeground()));
 
 		timeButtons = new JToggleButton[4];
@@ -152,6 +158,8 @@ public class HistoryPanel extends JPanel {
 		timeButtons[1] = new JToggleButton(tr("hist_4hours"));
 		timeButtons[2] = new JToggleButton(tr("hist_1day"));
 		timeButtons[3] = new JToggleButton(tr("hist_1week"));
+		
+		setMarket(market);
 		
 		JPanel chartPanel = new JPanel(new BorderLayout(0,0));
 		JPanel chartTopPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
@@ -234,6 +242,11 @@ public class HistoryPanel extends JPanel {
 
 	public void setMarket(Market m) {
 		newMarket = m;
+		tokenIdButton.setVisible(m.getTokenID()!=null);
+		if(m.getTokenID()!=null) {
+			tokenIdButton.getMainButton().setText(tr("main_token_id", m.toString(), m.getTokenID().getID()));
+			tokenIdButton.setTokenID(m.getTokenID().getID());
+		}
 	}
 
 	public void update() {

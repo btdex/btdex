@@ -41,6 +41,8 @@ public class Icons {
     public static IconCode WITHDRAW = FontAwesome.RECYCLE;
     public static IconCode MEDIATION = FontAwesome.GAVEL;
     public static IconCode NEW_TOKEN = FontAwesome.TAG;
+    public static IconCode UP = FontAwesome.ARROW_UP;
+    public static IconCode DOWN = FontAwesome.ARROW_DOWN;
 
     public static IconCode DISCORD = FontAwesomeBrands.DISCORD;
     public static IconCode FACEBOOK = FontAwesomeBrands.FACEBOOK;
