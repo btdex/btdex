@@ -266,10 +266,10 @@ public class BurstNode {
 				// clears any previous error
 				nodeError = null;
 			}
-			catch (RuntimeException rex) {
+			catch (Exception rex) {
 				rex.printStackTrace();
 				nodeError = rex;
-				logger.error("RuntimeException {}", rex.getLocalizedMessage());
+				logger.error("Exception {}", rex.getLocalizedMessage());
 			}
 		}
 	}
