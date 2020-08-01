@@ -66,8 +66,15 @@ public class ContractState {
 
 	private static Logger logger = LogManager.getLogger();
 
-	public ContractState(ContractType type) {
+	public ContractState(ContractType type, AT at) {
 		this.type = type;
+		this.at = at;
+		
+		// Check some immutable variables
+		compiler = Contracts.getCompiler(type);
+		mediator1 = getContractFieldValue("mediator1");
+		mediator2 = getContractFieldValue("mediator2");
+		feeContract = getContractFieldValue("feeContract");
 	}
 
 	public boolean hasStateFlag(long flag) {
@@ -161,15 +168,8 @@ public class ContractState {
 				type = ContractType.NO_DEPOSIT;
 
 			if (type != ContractType.INVALID) {
-				ContractState s = new ContractState(type);
-				s.at = at;
+				ContractState s = new ContractState(type, at);
 
-				// Check some immutable variables
-				s.compiler = Contracts.getCompiler(type);
-				s.mediator1 = s.getContractFieldValue("mediator1");
-				s.mediator2 = s.getContractFieldValue("mediator2");
-				s.feeContract = s.getContractFieldValue("feeContract");
-				
 				logger.debug("Contract {} added for {}", at.getId(), s.type);
 
 				// Check if the immutable variables are valid
