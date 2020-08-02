@@ -380,8 +380,8 @@ public class Globals {
 		JsonObject params = new JsonObject();
 		params.addProperty("account", getAddress().getID());
 		params.addProperty("publickey", BC.toHexString(getPubKey()));
-
-		RequestBody body = RequestBody.create(Constants.JSON, params.toString());
+		
+		RequestBody body = RequestBody.create(params.toString(), Constants.JSON);
 
 		String faucet = isTestnet() ? Constants.FAUCET_TESTNET : Constants.FAUCET;
 		Request request = new Request.Builder()
@@ -418,7 +418,7 @@ public class Globals {
 			LayoutComponentBuilder layoutBuilder = builder.newLayout("PatternLayout")
 				.addAttribute("pattern", "%d [%t] %-5level: %logger %msg%n");
 
-			ComponentBuilder triggeringPolicy = builder.newComponent("Policies")
+			ComponentBuilder<?> triggeringPolicy = builder.newComponent("Policies")
 				.addComponent(builder.newComponent("TimeBasedTriggeringPolicy"))
 				.addComponent(builder.newComponent("SizeBasedTriggeringPolicy").addAttribute("size", "1M"));
 			appenderBuilder = builder.newAppender("rolling", "RollingFile")
