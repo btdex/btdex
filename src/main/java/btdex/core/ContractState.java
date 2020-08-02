@@ -405,10 +405,10 @@ public class ContractState {
 					&& tx.getAppendages()[0] instanceof PlaintextMessageAppendix) {
 
 				PlaintextMessageAppendix appendMessage = (PlaintextMessageAppendix) tx.getAppendages()[0];
-				if(tx.getSender().equals(at.getCreator()) && appendMessage.getMessage().startsWith("{")) {
+				String jsonData = appendMessage.getMessage();
+				if(tx.getSender().equals(at.getCreator()) && jsonData.startsWith("{")) {
 					// price update
 					try {
-						String jsonData = appendMessage.getMessage();
 						JsonObject json = JsonParser.parseString(jsonData).getAsJsonObject();
 						JsonElement marketJson = json.get("market");
 						JsonElement rateJson = json.get("rate");
@@ -423,12 +423,12 @@ public class ContractState {
 					}
 				}
 				else if(rateHistory > 0L && marketHistory > 0L // we only want to register trades we know the price
-						&& !appendMessage.isText() && appendMessage.getMessage().length() == 64
-						&& appendMessage.getMessage().startsWith(Contracts.getContractTakeHash(type))) {
+						&& !appendMessage.isText() && jsonData.length() == 64
+						&& jsonData.startsWith(Contracts.getContractTakeHash(type))) {
 					// the take message (we are not so strict here as this is not vital information)
 					// so we can have false positives here, like multiple takes on the same order or invalid takes
 					// being account
-					byte []messageBytes = Hex.decode(appendMessage.getMessage());
+					byte []messageBytes = Hex.decode(jsonData);
 					ByteBuffer b = ByteBuffer.wrap(messageBytes);
 					b.order(ByteOrder.LITTLE_ENDIAN);
 					b.getLong(); // method hash
