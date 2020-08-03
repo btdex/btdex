@@ -7,7 +7,14 @@ BTDEX is a decentralized exchange system running on the [Burst](https://www.burs
 It implements a unique non-custodial exchange method for cryptocurrencies and conventional fiat currencies based on [BlockTalk](https://github.com/jjos2372/blocktalk) Smart Contracts and Burstcoin on-chain encrypted messages.
 The exchange method is serverless and fees are distributed among [Trade Token (TRT)](https://explore.burstcoin.ro/asset/12402415494995249540) holders.
 
-BTDEX is currently on *initial token distribution*, more details at [https://btdex.trade](https://btdex.trade).
+You will also find more details at [https://btdex.trade](https://btdex.trade).
+Currently the following pairs are available with BURST:
+ - BTC
+ - ETH
+ - LTC
+ - DOGE
+ 
+Additionally, any Burst-based token can be listed instantly and traded.
 
 ## Download
 
@@ -28,6 +35,7 @@ The application `BTDEX` will be available on the system (config file will go to 
 A package is available at [AUR](https://aur.archlinux.org/packages/btdex/).
 
 ### Running on MacOS
+Make sure you have an up-to-date Java JRE on your machine.
 Just download the `btdex-mac-version.zip` [latest release](https://github.com/btdex/btdex/releases) and uncompress the app.
 You can now run the app as usual (it will create a file named `config.properties` inside your home folder `~/`).
 
