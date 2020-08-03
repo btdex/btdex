@@ -428,7 +428,7 @@ public class ContractState {
 					// the take message (we are not so strict here as this is not vital information)
 					// so we can have false positives here, like multiple takes on the same order or invalid takes
 					// being account
-					byte []messageBytes = Hex.decode(jsonData);
+					byte []messageBytes = Hex.decode(messageString);
 					ByteBuffer b = ByteBuffer.wrap(messageBytes);
 					b.order(ByteOrder.LITTLE_ENDIAN);
 					b.getLong(); // method hash
