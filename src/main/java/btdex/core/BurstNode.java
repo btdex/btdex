@@ -72,7 +72,7 @@ public class BurstNode {
 		try {
 			// start the node updater thread
 			Timer timer = new Timer("node update");
-			timer.schedule(new NodeUpdateTask(), 0, 5000);
+			timer.schedule(new NodeUpdateTask(), 0, 3000);
 			logger.info("BurstNode update thread started");
 		}
 		catch (Exception e) {
