@@ -192,7 +192,6 @@ public class BurstNode {
 							for(AssetBalance b : accounts) {
 								if(b.getAccountAddress().equals(g.getAddress())) {
 									balance = b;
-									continue;
 								}
 
 								if(m.getTokenID().equals(TRT.getTokenID())) {
