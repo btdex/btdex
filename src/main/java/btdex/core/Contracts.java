@@ -153,67 +153,71 @@ public class Contracts {
 	}
 
 	private static void updateContracts() {
-		// check for new contracts and add them to the list
-		mostRecentID = ContractState.addContracts(contractsMap, mostRecentID);
+		try {
+			// check for new contracts and add them to the list
+			mostRecentID = ContractState.addContracts(contractsMap, mostRecentID);
 
-		Globals g = Globals.getInstance();
+			Globals g = Globals.getInstance();
 
-		// check if we have a new block or not
-		Block[] latestBlocks = g.getNS().getBlocks(0, 1).blockingGet();
-		boolean noNewBlock = latestBlocks[0].getId().equals(lastBlock);
+			// check if we have a new block or not
+			Block[] latestBlocks = g.getNS().getBlocks(0, 1).blockingGet();
+			boolean noNewBlock = latestBlocks[0].getId().equals(lastBlock);
 
-		ContractState updatedFreeContract = null;
-		ContractState updatedBuyFreeContract = null;
-		ContractState updatedFreeNoDepositContract = null;
+			ContractState updatedFreeContract = null;
+			ContractState updatedBuyFreeContract = null;
+			ContractState updatedFreeNoDepositContract = null;
 
-		// check for the pending transactions
-		Transaction[] utxs = g.getNS().getUnconfirmedTransactions(g.getAddress()).blockingGet();
-		
-		// build the trade history
-		ArrayList<ContractTrade> tradeHistory = new ArrayList<>();
+			// check for the pending transactions
+			Transaction[] utxs = g.getNS().getUnconfirmedTransactions(g.getAddress()).blockingGet();
 
-		// update the state of every contract
-		for(ContractState s : contractsMap.values()) {
-			s.update(utxs, noNewBlock);
+			// build the trade history
+			ArrayList<ContractTrade> tradeHistory = new ArrayList<>();
 
-			if(s.getType() == ContractType.SELL &&
-					s.getCreator().equals(g.getAddress()) &&
-					s.getState() == SellContract.STATE_FINISHED && !s.hasPending() &&
-					g.getMediators().areMediatorsAccepted(s) &&
-					s.getATVersion()>1)
-				updatedFreeContract = s;
-			else if(s.getType() == ContractType.BUY &&
-					s.getCreator().equals(g.getAddress()) &&
-					s.getState() == SellContract.STATE_FINISHED && !s.hasPending() &&
-					g.getMediators().areMediatorsAccepted(s) &&
-					s.getATVersion()>1)
-				updatedBuyFreeContract = s;
-			else if(s.getType() == ContractType.NO_DEPOSIT &&
-					s.getCreator().equals(g.getAddress()) &&
-					s.getState() == SellNoDepositContract.STATE_FINISHED && !s.hasPending() &&
-					g.getMediators().areMediatorsAccepted(s) &&
-					s.getATVersion()>1)
-				updatedFreeNoDepositContract = s;
-			
-			tradeHistory.addAll(s.getTrades());
-		}
-		lastBlock = latestBlocks[0].getId();
-		
-		// now we sort the trades on time
-		tradeHistory.sort(new Comparator<ContractTrade>() {
-			@Override
-			public int compare(ContractTrade t1, ContractTrade t2) {
-				return (int)(t2.getTimestamp().getAsDate().getTime() - t1.getTimestamp().getAsDate().getTime());
+			// update the state of every contract
+			for(ContractState s : contractsMap.values()) {
+				s.update(utxs, noNewBlock);
+
+				if(s.getType() == ContractType.SELL &&
+						s.getCreator().equals(g.getAddress()) &&
+						s.getState() == SellContract.STATE_FINISHED && !s.hasPending() &&
+						g.getMediators().areMediatorsAccepted(s) &&
+						s.getATVersion()>1)
+					updatedFreeContract = s;
+				else if(s.getType() == ContractType.BUY &&
+						s.getCreator().equals(g.getAddress()) &&
+						s.getState() == SellContract.STATE_FINISHED && !s.hasPending() &&
+						g.getMediators().areMediatorsAccepted(s) &&
+						s.getATVersion()>1)
+					updatedBuyFreeContract = s;
+				else if(s.getType() == ContractType.NO_DEPOSIT &&
+						s.getCreator().equals(g.getAddress()) &&
+						s.getState() == SellNoDepositContract.STATE_FINISHED && !s.hasPending() &&
+						g.getMediators().areMediatorsAccepted(s) &&
+						s.getATVersion()>1)
+					updatedFreeNoDepositContract = s;
+
+				tradeHistory.addAll(s.getTrades());
 			}
-		});
-		
-		// the list with all trades
-		trades = tradeHistory;
+			lastBlock = latestBlocks[0].getId();
 
-		// TODO: maybe a lock around this
-		freeContract = updatedFreeContract;
-		freeBuyContract = updatedBuyFreeContract;
-		freeNoDepositContract = updatedFreeNoDepositContract;
+			// now we sort the trades on time
+			tradeHistory.sort(new Comparator<ContractTrade>() {
+				@Override
+				public int compare(ContractTrade t1, ContractTrade t2) {
+					return (int)(t2.getTimestamp().getAsDate().getTime() - t1.getTimestamp().getAsDate().getTime());
+				}
+			});
+
+			// the list with all trades
+			trades = tradeHistory;
+
+			// TODO: maybe a lock around this
+			freeContract = updatedFreeContract;
+			freeBuyContract = updatedBuyFreeContract;
+			freeNoDepositContract = updatedFreeNoDepositContract;
+		} catch (Exception e) {
+			logger.error("Exception", e.getLocalizedMessage());
+		}
 	}
 
 	public static long[] getNewContractData() {
