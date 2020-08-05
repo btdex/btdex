@@ -9,7 +9,7 @@ public class MarketLTC extends MarketCrypto {
 	
 	static final String REGEX = "^[LM3][a-km-zA-HJ-NP-Z1-9]{26,33}$";
 
-	public String toString() {
+	public String getTicker() {
 		return "LTC";
 	}
 	

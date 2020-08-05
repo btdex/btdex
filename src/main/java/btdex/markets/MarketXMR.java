@@ -10,7 +10,7 @@ import monero.utils.MoneroUtils;
 
 public class MarketXMR extends MarketCrypto {
 	
-	public String toString() {
+	public String getTicker() {
 		return "XMR";
 	}
 	

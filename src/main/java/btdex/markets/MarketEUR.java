@@ -19,7 +19,7 @@ public class MarketEUR extends Market {
 	static final String SEPA = "SEPA";
 	static final String SEPA_INSTANT = "SEPA Instant";
 
-	public String toString() {
+	public String getTicker() {
 		return "EUR";
 	}
 	

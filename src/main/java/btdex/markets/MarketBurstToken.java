@@ -53,8 +53,13 @@ public class MarketBurstToken extends Market {
 		this.NF = NumberFormatting.NF(Math.min(1, decimals), decimals);
 	}
 
-	public String toString() {
+	public String getTicker() {
 		return ticker;
+	}
+	
+	@Override
+	public String toString() {
+		return getTicker(); // Constants.BURST_TICKER + "-" + getTicker();
 	}
 
 	@Override

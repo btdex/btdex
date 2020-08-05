@@ -7,7 +7,7 @@ import btdex.locale.Translation;
 
 public class MarketDOGE extends MarketCrypto {
 	
-	public String toString() {
+	public String getTicker() {
 		return "DOGE";
 	}
 	

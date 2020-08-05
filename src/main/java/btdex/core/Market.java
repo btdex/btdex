@@ -53,6 +53,11 @@ public abstract class Market {
 	}
 
 	/**
+	 * @return the ticker for this market, e.g. BTC, BURST.
+	 */
+	public abstract String getTicker();
+
+	/**
 	 * @return true if this market is for a conventional fiat currency.
 	 */
 	public boolean isFiat() {

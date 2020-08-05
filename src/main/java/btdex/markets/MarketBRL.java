@@ -35,8 +35,9 @@ public class MarketBRL extends Market {
 			"077 - Banco Inter",
 			"260 - NuBank",
 	};
-
-	public String toString() {
+	
+	@Override
+	public String getTicker() {
 		return "BRL";
 	}
 
