@@ -522,7 +522,8 @@ public class OrderBook extends JPanel {
 			b.setBackground(s.getType() == ContractType.BUY ? HistoryPanel.GREEN : HistoryPanel.RED);
 			model.setValueAt(b, row, cols[OrderBookSettings.COL_PRICE]);
 
-			if(s.getSecurityNQT() > 0 && s.getAmountNQT() > 0 && s.getRate() > 0) {
+			if(s.getSecurityNQT() > 0 && s.getAmountNQT() > 0 && s.getRate() > 0 &&
+					s.getState() >= SellContract.STATE_OPEN) {
 				long securityPercent = s.getSecurityNQT()*100L / s.getAmountNQT();
 				String sizeString = s.getAmount() + " (" + securityPercent + "%)";
 
