@@ -38,7 +38,8 @@ public class Markets {
     }
 
     public static void addUserMarket(Market m) {
-    	markets.add(m);
+    	// Add after TRT in the beginning of the list
+    	markets.add(userMarkets.size()+1, m);
     	userMarkets.add(m);
 		logger.info("User market {} added", m.getID());
     }

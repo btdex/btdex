@@ -728,12 +728,13 @@ public class Main extends JFrame implements ActionListener {
 	}
 
 	public void addMarket(MarketBurstToken newMarket) {
-		// Add at the end of the list
-		marketComboBox.removeItem(addMarketDummy);
-		marketComboBox.removeItem(newMarketDummy);
-		marketComboBox.addItem(newMarket);
-		marketComboBox.addItem(addMarketDummy);
-		marketComboBox.addItem(newMarketDummy);
+		int index = 0;
+		for (; index < marketComboBox.getItemCount(); index++) {
+			if(marketComboBox.getItemAt(index).getTokenID() == null)
+				break;
+		}
+		// Insert as the latest token
+		marketComboBox.insertItemAt(newMarket, index);
 
 		Globals.getInstance().addUserMarket(newMarket, true);
 		BurstNode.getInstance().update();
