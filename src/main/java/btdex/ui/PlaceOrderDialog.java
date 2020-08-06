@@ -80,6 +80,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 	private StringBuilder terms;
 
+	private JPanel buttonPane;
+
 	public PlaceOrderDialog(JFrame owner, Market market, ContractState contract, boolean buy) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -197,7 +199,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			acceptBox.setText(tr("offer_received_coin", market));
 
 		// Create a button
-		JPanel buttonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		buttonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
 		pinField = new JPasswordField(12);
 		pinField.addActionListener(this);
@@ -285,12 +287,16 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
+			if(isMediator) {
+				buttonPane.setVisible(false);
+			}
 			if(contract!=null && contract.hasPending()) {
 				JOptionPane.showMessageDialog(getParent(), tr("offer_wait_confirm"),
 						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if(contract!=null && contract.getState() > SellContract.STATE_DISPUTE) {
+			if(contract!=null && (contract.getState() > SellContract.STATE_DISPUTE) ||
+					(contract.getState() > SellContract.STATE_OPEN && isMediator) ) {
 				DisputeDialog dispute = new DisputeDialog(this.getOwner(), market, contract);
 				dispute.setLocationRelativeTo(this);
 				dispute.setVisible(true);

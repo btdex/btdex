@@ -200,7 +200,7 @@ public class MediationPanel extends JPanel {
 			
 			JButton b = new ActionButton(this, market, tr("med_details"), null, s, false, false);
 			if(s.getState() > SellContract.STATE_DISPUTE) {
-				// under mediation
+				// under dispute
 				b.setBackground(HistoryPanel.RED);
 				if(s.getMediator1() == g.getAddress().getSignedLongId() || s.getMediator2() == g.getAddress().getSignedLongId() ){
 					// under dispute and we are the mediator
