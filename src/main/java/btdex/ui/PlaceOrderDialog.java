@@ -295,8 +295,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if(contract!=null && (contract.getState() > SellContract.STATE_DISPUTE) ||
-					(contract.getState() > SellContract.STATE_OPEN && isMediator) ) {
+			if(contract!=null && (contract.getState() > SellContract.STATE_DISPUTE ||
+					contract.getState() > SellContract.STATE_OPEN && isMediator) ) {
 				DisputeDialog dispute = new DisputeDialog(this.getOwner(), market, contract);
 				dispute.setLocationRelativeTo(this);
 				dispute.setVisible(true);

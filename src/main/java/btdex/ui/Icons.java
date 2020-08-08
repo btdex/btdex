@@ -32,7 +32,7 @@ public class Icons {
     public static IconCode SEND = FontAwesome.PAPER_PLANE;
     public static IconCode ORDER_BOOK = FontAwesome.BOOK;
     public static IconCode TOKEN = FontAwesome.DESKTOP;
-    public static IconCode CROSS_CHAIN = FontAwesome.LINK;
+    public static IconCode CROSS_CHAIN = FontAwesome.HANDSHAKE_O;
     public static IconCode TRADE = FontAwesome.LINE_CHART;
     public static IconCode ACCOUNT = FontAwesome.USER_CIRCLE;
     public static IconCode CHAT = FontAwesome.COMMENT;
@@ -45,6 +45,7 @@ public class Icons {
     public static IconCode NEW_TOKEN = FontAwesome.TAG;
     public static IconCode UP = FontAwesome.ARROW_UP;
     public static IconCode DOWN = FontAwesome.ARROW_DOWN;
+    public static IconCode UNKNOWN = FontAwesome.QUESTION;
 
     public static IconCode DISCORD = FontAwesomeBrands.DISCORD;
     public static IconCode FACEBOOK = FontAwesomeBrands.FACEBOOK;

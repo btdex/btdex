@@ -40,6 +40,15 @@ public class ActionButton extends JButton {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFrame f = (JFrame) SwingUtilities.getRoot(panel);
+                BookTable.BUTTON_EDITOR.stopCellEditing();
+                
+                if(!isToken && contract == null) {
+                	// new smart contract offer offer
+    				JDialog dlg = new PlaceOrderDialog(f, market, null, ask);
+    				dlg.setLocationRelativeTo(panel);
+    				dlg.setVisible(true);
+    				return;
+                }
 
                 if((isToken && order.getAssetId() == null) ||
                         (!isToken && contract.hasPending())) {
@@ -61,8 +70,6 @@ public class ActionButton extends JButton {
                 }
                 dlg.setLocationRelativeTo(panel);
                 dlg.setVisible(true);
-
-                OrderBook.BUTTON_EDITOR.stopCellEditing();
             }
         });
     }

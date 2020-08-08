@@ -5,12 +5,17 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
-class MyTable extends JTable {
+public class BookTable extends JTable {
     private static final long serialVersionUID = 3251005544025726619L;
 
     private int COLS[];
+    
+	public static final ButtonCellRenderer BUTTON_RENDERER = new ButtonCellRenderer();
 
-    public MyTable(DefaultTableModel model, int cols[]) {
+	public static final ButtonCellEditor BUTTON_EDITOR = new ButtonCellEditor();
+	
+
+    public BookTable(DefaultTableModel model, int cols[]) {
         super(model);
         this.COLS = cols;
     }
@@ -18,7 +23,7 @@ class MyTable extends JTable {
     @Override
     public TableCellRenderer getCellRenderer(int row, int col) {
         if(col == COLS[OrderBookSettings.COL_CONTRACT] || col == COLS[OrderBookSettings.COL_PRICE])
-            return OrderBook.BUTTON_RENDERER;
+            return BUTTON_RENDERER;
 
         return super.getCellRenderer(row, col);
     }
@@ -26,7 +31,7 @@ class MyTable extends JTable {
     @Override
     public TableCellEditor getCellEditor(int row, int col) {
         if(col == COLS[OrderBookSettings.COL_CONTRACT] || col == COLS[OrderBookSettings.COL_PRICE])
-            return OrderBook.BUTTON_EDITOR;
+            return BUTTON_EDITOR;
 
         return super.getCellEditor(row, col);
     }

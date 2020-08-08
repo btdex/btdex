@@ -162,11 +162,12 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 		balancePanel.add(balanceLabelTokenPending);
 		
 		this.market = marketComboBox.getItemAt(0);
-		historyPanel = new HistoryPanel(Main.getInstance(), market, lastPrice = new JLabel());
+		Desc priceDesc = new Desc(tr("book_last_price"), lastPrice = new JLabel());
+		historyPanel = new HistoryPanel(Main.getInstance(), market, priceDesc);
 		lastPrice.setFont(largeFont);
 		
-		tableBid = new MyTable(modelBid = new TableModelToken(this, OrderBookSettings.BID_COLS), OrderBookSettings.BID_COLS);
-		tableAsk = new MyTable(modelAsk = new TableModelToken(this, OrderBookSettings.ASK_COLS), OrderBookSettings.ASK_COLS);
+		tableBid = new BookTable(modelBid = new TableModelToken(this, OrderBookSettings.BID_COLS), OrderBookSettings.BID_COLS);
+		tableAsk = new BookTable(modelAsk = new TableModelToken(this, OrderBookSettings.ASK_COLS), OrderBookSettings.ASK_COLS);
 		ROW_HEIGHT = tableBid.getRowHeight()+10;
 		tableBid.setRowHeight(ROW_HEIGHT);
 		tableAsk.setRowHeight(ROW_HEIGHT);
@@ -219,7 +220,7 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 		topLeft.add(tokenDesc = new Desc(tr("main_balance", token), balancePanel));
 		topLeft.add(new Desc("  ", sendButtonToken));
 		
-		topLeft.add(new Desc(tr("book_last_price"), lastPrice));
+		topLeft.add(priceDesc);
 		
 		topLeft.add(new Desc(tr("book_filtering"), listOnlyMine));
 		listOnlyMine.setFont(largeFont);
@@ -476,7 +477,7 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 
 			ExplorerButton exp = null;
 			if(o.getId()!=null) {
-				exp = new ExplorerButton(o.getId().getID(), copyIcon, expIcon, BUTTON_EDITOR);
+				exp = new ExplorerButton(o.getId().getID(), copyIcon, expIcon);
 				if(o.getAccountAddress().equals(g.getAddress()) && o.getAssetId() != null) {
 					JButton cancel = new ActionButton(this, market, "", o, true);
 					cancel.setIcon(cancelIcon);

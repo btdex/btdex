@@ -43,7 +43,7 @@ import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
-import btdex.ui.orderbook.OrderBook;
+import btdex.ui.orderbook.BookTable;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.response.AssetTrade;
 import jiconfont.icons.font_awesome.FontAwesome;
@@ -88,7 +88,7 @@ public class HistoryPanel extends JPanel {
 
 	private ExplorerButton tokenIdButton;
 
-	private JLabel lastPrice;
+	private Desc lastPrice;
 
 	private boolean onlyMine;
 
@@ -121,7 +121,7 @@ public class HistoryPanel extends JPanel {
 		}
 	}
 
-	public HistoryPanel(Main main, Market market, JLabel lastPrice) {
+	public HistoryPanel(Main main, Market market, Desc lastPrice) {
 		super(new BorderLayout());
 
 		this.lastPrice = lastPrice;
@@ -214,12 +214,12 @@ public class HistoryPanel extends JPanel {
 
 		table.setAutoCreateColumnsFromModel(false);
 
-		table.getColumnModel().getColumn(COL_CONTRACT).setCellRenderer(OrderBook.BUTTON_RENDERER);
-		table.getColumnModel().getColumn(COL_CONTRACT).setCellEditor(OrderBook.BUTTON_EDITOR);
-		table.getColumnModel().getColumn(COL_BUYER).setCellRenderer(OrderBook.BUTTON_RENDERER);
-		table.getColumnModel().getColumn(COL_BUYER).setCellEditor(OrderBook.BUTTON_EDITOR);
-		table.getColumnModel().getColumn(COL_SELLER).setCellRenderer(OrderBook.BUTTON_RENDERER);
-		table.getColumnModel().getColumn(COL_SELLER).setCellEditor(OrderBook.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_CONTRACT).setCellRenderer(BookTable.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_CONTRACT).setCellEditor(BookTable.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_BUYER).setCellRenderer(BookTable.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_BUYER).setCellEditor(BookTable.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_SELLER).setCellRenderer(BookTable.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_SELLER).setCellEditor(BookTable.BUTTON_EDITOR);
 		//
 		table.getColumnModel().getColumn(COL_TIME).setPreferredWidth(120);
 		table.getColumnModel().getColumn(COL_CONTRACT).setPreferredWidth(200);
@@ -276,14 +276,15 @@ public class HistoryPanel extends JPanel {
 
 		if(lastTrade != null) {
 			// set the last price label
-			String priceLabel = NumberFormatting.BURST.format(lastTrade.getPrice().longValue()*market.getFactor()) + " BURST";
-			lastPrice.setText(priceLabel);
-			lastPrice.setIcon(lastIsUp ? upIcon : downIcon);
-			lastPrice.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
+			String priceText = NumberFormatting.BURST.format(lastTrade.getPrice().longValue()*market.getFactor()) + " BURST";
+			JLabel priceLabel = (JLabel) lastPrice.getChild();
+			lastPrice.setVisible(true);
+			priceLabel.setText(priceText);
+			priceLabel.setIcon(lastIsUp ? upIcon : downIcon);
+			priceLabel.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
 		}
 		else {
-			lastPrice.setText("");
-			lastPrice.setIcon(null);
+			lastPrice.setVisible(false);
 		}
 
 		if(trs == null) {
@@ -319,13 +320,13 @@ public class HistoryPanel extends JPanel {
 			
 			model.setValueAt(new ExplorerButton(
 					tr.getBuyerAddress().equals(g.getAddress()) ? tr("hist_you") : tr.getBuyerAddress().getRawAddress(), copyIcon, expIcon,
-							ExplorerButton.TYPE_ADDRESS, tr.getBuyerAddress().getID(), tr.getBuyerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
+							ExplorerButton.TYPE_ADDRESS, tr.getBuyerAddress().getID(), tr.getBuyerAddress().getFullAddress()), row, COL_BUYER);
 			model.setValueAt(new ExplorerButton(
 					tr.getSellerAddress().equals(g.getAddress()) ? tr("hist_you") : tr.getSellerAddress().getRawAddress(), copyIcon, expIcon,
-							ExplorerButton.TYPE_ADDRESS, tr.getSellerAddress().getID(), tr.getSellerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
+							ExplorerButton.TYPE_ADDRESS, tr.getSellerAddress().getID(), tr.getSellerAddress().getFullAddress()), row, COL_SELLER);
 			
 			// TODO: check if ask or bid was more recent to add one here (missing burstkit4j function for this)
-			model.setValueAt(new ExplorerButton(tr.getAskOrderId().getID(), copyIcon, expIcon, OrderBook.BUTTON_EDITOR), row, COL_CONTRACT);
+			model.setValueAt(new ExplorerButton(tr.getAskOrderId().getID(), copyIcon, expIcon), row, COL_CONTRACT);
 
 			model.setValueAt(NumberFormatting.BURST.format(price*market.getFactor()), row, COL_PRICE);
 			model.setValueAt(market.format(amount), row, COL_AMOUNT);
@@ -409,14 +410,15 @@ public class HistoryPanel extends JPanel {
 
 		if(lastTrade != null) {
 			// set the last price label
-			String priceLabel = market.getNumberFormat().format(lastTrade.getRate()) + " " + market;
-			lastPrice.setText(priceLabel);
-			lastPrice.setIcon(lastIsUp ? upIcon : downIcon);
-			lastPrice.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
+			String priceText = market.getNumberFormat().format(lastTrade.getRate()) + " " + market;
+			JLabel priceLabel = (JLabel) lastPrice.getChild();
+			lastPrice.setVisible(true);
+			priceLabel.setText(priceText);
+			priceLabel.setIcon(lastIsUp ? upIcon : downIcon);
+			priceLabel.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
 		}
 		else {
-			lastPrice.setText("");
-			lastPrice.setIcon(null);
+			lastPrice.setVisible(false);
 		}
 		
 		int maxLines = Math.min(200, trades.size());
@@ -444,15 +446,15 @@ public class HistoryPanel extends JPanel {
 
 			model.setValueAt(new ExplorerButton(
 					buyer.equals(g.getAddress()) ? tr("hist_you") : buyer.getRawAddress(), copyIcon, expIcon,
-							ExplorerButton.TYPE_ADDRESS, buyer.getID(), buyer.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
+							ExplorerButton.TYPE_ADDRESS, buyer.getID(), buyer.getFullAddress()), row, COL_BUYER);
 			model.setValueAt(new ExplorerButton(
 					seller.equals(g.getAddress()) ? tr("hist_you") : seller.getRawAddress(), copyIcon, expIcon,
-							ExplorerButton.TYPE_ADDRESS, seller.getID(), seller.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
+							ExplorerButton.TYPE_ADDRESS, seller.getID(), seller.getFullAddress()), row, COL_SELLER);
 
 			model.setValueAt(new ExplorerButton(
 					tr.getContract().getAddress().getRawAddress(), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, tr.getContract().getAddress().getID(),
-							tr.getContract().getAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_CONTRACT);
+							tr.getContract().getAddress().getFullAddress()), row, COL_CONTRACT);
 
 			model.setValueAt(market.getNumberFormat().format(price), row, COL_PRICE);
 			model.setValueAt(NumberFormatting.BURST.format(amount), row, COL_AMOUNT);

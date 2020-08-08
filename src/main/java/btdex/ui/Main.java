@@ -53,7 +53,7 @@ import btdex.core.Globals;
 import btdex.core.NumberFormatting;
 import btdex.locale.Translation;
 import btdex.sc.SellContract;
-import btdex.ui.orderbook.OrderBook;
+import btdex.ui.orderbook.MarketPanel;
 import btdex.ui.orderbook.TokenMarketPanel;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.Block;
@@ -76,11 +76,10 @@ public class Main extends JFrame implements ActionListener {
 
 	private CardLayout cardLayout;
 	private boolean showingSplash;
-	private OrderBook orderBook;
+	private MarketPanel orderBook;
 	private TokenMarketPanel orderBookToken;
 	private MediationPanel mediationPanel;
 	private TransactionsPanel transactionsPanel;
-	private AccountsPanel accountsPanel;
 
 	private JTabbedPane tabbedPane;
 	private JLabel statusLabel;
@@ -188,13 +187,11 @@ public class Main extends JFrame implements ActionListener {
 
 		bottomRight.add(createVersionButton());
 		bottomRight.add(createResetPinButton());
-		bottomRight.add(signoutButton);
 
-		orderBook = new OrderBook(this);
+		orderBook = new MarketPanel(this);
 		orderBookToken = new TokenMarketPanel(this);
 
 		transactionsPanel = new TransactionsPanel();
-		accountsPanel = new AccountsPanel(this);
 
 		ICON_CONNECTED = i.get(Icons.CONNECTED);
 		ICON_TESTNET = i.get(Icons.TESTNET);
@@ -214,11 +211,6 @@ public class Main extends JFrame implements ActionListener {
 		tabbedPane.addTab(tr("main_cross_chain"), i.get(Icons.CROSS_CHAIN), orderBook);
 
 		boolean isMediator = g.getAddress()!=null && g.getMediators().isMediator(g.getAddress().getSignedLongId());
-		if(!g.usingLedger()) {
-			if(!isMediator)
-				tabbedPane.addTab(tr("main_accounts"), i.get(Icons.ACCOUNT), accountsPanel);
-			// tabbedPane.addTab(tr("main_chat"), i.get(Icons.CHAT), new ChatPanel());
-		}
 
 		if(isMediator){
 			// this is a mediator, add the mediation tab
@@ -241,6 +233,8 @@ public class Main extends JFrame implements ActionListener {
 		top.add(new Desc("  ", sendButton));
 
 		topRight.add(new Desc("  ", createSettingsButton(largeFont)));
+		topRight.add(new Desc("  ", resetPinButton));
+		topRight.add(new Desc("  ", signoutButton));
 		topRight.add(new Desc(tr("main_language_name"), createLangButton(largeFont, g)));
 
 		nodeSelector = new JButton(g.getNode());
