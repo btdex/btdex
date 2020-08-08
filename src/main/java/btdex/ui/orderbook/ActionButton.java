@@ -21,14 +21,19 @@ public class ActionButton extends JButton {
     private static final long serialVersionUID = 1L;
     private static Logger logger = LogManager.getLogger();
 
-    public ActionButton(OrderBook orderBook, String text, ContractState contract, boolean cancel) {
-        this(orderBook, orderBook.getMarket(), text, null, contract, cancel, false);
+    public ActionButton(JPanel panel, Market market, String text, ContractState contract, boolean cancel) {
+        this(panel, market, text, null, contract, false, cancel, false);
     }
 
-    public ActionButton(OrderBook orderBook, String text, AssetOrder order, boolean cancel) {
-        this(orderBook, orderBook.getMarket(), text, order, null, cancel, true);
+    public ActionButton(JPanel panel, Market market, String text, AssetOrder order, boolean cancel) {
+        this(panel, market, text, order, null, false, cancel, true);
     }
-    public ActionButton(JPanel panel, Market market, String text, AssetOrder order, ContractState contract, boolean cancel, boolean isToken) {
+    
+    public ActionButton(JPanel panel, Market market, String text, AssetOrder order, boolean ask, boolean cancel) {
+        this(panel, market, text, order, null, ask, cancel, true);
+    }
+    
+    public ActionButton(JPanel panel, Market market, String text, AssetOrder order, ContractState contract, boolean ask, boolean cancel, boolean isToken) {
         super(text);
 
         addActionListener(new ActionListener() {
@@ -50,7 +55,7 @@ public class ActionButton extends JButton {
                 }
                 else {
                     if(isToken)
-                        dlg = new PlaceTokenOrderDialog(f, market, order);
+                        dlg = new PlaceTokenOrderDialog(f, market, order, ask);
                     else
                         dlg = new PlaceOrderDialog(f, market, contract, false);
                 }

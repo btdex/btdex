@@ -198,7 +198,7 @@ public class MediationPanel extends JPanel {
 			model.setValueAt(NumberFormatting.BURST.format(amount), row, COL_AMOUNT);
 			
 			
-			JButton b = new ActionButton(this, market, tr("med_details"), null, s, false, false);
+			JButton b = new ActionButton(this, market, tr("med_details"), null, s, false, false, false);
 			if(s.getState() > SellContract.STATE_DISPUTE) {
 				// under dispute
 				b.setBackground(HistoryPanel.RED);
