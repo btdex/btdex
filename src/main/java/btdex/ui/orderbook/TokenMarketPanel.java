@@ -428,8 +428,19 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 			}
 		});
 		
-		firstBid = bidOrders.size() > 0 ? bidOrders.get(0) : null;
-		firstAsk = askOrders.size() > 0 ? askOrders.get(0) : null;
+		firstBid = firstAsk = null;
+		for (AssetOrder o : bidOrders) {
+			if(o.getAssetId()!=null) {
+				firstBid = o;
+				break;
+			}
+		}
+		for (AssetOrder o : askOrders) {
+			if(o.getAssetId()!=null) {
+				firstAsk = o;
+				break;
+			}
+		}
 
 		modelBid.setRowCount(bidOrders.size()+1);
 		modelAsk.setRowCount(askOrders.size()+1);
@@ -445,7 +456,7 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 		
 		// Add the "make" buttons
 		JButton newOffer = new ActionButton(this, market, tr("book_make_offer"),
-				(ask ? firstBid : firstAsk), !ask, false);
+				(ask ? firstBid : firstAsk), ask, false);
 		newOffer.setBackground(ask ? HistoryPanel.RED : HistoryPanel.GREEN);
 		model.setValueAt(newOffer, row++, cols[OrderBookSettings.COL_PRICE]);
 		

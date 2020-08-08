@@ -71,7 +71,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		
 		this.isAsk = isAsk;
 
-		setTitle(tr(isAsk ? "token_buy_with_burst" : "token_sell_for_burst", market));
+		setTitle(tr(isAsk ? "token_sell_for_burst" : "token_buy_with_burst", market));
 		this.market = market;
 
 		JPanel fieldPanel = new JPanel(new GridLayout(0, 2, 4, 4));
@@ -104,7 +104,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		pinField.addActionListener(this);
 
 		cancelButton = new JButton(tr("dlg_cancel"));
-		okButton = new JButton(tr(isAsk ? "offer_confirm_limit_buy" : "offer_confirm_limit_sell"));
+		okButton = new JButton(tr(isAsk ? "offer_confirm_limit_sell" : "offer_confirm_limit_buy"));
 		getRootPane().setDefaultButton(okButton);
 
 		cancelButton.addActionListener(this);
