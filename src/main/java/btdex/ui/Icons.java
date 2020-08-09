@@ -31,7 +31,7 @@ public class Icons {
     public static IconCode LANGUAGE = FontAwesome.LANGUAGE;
     public static IconCode SEND = FontAwesome.PAPER_PLANE;
     public static IconCode ORDER_BOOK = FontAwesome.BOOK;
-    public static IconCode TOKEN = FontAwesome.DESKTOP;
+    public static IconCode SWAPS = FontAwesome.RANDOM;
     public static IconCode CROSS_CHAIN = FontAwesome.HANDSHAKE_O;
     public static IconCode TRADE = FontAwesome.LINE_CHART;
     public static IconCode ACCOUNT = FontAwesome.USER_CIRCLE;

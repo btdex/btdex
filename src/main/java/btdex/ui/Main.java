@@ -207,8 +207,8 @@ public class Main extends JFrame implements ActionListener {
 		content.add(tabbedPane, BorderLayout.CENTER);
 		tabbedPane.setFont(largeFont);
 
-		tabbedPane.addTab(tr("main_atomic"), i.get(Icons.TOKEN), orderBookToken);
-		tabbedPane.addTab(tr("main_cross_chain"), i.get(Icons.CROSS_CHAIN), orderBook);
+		tabbedPane.addTab(tr("main_swaps"), i.get(Icons.SWAPS), orderBookToken);
+		tabbedPane.addTab(tr("main_contracts"), i.get(Icons.CROSS_CHAIN), orderBook);
 
 		boolean isMediator = g.getAddress()!=null && g.getMediators().isMediator(g.getAddress().getSignedLongId());
 
@@ -226,10 +226,7 @@ public class Main extends JFrame implements ActionListener {
 		balanceLabel.setFont(largeFont);
 		lockedBalanceLabel = new JLabel("0");
 		lockedBalanceLabel.setToolTipText(tr("main_amount_locked"));
-		JPanel balancePanel = new JPanel(new FlowLayout());
-		balancePanel.add(balanceLabel);
-		balancePanel.add(lockedBalanceLabel);
-		top.add(new Desc(tr("main_balance", "BURST"), balancePanel));
+		top.add(new Desc(tr("main_balance", "BURST"), balanceLabel, lockedBalanceLabel));
 		top.add(new Desc("  ", sendButton));
 
 		topRight.add(new Desc("  ", createSettingsButton(largeFont)));

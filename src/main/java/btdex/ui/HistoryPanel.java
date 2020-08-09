@@ -227,8 +227,8 @@ public class HistoryPanel extends JPanel {
 		table.getColumnModel().getColumn(COL_SELLER).setPreferredWidth(200);
 
 		add(top, BorderLayout.PAGE_START);
-		add(scrollPane, BorderLayout.CENTER);
-		add(chartPanel, BorderLayout.PAGE_END);
+		add(scrollPane, BorderLayout.PAGE_END);
+		add(chartPanel, BorderLayout.CENTER);
 	}
 
 	public void setMarket(Market m) {

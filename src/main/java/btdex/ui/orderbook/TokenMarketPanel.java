@@ -154,11 +154,8 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 		balanceLabelToken = new JLabel("0");
 		balanceLabelToken.setFont(largeFont);
 		balanceLabelToken.setToolTipText(tr("main_available_balance"));
-		JPanel balancePanel = new JPanel(new FlowLayout());
 		balanceLabelTokenPending = new JLabel("0");
 		balanceLabelTokenPending.setToolTipText(tr("main_amount_locked"));
-		balancePanel.add(balanceLabelToken);
-		balancePanel.add(balanceLabelTokenPending);
 		
 		this.market = marketComboBox.getItemAt(0);
 		Desc priceDesc = new Desc(tr("book_last_price"), lastPrice = new JLabel());
@@ -216,7 +213,7 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 		
 		topLeft.add(new Desc(tr("main_market"), marketComboBox));
 		topLeft.add(new Desc("  ", removeTokenButton));		
-		topLeft.add(tokenDesc = new Desc(tr("main_balance", token), balancePanel));
+		topLeft.add(tokenDesc = new Desc(tr("main_balance", token), balanceLabelToken, balanceLabelTokenPending));
 		topLeft.add(new Desc("  ", sendButtonToken));
 		
 		topLeft.add(priceDesc);
@@ -470,7 +467,7 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 				continue;
 
 			String priceFormated = NumberFormatting.BURST.format(price*market.getFactor());
-			JButton b = new ActionButton(this, market, priceFormated, o, ask, false);
+			JButton b = new ActionButton(this, market, priceFormated, o, !ask, false);
 			if(o.getAccountAddress().equals(g.getAddress()) && o.getAssetId() != null) {
 				b = new ActionButton(this, market, priceFormated, o, true);
 				b.setIcon(cancelIcon);
