@@ -1,5 +1,7 @@
 package btdex.ui;
 
+import static btdex.locale.Translation.tr;
+
 import java.awt.BorderLayout;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -10,9 +12,8 @@ import java.awt.event.ActionListener;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.table.TableCellEditor;
 
-import static btdex.locale.Translation.tr;
+import btdex.ui.orderbook.BookTable;
 
 public class ExplorerButton extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -25,24 +26,20 @@ public class ExplorerButton extends JPanel {
 	
 	JButton mainButton;
 	JButton explorerButton;
-
+	
 	public ExplorerButton(String text, Icon icon, Icon icon2) {
-		this(text, icon, icon2, null);
-	}
-	
-	public ExplorerButton(String text, Icon icon, Icon icon2, TableCellEditor editor) {
-		this(text, icon, icon2, TYPE_TRANSACTION, text, editor);
+		this(text, icon, icon2, TYPE_TRANSACTION, text);
 	}
 
-	public ExplorerButton(String text, Icon icon, Icon icon2, int type, String id, TableCellEditor editor) {
-		this(text, icon, icon2, type, id, null, editor, null);
+	public ExplorerButton(String text, Icon icon, Icon icon2, int type, String id) {
+		this(text, icon, icon2, type, id, null);
 	}
 
-	public ExplorerButton(String text, Icon icon, Icon icon2, int type, String id, String addressRS, TableCellEditor editor) {
-		this(text, icon, icon2, type, id, addressRS, editor, null);
+	public ExplorerButton(String text, Icon icon, Icon icon2, int type, String id, String addressRS) {
+		this(text, icon, icon2, type, id, addressRS, null);
 	}
 	
-	public ExplorerButton(String text, Icon icon, Icon icon2, int type, String id, String addressRS, TableCellEditor editor,
+	public ExplorerButton(String text, Icon icon, Icon icon2, int type, String id, String addressRS,
 			String tooltipText) {
 		super(new BorderLayout(0, 0));
 		
@@ -88,8 +85,7 @@ public class ExplorerButton extends JPanel {
 				default:
 					break;
 				}
-				if(editor!=null)
-					editor.stopCellEditing();
+				BookTable.BUTTON_EDITOR.stopCellEditing();
 			}
 		});
 				

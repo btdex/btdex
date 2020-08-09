@@ -22,7 +22,7 @@ import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.Markets;
 import btdex.core.NumberFormatting;
-import btdex.ui.orderbook.OrderBook;
+import btdex.ui.orderbook.BookTable;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.response.Block;
 import burst.kit.entity.response.Transaction;
@@ -105,10 +105,10 @@ public class TransactionsPanel extends JPanel {
 
 		table.setAutoCreateColumnsFromModel(false);
 
-		table.getColumnModel().getColumn(COL_ID).setCellRenderer(OrderBook.BUTTON_RENDERER);
-		table.getColumnModel().getColumn(COL_ID).setCellEditor(OrderBook.BUTTON_EDITOR);
-		table.getColumnModel().getColumn(COL_ACCOUNT).setCellRenderer(OrderBook.BUTTON_RENDERER);
-		table.getColumnModel().getColumn(COL_ACCOUNT).setCellEditor(OrderBook.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_ID).setCellRenderer(BookTable.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_ID).setCellEditor(BookTable.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_ACCOUNT).setCellRenderer(BookTable.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_ACCOUNT).setCellEditor(BookTable.BUTTON_EDITOR);
 		//
 		table.getColumnModel().getColumn(COL_ACCOUNT).setPreferredWidth(200);
 		table.getColumnModel().getColumn(COL_ID).setPreferredWidth(200);
@@ -302,8 +302,8 @@ public class TransactionsPanel extends JPanel {
 			model.setValueAt(tx.getBlockId()==null ? tr("book_pending_button") : tx.getConfirmations(), row, COL_CONF);
 			model.setValueAt(account==null ? new JLabel() :
 				new ExplorerButton(account.getRawAddress(), copyIcon, expIcon, ExplorerButton.TYPE_ADDRESS,
-						account.getID(), account.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
-			model.setValueAt(new ExplorerButton(tx.getId().toString(), copyIcon, expIcon, OrderBook.BUTTON_EDITOR), row, COL_ID);
+						account.getID(), account.getFullAddress()), row, COL_ACCOUNT);
+			model.setValueAt(new ExplorerButton(tx.getId().toString(), copyIcon, expIcon), row, COL_ID);
 
 			model.setValueAt(amountFormatted, row, COL_AMOUNT);
 			model.setValueAt(tx.getFee().toUnformattedString(), row, COL_FEE);

@@ -5,22 +5,24 @@ import static btdex.locale.Translation.tr;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JDialog;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
@@ -28,11 +30,29 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
-import bt.Contract;
-import btdex.core.*;
-import btdex.sc.SellContract;
-import btdex.ui.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import btdex.core.BurstNode;
+import btdex.core.Constants;
+import btdex.core.Globals;
+import btdex.core.Market;
+import btdex.core.Markets;
+import btdex.core.NumberFormatting;
+import btdex.markets.MarketBTC;
+import btdex.markets.MarketBurstToken;
+import btdex.ui.CreateTokenDialog;
+import btdex.ui.Desc;
+import btdex.ui.ExplorerButton;
+import btdex.ui.HistoryPanel;
+import btdex.ui.Icons;
+import btdex.ui.Main;
+import btdex.ui.RotatingIcon;
+import btdex.ui.SendDialog;
+import btdex.ui.SocialButton;
+import btdex.ui.Toast;
 import burst.kit.entity.BurstValue;
+import burst.kit.entity.response.AssetBalance;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.Transaction;
 import burst.kit.entity.response.attachment.AskOrderCancellationAttachment;
@@ -40,56 +60,110 @@ import burst.kit.entity.response.attachment.AskOrderPlacementAttachment;
 import burst.kit.entity.response.attachment.BidOrderCancellationAttachment;
 import burst.kit.entity.response.attachment.BidOrderPlacementAttachment;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-public class OrderBook extends JPanel {
+public class TokenMarketPanel extends JPanel implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 
 	private JTable tableBid, tableAsk;
 	private DefaultTableModel modelBid, modelAsk;
-	private Icon copyIcon, expIcon, cancelIcon, pendingIcon, editIcon;
+	private Icon copyIcon, expIcon, cancelIcon, pendingIcon;
 	private RotatingIcon pendingIconRotating;
 
 	private JCheckBox listOnlyMine;
 	private JLabel lastPrice;
-	private JButton buyButton, sellButton;
-	private AssetOrder firstBid, firstAsk;
 	
 	private ExplorerButton tokenIdButton;
 
 	private int ROW_HEIGHT;
 
-	private ArrayList<ContractState> contracts = new ArrayList<>();
-	private ArrayList<ContractState> contractsBuy = new ArrayList<>();
+	private Market token;
+	private JComboBox<Market> marketComboBox;
+	private JButton removeTokenButton;
+	private Market addMarketDummy, newMarketDummy;
+	
+	private Desc tokenDesc;
+	private JLabel balanceLabelToken;
+	private JLabel balanceLabelTokenPending;
+	private JButton sendButtonToken;
 
 	private Market market = null, newMarket;
-
+	
+	private HistoryPanel historyPanel;
+	
 	private JScrollPane scrollPaneBid;
 
 	private JScrollPane scrollPaneAsk;
+
+	private AssetOrder firstBid;
+
+	private AssetOrder firstAsk;
 
 	private static Logger logger = LogManager.getLogger();
 
 	public static final ButtonCellRenderer BUTTON_RENDERER = new ButtonCellRenderer();
 
 	public static final ButtonCellEditor BUTTON_EDITOR = new ButtonCellEditor();
-	public OrderBook(Main main, Market m) {
+	public TokenMarketPanel(Main main) {
 		super(new BorderLayout());
 
 		listOnlyMine = new JCheckBox(tr("book_mine_only"));
 		listOnlyMine.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				historyPanel.setFilter(listOnlyMine.isSelected());
 				main.update();
 			}
 		});
+		
+		marketComboBox = new JComboBox<Market>();
+		marketComboBox.setToolTipText(tr("main_select_market"));
+		
+		for(Market m : Markets.getMarkets()) {
+			if(m.getTokenID() != null)
+				marketComboBox.addItem(m);
+		}
+		marketComboBox.addItem(addMarketDummy = new MarketBTC() {
+			@Override
+			public String toString() {
+				return tr("main_add_token_sign");
+			}
+		});
+		marketComboBox.addItem(newMarketDummy = new MarketBTC() {
+			@Override
+			public String toString() {
+				return tr("main_new_token_sign");
+			}
+		});
+		token = Markets.getToken();
+		marketComboBox.addActionListener(this);
+		
+		Icons iconsSmall = new Icons(marketComboBox.getForeground(), Constants.ICON_SIZE_SMALL);
+		Icons icons = new Icons(marketComboBox.getForeground(), Constants.ICON_SIZE);
+		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, Constants.ICON_SIZE);
+		marketComboBox.setFont(largeFont);
+		
+		removeTokenButton = new JButton(icons.get(Icons.TRASH));
+		removeTokenButton.setToolTipText(tr("main_remove_token_tip"));
+		removeTokenButton.addActionListener(this);
+		removeTokenButton.setVisible(false);
+		
+		sendButtonToken = new JButton(icons.get(Icons.SEND));
+		sendButtonToken.setToolTipText(tr("main_send", token.toString()));
+		sendButtonToken.addActionListener(this);
 
-		market = m;
-
-		tableBid = new MyTable(modelBid = new MyTableModel(this, OrderBookSettings.BID_COLS), OrderBookSettings.BID_COLS);
-		tableAsk = new MyTable(modelAsk = new MyTableModel(this, OrderBookSettings.ASK_COLS), OrderBookSettings.ASK_COLS);
+		balanceLabelToken = new JLabel("0");
+		balanceLabelToken.setFont(largeFont);
+		balanceLabelToken.setToolTipText(tr("main_available_balance"));
+		balanceLabelTokenPending = new JLabel("0");
+		balanceLabelTokenPending.setToolTipText(tr("main_amount_locked"));
+		
+		this.market = marketComboBox.getItemAt(0);
+		Desc priceDesc = new Desc(tr("book_last_price"), lastPrice = new JLabel());
+		historyPanel = new HistoryPanel(Main.getInstance(), market, priceDesc);
+		lastPrice.setFont(largeFont);
+		
+		tableBid = new BookTable(modelBid = new TableModelToken(this, OrderBookSettings.BID_COLS), OrderBookSettings.BID_COLS);
+		tableAsk = new BookTable(modelAsk = new TableModelToken(this, OrderBookSettings.ASK_COLS), OrderBookSettings.ASK_COLS);
 		ROW_HEIGHT = tableBid.getRowHeight()+10;
 		tableBid.setRowHeight(ROW_HEIGHT);
 		tableAsk.setRowHeight(ROW_HEIGHT);
@@ -98,13 +172,11 @@ public class OrderBook extends JPanel {
 		tableBid.getTableHeader().setReorderingAllowed(false);
 		tableAsk.getTableHeader().setReorderingAllowed(false);
 
-		Icons ics = new Icons(tableBid.getForeground(), Constants.ICON_SIZE_SMALL);
-		copyIcon = ics.get(Icons.COPY);
-		expIcon = ics.get(Icons.EXPLORER);
-		cancelIcon = ics.get(Icons.CANCEL);
-		pendingIcon = ics.get(Icons.SPINNER);
+		copyIcon = iconsSmall.get(Icons.COPY);
+		expIcon = iconsSmall.get(Icons.EXPLORER);
+		cancelIcon = iconsSmall.get(Icons.CANCEL);
+		pendingIcon = iconsSmall.get(Icons.SPINNER);
 		pendingIconRotating = new RotatingIcon(pendingIcon);
-		editIcon = ics.get(Icons.EDIT);
 
 		scrollPaneBid = new JScrollPane(tableBid);
 		tableBid.setFillsViewportHeight(true);
@@ -138,67 +210,54 @@ public class OrderBook extends JPanel {
 		JPanel top = new JPanel(new BorderLayout());
 		JPanel topLeft = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		top.add(topLeft, BorderLayout.LINE_START);
-		topLeft.add(lastPrice = new JLabel());
-		lastPrice.setToolTipText(tr("book_last_price"));
-		topLeft.add(buyButton = new JButton());
-		topLeft.add(sellButton = new JButton());
-		topLeft.add(listOnlyMine);
 		
-		Icons iconMed = new Icons(tableBid.getForeground(), Constants.ICON_SIZE_MED);
-		tokenIdButton = new ExplorerButton("", iconMed.get(Icons.COPY), iconMed.get(Icons.EXPLORER));
-		tokenIdButton.setVisible(false);
+		topLeft.add(new Desc(tr("main_market"), marketComboBox));
+		topLeft.add(new Desc("  ", removeTokenButton));		
+		topLeft.add(tokenDesc = new Desc(tr("main_balance", token), balanceLabelToken, balanceLabelTokenPending));
+		topLeft.add(new Desc("  ", sendButtonToken));
+		
+		topLeft.add(priceDesc);
+		
+		topLeft.add(new Desc(tr("book_filtering"), listOnlyMine));
+		listOnlyMine.setFont(largeFont);
+				
+		tokenIdButton = new ExplorerButton("", icons.get(Icons.COPY), icons.get(Icons.EXPLORER));
 
 		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		top.add(topRight, BorderLayout.LINE_END);
-		topRight.add(tokenIdButton);
-		topRight.add(new SocialButton(SocialButton.Type.TWITTER, tableBid.getForeground()));
+		topRight.add(new Desc(tr("main_token_id"), tokenIdButton));
+		topRight.add(new Desc(" ", new SocialButton(SocialButton.Type.TWITTER, tableBid.getForeground())));
 //		topRight.add(new SocialButton(SocialButton.Type.INSTAGRAM, table.getForeground()));
 //		topRight.add(new SocialButton(SocialButton.Type.FACEBOOK, table.getForeground()));
 //		topRight.add(new SocialButton(SocialButton.Type.GOOGLE_PLUS, table.getForeground()));
 
-		buyButton.setBackground(HistoryPanel.GREEN);
-		sellButton.setBackground(HistoryPanel.RED);
-		buyButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
-				JDialog dlg = market.getTokenID()!= null ? new PlaceTokenOrderDialog(f, market, firstAsk):
-						new PlaceOrderDialog(f, market, null, true);
-				dlg.setLocationRelativeTo(OrderBook.this);
-				dlg.setVisible(true);
-			}
-		});
-		sellButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				JFrame f = (JFrame) SwingUtilities.getRoot(OrderBook.this);
-				JDialog dlg = market.getTokenID()!= null ? new PlaceTokenOrderDialog(f, market, firstBid)
-						: new PlaceOrderDialog(f, market, null, false);
-
-				dlg.setLocationRelativeTo(OrderBook.this);
-				dlg.setVisible(true);
-			}
-		});
-
+		JTabbedPane tabbedPane = new JTabbedPane();
+		tabbedPane.setOpaque(true);
+		tabbedPane.setFont(largeFont);
+		
 		add(top, BorderLayout.PAGE_START);
 
 		JPanel tablesPanel = new JPanel(new GridLayout(0,2));
 		tablesPanel.add(scrollPaneBid);
 		tablesPanel.add(scrollPaneAsk);
-		add(tablesPanel, BorderLayout.CENTER);
+		add(tabbedPane, BorderLayout.CENTER);
+		
+		tabbedPane.addTab(tr("main_order_book"), icons.get(Icons.ORDER_BOOK), tablesPanel);
+		tabbedPane.addTab(tr("main_trade_history"), icons.get(Icons.TRADE), historyPanel);
 
 		market = null;
-		setMarket(m);
+		setMarket(marketComboBox.getItemAt(0));
 	}
 
 	public void setMarket(Market m) {
 		logger.debug("Market {} set", m.toString());
 		newMarket = m;
-		tokenIdButton.setVisible(m.getTokenID()!=null);
-		if(m.getTokenID()!=null) {
-			tokenIdButton.getMainButton().setText(tr("main_token_id", m.toString(), m.getTokenID().getID()));
-			tokenIdButton.setTokenID(m.getTokenID().getID());
-		}
+		tokenIdButton.getMainButton().setText(m.getTokenID().getID());
+		tokenIdButton.setTokenID(m.getTokenID().getID());
+		
+		historyPanel.setMarket(m);
+		
+		update();
 	}
 
 	public void setLastPrice(String price, Icon icon, Color color) {
@@ -225,11 +284,6 @@ public class OrderBook extends JPanel {
 			modelAsk.setRowCount(0);
 			modelAsk.fireTableDataChanged();
 
-			if(market.getTokenID() != null) {
-				buyButton.setText(tr("book_buy_button", market));
-				sellButton.setText(tr("book_sell_button", market));
-			}
-
 			// update the column headers
 			for (int c = 0; c < OrderBookSettings.columnNames.length; c++) {
 				tableBid.getColumnModel().getColumn(c).setHeaderValue(modelBid.getColumnName(c));
@@ -238,12 +292,37 @@ public class OrderBook extends JPanel {
 			tableBid.getTableHeader().repaint();
 			tableAsk.getTableHeader().repaint();
 		}
+		
+		BurstNode bn = BurstNode.getInstance();
+		Market tokenMarket = token;
+		Market m = (Market) marketComboBox.getSelectedItem();
+		if(m.getTokenID()!=null && m!=token)
+			tokenMarket = m;
+		AssetBalance tokenBalanceAccount = bn.getAssetBalances(tokenMarket);
 
-		if(market.getTokenID()==null) {
-			updateContracts();
+		long tokenBalance = 0;
+		long tokenLocked = 0;
+		if (tokenBalanceAccount != null) {
+			tokenBalance += tokenBalanceAccount.getBalance().longValue();
 		}
-		else
-			updateOrders();
+
+		Globals g = Globals.getInstance();
+		AssetOrder[] asks = bn.getAssetAsks(tokenMarket);
+		if(asks == null)
+			return;
+		for(AssetOrder o : asks) {
+			if(!o.getAccountAddress().equals(g.getAddress()))
+				continue;
+			tokenLocked += o.getQuantity().longValue();
+		}
+		tokenBalance -= tokenLocked;
+
+		balanceLabelToken.setText(tokenMarket.format(tokenBalance));
+		balanceLabelTokenPending.setText(tr("main_plus_locked", tokenMarket.format(tokenLocked)));
+
+		updateOrders();
+		
+		historyPanel.update();
 	}
 
 	private void updateOrders() {
@@ -344,23 +423,41 @@ public class OrderBook extends JPanel {
 				return cmp;
 			}
 		});
+		
+		firstBid = firstAsk = null;
+		for (AssetOrder o : bidOrders) {
+			if(o.getAssetId()!=null) {
+				firstBid = o;
+				break;
+			}
+		}
+		for (AssetOrder o : askOrders) {
+			if(o.getAssetId()!=null) {
+				firstAsk = o;
+				break;
+			}
+		}
 
-		firstBid = bidOrders.size() > 0 ? bidOrders.get(0) : null;
-		firstAsk = askOrders.size() > 0 ? askOrders.get(0) : null;
+		modelBid.setRowCount(bidOrders.size()+1);
+		modelAsk.setRowCount(askOrders.size()+1);
 
-		modelBid.setRowCount(bidOrders.size());
-		modelAsk.setRowCount(askOrders.size());
-
-		addOrders(modelBid, bidOrders, OrderBookSettings.BID_COLS);
-		addOrders(modelAsk, askOrders, OrderBookSettings.ASK_COLS);
+		addOrders(modelBid, bidOrders, OrderBookSettings.BID_COLS, false);
+		addOrders(modelAsk, askOrders, OrderBookSettings.ASK_COLS, true);
 	}
 
-	private void addOrders(DefaultTableModel model, ArrayList<AssetOrder> orders, int[] cols) {
+	private void addOrders(DefaultTableModel model, ArrayList<AssetOrder> orders, int[] cols, boolean ask) {
 		Globals g = Globals.getInstance();
 		pendingIconRotating.clearCells(model);
 		int row = 0;
-		for (; row < orders.size(); row++) {
-			AssetOrder o = orders.get(row);
+		
+		// Add the "make" buttons
+		JButton newOffer = new ActionButton(this, market, tr("book_make_offer"),
+				(ask ? firstBid : firstAsk), ask, false);
+		newOffer.setBackground(ask ? HistoryPanel.RED : HistoryPanel.GREEN);
+		model.setValueAt(newOffer, row++, cols[OrderBookSettings.COL_PRICE]);
+		
+		for (int i = 0; i < orders.size(); i++, row++) {
+			AssetOrder o = orders.get(i);
 
 			// price always come in Burst, so no problem in this division using long's
 			long price = o.getPrice().longValue();
@@ -370,9 +467,9 @@ public class OrderBook extends JPanel {
 				continue;
 
 			String priceFormated = NumberFormatting.BURST.format(price*market.getFactor());
-			JButton b = new ActionButton(this, priceFormated, o, false);
+			JButton b = new ActionButton(this, market, priceFormated, o, !ask, false);
 			if(o.getAccountAddress().equals(g.getAddress()) && o.getAssetId() != null) {
-				b = new ActionButton(this, priceFormated, o, true);
+				b = new ActionButton(this, market, priceFormated, o, true);
 				b.setIcon(cancelIcon);
 			}
 			if(o.getId() == null || o.getAssetId() == null) {
@@ -387,9 +484,9 @@ public class OrderBook extends JPanel {
 
 			ExplorerButton exp = null;
 			if(o.getId()!=null) {
-				exp = new ExplorerButton(o.getId().getID(), copyIcon, expIcon, BUTTON_EDITOR);
+				exp = new ExplorerButton(o.getId().getID(), copyIcon, expIcon);
 				if(o.getAccountAddress().equals(g.getAddress()) && o.getAssetId() != null) {
-					JButton cancel = new ActionButton(this, "", o, true);
+					JButton cancel = new ActionButton(this, market, "", o, true);
 					cancel.setIcon(cancelIcon);
 					exp.add(cancel, BorderLayout.WEST);
 				}
@@ -398,166 +495,98 @@ public class OrderBook extends JPanel {
 		}
 	}
 
-	private void updateContracts() {
-		Globals g = Globals.getInstance();
-
-		buyButton.setText(tr("book_buy_button", "BURST"));
-		sellButton.setText(tr("book_sell_button", "BURST"));
-		if(Contracts.getFreeBuyContract()==null || Contracts.getFreeContract()==null) {
-			// check for the pending transaction to see if we are waiting for the contract
-			Transaction[] utx = BurstNode.getInstance().getUnconfirmedTransactions();
-			for (Transaction tx : utx) {
-				if(tx.getSender().equals(g.getAddress()) && tx.getType() == 22 && tx.getSubtype() == 0) {
-					// this is a SC create transaction
-					if(Contracts.getFreeBuyContract() == null)
-						buyButton.setText(tr("book_pending_contract"));
-					if(Contracts.getFreeContract() == null)
-						sellButton.setText(tr("book_pending_contract"));
-				}
-			}
-		}
-
-		Collection<ContractState> allContracts = Contracts.getContracts();
-		contracts.clear();
-		contractsBuy.clear();
-		boolean onlyMine = listOnlyMine.isSelected();
-
-		for(ContractState s : allContracts) {
-			if(s.getType() == ContractType.INVALID)
-				continue;
-
-			// add your own contracts (so you can withdraw no matter what)
-			// this should never happen on normal circumstances
-			if(s.getCreator().equals(g.getAddress()) && s.getBalance().longValue() > 0L && s.getMarket() == 0L) {
-				if(s.getType() == ContractType.SELL)
-					contracts.add(s);
-				else if(s.getType() == ContractType.BUY)
-					contractsBuy.add(s);
-				continue;
-			}
-
-			if(!s.getCreator().equals(g.getAddress()) && (s.getAmountNQT() < Constants.MIN_OFFER || s.getAmountNQT() > Constants.MAX_OFFER))
-				continue;
-
-			// only contracts for this market
-			if(s.getMarket() != market.getID() || !g.getMediators().areMediatorsAccepted(s))
-				continue;
-
-			if(onlyMine && !s.getCreator().equals(g.getAddress()) && s.getTaker()!=g.getAddress().getSignedLongId())
-				continue;
-
-			// FIXME: add more validity tests here
-			if(s.hasPending() ||
-					s.getAmountNQT() > 0 && s.getBalance().longValue() + s.getActivationFee() > s.getSecurityNQT() &&
-					s.getRate() > 0 && (s.getMarketAccount() != null || s.getType() == ContractType.BUY) &&
-					(s.getState() == SellContract.STATE_OPEN
-					|| (s.getState()!= SellContract.STATE_FINISHED && s.getTaker() == g.getAddress().getSignedLongId())
-					|| (s.getState()!= SellContract.STATE_FINISHED && s.getCreator().equals(g.getAddress())) ) ) {
-				if(s.getType() == ContractType.BUY)
-					contractsBuy.add(s);
-				else
-					contracts.add(s);
-			}
-		}
-
-		// sort by rate
-		contracts.sort(new Comparator<ContractState>() {
-			@Override
-			public int compare(ContractState o1, ContractState o2) {
-				int cmp = (int)(o1.getRate() - o2.getRate());
-				if(cmp == 0)
-					cmp = (int)(o1.getSecurityNQT() - o2.getSecurityNQT());
-				return cmp;
-			}
-		});
-		contractsBuy.sort(new Comparator<ContractState>() {
-			@Override
-			public int compare(ContractState o1, ContractState o2) {
-				int cmp = (int)(o2.getRate() - o1.getRate());
-				if(cmp == 0)
-					cmp = (int)(o1.getSecurityNQT() - o2.getSecurityNQT());
-				return cmp;
-			}
-		});
-
-		modelAsk.setRowCount(contracts.size());
-		modelBid.setRowCount(contractsBuy.size());
-		addContracts(modelAsk, contracts, OrderBookSettings.ASK_COLS);
-		addContracts(modelBid, contractsBuy, OrderBookSettings.BID_COLS);
-	}
-
-	private void addContracts(DefaultTableModel model, ArrayList<ContractState> contracts, int []cols) {
-		Globals g = Globals.getInstance();
-		pendingIconRotating.clearCells(model);
-
-		// Update the contents
-		int row = 0;
-		for (; row < contracts.size(); row++) {
-			ContractState s = contracts.get(row);
-
-			String priceFormated = market.format(s.getRate());
-			Icon icon = s.getCreator().equals(g.getAddress()) ? editIcon : null; // takeIcon;
-			JButton b = new ActionButton(this,"", s, false);
-			if(s.hasPending()) {
-				if(s.getRate() == 0)
-					priceFormated = tr("book_pending_button");
-				icon = pendingIconRotating;
-				pendingIconRotating.addCell(model, row, cols[OrderBookSettings.COL_PRICE]);
-			}
-			else if(s.getState() > SellContract.STATE_DISPUTE &&
-					(s.getTaker() == g.getAddress().getSignedLongId() || s.getCreator().equals(g.getAddress()))){
-				priceFormated = tr("book_dispute_button");
-				icon = null;
-			}
-			else if(s.getTaker() == g.getAddress().getSignedLongId() && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
-				priceFormated = tr(s.getType() == ContractType.BUY ? "book_confirm_dispute_button" : "book_deposit_dispute_button");
-				icon = null;
-			}
-			else if(s.getCreator().equals(g.getAddress()) && s.hasStateFlag(SellContract.STATE_WAITING_PAYMT)) {
-				priceFormated = tr(s.getType() == ContractType.BUY ? "book_deposit_dispute_button" : "book_confirm_dispute_button");
-				icon = null;
-			}
-			b.setText(priceFormated);
-			b.setIcon(icon);
-			b.setBackground(s.getType() == ContractType.BUY ? HistoryPanel.GREEN : HistoryPanel.RED);
-			model.setValueAt(b, row, cols[OrderBookSettings.COL_PRICE]);
-
-			if(s.getSecurityNQT() > 0 && s.getAmountNQT() > 0 && s.getRate() > 0 &&
-					s.getState() >= SellContract.STATE_OPEN) {
-				long securityPercent = s.getSecurityNQT()*100L / s.getAmountNQT();
-				String sizeString = s.getAmount() + " (" + securityPercent + "%)";
-
-				model.setValueAt(sizeString, row, cols[OrderBookSettings.COL_SIZE]);
-				double amount = ((double)s.getRate())*s.getAmountNQT();
-				amount /= Contract.ONE_BURST;
-				model.setValueAt(market.format((long)amount), row, cols[OrderBookSettings.COL_TOTAL]);
-			}
-			else {
-				model.setValueAt(null, row, cols[OrderBookSettings.COL_SIZE]);
-				model.setValueAt(null, row, cols[OrderBookSettings.COL_TOTAL]);
-			}
-
-			ExplorerButton exp = new ExplorerButton(s.getAddress().getRawAddress(), copyIcon, expIcon,
-					ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(), s.getAddress().getFullAddress(), BUTTON_EDITOR);
-			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId()
-					&& s.getBalance().longValue() > 0 && s.getState() < SellContract.STATE_WAITING_PAYMT
-					&& !s.hasPending()) {
-				ActionButton withDrawButton = new ActionButton(this,"", s, true);
-				withDrawButton.setToolTipText(tr("book_withdraw"));
-				withDrawButton.setIcon(cancelIcon);
-				exp.add(withDrawButton, BorderLayout.WEST);
-			}
-			model.setValueAt(exp, row, cols[OrderBookSettings.COL_CONTRACT]);
-
-			//			model.setValueAt(new ExplorerButton(
-			//					s.getCreator().getSignedLongId()==g.getAddress().getSignedLongId() ? "YOU" : s.getCreator().getRawAddress(), copyIcon, expIcon,
-			//					ExplorerButton.TYPE_ADDRESS, s.getCreator().getID(), s.getCreator().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_ACCOUNT);
-
-			//			model.setValueAt(s.getSecurity(), row, COL_SECURITY);
-		}
-	}
-
 	public Market getMarket() {
 		return market;
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		Market m = (Market) marketComboBox.getSelectedItem();
+
+		if (e.getSource() == marketComboBox) {
+			if(m == addMarketDummy) {
+				String response = JOptionPane.showInputDialog(this, tr("main_add_token_message"),
+						tr("main_add_token"), JOptionPane.OK_CANCEL_OPTION);
+				if(response != null) {
+					MarketBurstToken newMarket = new MarketBurstToken(response, Globals.getInstance().getNS());
+					if(newMarket.getFactor() != 0) {
+						addMarket(newMarket);
+						return;
+					}
+					else {
+						Toast.makeText((JFrame) SwingUtilities.getWindowAncestor(this),
+								tr("main_add_token_invalid", response), Toast.Style.ERROR).display();
+					}
+				}
+
+				marketComboBox.setSelectedIndex(0);
+				return;
+			}
+			if(m == newMarketDummy) {
+				CreateTokenDialog dlg = new CreateTokenDialog(this);
+				dlg.setLocationRelativeTo(this);
+				dlg.setVisible(true);
+
+				if(dlg.getReturnValue() == JOptionPane.CANCEL_OPTION)
+					marketComboBox.setSelectedIndex(0);
+				return;
+			}
+
+			setMarket(m);
+			historyPanel.setMarket(m);
+			// this is a custom token
+			removeTokenButton.setVisible(Markets.getUserMarkets().contains(m));
+
+			if(m.getTokenID() == null) {
+				// not a token market, show TRT in the token field
+				tokenDesc.setDesc(tr("main_balance", token));
+			}
+			else {
+				// this is a token market, show it on the token field
+				tokenDesc.setDesc(tr("main_balance", m));
+				balanceLabelToken.setText(m.format(0));
+				balanceLabelTokenPending.setText(" ");
+				sendButtonToken.setToolTipText(tr("main_send", m.toString()));
+			}
+
+			update();
+		}
+		else if (e.getSource() == sendButtonToken) {
+			SendDialog dlg = new SendDialog((JFrame) SwingUtilities.getWindowAncestor(this),
+					m.getTokenID()==null ? token : m);
+
+			dlg.setLocationRelativeTo(this);
+			dlg.setVisible(true);
+		}
+		else if(e.getSource() == removeTokenButton) {
+			int response = JOptionPane.showConfirmDialog(this, tr("main_remove_token_message", m.toString()),
+					tr("main_remove_token"), JOptionPane.YES_NO_OPTION);
+			if(response == JOptionPane.YES_OPTION) {
+				marketComboBox.setSelectedIndex(0);
+
+				marketComboBox.removeItem(m);
+				Globals.getInstance().removeUserMarket(m, true);
+				BurstNode.getInstance().update();
+				return;
+			}
+		}
+	}
+	
+	public void addMarket(MarketBurstToken newMarket) {
+		int index = 0;
+		for (; index < marketComboBox.getItemCount(); index++) {
+			if(marketComboBox.getItemAt(index).getTokenID() == null)
+				break;
+		}
+		// Insert as the latest token
+		marketComboBox.insertItemAt(newMarket, index);
+
+		Globals.getInstance().addUserMarket(newMarket, true);
+		BurstNode.getInstance().update();
+
+		marketComboBox.setSelectedItem(newMarket);
+		setMarket(newMarket);
+		Toast.makeText((JFrame) SwingUtilities.getWindowAncestor(this),
+				tr("main_add_token_success", newMarket.getTokenID().getID()), Toast.Style.SUCCESS).display();
 	}
 }

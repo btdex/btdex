@@ -295,8 +295,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if(contract!=null && (contract.getState() > SellContract.STATE_DISPUTE) ||
-					(contract.getState() > SellContract.STATE_OPEN && isMediator) ) {
+			if(contract!=null && (contract.getState() > SellContract.STATE_DISPUTE ||
+					contract.getState() > SellContract.STATE_OPEN && isMediator) ) {
 				DisputeDialog dispute = new DisputeDialog(this.getOwner(), market, contract);
 				dispute.setLocationRelativeTo(this);
 				dispute.setVisible(true);
@@ -311,14 +311,14 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				contract = isBuy ? Contracts.getFreeBuyContract() : Contracts.getFreeContract();
 			if(contract == null) {
 				int ret = JOptionPane.showConfirmDialog(getParent(),
-						tr("offer_no_contract_available"),
+						tr("offer_no_contract_available", tr(isBuy ? "book_buy_button" : "book_sell_button", Constants.BURST_TICKER)),
 						tr("reg_register"), JOptionPane.YES_NO_OPTION);
 				if(ret == JOptionPane.YES_OPTION) {
 					// No available contract, show the option to register a contract first
 					RegisterContractDialog dlg = new RegisterContractDialog(getOwner(), isBuy);
 					dlg.setLocationRelativeTo(getOwner());
 					dlg.setVisible(true);
-				}			
+				}
 				return;
 			}
 		}

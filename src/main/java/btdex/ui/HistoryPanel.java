@@ -2,11 +2,11 @@ package btdex.ui;
 
 import static btdex.locale.Translation.tr;
 
-import java.awt.Font;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -27,8 +26,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
-import btdex.core.*;
-import btdex.ui.orderbook.OrderBook;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -38,6 +35,15 @@ import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.data.xy.DefaultOHLCDataset;
 import org.jfree.data.xy.OHLCDataItem;
 
+import btdex.core.BurstNode;
+import btdex.core.Constants;
+import btdex.core.ContractTrade;
+import btdex.core.ContractType;
+import btdex.core.Contracts;
+import btdex.core.Globals;
+import btdex.core.Market;
+import btdex.core.NumberFormatting;
+import btdex.ui.orderbook.BookTable;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.response.AssetTrade;
 import jiconfont.icons.font_awesome.FontAwesome;
@@ -50,9 +56,6 @@ public class HistoryPanel extends JPanel {
 	JTable table;
 	DefaultTableModel model;
 	Icon copyIcon, expIcon, upIcon, downIcon;
-	JCheckBox listOnlyMine;
-	JLabel lastPrice;
-	private OrderBook book;
 	
 	private JToggleButton timeButtons[];
 
@@ -85,6 +88,10 @@ public class HistoryPanel extends JPanel {
 
 	private ExplorerButton tokenIdButton;
 
+	private Desc lastPrice;
+
+	private boolean onlyMine;
+
 	class MyTableModel extends DefaultTableModel {
 		private static final long serialVersionUID = 1L;
 
@@ -114,45 +121,29 @@ public class HistoryPanel extends JPanel {
 		}
 	}
 
-	public HistoryPanel(Main main, Market market, OrderBook book) {
+	public HistoryPanel(Main main, Market market, Desc lastPrice) {
 		super(new BorderLayout());
 
-		this.book = book;
+		this.lastPrice = lastPrice;
 		
 		JPanel top = new JPanel(new BorderLayout());
-		JPanel topLeft = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		top.add(topLeft, BorderLayout.LINE_START);
-		topLeft.add(lastPrice = new JLabel());
-		lastPrice.setToolTipText(tr("book_last_price"));
-		topLeft.add(listOnlyMine = new JCheckBox(tr("hist_list_mine_only")));
-		listOnlyMine.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				main.update();
-			}
-		});
 
 		table = new JTable(model = new MyTableModel());
 		table.setRowSelectionAllowed(false);
 		table.getTableHeader().setReorderingAllowed(false);
 		table.setRowHeight(table.getRowHeight()+10);
-		table.setPreferredScrollableViewportSize(new Dimension(200, 200));
+		table.setPreferredScrollableViewportSize(new Dimension(200, 120));
 
 		copyIcon = IconFontSwing.buildIcon(Icons.COPY, Constants.ICON_SIZE_SMALL, table.getForeground());
 		expIcon = IconFontSwing.buildIcon(Icons.EXPLORER, Constants.ICON_SIZE_SMALL, table.getForeground());
 		
-		upIcon = IconFontSwing.buildIcon(Icons.UP, Constants.ICON_SIZE_MED, HistoryPanel.GREEN);
-		downIcon = IconFontSwing.buildIcon(Icons.DOWN, Constants.ICON_SIZE_MED, HistoryPanel.RED);
+		upIcon = IconFontSwing.buildIcon(Icons.UP, Constants.ICON_SIZE, HistoryPanel.GREEN);
+		downIcon = IconFontSwing.buildIcon(Icons.DOWN, Constants.ICON_SIZE, HistoryPanel.RED);
 		
 		tokenIdButton = new ExplorerButton("", IconFontSwing.buildIcon(Icons.COPY, Constants.ICON_SIZE_MED, table.getForeground()),
 				IconFontSwing.buildIcon(FontAwesome.EXTERNAL_LINK, Constants.ICON_SIZE_MED, table.getForeground()));
 		tokenIdButton.setVisible(false);
 		
-		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-		top.add(topRight, BorderLayout.LINE_END);
-		topRight.add(tokenIdButton);
-		topRight.add(new SocialButton(SocialButton.Type.TWITTER, table.getForeground()));
-
 		timeButtons = new JToggleButton[4];
 		timeButtons[0] = new JToggleButton(tr("hist_1hour"));
 		timeButtons[1] = new JToggleButton(tr("hist_4hours"));
@@ -223,12 +214,12 @@ public class HistoryPanel extends JPanel {
 
 		table.setAutoCreateColumnsFromModel(false);
 
-		table.getColumnModel().getColumn(COL_CONTRACT).setCellRenderer(OrderBook.BUTTON_RENDERER);
-		table.getColumnModel().getColumn(COL_CONTRACT).setCellEditor(OrderBook.BUTTON_EDITOR);
-		table.getColumnModel().getColumn(COL_BUYER).setCellRenderer(OrderBook.BUTTON_RENDERER);
-		table.getColumnModel().getColumn(COL_BUYER).setCellEditor(OrderBook.BUTTON_EDITOR);
-		table.getColumnModel().getColumn(COL_SELLER).setCellRenderer(OrderBook.BUTTON_RENDERER);
-		table.getColumnModel().getColumn(COL_SELLER).setCellEditor(OrderBook.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_CONTRACT).setCellRenderer(BookTable.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_CONTRACT).setCellEditor(BookTable.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_BUYER).setCellRenderer(BookTable.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_BUYER).setCellEditor(BookTable.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_SELLER).setCellRenderer(BookTable.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_SELLER).setCellEditor(BookTable.BUTTON_EDITOR);
 		//
 		table.getColumnModel().getColumn(COL_TIME).setPreferredWidth(120);
 		table.getColumnModel().getColumn(COL_CONTRACT).setPreferredWidth(200);
@@ -236,8 +227,8 @@ public class HistoryPanel extends JPanel {
 		table.getColumnModel().getColumn(COL_SELLER).setPreferredWidth(200);
 
 		add(top, BorderLayout.PAGE_START);
-		add(scrollPane, BorderLayout.CENTER);
-		add(chartPanel, BorderLayout.PAGE_END);
+		add(scrollPane, BorderLayout.PAGE_END);
+		add(chartPanel, BorderLayout.CENTER);
 	}
 
 	public void setMarket(Market m) {
@@ -267,11 +258,14 @@ public class HistoryPanel extends JPanel {
 		
 		model.fireTableDataChanged();
 	}
+	
+	public void setFilter(boolean onlyMine) {
+		this.onlyMine  = onlyMine;
+	}
 
 	private void updateToken() {
 		Globals g = Globals.getInstance();
 		BurstNode bn = BurstNode.getInstance();
-		boolean myHistory = listOnlyMine.isSelected();
 
 		AssetTrade trs[] = bn.getAssetTrades(market);
 		
@@ -282,16 +276,15 @@ public class HistoryPanel extends JPanel {
 
 		if(lastTrade != null) {
 			// set the last price label
-			String priceLabel = NumberFormatting.BURST.format(lastTrade.getPrice().longValue()*market.getFactor()) + " BURST";
-			lastPrice.setText(priceLabel);
-			lastPrice.setIcon(lastIsUp ? upIcon : downIcon);
-			lastPrice.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
-			book.setLastPrice(lastPrice.getText(), lastPrice.getIcon(), lastPrice.getForeground());
+			String priceText = NumberFormatting.BURST.format(lastTrade.getPrice().longValue()*market.getFactor()) + " BURST";
+			JLabel priceLabel = (JLabel) lastPrice.getChild();
+			lastPrice.setVisible(true);
+			priceLabel.setText(priceText);
+			priceLabel.setIcon(lastIsUp ? upIcon : downIcon);
+			priceLabel.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
 		}
 		else {
-			lastPrice.setText("");
-			lastPrice.setIcon(null);
-			book.setLastPrice(lastPrice.getText(), lastPrice.getIcon(), lastPrice.getForeground());			
+			lastPrice.setVisible(false);
 		}
 
 		if(trs == null) {
@@ -305,7 +298,7 @@ public class HistoryPanel extends JPanel {
 		int maxLines = Math.min(200, trs == null ? 0 : trs.length);
 		for (int i = 0; i < maxLines; i++) {
 			AssetTrade tr = trs[i];
-			if(myHistory &&
+			if(onlyMine &&
 					tr.getBuyerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
 					tr.getSellerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
 				continue;
@@ -317,7 +310,7 @@ public class HistoryPanel extends JPanel {
 		// Update the contents
 		for (int row = 0, i=0; i < maxLines; i++) {
 			AssetTrade tr = trs[i];
-			if(myHistory &&
+			if(onlyMine &&
 					tr.getBuyerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
 					tr.getSellerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
 				continue;
@@ -327,13 +320,13 @@ public class HistoryPanel extends JPanel {
 			
 			model.setValueAt(new ExplorerButton(
 					tr.getBuyerAddress().equals(g.getAddress()) ? tr("hist_you") : tr.getBuyerAddress().getRawAddress(), copyIcon, expIcon,
-							ExplorerButton.TYPE_ADDRESS, tr.getBuyerAddress().getID(), tr.getBuyerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
+							ExplorerButton.TYPE_ADDRESS, tr.getBuyerAddress().getID(), tr.getBuyerAddress().getFullAddress()), row, COL_BUYER);
 			model.setValueAt(new ExplorerButton(
 					tr.getSellerAddress().equals(g.getAddress()) ? tr("hist_you") : tr.getSellerAddress().getRawAddress(), copyIcon, expIcon,
-							ExplorerButton.TYPE_ADDRESS, tr.getSellerAddress().getID(), tr.getSellerAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
+							ExplorerButton.TYPE_ADDRESS, tr.getSellerAddress().getID(), tr.getSellerAddress().getFullAddress()), row, COL_SELLER);
 			
 			// TODO: check if ask or bid was more recent to add one here (missing burstkit4j function for this)
-			model.setValueAt(new ExplorerButton(tr.getAskOrderId().getID(), copyIcon, expIcon, OrderBook.BUTTON_EDITOR), row, COL_CONTRACT);
+			model.setValueAt(new ExplorerButton(tr.getAskOrderId().getID(), copyIcon, expIcon), row, COL_CONTRACT);
 
 			model.setValueAt(NumberFormatting.BURST.format(price*market.getFactor()), row, COL_PRICE);
 			model.setValueAt(market.format(amount), row, COL_AMOUNT);
@@ -400,7 +393,6 @@ public class HistoryPanel extends JPanel {
 
 	private void updateContract() {
 		Globals g = Globals.getInstance();
-		boolean myHistory = listOnlyMine.isSelected();
 
 		ArrayList<ContractTrade> trades = new ArrayList<>();
 		// build the trade list for this market
@@ -418,23 +410,22 @@ public class HistoryPanel extends JPanel {
 
 		if(lastTrade != null) {
 			// set the last price label
-			String priceLabel = market.getNumberFormat().format(lastTrade.getRate()) + " " + market;
-			lastPrice.setText(priceLabel);
-			lastPrice.setIcon(lastIsUp ? upIcon : downIcon);
-			lastPrice.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
-			book.setLastPrice(lastPrice.getText(), lastPrice.getIcon(), lastPrice.getForeground());
+			String priceText = market.getNumberFormat().format(lastTrade.getRate()) + " " + market;
+			JLabel priceLabel = (JLabel) lastPrice.getChild();
+			lastPrice.setVisible(true);
+			priceLabel.setText(priceText);
+			priceLabel.setIcon(lastIsUp ? upIcon : downIcon);
+			priceLabel.setForeground(lastIsUp ? HistoryPanel.GREEN : HistoryPanel.RED);
 		}
 		else {
-			lastPrice.setText("");
-			lastPrice.setIcon(null);
-			book.setLastPrice(lastPrice.getText(), lastPrice.getIcon(), lastPrice.getForeground());			
+			lastPrice.setVisible(false);
 		}
 		
 		int maxLines = Math.min(200, trades.size());
-		int nLines = myHistory ? 0 : maxLines;
-		for (int i = 0; myHistory && i < maxLines; i++) {
+		int nLines = onlyMine ? 0 : maxLines;
+		for (int i = 0; onlyMine && i < maxLines; i++) {
 			ContractTrade tr = trades.get(i);
-			if(myHistory && !tr.getCreator().equals(g.getAddress()) && !tr.getTaker().equals(g.getAddress()))
+			if(onlyMine && !tr.getCreator().equals(g.getAddress()) && !tr.getTaker().equals(g.getAddress()))
 				continue;
 			nLines++;
 		}
@@ -444,7 +435,7 @@ public class HistoryPanel extends JPanel {
 		// Update the contents
 		for (int row = 0, i=0; i < maxLines; i++) {
 			ContractTrade tr = trades.get(i);
-			if(myHistory && !tr.getCreator().equals(g.getAddress()) && !tr.getTaker().equals(g.getAddress()))
+			if(onlyMine && !tr.getCreator().equals(g.getAddress()) && !tr.getTaker().equals(g.getAddress()))
 				continue;
 
 			long amount = tr.getAmount();
@@ -455,15 +446,15 @@ public class HistoryPanel extends JPanel {
 
 			model.setValueAt(new ExplorerButton(
 					buyer.equals(g.getAddress()) ? tr("hist_you") : buyer.getRawAddress(), copyIcon, expIcon,
-							ExplorerButton.TYPE_ADDRESS, buyer.getID(), buyer.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_BUYER);
+							ExplorerButton.TYPE_ADDRESS, buyer.getID(), buyer.getFullAddress()), row, COL_BUYER);
 			model.setValueAt(new ExplorerButton(
 					seller.equals(g.getAddress()) ? tr("hist_you") : seller.getRawAddress(), copyIcon, expIcon,
-							ExplorerButton.TYPE_ADDRESS, seller.getID(), seller.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_SELLER);
+							ExplorerButton.TYPE_ADDRESS, seller.getID(), seller.getFullAddress()), row, COL_SELLER);
 
 			model.setValueAt(new ExplorerButton(
 					tr.getContract().getAddress().getRawAddress(), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, tr.getContract().getAddress().getID(),
-							tr.getContract().getAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_CONTRACT);
+							tr.getContract().getAddress().getFullAddress()), row, COL_CONTRACT);
 
 			model.setValueAt(market.getNumberFormat().format(price), row, COL_PRICE);
 			model.setValueAt(NumberFormatting.BURST.format(amount), row, COL_AMOUNT);
