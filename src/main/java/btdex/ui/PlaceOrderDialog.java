@@ -318,7 +318,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					RegisterContractDialog dlg = new RegisterContractDialog(getOwner(), isBuy);
 					dlg.setLocationRelativeTo(getOwner());
 					dlg.setVisible(true);
-				}			
+				}
 				return;
 			}
 		}

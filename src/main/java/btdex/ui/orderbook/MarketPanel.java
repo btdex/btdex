@@ -17,13 +17,11 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -50,7 +48,6 @@ import btdex.ui.Icons;
 import btdex.ui.Main;
 import btdex.ui.RotatingIcon;
 import btdex.ui.SocialButton;
-import btdex.ui.Toast;
 import burst.kit.entity.response.Transaction;
 
 public class MarketPanel extends JPanel implements ActionListener {
@@ -355,6 +352,22 @@ public class MarketPanel extends JPanel implements ActionListener {
 		JButton newOffer = new ActionButton(this, market, tr("book_make_offer"),
 				null, null, isAsk, false, false);
 		newOffer.setBackground(isAsk ? HistoryPanel.RED : HistoryPanel.GREEN);
+		
+		ContractState freeContract = isAsk ? Contracts.getFreeContract() : Contracts.getFreeBuyContract();
+		if(freeContract == null) {
+			// check for the pending transaction to see if we are waiting for the contract
+			Transaction[] utx = BurstNode.getInstance().getUnconfirmedTransactions();
+			for (Transaction tx : utx) {
+				if(tx.getSender().equals(g.getAddress()) && tx.getType() == 22 && tx.getSubtype() == 0) {
+					newOffer.setText(tr("book_pending_contract"));
+				}
+			}
+		}
+		if(Contracts.isLoading()) {
+			newOffer.setText(tr("book_loading_button"));
+			newOffer.setIcon(pendingIconRotating);
+			pendingIconRotating.addCell(model, row, cols[OrderBookSettings.COL_PRICE]);
+		}
 		model.setValueAt(newOffer, row++, cols[OrderBookSettings.COL_PRICE]);
 		
 		for (int i = 0; i < contracts.size(); i++, row++) {
@@ -433,10 +446,6 @@ public class MarketPanel extends JPanel implements ActionListener {
 		if (e.getSource() == marketComboBox) {
 			setMarket(m);
 
-			if(Contracts.isLoading()) {
-				Toast.makeText((JFrame) SwingUtilities.getWindowAncestor(this),
-						tr("main_cross_chain_loading"), 8000, Toast.Style.NORMAL).display();
-			}
 			update();
 		}
 	}

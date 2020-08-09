@@ -35,7 +35,6 @@ import org.apache.logging.log4j.Logger;
 
 import btdex.core.BurstNode;
 import btdex.core.Constants;
-import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.Markets;
@@ -544,11 +543,6 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 			if(m.getTokenID() == null) {
 				// not a token market, show TRT in the token field
 				tokenDesc.setDesc(tr("main_balance", token));
-
-				if(Contracts.isLoading()) {
-					Toast.makeText((JFrame) SwingUtilities.getWindowAncestor(this),
-							tr("main_cross_chain_loading"), 8000, Toast.Style.NORMAL).display();
-				}
 			}
 			else {
 				// this is a token market, show it on the token field

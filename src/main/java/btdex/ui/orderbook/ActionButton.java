@@ -44,7 +44,7 @@ public class ActionButton extends JButton {
                 
                 if(!isToken && contract == null) {
                 	// new smart contract offer offer
-    				JDialog dlg = new PlaceOrderDialog(f, market, null, ask);
+    				JDialog dlg = new PlaceOrderDialog(f, market, null, !ask);
     				dlg.setLocationRelativeTo(panel);
     				dlg.setVisible(true);
     				return;
