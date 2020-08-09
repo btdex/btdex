@@ -311,7 +311,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				contract = isBuy ? Contracts.getFreeBuyContract() : Contracts.getFreeContract();
 			if(contract == null) {
 				int ret = JOptionPane.showConfirmDialog(getParent(),
-						tr("offer_no_contract_available"),
+						tr("offer_no_contract_available", tr(isBuy ? "book_buy_button" : "book_sell_button", Constants.BURST_TICKER)),
 						tr("reg_register"), JOptionPane.YES_NO_OPTION);
 				if(ret == JOptionPane.YES_OPTION) {
 					// No available contract, show the option to register a contract first
