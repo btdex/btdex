@@ -12,8 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
@@ -33,15 +32,17 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.google.common.io.Resources;
+
 import btdex.core.Globals;
 import btdex.ledger.LedgerService;
 import btdex.ledger.LedgerService.PubKeyCallBack;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
 import io.github.novacrypto.bip39.wordlists.English;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 	private static final long serialVersionUID = 1L;
@@ -218,7 +219,7 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 		if(e.getSource() == licenseButton) {
 			JTextArea licenseText = new JTextArea(20, 45);
 			try {
-				String content = new String(Files.readAllBytes(Paths.get("LICENSE")));
+				String content = Resources.toString(Resources.getResource("/license/LICENSE"), StandardCharsets.UTF_8);
 				licenseText.append(content);
 				licenseText.setCaretPosition(0);
 			} catch (IOException e1) {
