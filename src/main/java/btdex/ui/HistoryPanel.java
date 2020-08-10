@@ -20,6 +20,7 @@ import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -227,8 +228,9 @@ public class HistoryPanel extends JPanel {
 		table.getColumnModel().getColumn(COL_SELLER).setPreferredWidth(200);
 
 		add(top, BorderLayout.PAGE_START);
-		add(scrollPane, BorderLayout.PAGE_END);
-		add(chartPanel, BorderLayout.CENTER);
+		
+		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, chartPanel, scrollPane);		
+		add(splitPane, BorderLayout.CENTER);
 	}
 
 	public void setMarket(Market m) {
