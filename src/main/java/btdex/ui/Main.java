@@ -209,6 +209,7 @@ public class Main extends JFrame implements ActionListener {
 
 		tabbedPane.addTab(tr("main_swaps"), i.get(Icons.SWAPS), orderBookToken);
 		tabbedPane.addTab(tr("main_contracts"), i.get(Icons.CROSS_CHAIN), orderBook);
+		tabbedPane.addTab(tr("main_mining"), i.get(Icons.MINING), new MiningPanel());
 
 		boolean isMediator = g.getAddress()!=null && g.getMediators().isMediator(g.getAddress().getSignedLongId());
 

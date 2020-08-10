@@ -22,6 +22,9 @@ public class Icons {
     public static IconCode RECYCLE = FontAwesome.RECYCLE;
     public static IconCode GITHUB = FontAwesomeBrands.GITHUB;
     public static IconCode TRASH = FontAwesome.TRASH;
+    public static IconCode FOLDER = FontAwesome.FOLDER_OPEN;
+    public static IconCode HDD = FontAwesome.HDD_O;
+    public static IconCode MINING = FontAwesome.BRIEFCASE;
     public static IconCode CONNECTED = FontAwesome.WIFI;
     public static IconCode TESTNET = FontAwesome.FLASK;
     public static IconCode DISCONNECTED = FontAwesome.EXCLAMATION;
