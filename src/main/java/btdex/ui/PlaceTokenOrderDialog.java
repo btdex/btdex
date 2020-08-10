@@ -264,12 +264,10 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			e.printStackTrace();
 		}
 
-		boolean isSell = !isAsk;
-
 		StringBuilder terms = new StringBuilder();
 		terms.append(PlaceOrderDialog.HTML_STYLE);
 
-		terms.append("<h3>").append(tr("token_terms_brief", isSell ? tr("token_sell") : tr("token_buy"),
+		terms.append("<h3>").append(tr("token_terms_brief", isAsk ? tr("token_sell") : tr("token_buy"),
 				amountField.getText(), market, priceField.getText())).append("</h3>");
 		terms.append("<p>").append(tr("token_terms_details",
 				NumberFormatting.BURST.format(suggestedFee.longValue()))).append("</p>");
