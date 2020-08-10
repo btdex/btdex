@@ -11,10 +11,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -34,8 +36,6 @@ import javax.swing.border.EmptyBorder;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import com.google.common.io.Resources;
 
 import btdex.core.Globals;
 import btdex.ledger.LedgerService;
@@ -219,10 +219,13 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 		if(e.getSource() == licenseButton) {
 			JTextArea licenseText = new JTextArea(20, 45);
 			try {
-				String content = Resources.toString(Resources.getResource("/license/LICENSE"), StandardCharsets.UTF_8);
+				InputStream stream = Welcome.class.getResourceAsStream("/license/LICENSE");
+				
+				String content = new BufferedReader(new InputStreamReader(stream))
+				  .lines().collect(Collectors.joining("\n"));
 				licenseText.append(content);
 				licenseText.setCaretPosition(0);
-			} catch (IOException e1) {
+			} catch (Exception e1) {
 				logger.debug("Cannot read license file {}", e1.getLocalizedMessage());
 			}
 			JOptionPane.showMessageDialog(this, new JScrollPane(licenseText), tr("welc_license"), JOptionPane.WARNING_MESSAGE);
