@@ -298,7 +298,7 @@ public class ContractState {
 
 		Globals g = Globals.getInstance();
 		boolean hasPending = false;
-
+		
 		for(Transaction tx : txs) {
 			if(tx.getId().getSignedLongId() == lastTxId && takeBlock == 0)
 				break;
@@ -524,7 +524,7 @@ public class ContractState {
 	public int getATVersion() {
 		return at.getVersion();
 	}
-
+	
 	public long getDisputeAmount(boolean fromCreator, boolean toCreator) {
 		if(fromCreator)
 			return getContractFieldValue(toCreator ? "disputeCreatorAmountToCreator" : "disputeCreatorAmountToTaker");

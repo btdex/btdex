@@ -31,7 +31,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import bt.Contract;
-import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.ContractState;
 import btdex.core.ContractType;
@@ -48,7 +47,6 @@ import btdex.ui.Icons;
 import btdex.ui.Main;
 import btdex.ui.RotatingIcon;
 import btdex.ui.SocialButton;
-import burst.kit.entity.response.Transaction;
 
 public class MarketPanel extends JPanel implements ActionListener {
 
@@ -58,6 +56,7 @@ public class MarketPanel extends JPanel implements ActionListener {
 	private DefaultTableModel modelBid, modelAsk;
 	private Icon copyIcon, expIcon, cancelIcon, pendingIcon, editIcon;
 	private RotatingIcon pendingIconRotating;
+	private boolean registering;
 
 	private JComboBox<Market> marketComboBox;
 	private JCheckBox listOnlyMine;
@@ -256,20 +255,6 @@ public class MarketPanel extends JPanel implements ActionListener {
 	private void updateContracts() {
 		Globals g = Globals.getInstance();
 
-		if(Contracts.getFreeBuyContract()==null || Contracts.getFreeContract()==null) {
-			// check for the pending transaction to see if we are waiting for the contract
-			Transaction[] utx = BurstNode.getInstance().getUnconfirmedTransactions();
-			for (Transaction tx : utx) {
-				if(tx.getSender().equals(g.getAddress()) && tx.getType() == 22 && tx.getSubtype() == 0) {
-					// this is a SC create transaction
-//					if(Contracts.getFreeBuyContract() == null)
-//						buyButton.setText(tr("book_pending_contract"));
-//					if(Contracts.getFreeContract() == null)
-//						sellButton.setText(tr("book_pending_contract"));
-				}
-			}
-		}
-
 		Collection<ContractState> allContracts = Contracts.getContracts();
 		contracts.clear();
 		contractsBuy.clear();
@@ -352,14 +337,20 @@ public class MarketPanel extends JPanel implements ActionListener {
 		JButton newOffer = new ActionButton(this, market, tr("book_make_offer"),
 				null, null, isAsk, false, false);
 		newOffer.setBackground(isAsk ? HistoryPanel.RED : HistoryPanel.GREEN);
-		
+
 		ContractState freeContract = isAsk ? Contracts.getFreeContract() : Contracts.getFreeBuyContract();
+		// Flag as registering and turn back only when we have a free contract
+		if(Contracts.isRegistering())
+			registering = true;
+		if(freeContract != null)
+			registering = false;
+		
 		if(Contracts.isLoading()) {
 			newOffer.setText(tr("book_loading_button"));
 			newOffer.setIcon(pendingIconRotating);
 			pendingIconRotating.addCell(model, row, cols[OrderBookSettings.COL_PRICE]);
 		}
-		else if(freeContract == null && Contracts.isRegistering()) {
+		else if(registering) {
 			newOffer.setText(tr("book_registering"));
 			newOffer.setIcon(pendingIconRotating);
 			pendingIconRotating.addCell(model, row, cols[OrderBookSettings.COL_PRICE]);

@@ -208,7 +208,7 @@ public class Contracts {
 				tradeHistory.addAll(s.getTrades());
 			}
 			lastBlock = latestBlocks[0].getId();
-
+			
 			// now we sort the trades on time
 			tradeHistory.sort(new Comparator<ContractTrade>() {
 				@Override
