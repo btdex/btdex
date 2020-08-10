@@ -354,17 +354,13 @@ public class MarketPanel extends JPanel implements ActionListener {
 		newOffer.setBackground(isAsk ? HistoryPanel.RED : HistoryPanel.GREEN);
 		
 		ContractState freeContract = isAsk ? Contracts.getFreeContract() : Contracts.getFreeBuyContract();
-		if(freeContract == null) {
-			// check for the pending transaction to see if we are waiting for the contract
-			Transaction[] utx = BurstNode.getInstance().getUnconfirmedTransactions();
-			for (Transaction tx : utx) {
-				if(tx.getSender().equals(g.getAddress()) && tx.getType() == 22 && tx.getSubtype() == 0) {
-					newOffer.setText(tr("book_pending_contract"));
-				}
-			}
-		}
 		if(Contracts.isLoading()) {
 			newOffer.setText(tr("book_loading_button"));
+			newOffer.setIcon(pendingIconRotating);
+			pendingIconRotating.addCell(model, row, cols[OrderBookSettings.COL_PRICE]);
+		}
+		else if(freeContract == null && Contracts.isRegistering()) {
+			newOffer.setText(tr("book_registering"));
 			newOffer.setIcon(pendingIconRotating);
 			pendingIconRotating.addCell(model, row, cols[OrderBookSettings.COL_PRICE]);
 		}

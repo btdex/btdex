@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 
 import bt.compiler.Compiler;
@@ -20,9 +22,6 @@ import burst.kit.entity.response.AT;
 import burst.kit.entity.response.Block;
 import burst.kit.entity.response.Transaction;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class Contracts {
     private static Compiler compilerSell, compilerNoDeposit, compilerBuy;
 
@@ -33,6 +32,7 @@ public class Contracts {
 	private static BurstID mostRecentID;
 	private static BurstID lastBlock;
 	private static ContractState freeContract, freeNoDepositContract, freeBuyContract;
+	private static boolean registering;
 	
 	private static ArrayList<ContractTrade> trades = new ArrayList<>();
 
@@ -169,6 +169,15 @@ public class Contracts {
 
 			// check for the pending transactions
 			Transaction[] utxs = g.getNS().getUnconfirmedTransactions(g.getAddress()).blockingGet();
+			
+			boolean checkRegistering = false;
+			for (Transaction tx : utxs) {
+				if(tx.getSender().equals(g.getAddress()) && tx.getType() == 22 && tx.getSubtype() == 0) {
+					checkRegistering = true;
+					break;
+				}
+			}
+			registering = checkRegistering;
 
 			// build the trade history
 			ArrayList<ContractTrade> tradeHistory = new ArrayList<>();
@@ -231,6 +240,10 @@ public class Contracts {
 		data[2] = med[1].getSignedLongId();
 
 		return data;
+	}
+	
+	public static boolean isRegistering() {
+		return registering;
 	}
 
 	public static ContractState getFreeContract() {

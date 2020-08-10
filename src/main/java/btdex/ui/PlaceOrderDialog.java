@@ -282,6 +282,11 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						tr("offer_processing"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
+			if(Contracts.isRegistering()) {
+				JOptionPane.showMessageDialog(getParent(), tr("offer_wait_confirm"),
+						tr("offer_processing"), JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 			if(!isMediator && accountComboBox.getItemCount()==0 && (isBuy && isTake && !isTaken || !isBuy && !isTake)) {
 				JOptionPane.showMessageDialog(getParent(), tr("offer_register_account_first", market),
 						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
