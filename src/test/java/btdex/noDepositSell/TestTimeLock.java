@@ -1,21 +1,21 @@
 package btdex.noDepositSell;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+
 import bt.BT;
 import btdex.sc.SellContract;
 import btdex.sc.SellNoDepositContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;
-import burst.kit.service.BurstNodeService;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-
-import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 //This is long test, about 5 min
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -26,7 +26,6 @@ public class TestTimeLock {
     private static long state_chain;
     private static long state;
     private static String makerPass;
-    private static BurstNodeService bns = BT.getNode();
     private static int block = 4; //1 block 4 min
     private static int day = 360;
 

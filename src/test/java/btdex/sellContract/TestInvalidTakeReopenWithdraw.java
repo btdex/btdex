@@ -1,22 +1,23 @@
 package btdex.sellContract;
 
-import btdex.CreateSC;
-import burst.kit.service.BurstNodeService;
-import org.junit.jupiter.api.*;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import btdex.core.Mediators;
+import java.io.IOException;
+
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import bt.BT;
+import btdex.CreateSC;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;
-
-import java.io.IOException;
+import burst.kit.service.BurstNodeService;
 
 /**
  * We assume a localhost testnet with 0 seconds mock mining is available for the
