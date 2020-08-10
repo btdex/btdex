@@ -10,7 +10,7 @@ import monero.utils.MoneroUtils;
 
 public class MarketXMR extends MarketCrypto {
 	
-	public String toString() {
+	public String getTicker() {
 		return "XMR";
 	}
 	
@@ -18,7 +18,12 @@ public class MarketXMR extends MarketCrypto {
 	public long getID() {
 		return MARKET_XMR;
 	}
-	
+
+	@Override
+	public int getUCA_ID() {
+		return 328;
+	}
+
 	@Override
 	public void validate(HashMap<String, String> fields) throws Exception {
 		super.validate(fields);

@@ -31,7 +31,7 @@ import btdex.core.Markets;
 import btdex.core.NumberFormatting;
 import btdex.sc.SellContract;
 import btdex.ui.orderbook.ActionButton;
-import btdex.ui.orderbook.OrderBook;
+import btdex.ui.orderbook.BookTable;
 import burst.kit.entity.BurstAddress;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
@@ -130,14 +130,14 @@ public class MediationPanel extends JPanel {
 
 		table.setAutoCreateColumnsFromModel(false);
 
-		table.getColumnModel().getColumn(COL_CONTRACT).setCellRenderer(OrderBook.BUTTON_RENDERER);
-		table.getColumnModel().getColumn(COL_CONTRACT).setCellEditor(OrderBook.BUTTON_EDITOR);
-		table.getColumnModel().getColumn(COL_MAKER).setCellRenderer(OrderBook.BUTTON_RENDERER);
-		table.getColumnModel().getColumn(COL_MAKER).setCellEditor(OrderBook.BUTTON_EDITOR);
-		table.getColumnModel().getColumn(COL_TAKER).setCellRenderer(OrderBook.BUTTON_RENDERER);
-		table.getColumnModel().getColumn(COL_TAKER).setCellEditor(OrderBook.BUTTON_EDITOR);
-		table.getColumnModel().getColumn(COL_MEDIATE).setCellRenderer(OrderBook.BUTTON_RENDERER);
-		table.getColumnModel().getColumn(COL_MEDIATE).setCellEditor(OrderBook.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_CONTRACT).setCellRenderer(BookTable.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_CONTRACT).setCellEditor(BookTable.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_MAKER).setCellRenderer(BookTable.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_MAKER).setCellEditor(BookTable.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_TAKER).setCellRenderer(BookTable.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_TAKER).setCellEditor(BookTable.BUTTON_EDITOR);
+		table.getColumnModel().getColumn(COL_MEDIATE).setCellRenderer(BookTable.BUTTON_RENDERER);
+		table.getColumnModel().getColumn(COL_MEDIATE).setCellEditor(BookTable.BUTTON_EDITOR);
 		//
 		table.getColumnModel().getColumn(COL_CONTRACT).setPreferredWidth(200);
 		table.getColumnModel().getColumn(COL_MAKER).setPreferredWidth(200);
@@ -185,22 +185,22 @@ public class MediationPanel extends JPanel {
 			BurstAddress taker = BurstAddress.fromId(s.getTaker());
 
 			model.setValueAt(new ExplorerButton(maker.getRawAddress(), copyIcon, expIcon,
-							ExplorerButton.TYPE_ADDRESS, maker.getID(), maker.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_MAKER);
+							ExplorerButton.TYPE_ADDRESS, maker.getID(), maker.getFullAddress()), row, COL_MAKER);
 			model.setValueAt(new ExplorerButton(taker.getRawAddress(), copyIcon, expIcon,
-							ExplorerButton.TYPE_ADDRESS, taker.getID(), taker.getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_TAKER);
+							ExplorerButton.TYPE_ADDRESS, taker.getID(), taker.getFullAddress()), row, COL_TAKER);
 
 			model.setValueAt(new ExplorerButton(
 					s.getAddress().getRawAddress(), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(),
-							s.getAddress().getFullAddress(), OrderBook.BUTTON_EDITOR), row, COL_CONTRACT);
+							s.getAddress().getFullAddress()), row, COL_CONTRACT);
 
 			model.setValueAt(market.getNumberFormat().format(price), row, COL_PRICE);
 			model.setValueAt(NumberFormatting.BURST.format(amount), row, COL_AMOUNT);
 			
 			
-			JButton b = new ActionButton(this, market, tr("med_details"), null, s, false, false);
+			JButton b = new ActionButton(this, market, tr("med_details"), null, s, false, false, false);
 			if(s.getState() > SellContract.STATE_DISPUTE) {
-				// under mediation
+				// under dispute
 				b.setBackground(HistoryPanel.RED);
 				if(s.getMediator1() == g.getAddress().getSignedLongId() || s.getMediator2() == g.getAddress().getSignedLongId() ){
 					// under dispute and we are the mediator

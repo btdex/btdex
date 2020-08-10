@@ -13,7 +13,7 @@ import btdex.core.Globals;
 public class ExplorerWrapper {
 
 	private String baseURL, key;
-	private String accountPath, transactionPath;
+	private String accountPath, transactionPath, tokenPath;
 
 	public static final String BURSTCOIN_NETWORK = "burstcoin.network";
 	public static final String BURSTCOIN_RO = "burstcoin.ro";
@@ -38,26 +38,27 @@ public class ExplorerWrapper {
 		String baseURL = Globals.getInstance().isTestnet() ?
 				"https://testnet.explorer.burstcoin.network" : "https://explorer.burstcoin.network";
 		return new ExplorerWrapper(BURSTCOIN_NETWORK, baseURL,
-				"/?action=account&account=", "/?action=transaction&id=");
+				"/?action=account&account=", "/?action=transaction&id=", "/?action=token_inspect&id=");
 	}
 
 	public static ExplorerWrapper burstcoinRo() {
 		return new ExplorerWrapper(BURSTCOIN_RO, "https://explore.burstcoin.ro",
-				"/account/", "/transaction/");
+				"/account/", "/transaction/", "/asset/");
 	}
 
 	public static ExplorerWrapper burstScanNet() {
 		String baseURL = Globals.getInstance().isTestnet() ?
 				"https://testnet.burstscan.net" : "https://burstscan.net";
 		return new ExplorerWrapper(BURSTSCAN_NET, baseURL,
-				"/address/", "/tx/");
+				"/address/", "/tx/", "/asset/");
 	}
 
-	public ExplorerWrapper(String key, String baseURL, String accountPath, String transactionPath) {
+	public ExplorerWrapper(String key, String baseURL, String accountPath, String transactionPath, String tokenPath) {
 		this.key = key;
 		this.baseURL = baseURL;
 		this.accountPath = accountPath;
 		this.transactionPath = transactionPath;
+		this.tokenPath = tokenPath;
 	}
 
 	@Override
@@ -75,5 +76,8 @@ public class ExplorerWrapper {
 
 	public String openTransaction(String transaction) {
 		return baseURL + transactionPath + transaction;
+	}
+	public String openToken(String tokenID) {
+		return baseURL + tokenPath + tokenID;
 	}
 }

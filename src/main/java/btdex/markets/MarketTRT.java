@@ -10,8 +10,14 @@ import burst.kit.entity.BurstID;
 
 public class MarketTRT extends Market {
 	
-	public String toString() {
+	public String getTicker() {
 		return "TRT";
+	}
+	
+	@Override
+	public String toString() {
+		return // Constants.BURST_TICKER + "-" + 
+				getTicker();
 	}
 	
 	@Override
@@ -40,6 +46,11 @@ public class MarketTRT extends Market {
 	@Override
 	public long getID() {
 		// Tokens do not use the market ID, but the token ID
+		return 0;
+	}
+	
+	@Override
+	public int getUCA_ID() {
 		return 0;
 	}
 	

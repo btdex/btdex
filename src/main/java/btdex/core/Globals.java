@@ -11,6 +11,7 @@ import java.util.Properties;
 import com.google.gson.JsonObject;
 
 import bt.BT;
+import btdex.api.Server;
 import btdex.markets.MarketBurstToken;
 import btdex.ui.ExplorerWrapper;
 import burst.kit.crypto.BurstCrypto;
@@ -76,6 +77,8 @@ public class Globals {
 			logger = LogManager.getLogger();
 			logger.debug("Logger configured");
 			logger.debug("System properties: " + System.getProperties());
+			
+			logger.info("Using properties file {}", confFile);
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
 			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET2 : BT.NODE_BURST_ALLIANCE));
 			BT.activateCIP20(true);
@@ -95,9 +98,13 @@ public class Globals {
 			checkPublicKey();
 
 			loadAccounts();
+			
+			int apiPort = Integer.parseInt(conf.getProperty(Constants.PROP_API_PORT, "-1"));
+			if(apiPort > 0) {
+				new Server(apiPort);
+			}
 		}
 		catch (Exception e) {
-			logger.error("Error: {}", e.getLocalizedMessage());
 			e.printStackTrace();
 		}
 	}
@@ -167,6 +174,7 @@ public class Globals {
 		this.ledgerIndex = index;
 
 		address = BC.getBurstAddressFromPublic(pubKey);
+		logger.debug("Ledger keys set. Address from pubKey {}", address.getFullAddress());
 	}
 
 	public void setKeys(byte []pubKey, byte []privKey, char []pin) throws Exception {
@@ -177,6 +185,7 @@ public class Globals {
 		conf.setProperty(Constants.PROP_ENC_PRIVKEY, Globals.BC.toHexString(encPrivKey));
 
 		address = BC.getBurstAddressFromPublic(pubKey);
+		logger.debug("Ledger keys set. Address from pubKey {}", address.getFullAddress());
 	}
 
 	/**
@@ -275,6 +284,7 @@ public class Globals {
 
 		try {
 			saveConfs();
+			logger.debug("Accounts saved");
 		} catch (Exception e) {
 			logger.error("Error: {}", e.getLocalizedMessage());
 			e.printStackTrace();
@@ -380,8 +390,8 @@ public class Globals {
 		JsonObject params = new JsonObject();
 		params.addProperty("account", getAddress().getID());
 		params.addProperty("publickey", BC.toHexString(getPubKey()));
-
-		RequestBody body = RequestBody.create(Constants.JSON, params.toString());
+		
+		RequestBody body = RequestBody.create(params.toString(), Constants.JSON);
 
 		String faucet = isTestnet() ? Constants.FAUCET_TESTNET : Constants.FAUCET;
 		Request request = new Request.Builder()
@@ -418,7 +428,7 @@ public class Globals {
 			LayoutComponentBuilder layoutBuilder = builder.newLayout("PatternLayout")
 				.addAttribute("pattern", "%d [%t] %-5level: %logger %msg%n");
 
-			ComponentBuilder triggeringPolicy = builder.newComponent("Policies")
+			ComponentBuilder<?> triggeringPolicy = builder.newComponent("Policies")
 				.addComponent(builder.newComponent("TimeBasedTriggeringPolicy"))
 				.addComponent(builder.newComponent("SizeBasedTriggeringPolicy").addAttribute("size", "1M"));
 			appenderBuilder = builder.newAppender("rolling", "RollingFile")

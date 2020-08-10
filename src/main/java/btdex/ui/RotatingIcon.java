@@ -36,7 +36,7 @@ public class RotatingIcon implements Icon {
 				
 				for(DefaultTableModel model : cells.keySet()) {
 					for(Point c : cells.get(model))
-						model.fireTableCellUpdated(c.x, c.y);					
+						model.fireTableCellUpdated(c.x, c.y);
 				}
 			}
 		} );

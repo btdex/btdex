@@ -18,7 +18,7 @@ public abstract class MarketCrypto extends Market {
 	public static final String ADDRESS = "address";
 
 	public String toString() {
-		return "BTC";
+		return getTicker(); // + "-" + Constants.BURST_TICKER;
 	}
 	
 	@Override

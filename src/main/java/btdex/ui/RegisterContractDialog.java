@@ -159,7 +159,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 
 					Single<TransactionBroadcast> tx = g.getNS().generateCreateATTransaction(g.getPubKey(),
 							BT.getMinRegisteringFee(contract),
-							Constants.BURST_EXCHANGE_DEADLINE, "BTDEX", "BTDEX sell contract " + System.currentTimeMillis(), creationBytes)
+							Constants.BURST_EXCHANGE_DEADLINE, "BTDEX" + (isBuy ? "buy" : "sell"), "BTDEX contract " + System.currentTimeMillis(), creationBytes)
 							.flatMap(unsignedTransactionBytes -> {
 								byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
 								return g.getNS().broadcastTransaction(signedTransactionBytes);

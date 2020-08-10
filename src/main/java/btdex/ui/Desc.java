@@ -10,6 +10,7 @@ public class Desc extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
 	JLabel label;
+	Component child;
 
 	public Desc(String desc, Component child) {
 		this(desc, child, null);
@@ -18,6 +19,7 @@ public class Desc extends JPanel {
 	public Desc(String desc, Component child, Component childBottom) {
 		super(new BorderLayout());
 
+		this.child = child;
 		if(desc != null)
 			add(label = new JLabel(desc), BorderLayout.PAGE_START);
 		add(child, BorderLayout.CENTER);
@@ -27,7 +29,8 @@ public class Desc extends JPanel {
 	
 	public Desc(Component desc, Component child, Component childBottom) {
 		super(new BorderLayout());
-
+		
+		this.child = child;
 		if(desc != null)
 			add(desc, BorderLayout.PAGE_START);
 		add(child, BorderLayout.CENTER);
@@ -37,5 +40,9 @@ public class Desc extends JPanel {
 
 	public void setDesc(String desc) {
 		label.setText(desc);
+	}
+	
+	public Component getChild() {
+		return child;
 	}
 }

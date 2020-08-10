@@ -11,8 +11,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -23,11 +27,15 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import btdex.core.Globals;
 import btdex.ledger.LedgerService;
@@ -46,23 +54,26 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 	private JPasswordField pin;
 	private JPasswordField pinCheck;
 
-	private JCheckBox acceptBox, recoverBox;
+	private JCheckBox acceptBox, recoverBox, licenseBox;
 
 	private JButton okButton;
 	private JButton calcelButton;
 	private JButton useLedgerButton;
+	private JButton licenseButton;
 	private boolean resetPin;
 
 	private int ret;
 
+	private static Logger logger = LogManager.getLogger();
+
 	public Welcome(JFrame owner) {
 		this(owner, false);
 	}
-	
+
 	public Welcome(JFrame owner, boolean resetPin) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		
+
 		this.resetPin = resetPin;
 
 		setTitle(tr(resetPin ? "welc_reset_pin" : "welc_welcome"));
@@ -80,7 +91,7 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 			introText = new JLabel(intro);
 			introText.setPreferredSize(new Dimension(60, 120));
 			introPanel.add(introText, BorderLayout.PAGE_END);
-			
+
 			useLedgerButton = new JButton(tr("welc_use_ledger"));
 			useLedgerButton.addActionListener(this);
 			if(Globals.getInstance().isLedgerEnabled())
@@ -124,9 +135,16 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 		panel.add(new Desc(tr("dlg_pin"), pin));
 		panel.add(new Desc(tr("welc_reenter_pin"), pinCheck));
 
-		//		buttonPane.add(acceptBox);
-		buttonPane.add(calcelButton);
+		if(!resetPin) {
+			licenseButton = new JButton(tr("welc_license"));
+			licenseButton.addActionListener(this);
+			licenseBox = new JCheckBox(tr("welc_accept_license"));
+			buttonPane.add(licenseBox);
+			buttonPane.add(licenseButton);
+		}
+
 		buttonPane.add(okButton);
+		buttonPane.add(calcelButton);
 
 		// set action listener on the button
 
@@ -141,7 +159,7 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 			passphrase.setText("");
 			passphrase.setEditable(true);
 			passphrase.requestFocus();
-			
+
 			recoverBox.setVisible(false);
 			acceptBox.setSelected(true);
 			acceptBox.setVisible(false);
@@ -149,6 +167,7 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 		else
 			newPass();
 		pack();
+		logger.trace("Welcome screen showed");
 
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -171,6 +190,7 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 		pass = sb.toString();
 
 		passphrase.setText(pass);
+		logger.trace("New pasw set");
 	}
 
 	public int getReturn() {
@@ -192,8 +212,23 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 			}
 			int index = (Integer)spinner.getValue();
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				
+
 			LedgerService.getInstance().setCallBack(this, index);
+			return;
+		}
+		if(e.getSource() == licenseButton) {
+			JTextArea licenseText = new JTextArea(20, 45);
+			try {
+				InputStream stream = Welcome.class.getResourceAsStream("/license/LICENSE");
+				
+				String content = new BufferedReader(new InputStreamReader(stream))
+				  .lines().collect(Collectors.joining("\n"));
+				licenseText.append(content);
+				licenseText.setCaretPosition(0);
+			} catch (Exception e1) {
+				logger.debug("Cannot read license file {}", e1.getLocalizedMessage());
+			}
+			JOptionPane.showMessageDialog(this, new JScrollPane(licenseText), tr("welc_license"), JOptionPane.WARNING_MESSAGE);
 			return;
 		}
 		if(e.getSource() == recoverBox) {
@@ -223,7 +258,7 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 			}
 			else if(phrase.length()==0) {
 				error = tr("welc_phrase_empty");
-				passphrase.requestFocus();				
+				passphrase.requestFocus();
 			}
 			else if(pin.getPassword() == null || pin.getPassword().length < 4) {
 				error = tr("welc_min_pin");
@@ -233,14 +268,18 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 				pin.requestFocus();
 				error = tr("welc_wrong_pin");
 			}
-
+			else if(licenseBox!=null && !licenseBox.isSelected()) {
+				error = tr("welc_must_accept_license");
+				licenseBox.requestFocus();
+			}
+			
 			if(error == null) {
 				Globals g = Globals.getInstance();
-				
+
 				// no error, so we have a new phrase
 				byte[] privKey = Globals.BC.getPrivateKey(phrase);
 				byte[] pubKey = Globals.BC.getPublicKey(privKey);
-				
+
 				try {
 					if(resetPin) {
 						if(!Arrays.equals(g.getPubKey(), pubKey)) {
@@ -254,9 +293,10 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 					}
 				} catch (Exception e1) {
 					error = e1.getMessage();
+					logger.error("Error 1: {}", e1.getLocalizedMessage());
 				}
 			}
-			
+
 			if(error!=null) {
 				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(okButton);
 			}
@@ -271,7 +311,7 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 	public void returnedError(String error) {
 		// Clear the call back
 		LedgerService.getInstance().setCallBack(null, 0);
-		
+
 		Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(useLedgerButton);
 		setCursor(Cursor.getDefaultCursor());
 	}
@@ -280,14 +320,14 @@ public class Welcome extends JDialog implements ActionListener, PubKeyCallBack {
 	public void returnedKey(byte[] pubKey, int index) {
 		Globals g = Globals.getInstance();
 		g.setKeys(pubKey, index);
-		
+
 		Toast.makeText((JFrame) this.getOwner(), tr("ledger_show_address"),
 				Toast.LENGTH_LONG, Toast.Style.NORMAL).display(useLedgerButton);
 		try {
 			Globals.getInstance().saveConfs();
 		} catch (Exception e) {
 			e.printStackTrace();
-		}		
+		}
 		// all good
 		ret = 1;
 		setVisible(false);

@@ -1,18 +1,16 @@
 package btdex.ui.orderbook;
 
-import btdex.locale.Translation;
+import static btdex.locale.Translation.tr;
 
 import javax.swing.table.DefaultTableModel;
 
-import static btdex.locale.Translation.tr;
-
-class MyTableModel extends DefaultTableModel {
+class TableModelMarket extends DefaultTableModel {
     private static final long serialVersionUID = 1L;
 
-    private final OrderBook orderBook;
+    private final MarketPanel orderBook;
     private int COLS[];
 
-    public MyTableModel(OrderBook orderBook, int[] cols) {
+    public TableModelMarket(MarketPanel orderBook, int[] cols) {
         this.orderBook = orderBook;
         this.COLS = cols;
     }
@@ -22,21 +20,14 @@ class MyTableModel extends DefaultTableModel {
     }
 
     public String getColumnName(int col) {
-        boolean isToken = orderBook.getMarket().getTokenID()!=null;
-
         String colName = OrderBookSettings.columnNames[COLS[col]];
         if(col == COLS[OrderBookSettings.COL_PRICE])
-            colName = tr("book_price", isToken ? "BURST" : orderBook.getMarket());
+            colName = tr("book_price", orderBook.getMarket());
         else if(col == COLS[OrderBookSettings.COL_TOTAL])
-            colName = tr("book_total", isToken ? "BURST" : orderBook.getMarket());
+            colName = tr("book_total", orderBook.getMarket());
         else if(col == COLS[OrderBookSettings.COL_SIZE]) {
-            if(isToken)
-                colName = Translation.tr("book_size", orderBook.getMarket());
-            else
                 colName = tr("book_size", "BURST") + " (" + tr("book_deposit") + ")";
         }
-        else if((col == COLS[OrderBookSettings.COL_CONTRACT]) && isToken)
-            colName = tr("book_order");
         else
             colName = tr(colName);
         return colName;

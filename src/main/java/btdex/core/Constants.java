@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 
 import bt.Contract;
 import burst.kit.crypto.BurstCrypto;
+import burst.kit.entity.BurstID;
 import okhttp3.MediaType;
 
 public class Constants {
@@ -19,6 +20,7 @@ public class Constants {
     public static final String PROP_ENC_PRIVKEY = "encPrivKey";
     public static final String PROP_PUBKEY = "pubKey";
     public static final String PROP_LEDGER = "ledger";
+    public static final String PROP_API_PORT = "apiPort";    
 
     public static final String PROP_USER_TOKEN_ID = "userTokenID";
 
@@ -44,6 +46,8 @@ public class Constants {
     public static final long FEE_CONTRACT = BurstCrypto.getInstance().rsDecode("BNR6-GMFS-S6CF-8XFGU").getSignedLongId();
 
     public static final long FEE_CONTRACT_TESTNET = BurstCrypto.getInstance().rsDecode("G4XE-MB8T-WWZC-E4GFU").getSignedLongId();
+    
+    public static final long TRT_DIVIDENDS = BurstID.fromLong("14893248166511032525").getSignedLongId();
 
     public static final String BURST_SYMBOL = "\u0243";
 
@@ -67,7 +71,8 @@ public class Constants {
     public static final String GITHUB_LINK = "https://github.com/btdex/btdex";
 
     public static final int ICON_SIZE = 24;
-    public static final int ICON_SIZE_SMALL = 18;
+    public static final int ICON_SIZE_MED = 18;
+    public static final int ICON_SIZE_SMALL = 12;
 
     public static final int UI_UPDATE_INTERVAL = 10000;
     
