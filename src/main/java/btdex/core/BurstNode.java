@@ -210,7 +210,12 @@ public class BurstNode {
 						AssetOrder[] asks = NS.getAskOrders(m.getTokenID()).blockingGet();
 						AssetOrder[] bids = NS.getBidOrders(m.getTokenID()).blockingGet();
 						
-						// Handle delayed trades data
+						assetBalances.put(m, balance);
+						assetTrades.put(m, trades);
+						askOrders.put(m, asks);
+						bidOrders.put(m, bids);
+						
+						// If we don't have any trades, there is no trade history
 						if(trades!=null && trades.length>0) {
 							BurstValue lowestPrice = null;
 							BurstValue highestPrice = null;
@@ -231,18 +236,12 @@ public class BurstNode {
 								baseVolume = baseVolume.add(t.getQuantity());
 								quoteVolume = quoteVolume.add(t.getQuantity().multiply(t.getPrice().longValue()));
 							}
-								lowestPrice24h.put(m, lowestPrice != null ? lowestPrice : trades[0].getPrice());
-								highestPrice24h.put(m, highestPrice != null ? highestPrice : trades[0].getPrice());
+							lowestPrice24h.put(m, lowestPrice != null ? lowestPrice : trades[0].getPrice());
+							highestPrice24h.put(m, highestPrice != null ? highestPrice : trades[0].getPrice());
 							baseVolume24h.put(m, baseVolume);
 							quoteVolume24h.put(m, quoteVolume);
 							priceChangePerc24h.put(m, priceChangePerc);
-
-							assetBalances.put(m, balance);
-							assetTrades.put(m, trades);
-							askOrders.put(m, asks);
-							bidOrders.put(m, bids);
 						}
-						// else ignore this timer event, and wait for the next
 					}
 					catch (Exception e) {
 						logger.error("Error 2: {}", e.getLocalizedMessage());
