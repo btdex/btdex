@@ -13,6 +13,7 @@ Currently the following pairs are available with BURST:
  - ETH
  - LTC
  - DOGE
+ - XMR
  
 Additionally, any Burst-based token can be listed instantly and traded.
 
