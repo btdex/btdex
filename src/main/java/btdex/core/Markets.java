@@ -2,6 +2,7 @@ package btdex.core;
 
 import java.util.ArrayList;
 
+import btdex.markets.MarketARRR;
 import btdex.markets.MarketBTC;
 import btdex.markets.MarketDOGE;
 import btdex.markets.MarketETH;
@@ -35,6 +36,8 @@ public class Markets {
 		logger.info("XMR market loaded");
         markets.add(new MarketDOGE());
 		logger.info("DOGE market loaded");
+        markets.add(new MarketARRR());
+		logger.info("ARRR market loaded");
     }
 
     public static void addUserMarket(Market m) {
