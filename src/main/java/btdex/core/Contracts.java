@@ -213,7 +213,7 @@ public class Contracts {
 			tradeHistory.sort(new Comparator<ContractTrade>() {
 				@Override
 				public int compare(ContractTrade t1, ContractTrade t2) {
-					return (int)(t2.getTimestamp().getAsDate().getTime() - t1.getTimestamp().getAsDate().getTime());
+					return t2.getTimestamp().getAsDate().compareTo(t1.getTimestamp().getAsDate());
 				}
 			});
 
@@ -225,6 +225,7 @@ public class Contracts {
 			freeBuyContract = updatedBuyFreeContract;
 			freeNoDepositContract = updatedFreeNoDepositContract;
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.error("Exception", e.getLocalizedMessage());
 		}
 	}
