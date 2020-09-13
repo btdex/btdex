@@ -37,6 +37,7 @@ import btdex.core.ContractType;
 import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
+import btdex.core.MarketAccount;
 import btdex.core.Markets;
 import btdex.sc.SellContract;
 import btdex.ui.AccountsPanel;
@@ -280,6 +281,14 @@ public class MarketPanel extends JPanel implements ActionListener {
 			// only contracts for this market
 			if(s.getMarket() != market.getID() || !g.getMediators().areMediatorsAccepted(s))
 				continue;
+			
+			// check if the market account is valid
+			if(s.getType() == ContractType.SELL) {
+				MarketAccount account = market.parseAccount(s.getMarketAccount());
+				if(account == null) {
+					continue;
+				}
+			}
 
 			if(onlyMine && !s.getCreator().equals(g.getAddress()) && s.getTaker()!=g.getAddress().getSignedLongId())
 				continue;
