@@ -355,7 +355,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		if(e.getSource() == okButton || e.getSource() == pinField) {
 			String error = null;
 			Globals g = Globals.getInstance();
-
+			
 			if(!pinDesc.isVisible()) {
 				// nothing to do, as this is only showing information
 				setVisible(false);
@@ -405,9 +405,11 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(okButton);
 				return;
 			}
-
+			
 			// all set, lets place the order
 			try {
+				pinField.setEnabled(false);
+				okButton.setEnabled(false);
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				
 				Account ac = BurstNode.getInstance().getAccount();
@@ -543,6 +545,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				ex.printStackTrace();
 				Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
 			}
+			pinField.setEnabled(true);
+			okButton.setEnabled(true);
 			setCursor(Cursor.getDefaultCursor());
 		}
 	}

@@ -169,7 +169,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		if(e.getSource() == okButton || e.getSource() == pinField) {
 			String error = null;
 			Globals g = Globals.getInstance();
-
+			
 			if(error == null && (priceValue == null || priceValue.longValue() <= 0)) {
 				error = tr("offer_invalid_price");
 			}
@@ -204,6 +204,8 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			// all set, lets place the order
 			try {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				pinField.setEnabled(false);
+				okButton.setEnabled(false);
 
 				Single<byte[]> utx = null;
 
@@ -234,6 +236,8 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 				Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
 			}
 			setCursor(Cursor.getDefaultCursor());
+			pinField.setEnabled(true);
+			okButton.setEnabled(true);
 		}
 	}
 
