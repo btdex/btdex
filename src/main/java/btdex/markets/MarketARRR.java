@@ -2,10 +2,12 @@ package btdex.markets;
 
 import java.util.HashMap;
 
-import btdex.core.Globals;
 import btdex.locale.Translation;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class MarketARRR extends MarketCrypto {
+	private static Logger logger = LogManager.getLogger();
 	public String getTicker() {
 		return "ARRR";
 	}
@@ -31,9 +33,12 @@ public class MarketARRR extends MarketCrypto {
 				Bech32.decode(addr);
 			}
 			catch (Exception e) {
+				logger.error(e.getLocalizedMessage());
 				throw new Exception(Translation.tr("mkt_invalid_address", addr, toString()));
 			}
+		} else {
+			logger.error("Address must start zs1... You entered "+ addr);
+			throw new Exception(Translation.tr("mkt_invalid_address", addr, toString()));
 		}
-		throw new Exception(Translation.tr("mkt_invalid_address", addr, toString()));
 	}
 }
