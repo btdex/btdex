@@ -135,8 +135,7 @@ public class ContractState {
 		BurstAddress[] atIDs = g.getNS().getAtIds().blockingGet();
 
 		BurstID first = null;
-		BurstID idLimit = BurstID.fromLong(g.isTestnet() ?
-				"12494358857357719882" : "17760275010219707380");
+		int heightLimit = g.isTestnet() ? 223438 : 767945;
 		
 		// reverse order to get the more recent ones first
 		for (int i = atIDs.length - 1; i >= 0; i--) {
@@ -145,9 +144,6 @@ public class ContractState {
 			if (first == null)
 				first = ad.getBurstID();
 
-			// avoid running all IDs, we know these past one are useless
-			if (ad.getBurstID().getSignedLongId() == idLimit.getSignedLongId())
-				break;
 			// already visited, no need to continue
 			if (mostRecent != null && ad.getBurstID().getSignedLongId() == mostRecent.getSignedLongId())
 				break;
@@ -157,6 +153,10 @@ public class ContractState {
 				break;
 
 			AT at = g.getNS().getAt(ad).blockingGet();
+			// avoid running all IDs, we know these past one are useless
+			if (at.getCreationHeight() < heightLimit)
+				break;
+			
 			ContractType type = ContractType.INVALID;
 
 			// check the code (should match perfectly)
@@ -388,9 +388,6 @@ public class ContractState {
 		if(txs == null || txs.length == 0
 				|| txs[0].getBlockHeight() <= blockHistory) // we already have the more recent one
 			return;
-
-		rateHistory = 0;
-		marketHistory = 0;
 
 		for (int i = txs.length -1 ; i >= 0; i--) {
 			// in reverse order so we have the price available when we see the 'take'

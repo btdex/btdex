@@ -410,7 +410,7 @@ public class HistoryPanel extends JPanel {
 		trades.sort(new Comparator<ContractTrade>() {
 			@Override
 			public int compare(ContractTrade t1, ContractTrade t2) {
-				return (int)(t2.getTimestamp().getAsDate().compareTo(t1.getTimestamp().getAsDate()));
+				return t2.getTimestamp().getAsDate().compareTo(t1.getTimestamp().getAsDate());
 			}
 		});
 
