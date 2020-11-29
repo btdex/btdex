@@ -7,7 +7,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -27,6 +26,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -36,6 +36,7 @@ import javax.swing.event.DocumentListener;
 import btdex.core.Globals;
 import btdex.core.NumberFormatting;
 import btdex.markets.MarketBurstToken;
+import btdex.ui.orderbook.TokenMarketPanel;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
@@ -64,9 +65,13 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 	
 	private int returnValue = JOptionPane.OK_OPTION;
 
-	public CreateTokenDialog(Window owner) {
-		super(owner, ModalityType.APPLICATION_MODAL);
+	private TokenMarketPanel orderBook;
+
+	public CreateTokenDialog(TokenMarketPanel orderBook) {
+		super((JFrame) SwingUtilities.getWindowAncestor(orderBook), ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		
+		this.orderBook = orderBook;
 		
 		setTitle(tr("token_create"));
 
@@ -200,7 +205,7 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 				setVisible(false);
 				
 				MarketBurstToken newMarket = new MarketBurstToken(tb.getTransactionId(), ticker, ndecimals);
-				Main.getInstance().addMarket(newMarket);
+				orderBook.addMarket(newMarket);
 			}
 			catch (Exception ex) {
 				Toast.makeText((JFrame) this.getOwner(), ex.getMessage(), Toast.Style.ERROR).display(okButton);

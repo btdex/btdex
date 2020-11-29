@@ -1,7 +1,8 @@
 package btdex.ui;
 
+import static btdex.locale.Translation.tr;
+
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -11,7 +12,6 @@ import java.awt.event.ActionListener;
 import java.text.ParseException;
 
 import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -19,11 +19,9 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
-import javax.swing.JToggleButton;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
@@ -39,8 +37,6 @@ import btdex.core.NumberFormatting;
 import btdex.ledger.BurstLedger;
 import btdex.ledger.LedgerService;
 import btdex.ledger.LedgerService.SignCallBack;
-
-import static btdex.locale.Translation.tr;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.TransactionBroadcast;
@@ -63,18 +59,19 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 	private JButton okButton;
 	private JButton cancelButton;
 
-	private JToggleButton buyToken;
-	private JToggleButton sellToken;
-
 	private BurstValue suggestedFee;
 
 	private BurstValue amountValue, priceValue;
 
-	public PlaceTokenOrderDialog(JFrame owner, Market market, AssetOrder order) {
+	private boolean isAsk;
+
+	public PlaceTokenOrderDialog(JFrame owner, Market market, AssetOrder order, boolean isAsk) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		
+		this.isAsk = isAsk;
 
-		setTitle(tr("token_exchange_for", market.toString()));
+		setTitle(tr(isAsk ? "token_sell_for_burst" : "token_buy_with_burst", market));
 		this.market = market;
 
 		JPanel fieldPanel = new JPanel(new GridLayout(0, 2, 4, 4));
@@ -88,21 +85,6 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		priceField.getDocument().addDocumentListener(this);
 
 		fieldPanel.setBorder(BorderFactory.createTitledBorder(tr("token_offer_details")));
-
-		buyToken = new JRadioButton(tr("token_buy_with_burst", market), true);
-		sellToken = new JRadioButton(tr("token_sell_for_burst", market));
-
-		buyToken.setForeground(Color.WHITE);
-		sellToken.setForeground(Color.WHITE);
-
-		fieldPanel.add(buyToken);
-		fieldPanel.add(sellToken);
-
-		ButtonGroup bgroup = new ButtonGroup();
-		bgroup.add(buyToken);
-		bgroup.add(sellToken);
-		buyToken.addActionListener(this);
-		sellToken.addActionListener(this);
 
 		fieldPanel.add(new Desc(tr("offer_price", "BURST"), priceField));
 		fieldPanel.add(new Desc(tr("offer_size", market), amountField));
@@ -122,7 +104,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		pinField.addActionListener(this);
 
 		cancelButton = new JButton(tr("dlg_cancel"));
-		okButton = new JButton(tr("dlg_ok"));
+		okButton = new JButton(tr(isAsk ? "offer_confirm_limit_sell" : "offer_confirm_limit_buy"));
 		getRootPane().setDefaultButton(okButton);
 
 		cancelButton.addActionListener(this);
@@ -163,19 +145,11 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 
 		suggestedFee = BurstNode.getInstance().getSuggestedFee().getPriorityFee();
 
-		buyToken.setSelected(true);
 		if(order != null) {
 			// taking this order
-			if(order.getType() == AssetOrder.OrderType.BID)
-				sellToken.setSelected(true);
-			else
-				buyToken.setSelected(true);
-
 			priceField.setText(NumberFormatting.BURST.format(order.getPrice().longValue()*market.getFactor()));
 			amountField.setText(market.format(order.getQuantity().longValue()));
-			somethingChanged();
 		}
-		actionPerformed(new ActionEvent(buyToken, 0, null));
 		somethingChanged();
 		pack();
 
@@ -192,19 +166,10 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			setVisible(false);
 		}
 
-		if(e.getSource()==buyToken || e.getSource()==sellToken) {
-			buyToken.setBackground(buyToken.isSelected() ? HistoryPanel.GREEN : this.getBackground());
-			sellToken.setBackground(sellToken.isSelected() ? HistoryPanel.RED : this.getBackground());
-			
-			okButton.setText(tr(buyToken.isSelected() ? "offer_confirm_limit_buy" : "offer_confirm_limit_sell"));
-			okButton.setBackground(buyToken.isSelected() ? HistoryPanel.GREEN : HistoryPanel.RED);
-			somethingChanged();
-		}
-
 		if(e.getSource() == okButton || e.getSource() == pinField) {
 			String error = null;
 			Globals g = Globals.getInstance();
-
+			
 			if(error == null && (priceValue == null || priceValue.longValue() <= 0)) {
 				error = tr("offer_invalid_price");
 			}
@@ -239,10 +204,12 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			// all set, lets place the order
 			try {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				pinField.setEnabled(false);
+				okButton.setEnabled(false);
 
 				Single<byte[]> utx = null;
 
-				if(sellToken.isSelected())
+				if(this.isAsk)
 					utx = g.getNS().generatePlaceAskOrderTransaction(g.getPubKey(), market.getTokenID(),
 							amountValue, priceValue, suggestedFee, Constants.BURST_EXCHANGE_DEADLINE);
 				else
@@ -269,6 +236,8 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 				Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
 			}
 			setCursor(Cursor.getDefaultCursor());
+			pinField.setEnabled(true);
+			okButton.setEnabled(true);
 		}
 	}
 
@@ -299,12 +268,10 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			e.printStackTrace();
 		}
 
-		boolean isSell = sellToken.isSelected();
-
 		StringBuilder terms = new StringBuilder();
 		terms.append(PlaceOrderDialog.HTML_STYLE);
 
-		terms.append("<h3>").append(tr("token_terms_brief", isSell ? tr("token_sell") : tr("token_buy"),
+		terms.append("<h3>").append(tr("token_terms_brief", isAsk ? tr("token_sell") : tr("token_buy"),
 				amountField.getText(), market, priceField.getText())).append("</h3>");
 		terms.append("<p>").append(tr("token_terms_details",
 				NumberFormatting.BURST.format(suggestedFee.longValue()))).append("</p>");

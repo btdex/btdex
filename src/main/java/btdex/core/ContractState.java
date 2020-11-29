@@ -66,8 +66,15 @@ public class ContractState {
 
 	private static Logger logger = LogManager.getLogger();
 
-	public ContractState(ContractType type) {
+	public ContractState(ContractType type, AT at) {
 		this.type = type;
+		this.at = at;
+		
+		// Check some immutable variables
+		compiler = Contracts.getCompiler(type);
+		mediator1 = getContractFieldValue("mediator1");
+		mediator2 = getContractFieldValue("mediator2");
+		feeContract = getContractFieldValue("feeContract");
 	}
 
 	public boolean hasStateFlag(long flag) {
@@ -128,8 +135,7 @@ public class ContractState {
 		BurstAddress[] atIDs = g.getNS().getAtIds().blockingGet();
 
 		BurstID first = null;
-		BurstID idLimit = BurstID.fromLong(g.isTestnet() ?
-				"12494358857357719882" : "17760275010219707380");
+		int heightLimit = g.isTestnet() ? 223438 : 767945;
 		
 		// reverse order to get the more recent ones first
 		for (int i = atIDs.length - 1; i >= 0; i--) {
@@ -138,9 +144,6 @@ public class ContractState {
 			if (first == null)
 				first = ad.getBurstID();
 
-			// avoid running all IDs, we know these past one are useless
-			if (ad.getBurstID().getSignedLongId() == idLimit.getSignedLongId())
-				break;
 			// already visited, no need to continue
 			if (mostRecent != null && ad.getBurstID().getSignedLongId() == mostRecent.getSignedLongId())
 				break;
@@ -150,6 +153,10 @@ public class ContractState {
 				break;
 
 			AT at = g.getNS().getAt(ad).blockingGet();
+			// avoid running all IDs, we know these past one are useless
+			if (at.getCreationHeight() < heightLimit)
+				break;
+			
 			ContractType type = ContractType.INVALID;
 
 			// check the code (should match perfectly)
@@ -161,15 +168,8 @@ public class ContractState {
 				type = ContractType.NO_DEPOSIT;
 
 			if (type != ContractType.INVALID) {
-				ContractState s = new ContractState(type);
-				s.at = at;
+				ContractState s = new ContractState(type, at);
 
-				// Check some immutable variables
-				s.compiler = Contracts.getCompiler(type);
-				s.mediator1 = s.getContractFieldValue("mediator1");
-				s.mediator2 = s.getContractFieldValue("mediator2");
-				s.feeContract = s.getContractFieldValue("feeContract");
-				
 				logger.debug("Contract {} added for {}", at.getId(), s.type);
 
 				// Check if the immutable variables are valid
@@ -225,7 +225,7 @@ public class ContractState {
 		// check rate, type, etc. from transaction history
 		boolean hasPending = false;
 		if(!onlyUnconf) {
-			Transaction[] txs = g.getNS().getAccountTransactions(this.address).blockingGet();
+			Transaction[] txs = g.getNS().getAccountTransactions(this.address, null, null, false).blockingGet();
 			findCurrentTakeBlock(txs);
 			buildHistory(txs);
 			hasPending = processTransactions(txs);
@@ -298,7 +298,7 @@ public class ContractState {
 
 		Globals g = Globals.getInstance();
 		boolean hasPending = false;
-
+		
 		for(Transaction tx : txs) {
 			if(tx.getId().getSignedLongId() == lastTxId && takeBlock == 0)
 				break;
@@ -389,9 +389,6 @@ public class ContractState {
 				|| txs[0].getBlockHeight() <= blockHistory) // we already have the more recent one
 			return;
 
-		rateHistory = 0;
-		marketHistory = 0;
-
 		for (int i = txs.length -1 ; i >= 0; i--) {
 			// in reverse order so we have the price available when we see the 'take'
 			Transaction tx = txs[i];
@@ -405,11 +402,11 @@ public class ContractState {
 					&& tx.getAppendages()[0] instanceof PlaintextMessageAppendix) {
 
 				PlaintextMessageAppendix appendMessage = (PlaintextMessageAppendix) tx.getAppendages()[0];
-				if(tx.getSender().equals(at.getCreator()) && appendMessage.getMessage().startsWith("{")) {
+				String messageString = appendMessage.getMessage();
+				if(tx.getSender().equals(at.getCreator()) && messageString.startsWith("{")) {
 					// price update
 					try {
-						String jsonData = appendMessage.getMessage();
-						JsonObject json = JsonParser.parseString(jsonData).getAsJsonObject();
+						JsonObject json = JsonParser.parseString(messageString).getAsJsonObject();
 						JsonElement marketJson = json.get("market");
 						JsonElement rateJson = json.get("rate");
 						if(marketJson!=null)
@@ -423,19 +420,19 @@ public class ContractState {
 					}
 				}
 				else if(rateHistory > 0L && marketHistory > 0L // we only want to register trades we know the price
-						&& !appendMessage.isText() && appendMessage.getMessage().length() == 64
-						&& appendMessage.getMessage().startsWith(Contracts.getContractTakeHash(type))) {
+						&& !appendMessage.isText() && messageString.length() == 64
+						&& messageString.startsWith(Contracts.getContractTakeHash(type))) {
 					// the take message (we are not so strict here as this is not vital information)
 					// so we can have false positives here, like multiple takes on the same order or invalid takes
 					// being account
-					byte []messageBytes = Hex.decode(appendMessage.getMessage());
+					byte []messageBytes = Hex.decode(messageString);
 					ByteBuffer b = ByteBuffer.wrap(messageBytes);
 					b.order(ByteOrder.LITTLE_ENDIAN);
 					b.getLong(); // method hash
 					long security = b.getLong();
 					long amount = b.getLong();
 
-					ContractTrade trade = new ContractTrade(this, tx.getBlockTimestamp(), tx.getSender(), rateHistory, security, amount, marketHistory);
+					ContractTrade trade = new ContractTrade(this, tx, rateHistory, security, amount, marketHistory);
 					trades.add(trade);
 				}
 			}
@@ -524,7 +521,7 @@ public class ContractState {
 	public int getATVersion() {
 		return at.getVersion();
 	}
-
+	
 	public long getDisputeAmount(boolean fromCreator, boolean toCreator) {
 		if(fromCreator)
 			return getContractFieldValue(toCreator ? "disputeCreatorAmountToCreator" : "disputeCreatorAmountToTaker");

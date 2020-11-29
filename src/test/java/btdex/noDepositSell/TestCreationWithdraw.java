@@ -1,5 +1,15 @@
 package btdex.noDepositSell;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+
 import bt.BT;
 import btdex.sc.SellContract;
 import btdex.sc.SellNoDepositContract;
@@ -7,17 +17,6 @@ import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;
-import burst.kit.entity.response.TransactionBroadcast;
-import burst.kit.service.BurstNodeService;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-
-import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * We assume a localhost testnet with 0 seconds mock mining is available for the
@@ -34,7 +33,6 @@ public class TestCreationWithdraw {
     private static long state_chain;
     private static long state;
     private static String makerPass;
-    private static BurstNodeService bns = BT.getNode();
     private static int block = 4; //1 block 4 min
 
     @Test
@@ -108,9 +106,8 @@ public class TestCreationWithdraw {
     @Test
     @Order(7)
     public void withdrawSignal() {
-        TransactionBroadcast tr = BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
+        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
                 BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000).blockingGet();
-        BurstID id = tr.getTransactionId();
         BT.forgeBlock();
         BT.forgeBlock();
 
@@ -124,9 +121,8 @@ public class TestCreationWithdraw {
     public void withdrawSignalToEarly() {
         //two blocks passed
         long SCbalanceBefore = BT.getContractBalance(contract).longValue();
-        TransactionBroadcast tr = BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
+        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
                 BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000).blockingGet();
-        BurstID id = tr.getTransactionId();
         BT.forgeBlock();
         BT.forgeBlock();
 

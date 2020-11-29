@@ -1,16 +1,15 @@
 package btdex;
 
+import java.io.IOException;
+
 import bt.BT;
+import bt.Contract;
 import bt.compiler.Compiler;
 import btdex.core.Mediators;
 import btdex.sc.SellContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.TransactionBroadcast;
-
-import java.io.IOException;
-import java.util.Random;
 
 public class CreateSC {
     private long feeContract = BT.getBurstAddressFromPassphrase(BT.PASSPHRASE3).getBurstID().getSignedLongId();
@@ -23,15 +22,13 @@ public class CreateSC {
 
     private BurstValue amount;
 
-    private Random rand = new Random();
-
-    private Class sc;
+    private Class<? extends Contract> sc;
 
     private BurstValue security;
 
     private long accountHash = 0;
     private bt.compiler.Compiler compiled;
-    public CreateSC(Class sc, double amount, double security) throws IOException {
+    public CreateSC(Class<? extends Contract> sc, double amount, double security) throws IOException {
         Mediators mediators = new Mediators(true);
         BurstID[] mediatorsID = mediators.getTwoRandomMediators();
         mediator1 = mediatorsID[0];
@@ -45,7 +42,7 @@ public class CreateSC {
         this.sc = sc;
     }
 
-    public CreateSC(Class sc) throws IOException {
+    public CreateSC(Class<? extends Contract> sc) throws IOException {
         Mediators mediators = new Mediators(true);
         BurstID[] mediatorsID = mediators.getTwoRandomMediators();
         mediator1 = mediatorsID[0];
@@ -83,7 +80,7 @@ public class CreateSC {
         long data[] = { feeContract, mediator1.getSignedLongId(), mediator2.getSignedLongId(), accountHash};
 
         String name = sc.getSimpleName() + System.currentTimeMillis();
-        TransactionBroadcast tb = BT.registerContract(passphrase, compiled.getCode(), compiled.getDataPages(),
+        BT.registerContract(passphrase, compiled.getCode(), compiled.getDataPages(),
                 name, name, data, BurstValue.fromPlanck(SellContract.ACTIVATION_FEE),
                 BT.getMinRegisteringFee(compiled), 1000).blockingGet();
         return name;

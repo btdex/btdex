@@ -19,13 +19,18 @@ public class MarketEUR extends Market {
 	static final String SEPA = "SEPA";
 	static final String SEPA_INSTANT = "SEPA Instant";
 
-	public String toString() {
+	public String getTicker() {
 		return "EUR";
 	}
 	
 	@Override
 	public long getID() {
 		return MARKET_EUR;
+	}
+	
+	@Override
+	public int getUCA_ID() {
+		return 0;
 	}
 	
 	@Override

@@ -191,6 +191,8 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(okButton);
 			}
 			else {
+				pin.setEnabled(false);
+				okButton.setEnabled(false);
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
 				try {
@@ -227,6 +229,8 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 					Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
 				}
 				setCursor(Cursor.getDefaultCursor());
+				pin.setEnabled(true);
+				okButton.setEnabled(true);
 			}
 		}
 	}

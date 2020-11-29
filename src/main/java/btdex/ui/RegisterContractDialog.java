@@ -122,7 +122,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 		if(e.getSource() == okButton || e.getSource() == pin) {
 			String error = null;
 			Globals g = Globals.getInstance();
-
+			
 			if(error == null && !acceptBox.isSelected()) {
 				error = tr("dlg_accept_first");
 				acceptBox.requestFocus();
@@ -140,6 +140,8 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 
 			// all set, lets register the contract
 			try {
+				pin.setEnabled(false);
+				okButton.setEnabled(false);
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
 				int ncontracts = Integer.parseInt(numOfContractsSpinner.getValue().toString());
@@ -159,7 +161,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 
 					Single<TransactionBroadcast> tx = g.getNS().generateCreateATTransaction(g.getPubKey(),
 							BT.getMinRegisteringFee(contract),
-							Constants.BURST_EXCHANGE_DEADLINE, "BTDEX", "BTDEX sell contract " + System.currentTimeMillis(), creationBytes)
+							Constants.BURST_EXCHANGE_DEADLINE, "BTDEX" + (isBuy ? "buy" : "sell"), "BTDEX contract " + System.currentTimeMillis(), creationBytes)
 							.flatMap(unsignedTransactionBytes -> {
 								byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
 								return g.getNS().broadcastTransaction(signedTransactionBytes);
@@ -178,6 +180,8 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 				Toast.makeText((JFrame) this.getOwner(), ex.getMessage(), Toast.Style.ERROR).display(okButton);
 			}
 			setCursor(Cursor.getDefaultCursor());
+			pin.setEnabled(true);
+			okButton.setEnabled(true);
 		}
 	}
 

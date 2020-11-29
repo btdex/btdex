@@ -242,7 +242,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		pinField = new JPasswordField(12);
 		pinField.addActionListener(this);
 
-		Icons i = new Icons(amountField.getForeground(), Constants.ICON_SIZE_SMALL);
+		Icons i = new Icons(amountField.getForeground(), Constants.ICON_SIZE_MED);
 		supportDiscord = new JButton(tr("dlg_support"), i.get(Icons.DISCORD));
 		supportDiscord.setToolTipText(tr("dlg_support_discord"));
 		supportReddit = new JButton(tr("dlg_support"), i.get(Icons.REDDIT));

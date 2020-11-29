@@ -7,13 +7,18 @@ import btdex.locale.Translation;
 
 public class MarketDOGE extends MarketCrypto {
 	
-	public String toString() {
+	public String getTicker() {
 		return "DOGE";
 	}
 	
 	@Override
 	public long getID() {
 		return MARKET_DOGE;
+	}
+	
+	@Override
+	public int getUCA_ID() {
+		return 74;
 	}
 	
 	@Override

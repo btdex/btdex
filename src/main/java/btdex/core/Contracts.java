@@ -3,9 +3,13 @@ package btdex.core;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 
 import bt.compiler.Compiler;
@@ -18,9 +22,6 @@ import burst.kit.entity.response.AT;
 import burst.kit.entity.response.Block;
 import burst.kit.entity.response.Transaction;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class Contracts {
     private static Compiler compilerSell, compilerNoDeposit, compilerBuy;
 
@@ -31,6 +32,9 @@ public class Contracts {
 	private static BurstID mostRecentID;
 	private static BurstID lastBlock;
 	private static ContractState freeContract, freeNoDepositContract, freeBuyContract;
+	private static boolean registering;
+	
+	private static ArrayList<ContractTrade> trades = new ArrayList<>();
 
 	private static Logger logger = LogManager.getLogger();
 
@@ -96,6 +100,10 @@ public class Contracts {
 		}
         return compilerSell;
     }
+    
+    public static ArrayList<ContractTrade> getTrades(){
+    	return trades;
+    }
 
     public static Compiler getContractNoDeposit() {
         return compilerNoDeposit;
@@ -145,51 +153,81 @@ public class Contracts {
 	}
 
 	private static void updateContracts() {
-		// check for new contracts and add them to the list
-		mostRecentID = ContractState.addContracts(contractsMap, mostRecentID);
+		try {
+			// check for new contracts and add them to the list
+			mostRecentID = ContractState.addContracts(contractsMap, mostRecentID);
 
-		Globals g = Globals.getInstance();
+			Globals g = Globals.getInstance();
 
-		// check if we have a new block or not
-		Block[] latestBlocks = g.getNS().getBlocks(0, 1).blockingGet();
-		boolean noNewBlock = latestBlocks[0].getId().equals(lastBlock);
+			// check if we have a new block or not
+			Block[] latestBlocks = g.getNS().getBlocks(0, 1).blockingGet();
+			boolean noNewBlock = latestBlocks[0].getId().equals(lastBlock);
 
-		ContractState updatedFreeContract = null;
-		ContractState updatedBuyFreeContract = null;
-		ContractState updatedFreeNoDepositContract = null;
+			ContractState updatedFreeContract = null;
+			ContractState updatedBuyFreeContract = null;
+			ContractState updatedFreeNoDepositContract = null;
 
-		// check for the pending transactions
-		Transaction[] utxs = g.getNS().getUnconfirmedTransactions(g.getAddress()).blockingGet();
+			// check for the pending transactions
+			Transaction[] utxs = g.getNS().getUnconfirmedTransactions(g.getAddress()).blockingGet();
+			
+			boolean checkRegistering = false;
+			for (Transaction tx : utxs) {
+				if(tx.getSender().equals(g.getAddress()) && tx.getType() == 22 && tx.getSubtype() == 0) {
+					checkRegistering = true;
+					break;
+				}
+			}
+			registering = checkRegistering;
 
-		// update the state of every contract
-		for(ContractState s : contractsMap.values()) {
-			s.update(utxs, noNewBlock);
+			// build the trade history
+			ArrayList<ContractTrade> tradeHistory = new ArrayList<>();
 
-			if(s.getType() == ContractType.SELL &&
-					s.getCreator().equals(g.getAddress()) &&
-					s.getState() == SellContract.STATE_FINISHED && !s.hasPending() &&
-					g.getMediators().areMediatorsAccepted(s) &&
-					s.getATVersion()>1)
-				updatedFreeContract = s;
-			else if(s.getType() == ContractType.BUY &&
-					s.getCreator().equals(g.getAddress()) &&
-					s.getState() == SellContract.STATE_FINISHED && !s.hasPending() &&
-					g.getMediators().areMediatorsAccepted(s) &&
-					s.getATVersion()>1)
-				updatedBuyFreeContract = s;
-			else if(s.getType() == ContractType.NO_DEPOSIT &&
-					s.getCreator().equals(g.getAddress()) &&
-					s.getState() == SellNoDepositContract.STATE_FINISHED && !s.hasPending() &&
-					g.getMediators().areMediatorsAccepted(s) &&
-					s.getATVersion()>1)
-				updatedFreeNoDepositContract = s;
+			// update the state of every contract
+			for(ContractState s : contractsMap.values()) {
+				s.update(utxs, noNewBlock);
+
+				if(s.getType() == ContractType.SELL &&
+						s.getCreator().equals(g.getAddress()) &&
+						s.getState() == SellContract.STATE_FINISHED && !s.hasPending() &&
+						g.getMediators().areMediatorsAccepted(s) &&
+						s.getATVersion()>1)
+					updatedFreeContract = s;
+				else if(s.getType() == ContractType.BUY &&
+						s.getCreator().equals(g.getAddress()) &&
+						s.getState() == SellContract.STATE_FINISHED && !s.hasPending() &&
+						g.getMediators().areMediatorsAccepted(s) &&
+						s.getATVersion()>1)
+					updatedBuyFreeContract = s;
+				else if(s.getType() == ContractType.NO_DEPOSIT &&
+						s.getCreator().equals(g.getAddress()) &&
+						s.getState() == SellNoDepositContract.STATE_FINISHED && !s.hasPending() &&
+						g.getMediators().areMediatorsAccepted(s) &&
+						s.getATVersion()>1)
+					updatedFreeNoDepositContract = s;
+
+				tradeHistory.addAll(s.getTrades());
+			}
+			lastBlock = latestBlocks[0].getId();
+			
+			// now we sort the trades on time
+			tradeHistory.sort(new Comparator<ContractTrade>() {
+				@Override
+				public int compare(ContractTrade t1, ContractTrade t2) {
+					return t2.getTimestamp().getAsDate().compareTo(t1.getTimestamp().getAsDate());
+				}
+			});
+
+			// the list with all trades
+			trades = tradeHistory;
+
+			// TODO: maybe a lock around this
+			freeContract = updatedFreeContract;
+			freeBuyContract = updatedBuyFreeContract;
+			freeNoDepositContract = updatedFreeNoDepositContract;
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error("Exception", e.getLocalizedMessage());
 		}
-		lastBlock = latestBlocks[0].getId();
-
-		// TODO: maybe a lock around this
-		freeContract = updatedFreeContract;
-		freeBuyContract = updatedBuyFreeContract;
-		freeNoDepositContract = updatedFreeNoDepositContract;
 	}
 
 	public static long[] getNewContractData() {
@@ -203,6 +241,10 @@ public class Contracts {
 		data[2] = med[1].getSignedLongId();
 
 		return data;
+	}
+	
+	public static boolean isRegistering() {
+		return registering;
 	}
 
 	public static ContractState getFreeContract() {

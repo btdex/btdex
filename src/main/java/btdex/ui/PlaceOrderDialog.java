@@ -70,7 +70,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	private JButton cancelButton;
 	private JButton disputeButton;
 
-	private boolean isUpdate, isTake, isTaken, isBuy, isSignal, isDeposit;
+	private boolean isUpdate, isTake, isTaken, isBuy, isSignal, isDeposit, isMediator;
 
 	private BurstValue suggestedFee;
 
@@ -79,6 +79,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	private Desc pinDesc;
 
 	private StringBuilder terms;
+
+	private JPanel buttonPane;
 
 	public PlaceOrderDialog(JFrame owner, Market market, ContractState contract, boolean buy) {
 		super(owner, ModalityType.APPLICATION_MODAL);
@@ -197,7 +199,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			acceptBox.setText(tr("offer_received_coin", market));
 
 		// Create a button
-		JPanel buttonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		buttonPane = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
 		pinField = new JPasswordField(12);
 		pinField.addActionListener(this);
@@ -268,7 +270,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		if(b == true) {
 			Globals g = Globals.getInstance();
 			
-			boolean isMediator = g.getMediators().isMediator(g.getAddress().getSignedLongId());
+			isMediator = g.getMediators().isMediator(g.getAddress().getSignedLongId());
 			
 			if(g.usingLedger()) {
 				JOptionPane.showMessageDialog(getParent(), tr("ledger_no_offer"),
@@ -280,17 +282,26 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						tr("offer_processing"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
+			if(Contracts.isRegistering()) {
+				JOptionPane.showMessageDialog(getParent(), tr("offer_wait_confirm"),
+						tr("offer_processing"), JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 			if(!isMediator && accountComboBox.getItemCount()==0 && (isBuy && isTake && !isTaken || !isBuy && !isTake)) {
 				JOptionPane.showMessageDialog(getParent(), tr("offer_register_account_first", market),
 						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
+			}
+			if(isMediator) {
+				buttonPane.setVisible(false);
 			}
 			if(contract!=null && contract.hasPending()) {
 				JOptionPane.showMessageDialog(getParent(), tr("offer_wait_confirm"),
 						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if(contract!=null && (isMediator || contract.getState() > SellContract.STATE_DISPUTE)) {
+			if(contract!=null && (contract.getState() > SellContract.STATE_DISPUTE ||
+					contract.getState() > SellContract.STATE_OPEN && isMediator) ) {
 				DisputeDialog dispute = new DisputeDialog(this.getOwner(), market, contract);
 				dispute.setLocationRelativeTo(this);
 				dispute.setVisible(true);
@@ -305,14 +316,14 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				contract = isBuy ? Contracts.getFreeBuyContract() : Contracts.getFreeContract();
 			if(contract == null) {
 				int ret = JOptionPane.showConfirmDialog(getParent(),
-						tr("offer_no_contract_available"),
+						tr("offer_no_contract_available", tr(isBuy ? "book_buy_button" : "book_sell_button", Constants.BURST_TICKER)),
 						tr("reg_register"), JOptionPane.YES_NO_OPTION);
 				if(ret == JOptionPane.YES_OPTION) {
 					// No available contract, show the option to register a contract first
 					RegisterContractDialog dlg = new RegisterContractDialog(getOwner(), isBuy);
 					dlg.setLocationRelativeTo(getOwner());
 					dlg.setVisible(true);
-				}			
+				}
 				return;
 			}
 		}
@@ -344,7 +355,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		if(e.getSource() == okButton || e.getSource() == pinField) {
 			String error = null;
 			Globals g = Globals.getInstance();
-
+			
 			if(!pinDesc.isVisible()) {
 				// nothing to do, as this is only showing information
 				setVisible(false);
@@ -357,6 +368,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 			if(error == null && (priceValue == null || priceValue.longValue() <= 0)) {
 				error = tr("offer_invalid_price");
+			}
+			if(error == null && isMediator) {
+				error = tr("offer_mediator_take");
 			}
 			if(error == null && (amountValue == null || amountValue.longValue() <= 0)) {
 				error = tr("send_invalid_amount");
@@ -391,9 +405,11 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(okButton);
 				return;
 			}
-
+			
 			// all set, lets place the order
 			try {
+				pinField.setEnabled(false);
+				okButton.setEnabled(false);
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				
 				Account ac = BurstNode.getInstance().getAccount();
@@ -529,6 +545,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				ex.printStackTrace();
 				Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
 			}
+			pinField.setEnabled(true);
+			okButton.setEnabled(true);
 			setCursor(Cursor.getDefaultCursor());
 		}
 	}

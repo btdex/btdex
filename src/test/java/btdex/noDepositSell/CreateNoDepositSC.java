@@ -1,6 +1,9 @@
 package btdex.noDepositSell;
 
+import java.io.IOException;
+
 import bt.BT;
+import bt.Contract;
 import bt.compiler.Compiler;
 import btdex.core.Mediators;
 import btdex.sc.SellNoDepositContract;
@@ -8,10 +11,7 @@ import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;
-import burst.kit.entity.response.TransactionBroadcast;
 import burst.kit.service.BurstNodeService;
-
-import java.io.IOException;
 
 public class CreateNoDepositSC {
     private long feeContract = BT.getBurstAddressFromPassphrase(BT.PASSPHRASE3).getBurstID().getSignedLongId();
@@ -28,7 +28,7 @@ public class CreateNoDepositSC {
 
     private BurstAddress maker;
 
-    private Class sc = SellNoDepositContract.class;
+    private Class<? extends Contract> sc = SellNoDepositContract.class;
     private bt.compiler.Compiler compiled;
 
     private BurstNodeService bns = BT.getNode();
