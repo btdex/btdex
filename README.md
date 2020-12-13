@@ -14,6 +14,7 @@ Currently the following pairs are available with BURST:
  - LTC
  - DOGE
  - XMR
+ - ARRR
  
 Additionally, any Burst-based token can be listed instantly and traded.
 
