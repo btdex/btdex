@@ -50,7 +50,7 @@ public class ActionButton extends JButton {
     				return;
                 }
 
-                if((isToken && order.getAssetId() == null) ||
+                if((isToken && order!=null && order.getAssetId() == null) ||
                         (!isToken && contract.hasPending())) {
                     JOptionPane.showMessageDialog(getParent(), tr("offer_wait_confirm"),
                             tr("offer_processing"), JOptionPane.WARNING_MESSAGE);
