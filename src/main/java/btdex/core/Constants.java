@@ -9,7 +9,7 @@ import okhttp3.MediaType;
 
 public class Constants {
     public static final String NODE_LOCALHOST = "http://localhost:8125";
-    public static final String NODE_TESTNET2 = "https://testnet-2.burst-alliance.org:6876";
+    public static final String NODE_TESTNET = "https://testnetwallet.burstcoin.ro";
 
     public static final String PROP_LANG = "lang";
     public static final String PROP_NODE = "node";
