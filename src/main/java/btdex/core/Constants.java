@@ -77,6 +77,6 @@ public class Constants {
     public static final int UI_UPDATE_INTERVAL = 10000;
     
     public static final long MIN_OFFER = 10 * Contract.ONE_BURST;
-    public static final long MAX_OFFER = 50_000 * Contract.ONE_BURST;
+    public static final long MAX_OFFER = 500_000 * Contract.ONE_BURST;
 
 }
