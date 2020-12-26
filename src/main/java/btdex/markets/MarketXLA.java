@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import btdex.core.Globals;
 import btdex.locale.Translation;
 
 public class MarketXLA extends MarketCrypto {
