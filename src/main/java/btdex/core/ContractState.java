@@ -33,6 +33,7 @@ public class ContractState {
 
 	private BurstAddress address;
 	private ContractType type;
+	private int version;
 	private AT at;
 	private BurstValue balance;
 
@@ -68,13 +69,24 @@ public class ContractState {
 
 	public ContractState(ContractType type, AT at) {
 		this.type = type;
+		compiler = Contracts.getCompiler(type);
 		this.at = at;
+		version = 1;
+		if(type == ContractType.SELL || type == ContractType.BUY)
+			version = 2;
+		if(type == ContractType.SELL_OLD)
+			this.type = ContractType.SELL;
+		if(type == ContractType.BUY_OLD)
+			this.type = ContractType.BUY;
 		
 		// Check some immutable variables
-		compiler = Contracts.getCompiler(type);
 		mediator1 = getContractFieldValue("mediator1");
 		mediator2 = getContractFieldValue("mediator2");
 		feeContract = getContractFieldValue("feeContract");
+	}
+	
+	public int getVersion() {
+		return version;
 	}
 
 	public boolean hasStateFlag(long flag) {
@@ -157,15 +169,7 @@ public class ContractState {
 			if (at.getCreationHeight() < heightLimit)
 				break;
 			
-			ContractType type = ContractType.INVALID;
-
-			// check the code (should match perfectly)
-			if (Contracts.checkContractCode(at, Contracts.getCodeSell()))
-				type = ContractType.SELL;
-			else if (Contracts.checkContractCode(at, Contracts.getCodeBuy()))
-				type = ContractType.BUY;
-			else if (Contracts.checkContractCode(at, Contracts.getCodeNoDeposit()))
-				type = ContractType.NO_DEPOSIT;
+			ContractType type = Contracts.getContractType(at);
 
 			if (type != ContractType.INVALID) {
 				ContractState s = new ContractState(type, at);

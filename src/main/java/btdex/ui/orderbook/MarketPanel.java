@@ -55,7 +55,7 @@ public class MarketPanel extends JPanel implements ActionListener {
 
 	private JTable tableBid, tableAsk;
 	private DefaultTableModel modelBid, modelAsk;
-	private Icon copyIcon, expIcon, cancelIcon, pendingIcon, editIcon;
+	private Icon copyIcon, expIcon, cancelIcon, pendingIcon, editIcon, warnIcon;
 	private RotatingIcon pendingIconRotating;
 	private boolean registering;
 
@@ -126,6 +126,7 @@ public class MarketPanel extends JPanel implements ActionListener {
 		pendingIcon = iconsSmall.get(Icons.SPINNER);
 		pendingIconRotating = new RotatingIcon(pendingIcon);
 		editIcon = iconsSmall.get(Icons.EDIT);
+		warnIcon = iconsSmall.get(Icons.WARNING);
 
 		scrollPaneBid = new JScrollPane(tableBid);
 		tableBid.setFillsViewportHeight(true);
@@ -267,7 +268,7 @@ public class MarketPanel extends JPanel implements ActionListener {
 
 			// add your own contracts (so you can withdraw no matter what)
 			// this should never happen on normal circumstances
-			if(s.getCreator().equals(g.getAddress()) && s.getBalance().longValue() > 0L && s.getMarket() == 0L) {
+			if(s.getCreator().equals(g.getAddress()) && s.getBalance().longValue() > 0L) {
 				if(s.getType() == ContractType.SELL)
 					contracts.add(s);
 				else if(s.getType() == ContractType.BUY)
@@ -275,7 +276,9 @@ public class MarketPanel extends JPanel implements ActionListener {
 				continue;
 			}
 
-			if(!s.getCreator().equals(g.getAddress()) && (s.getAmountNQT() < Constants.MIN_OFFER || s.getAmountNQT() > Constants.MAX_OFFER))
+			if(!s.getCreator().equals(g.getAddress()) && (s.getAmountNQT() < Constants.MIN_OFFER
+					|| s.getAmountNQT() > Constants.MAX_OFFER
+					|| (s.getVersion() < 2 && s.getAmountNQT() > Constants.MAX_OFFER_OLD) ))
 				continue;
 
 			// only contracts for this market
@@ -371,6 +374,9 @@ public class MarketPanel extends JPanel implements ActionListener {
 
 			String priceFormated = market.format(s.getRate());
 			Icon icon = s.getCreator().equals(g.getAddress()) ? editIcon : null; // takeIcon;
+			if(s.getCreator().equals(g.getAddress()) && (s.getVersion() < 2
+					|| !g.getMediators().areMediatorsAccepted(s)))
+				icon = warnIcon;
 			JButton b = new ActionButton(this, market, "", s, false);
 			if(s.hasPending()) {
 				if(s.getRate() == 0)

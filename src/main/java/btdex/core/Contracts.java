@@ -14,7 +14,9 @@ import org.bouncycastle.util.encoders.Hex;
 
 import bt.compiler.Compiler;
 import btdex.sc.BuyContract;
+import btdex.sc.BuyContract2;
 import btdex.sc.SellContract;
+import btdex.sc.SellContract2;
 import btdex.sc.SellNoDepositContract;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
@@ -23,9 +25,9 @@ import burst.kit.entity.response.Block;
 import burst.kit.entity.response.Transaction;
 
 public class Contracts {
-    private static Compiler compilerSell, compilerNoDeposit, compilerBuy;
+    private static Compiler compilerSell[], compilerNoDeposit, compilerBuy[];
 
-    private static String contractTakeHash, contractBuyTakeHash;
+    private static String contractTakeHash[], contractBuyTakeHash[];
 
 	private static HashMap<BurstAddress, ContractState> contractsMap = new HashMap<>();
 	private static boolean loading = true;
@@ -60,27 +62,41 @@ public class Contracts {
 
     static {
         try {
-            compilerSell = new Compiler(SellContract.class);
-            compilerSell.compile();
-            compilerSell.link();
+            compilerSell = new Compiler[2];
+            contractTakeHash = new String[2];
+            compilerSell[0] = new Compiler(SellContract2.class);
+            compilerSell[1] = new Compiler(SellContract.class);
+            int i = 0;
+            for(Compiler c : compilerSell) {
+            	c.compile();
+            	c.link();
+            	
+                // get the update method hash
+            	ByteBuffer b = ByteBuffer.allocate(8);
+                b.order(ByteOrder.LITTLE_ENDIAN);
+                b.putLong(c.getMethod("take").getHash());
+                contractTakeHash[i++] = Hex.toHexString(b.array());
+            }
 
             compilerNoDeposit = new Compiler(SellNoDepositContract.class);
             compilerNoDeposit.compile();
             compilerNoDeposit.link();
 
-            compilerBuy = new Compiler(BuyContract.class);
-            compilerBuy.compile();
-            compilerBuy.link();
-
-            // get the update method hash
-        	ByteBuffer b = ByteBuffer.allocate(8);
-            b.order(ByteOrder.LITTLE_ENDIAN);
-            b.putLong(compilerSell.getMethod("take").getHash());
-            contractTakeHash = Hex.toHexString(b.array());
-
-            b.clear();
-            b.putLong(compilerBuy.getMethod("take").getHash());
-            contractBuyTakeHash = Hex.toHexString(b.array());
+            compilerBuy = new Compiler[2];
+            contractBuyTakeHash = new String[2];
+            compilerBuy[0] = new Compiler(BuyContract2.class);
+            compilerBuy[1] = new Compiler(BuyContract.class);
+            i = 0;
+            for(Compiler c : compilerBuy) {
+            	c.compile();
+            	c.link();
+            	
+            	// get the update method hash
+            	ByteBuffer b = ByteBuffer.allocate(8);
+                b.order(ByteOrder.LITTLE_ENDIAN);
+                b.putLong(c.getMethod("take").getHash());
+                contractBuyTakeHash[i++] = Hex.toHexString(b.array());
+            }
 
            	// start the update thread
            	new UpdateThread().start();
@@ -93,12 +109,18 @@ public class Contracts {
     public static Compiler getCompiler(ContractType type) {
     	switch (type) {
 		case BUY:
-			return compilerBuy;
+			return compilerBuy[0];
+		case BUY_OLD:
+			return compilerBuy[1];
+		case SELL:
+			return compilerSell[0];
+		case SELL_OLD:
+			return compilerSell[1];
 		case NO_DEPOSIT:
 			return compilerNoDeposit;
 		default:
 		}
-        return compilerSell;
+        return null;
     }
     
     public static ArrayList<ContractTrade> getTrades(){
@@ -110,11 +132,11 @@ public class Contracts {
     }
 
     public static Compiler getContractBuy() {
-        return compilerBuy;
+        return compilerBuy[0];
     }
 
     public static byte[] getCodeSell() {
-        return compilerSell.getCode();
+        return compilerSell[0].getCode();
     }
 
     public static byte[] getCodeNoDeposit() {
@@ -122,16 +144,30 @@ public class Contracts {
     }
 
     public static byte[] getCodeBuy() {
-        return compilerBuy.getCode();
+        return compilerBuy[0].getCode();
     }
 
     public static String getContractTakeHash(ContractType type) {
     	if(type == ContractType.BUY)
-    		return contractBuyTakeHash;
-    	return contractTakeHash;
+    		return contractBuyTakeHash[0];
+    	return contractTakeHash[0];
+    }
+    
+    public static ContractType getContractType(AT at) {
+   		if(checkContractCode(at, compilerSell[0].getCode()))
+    		return ContractType.SELL;
+   		if(checkContractCode(at, compilerSell[1].getCode()))
+    		return ContractType.SELL_OLD;
+   		if(checkContractCode(at, compilerBuy[0].getCode()))
+    		return ContractType.BUY;
+   		if(checkContractCode(at, compilerBuy[1].getCode()))
+    		return ContractType.BUY_OLD;
+    	if (Contracts.checkContractCode(at, Contracts.getCodeNoDeposit()))
+    		return ContractType.NO_DEPOSIT;
+    	return ContractType.INVALID;
     }
 
-	public static boolean checkContractCode(AT at, byte []code) {
+	private static boolean checkContractCode(AT at, byte []code) {
 		if(at.getMachineCode().length < code.length) {
 			logger.trace("AT code {} less then {} for {}", at.getMachineCode().length, code.length, at.getId());
 			return false;
@@ -186,13 +222,13 @@ public class Contracts {
 			for(ContractState s : contractsMap.values()) {
 				s.update(utxs, noNewBlock);
 
-				if(s.getType() == ContractType.SELL &&
+				if((s.getType() == ContractType.SELL && s.getVersion() == 2) &&
 						s.getCreator().equals(g.getAddress()) &&
 						s.getState() == SellContract.STATE_FINISHED && !s.hasPending() &&
 						g.getMediators().areMediatorsAccepted(s) &&
 						s.getATVersion()>1)
 					updatedFreeContract = s;
-				else if(s.getType() == ContractType.BUY &&
+				else if((s.getType() == ContractType.BUY && s.getVersion() == 2) &&
 						s.getCreator().equals(g.getAddress()) &&
 						s.getState() == SellContract.STATE_FINISHED && !s.hasPending() &&
 						g.getMediators().areMediatorsAccepted(s) &&

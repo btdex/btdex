@@ -41,6 +41,7 @@ public class Icons {
     public static IconCode SPINNER = FontAwesome.SPINNER;
     public static IconCode EDIT = FontAwesome.PENCIL;
     public static IconCode WITHDRAW = FontAwesome.RECYCLE;
+    public static IconCode WARNING = FontAwesome.EXCLAMATION;
     public static IconCode MEDIATION = FontAwesome.GAVEL;
     public static IconCode NEW_TOKEN = FontAwesome.TAG;
     public static IconCode UP = FontAwesome.ARROW_UP;
