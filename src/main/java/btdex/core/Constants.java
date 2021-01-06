@@ -41,6 +41,7 @@ public class Constants {
     public static final String DEF_CONF_FILE = "config.properties";
 
     public static final String[] MEDIATORS = {"93N4-8RFU-KSWJ-3GYXA", "TLYF-7EBX-FBLY-DFX86", "K9DB-72JS-2PLL-9U9JF", "T7MP-XCSN-RAPA-6VFBC"};
+    
     public static final String[] MEDIATORS_TESTNET = {"6ET8-WUKM-3HS8-CN4KM", "D3S9-8L56-UMLL-6EDFX", "E9UA-FX37-CHPE-568RD"};
 
     public static final long FEE_CONTRACT = BurstCrypto.getInstance().rsDecode("BNR6-GMFS-S6CF-8XFGU").getSignedLongId();
@@ -78,6 +79,6 @@ public class Constants {
     
     public static final long MIN_OFFER = 10 * Contract.ONE_BURST;
     public static final long MAX_OFFER_OLD = 50_000 * Contract.ONE_BURST;
-    public static final long MAX_OFFER = 500_000 * Contract.ONE_BURST;
+    public static final long MAX_OFFER = 1_000_000 * Contract.ONE_BURST;
 
 }
