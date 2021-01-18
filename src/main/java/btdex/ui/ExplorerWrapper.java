@@ -17,7 +17,7 @@ public class ExplorerWrapper {
 
 	public static final String BURSTCOIN_NETWORK = "burstcoin.network";
 	public static final String BURSTCOIN_RO = "burstcoin.ro";
-	public static final String BURSTSCAN_NET = "burstscan.net";
+//	public static final String BURSTSCAN_NET = "burstscan.net";
 
 	public static ExplorerWrapper getExplorer(String exp) {
 		if(exp!=null) {
@@ -25,13 +25,13 @@ public class ExplorerWrapper {
 			case BURSTCOIN_RO:
 				if(!Globals.getInstance().isTestnet())
 					return burstcoinRo();
-			case BURSTSCAN_NET:
-				return burstScanNet();
+//			case BURSTSCAN_NET:
+//				return burstScanNet();
 			case BURSTCOIN_NETWORK:
 				return burstcoinNetwork();
 			}
 		}
-		return burstScanNet();
+		return burstcoinNetwork();
 	}
 
 	public static ExplorerWrapper burstcoinNetwork() {
@@ -46,12 +46,12 @@ public class ExplorerWrapper {
 				"/account/", "/transaction/", "/asset/");
 	}
 
-	public static ExplorerWrapper burstScanNet() {
-		String baseURL = Globals.getInstance().isTestnet() ?
-				"https://testnet.burstscan.net" : "https://burstscan.net";
-		return new ExplorerWrapper(BURSTSCAN_NET, baseURL,
-				"/address/", "/tx/", "/asset/");
-	}
+//	public static ExplorerWrapper burstScanNet() {
+//		String baseURL = Globals.getInstance().isTestnet() ?
+//				"https://testnet.burstscan.net" : "https://burstscan.net";
+//		return new ExplorerWrapper(BURSTSCAN_NET, baseURL,
+//				"/address/", "/tx/", "/asset/");
+//	}
 
 	public ExplorerWrapper(String key, String baseURL, String accountPath, String transactionPath, String tokenPath) {
 		this.key = key;

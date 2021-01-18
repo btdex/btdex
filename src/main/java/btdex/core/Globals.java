@@ -377,7 +377,7 @@ public class Globals {
 	}
 
 	public String getExplorer() {
-		return conf.getProperty(Constants.PROP_EXPLORER, ExplorerWrapper.BURSTSCAN_NET);
+		return conf.getProperty(Constants.PROP_EXPLORER, ExplorerWrapper.BURSTCOIN_NETWORK);
 	}
 
 	public void setExplorer(String value) {
