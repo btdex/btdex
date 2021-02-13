@@ -1,24 +1,22 @@
 package btdex.sellContract;
 
-import btdex.CreateSC;
-import burst.kit.entity.BurstID;
-import burst.kit.service.BurstNodeService;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import bt.BT;
-import btdex.sc.SellContract;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.AT;
+import java.io.IOException;
 
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.IOException;
+import bt.BT;
+import btdex.CreateSC;
+import btdex.sc.SellContract;
+import burst.kit.entity.BurstAddress;
+import burst.kit.entity.BurstValue;
+import burst.kit.entity.response.AT;
+import burst.kit.service.BurstNodeService;
 
 /**
  * We assume a localhost testnet with 0 seconds mock mining is available for the
@@ -66,13 +64,13 @@ public class TestTakeRetake extends BT {
     @Test
     @Order(2)
     public void testMediators() {
-        BurstID mediator1 = sc.getMediator1();
-        BurstID mediator2 = sc.getMediator2();
+        long mediator1 = sc.getMediator1();
+        long mediator2 = sc.getMediator2();
         long med1_chain = BT.getContractFieldValue(contract, compiled.getField("mediator1").getAddress());
         long med2_chain = BT.getContractFieldValue(contract, compiled.getField("mediator2").getAddress());
 
-        assertEquals(mediator1.getSignedLongId(), med1_chain, "Mediator1 not equal");
-        assertEquals(mediator2.getSignedLongId(), med2_chain, "Mediator2 not equal");
+        assertEquals(mediator1, med1_chain, "Mediator1 not equal");
+        assertEquals(mediator2, med2_chain, "Mediator2 not equal");
     }
 
     @Test

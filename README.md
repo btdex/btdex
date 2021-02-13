@@ -13,6 +13,8 @@ Currently the following pairs are available with BURST:
  - ETH
  - LTC
  - DOGE
+ - XMR
+ - ARRR
  
 Additionally, any Burst-based token can be listed instantly and traded.
 
@@ -79,6 +81,20 @@ Edit your `config.properties` file and add the following lines:
 testnet=True
 node=http\://nivbox.co.uk\:6876
 ```
+
+## API
+
+You can enable the API by adding the following line on your `config.properties` file:
+
+```
+apiPort=9000
+```
+
+You can choose a port number other than 9000. The config file is usually found on the same folder where the BTDEX application is executed. If you installed a DEB (Linux) the config file is found at `~/.config/btdex`. The API will be available at `http://localhost:9000/api/v1/`, with the following endpoints:
+ - `http://localhost:9000/api/v1/summary`
+ - `http://localhost:9000/api/v1/ticker`
+ - `http://localhost:9000/api/v1/orderbook/BURST_TRT` (or any other pair listed on the *summary*)
+ - `http://localhost:9000/api/v1/trades/BURST_TRT` (or any other pair listed on the *summary*)
 
 ## Logging
 

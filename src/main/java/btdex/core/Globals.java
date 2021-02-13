@@ -80,7 +80,7 @@ public class Globals {
 			
 			logger.info("Using properties file {}", confFile);
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
-			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET2 : BT.NODE_BURST_ALLIANCE));
+			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET : BT.NODE_BURSTCOIN_RO));
 			BT.activateCIP20(true);
 
 			// possible ledger account index
@@ -377,7 +377,7 @@ public class Globals {
 	}
 
 	public String getExplorer() {
-		return conf.getProperty(Constants.PROP_EXPLORER, ExplorerWrapper.BURSTSCAN_NET);
+		return conf.getProperty(Constants.PROP_EXPLORER, ExplorerWrapper.BURSTCOIN_NETWORK);
 	}
 
 	public void setExplorer(String value) {

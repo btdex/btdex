@@ -5,17 +5,15 @@ import java.io.IOException;
 import bt.BT;
 import bt.Contract;
 import bt.compiler.Compiler;
-import btdex.core.Mediators;
 import btdex.sc.SellContract;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstID;
+import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstValue;
 
 public class CreateSC {
     private long feeContract = BT.getBurstAddressFromPassphrase(BT.PASSPHRASE3).getBurstID().getSignedLongId();
 
-    private BurstID mediator1;
-    private BurstID mediator2;
+    private long mediator1;
+    private long mediator2;
 
     private String mediatorOnePassword;
     private String mediatorTwoPassword;
@@ -28,44 +26,23 @@ public class CreateSC {
 
     private long accountHash = 0;
     private bt.compiler.Compiler compiled;
+
+    public CreateSC(Class<? extends Contract> sc) throws IOException {
+    	this(sc, 0, 0);
+    }
+    
     public CreateSC(Class<? extends Contract> sc, double amount, double security) throws IOException {
-        Mediators mediators = new Mediators(true);
-        BurstID[] mediatorsID = mediators.getTwoRandomMediators();
-        mediator1 = mediatorsID[0];
-        mediator2 = mediatorsID[1];
-        mediatorOnePassword = getMediatorPassword(mediator1);
-        mediatorTwoPassword = getMediatorPassword(mediator2);
+    	BT.activateCIP20(true);
+
+    	mediatorOnePassword = BT.PASSPHRASE;
+        mediatorTwoPassword = BT.PASSPHRASE2;
+        mediator1 = BurstCrypto.getInstance().getBurstAddressFromPassphrase(mediatorOnePassword).getSignedLongId();
+        mediator2 = BurstCrypto.getInstance().getBurstAddressFromPassphrase(mediatorTwoPassword).getSignedLongId();
 
         this.amount = BurstValue.fromBurst(amount);
         this.security = BurstValue.fromBurst(security);
         this.compiled = BT.compileContract(sc);
         this.sc = sc;
-    }
-
-    public CreateSC(Class<? extends Contract> sc) throws IOException {
-        Mediators mediators = new Mediators(true);
-        BurstID[] mediatorsID = mediators.getTwoRandomMediators();
-        mediator1 = mediatorsID[0];
-        mediator2 = mediatorsID[1];
-        mediatorOnePassword = getMediatorPassword(mediator1);
-        mediatorTwoPassword = getMediatorPassword(mediator2);
-
-        this.compiled = BT.compileContract(sc);
-        this.sc = sc;
-    }
-
-    private String getMediatorPassword(BurstID mediatorID) {
-        BurstAddress mediator = BurstAddress.fromId(mediatorID);
-
-        if(mediator.equals(BT.getBurstAddressFromPassphrase(BT.PASSPHRASE)))
-            return BT.PASSPHRASE;
-        else if(mediator.equals(BT.getBurstAddressFromPassphrase(BT.PASSPHRASE2)))
-            return BT.PASSPHRASE2;
-        else if(mediator.equals(BT.getBurstAddressFromPassphrase(BT.PASSPHRASE4)))
-            return BT.PASSPHRASE4;
-        else if(mediator.equals(BT.getBurstAddressFromPassphrase(BT.PASSPHRASE5)))
-            return BT.PASSPHRASE5;
-        else return null;
     }
 
     public String registerSC(String passphrase){
@@ -77,7 +54,7 @@ public class CreateSC {
     }
 
     private String register(String passphrase) {
-        long data[] = { feeContract, mediator1.getSignedLongId(), mediator2.getSignedLongId(), accountHash};
+        long data[] = { feeContract, mediator1, mediator2, accountHash};
 
         String name = sc.getSimpleName() + System.currentTimeMillis();
         BT.registerContract(passphrase, compiled.getCode(), compiled.getDataPages(),
@@ -102,11 +79,11 @@ public class CreateSC {
         return feeContract;
     }
 
-    public BurstID getMediator1() {
+    public long getMediator1() {
         return mediator1;
     }
 
-    public BurstID getMediator2() {
+    public long getMediator2() {
         return mediator2;
     }
 

@@ -3,6 +3,7 @@ package btdex.sellContract.dispute;
 import bt.BT;
 import btdex.CreateSC;
 import btdex.sc.SellContract;
+import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;
@@ -40,10 +41,10 @@ public class InitSC{
             security = sc.getSecurity();
             sent = amount + security + SellContract.ACTIVATION_FEE;
             compiled = sc.getCompiled();
-            mediatorOne = BurstAddress.fromId(sc.getMediator1());
-            mediatorTwo = BurstAddress.fromId(sc.getMediator2());
-            mediatorOnePass = sc.getMediatorOnePassword();
-            mediatorTwoPass = sc.getMediatorTwoPassword();
+            mediatorOnePass = BT.PASSPHRASE;
+            mediatorTwoPass = BT.PASSPHRASE2;
+            mediatorOne = BurstCrypto.getInstance().getBurstAddressFromPassphrase(mediatorOnePass);
+            mediatorOne = BurstCrypto.getInstance().getBurstAddressFromPassphrase(mediatorTwoPass);
             feeContract = sc.getFeeContract();
             initOffer();
             //init taker

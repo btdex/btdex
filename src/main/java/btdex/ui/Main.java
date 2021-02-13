@@ -682,9 +682,9 @@ public class Main extends JFrame implements ActionListener {
 
 			Globals g = Globals.getInstance();
 
-			String[] list = {BT.NODE_BURST_ALLIANCE, BT.NODE_BURSTCOIN_RO, BT.NODE_BURST_TEAM, Constants.NODE_LOCALHOST};
+			String[] list = {BT.NODE_BURSTCOIN_RO, BT.NODE_BURST_TEAM, Constants.NODE_LOCALHOST};
 			if(g.isTestnet()){
-				list = new String[]{Constants.NODE_TESTNET2, BT.NODE_TESTNET, BT.NODE_TESTNET_MEGASH, BT.NODE_LOCAL_TESTNET };
+				list = new String[]{Constants.NODE_TESTNET, BT.NODE_LOCAL_TESTNET };
 			}
 
 			JComboBox<String> nodeComboBox = new JComboBox<String>(list);
@@ -709,7 +709,7 @@ public class Main extends JFrame implements ActionListener {
 			Globals g = Globals.getInstance();
 
 			JComboBox<ExplorerWrapper> explorerCombo = new JComboBox<ExplorerWrapper>();
-			explorerCombo.addItem(ExplorerWrapper.burstScanNet());
+			explorerCombo.addItem(ExplorerWrapper.burstcoinNetwork());
 			if(!g.isTestnet())
 				explorerCombo.addItem(ExplorerWrapper.burstcoinRo());
 			explorerCombo.addItem(ExplorerWrapper.burstcoinNetwork());

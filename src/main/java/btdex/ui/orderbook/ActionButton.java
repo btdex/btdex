@@ -1,6 +1,7 @@
 package btdex.ui.orderbook;
 
 import btdex.core.ContractState;
+import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.ui.CancelOrderDialog;
 import btdex.ui.PlaceOrderDialog;
@@ -50,7 +51,7 @@ public class ActionButton extends JButton {
     				return;
                 }
 
-                if((isToken && order.getAssetId() == null) ||
+                if((isToken && order!=null && order.getAssetId() == null) ||
                         (!isToken && contract.hasPending())) {
                     JOptionPane.showMessageDialog(getParent(), tr("offer_wait_confirm"),
                             tr("offer_processing"), JOptionPane.WARNING_MESSAGE);
@@ -59,8 +60,11 @@ public class ActionButton extends JButton {
                 }
 
                 JDialog dlg = null;
-                if(cancel) {
-                    dlg = new CancelOrderDialog(f, market, order, contract);
+                Globals g = Globals.getInstance();
+                if(cancel || (contract != null && contract.getCreator().equals(g.getAddress()) &&
+                		(contract.getVersion() < 2 || !g.getMediators().areMediatorsAccepted(contract)))) {
+                	// Cancel explicitly or an out-to-date contract
+                	dlg = new CancelOrderDialog(f, market, order, contract);
                 }
                 else {
                     if(isToken)

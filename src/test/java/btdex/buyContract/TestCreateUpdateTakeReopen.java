@@ -1,22 +1,23 @@
 package btdex.buyContract;
 
-import bt.BT;
-import btdex.CreateSC;
-import btdex.sc.BuyContract;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstID;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.AT;
-import burst.kit.service.BurstNodeService;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import bt.BT;
+import bt.Contract;
+import btdex.CreateSC;
+import btdex.sc.BuyContract;
+import burst.kit.entity.BurstAddress;
+import burst.kit.entity.BurstValue;
+import burst.kit.entity.response.AT;
+import burst.kit.service.BurstNodeService;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class TestCreateUpdateTakeReopen {
@@ -54,13 +55,13 @@ public class TestCreateUpdateTakeReopen {
     @Test
     @Order(2)
     public void testMediators() {
-        BurstID mediator1 = sc.getMediator1();
-        BurstID mediator2 = sc.getMediator2();
+        long mediator1 = sc.getMediator1();
+        long mediator2 = sc.getMediator2();
         long med1_chain = BT.getContractFieldValue(contract, compiled.getField("mediator1").getAddress());
         long med2_chain = BT.getContractFieldValue(contract, compiled.getField("mediator2").getAddress());
 
-        assertEquals(mediator1.getSignedLongId(), med1_chain, "Mediator1 not equal");
-        assertEquals(mediator2.getSignedLongId(), med2_chain, "Mediator2 not equal");
+        assertEquals(mediator1, med1_chain, "Mediator1 not equal");
+        assertEquals(mediator2, med2_chain, "Mediator2 not equal");
     }
 
     @Test
@@ -79,8 +80,8 @@ public class TestCreateUpdateTakeReopen {
     @Order(4)
     public void testOfferInit(){
 
-        wantsToBuyInPlanks = 100_000_000L * 100L; //100 Burst
-        security = 100_000_000L * 10L; //10 Burst
+        wantsToBuyInPlanks = Contract.ONE_BURST * 100L; //100 Burst
+        security = Contract.ONE_BURST * 10L; //10 Burst
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
                 BurstValue.fromPlanck(security + BuyContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000, wantsToBuyInPlanks).blockingGet();
         BT.forgeBlock();
@@ -97,8 +98,7 @@ public class TestCreateUpdateTakeReopen {
 
         balance = BT.getContractBalance(contract).longValue();
 
-        assertEquals(security_chain - paidFeeForSCstep, balance);
-
+        assertTrue(balance > security_chain - paidFeeForSCstep);
     }
 
     @Test
@@ -172,6 +172,6 @@ public class TestCreateUpdateTakeReopen {
 
         balance = BT.getContractBalance(contract).longValue();
 
-        assertEquals(security_chain - paidFeeForSCstep, balance);
+        assertTrue(balance > security_chain - paidFeeForSCstep);
     }
 }

@@ -32,7 +32,7 @@ public class Toast extends JDialog {
 	private final float OPACITY_INCREMENT = 0.05f;
 	private final int FADE_REFRESH_RATE = 20;
 	private final int WINDOW_RADIUS = 15;
-	private final int DISTANCE_FROM_PARENT_TOP = 35;	
+	private final int DISTANCE_FROM_PARENT_TOP = 60;	
 	
 	private JFrame mOwner;
 	private String mText;

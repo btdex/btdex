@@ -1,5 +1,14 @@
 package btdex.sellContract;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.io.IOException;
+
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+
 import bt.BT;
 import btdex.CreateSC;
 import btdex.sc.SellContract;
@@ -7,14 +16,6 @@ import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.AT;
 import burst.kit.service.BurstNodeService;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-
-import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /* This test checks who has priority then taking offer in same time (same block */
 

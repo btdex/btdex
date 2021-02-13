@@ -30,7 +30,7 @@ dependencies {
     //implementation 'com.github.burst-apps-team:burstkit4j:jjos~tx-pages-SNAPSHOT'
 
     //implementation 'com.github.jjos2372:blocktalk:-SNAPSHOT'
-    implementation 'com.github.jjos2372:blocktalk:bd8a97d7a8'
+    implementation 'com.github.jjos2372:blocktalk:3337bfbf32'
 
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.15'

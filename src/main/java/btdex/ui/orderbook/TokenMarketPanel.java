@@ -257,6 +257,15 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 		
 		historyPanel.setMarket(m);
 		
+		// Show the remove button if it is a custom token
+		removeTokenButton.setVisible(Markets.getUserMarkets().contains(m));
+
+		// this is a token market, show it on the token field
+		tokenDesc.setDesc(tr("main_balance", m));
+		balanceLabelToken.setText(m.format(0));
+		balanceLabelTokenPending.setText(" ");
+		sendButtonToken.setToolTipText(tr("main_send", m.toString()));
+		
 		update();
 	}
 
@@ -520,35 +529,22 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 				}
 
 				marketComboBox.setSelectedIndex(0);
-				return;
+				m = (Market) marketComboBox.getSelectedItem();
 			}
 			if(m == newMarketDummy) {
 				CreateTokenDialog dlg = new CreateTokenDialog(this);
 				dlg.setLocationRelativeTo(this);
 				dlg.setVisible(true);
 
-				if(dlg.getReturnValue() == JOptionPane.CANCEL_OPTION)
+				if(dlg.getReturnValue() == JOptionPane.CANCEL_OPTION) {
 					marketComboBox.setSelectedIndex(0);
-				return;
+					m = (Market) marketComboBox.getSelectedItem();
+				}
+				else
+					return;
 			}
 
 			setMarket(m);
-			historyPanel.setMarket(m);
-			// this is a custom token
-			removeTokenButton.setVisible(Markets.getUserMarkets().contains(m));
-
-			if(m.getTokenID() == null) {
-				// not a token market, show TRT in the token field
-				tokenDesc.setDesc(tr("main_balance", token));
-			}
-			else {
-				// this is a token market, show it on the token field
-				tokenDesc.setDesc(tr("main_balance", m));
-				balanceLabelToken.setText(m.format(0));
-				balanceLabelTokenPending.setText(" ");
-				sendButtonToken.setToolTipText(tr("main_send", m.toString()));
-			}
-
 			update();
 		}
 		else if (e.getSource() == sendButtonToken) {

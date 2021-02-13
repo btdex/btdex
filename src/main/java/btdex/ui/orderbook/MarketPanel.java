@@ -37,6 +37,7 @@ import btdex.core.ContractType;
 import btdex.core.Contracts;
 import btdex.core.Globals;
 import btdex.core.Market;
+import btdex.core.MarketAccount;
 import btdex.core.Markets;
 import btdex.sc.SellContract;
 import btdex.ui.AccountsPanel;
@@ -54,7 +55,7 @@ public class MarketPanel extends JPanel implements ActionListener {
 
 	private JTable tableBid, tableAsk;
 	private DefaultTableModel modelBid, modelAsk;
-	private Icon copyIcon, expIcon, cancelIcon, pendingIcon, editIcon;
+	private Icon copyIcon, expIcon, cancelIcon, pendingIcon, editIcon, warnIcon;
 	private RotatingIcon pendingIconRotating;
 	private boolean registering;
 
@@ -125,6 +126,7 @@ public class MarketPanel extends JPanel implements ActionListener {
 		pendingIcon = iconsSmall.get(Icons.SPINNER);
 		pendingIconRotating = new RotatingIcon(pendingIcon);
 		editIcon = iconsSmall.get(Icons.EDIT);
+		warnIcon = iconsSmall.get(Icons.WARNING);
 
 		scrollPaneBid = new JScrollPane(tableBid);
 		tableBid.setFillsViewportHeight(true);
@@ -266,7 +268,8 @@ public class MarketPanel extends JPanel implements ActionListener {
 
 			// add your own contracts (so you can withdraw no matter what)
 			// this should never happen on normal circumstances
-			if(s.getCreator().equals(g.getAddress()) && s.getBalance().longValue() > 0L && s.getMarket() == 0L) {
+			if(s.getCreator().equals(g.getAddress()) && s.getBalance().longValue() > 0L
+					&& s.getMarket() == market.getID()) {
 				if(s.getType() == ContractType.SELL)
 					contracts.add(s);
 				else if(s.getType() == ContractType.BUY)
@@ -274,12 +277,22 @@ public class MarketPanel extends JPanel implements ActionListener {
 				continue;
 			}
 
-			if(!s.getCreator().equals(g.getAddress()) && (s.getAmountNQT() < Constants.MIN_OFFER || s.getAmountNQT() > Constants.MAX_OFFER))
+			if(!s.getCreator().equals(g.getAddress()) && (s.getAmountNQT() < Constants.MIN_OFFER
+					|| s.getAmountNQT() > Constants.MAX_OFFER
+					|| (s.getVersion() < 2 && s.getAmountNQT() > Constants.MAX_OFFER_OLD) ))
 				continue;
 
 			// only contracts for this market
 			if(s.getMarket() != market.getID() || !g.getMediators().areMediatorsAccepted(s))
 				continue;
+			
+			// check if the market account is valid
+			if(s.getType() == ContractType.SELL) {
+				MarketAccount account = market.parseAccount(s.getMarketAccount());
+				if(account == null) {
+					continue;
+				}
+			}
 
 			if(onlyMine && !s.getCreator().equals(g.getAddress()) && s.getTaker()!=g.getAddress().getSignedLongId())
 				continue;
@@ -362,6 +375,9 @@ public class MarketPanel extends JPanel implements ActionListener {
 
 			String priceFormated = market.format(s.getRate());
 			Icon icon = s.getCreator().equals(g.getAddress()) ? editIcon : null; // takeIcon;
+			if(s.getCreator().equals(g.getAddress()) && (s.getVersion() < 2
+					|| !g.getMediators().areMediatorsAccepted(s)))
+				icon = warnIcon;
 			JButton b = new ActionButton(this, market, "", s, false);
 			if(s.hasPending()) {
 				if(s.getRate() == 0)

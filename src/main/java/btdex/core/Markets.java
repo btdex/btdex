@@ -2,12 +2,14 @@ package btdex.core;
 
 import java.util.ArrayList;
 
+import btdex.markets.MarketARRR;
 import btdex.markets.MarketBTC;
 import btdex.markets.MarketDOGE;
 import btdex.markets.MarketETH;
 import btdex.markets.MarketLTC;
 import btdex.markets.MarketTRT;
 import btdex.markets.MarketXMR;
+import btdex.markets.MarketXLA;
 import burst.kit.service.BurstNodeService;
 
 import org.apache.logging.log4j.LogManager;
@@ -35,6 +37,10 @@ public class Markets {
 		logger.info("XMR market loaded");
         markets.add(new MarketDOGE());
 		logger.info("DOGE market loaded");
+        markets.add(new MarketARRR());
+		logger.info("ARRR market loaded");
+        markets.add(new MarketXLA());
+		logger.info("XLA market loaded");
     }
 
     public static void addUserMarket(Market m) {
