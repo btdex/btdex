@@ -30,7 +30,6 @@ import btdex.core.NumberFormatting;
 import btdex.ledger.LedgerService;
 import btdex.ledger.LedgerService.SignCallBack;
 import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.FeeSuggestion;
 import burst.kit.entity.response.TransactionBroadcast;
@@ -153,15 +152,8 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 
 			String error = null;
 			String sadd = recipient.getText();
-			BurstID recID = null;
-			if(sadd.startsWith("BURST-")) {
-				try {
-					recID = Globals.BC.rsDecode(sadd.substring(5));
-				}
-				catch (Exception ex) {
-				}
-			}
-			if(recID == null)
+			BurstAddress recAddress = BurstAddress.fromEither(sadd);
+			if(recAddress == null)
 				error = tr("send_invalid_recipient");
 
 			if(error == null && !g.usingLedger() && !g.checkPIN(pin.getPassword())) {
@@ -199,12 +191,12 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 					// all set, lets make the transfer
 					Single<byte[]> utx = null;
 					if(token!=null) {
-						utx = g.getNS().generateTransferAssetTransactionWithMessage(g.getPubKey(), BurstAddress.fromId(recID),
+						utx = g.getNS().generateTransferAssetTransactionWithMessage(g.getPubKey(), recAddress,
 								token.getTokenID(), BurstValue.fromPlanck((long)(amountNumber.doubleValue()*token.getFactor())),
 								selectedFee, Constants.BURST_SEND_DEADLINE, msg);
 					}
 					else {
-						utx = g.getNS().generateTransactionWithMessage(BurstAddress.fromId(recID), g.getPubKey(),
+						utx = g.getNS().generateTransactionWithMessage(recAddress, g.getPubKey(),
 							BurstValue.fromBurst(amountNumber.doubleValue()),
 							selectedFee, Constants.BURST_SEND_DEADLINE, msg);
 					}
