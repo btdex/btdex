@@ -34,6 +34,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.apache.commons.codec.binary.Hex;
+
 import btdex.core.*;
 import com.google.gson.JsonObject;
 
@@ -421,8 +423,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 				Single<byte[]> utx = null;
 				Single<TransactionBroadcast> updateTx = null;
+				
+				String configureTxHash = null;
 
-				BurstValue configureFee = suggestedFee;
 				if(!isUpdate && !isTake && !isTaken) {
 					// configure a new contract and place the deposit
 					contract = isBuy ? Contracts.getFreeBuyContract() : Contracts.getFreeContract();
@@ -450,17 +453,15 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						return;
 					}
 
+					// Only send after the configureTxHash
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 							amountToSend, suggestedFee,
-							Constants.BURST_EXCHANGE_DEADLINE, message, null);
+							Constants.BURST_EXCHANGE_DEADLINE, message, configureTxHash);
 
 					updateTx = utx.flatMap(unsignedTransactionBytes -> {
 						byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
 						return g.getNS().broadcastTransaction(signedTransactionBytes);
 					});
-
-					// make sure the price setting goes first setting an extra priority for it
-					configureFee = suggestedFee.add(BurstValue.fromPlanck(Constants.FEE_QUANT));
 				}
 
 				if(isTaken && isSignal) {
@@ -479,8 +480,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						amountToSend = amountToSend.add(BurstValue.fromPlanck(contract.getAmountNQT()));
 						
 						// Checking if we will have balance for all transactions needed
-						BurstValue balanceNeeded = amountToSend.add(configureFee.multiply(2))
-								.add(BurstValue.fromPlanck(Constants.FEE_QUANT));
+						BurstValue balanceNeeded = amountToSend.add(suggestedFee.multiply(2));
 						if(balance.compareTo(balanceNeeded) < 0) {
 							Toast.makeText((JFrame) this.getOwner(), tr("dlg_not_enough_balance"), Toast.Style.ERROR).display(okButton);
 							setCursor(Cursor.getDefaultCursor());
@@ -493,22 +493,22 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 						String messageString = Constants.GSON.toJson(messageJson);
 						utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
-								configureFee,
+								suggestedFee,
 								Constants.BURST_EXCHANGE_DEADLINE, messageString, null);
 						
-						utx.flatMap(unsignedTransactionBytes -> {
+						TransactionBroadcast configureTx = utx.flatMap(unsignedTransactionBytes -> {
 							byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
 							return g.getNS().broadcastTransaction(signedTransactionBytes);
 						}).blockingGet();
-						// increase the fee to make sure the "take" will go first than this one
-						configureFee = configureFee.add(BurstValue.fromPlanck(Constants.FEE_QUANT));
+						
+						configureTxHash = Hex.encodeHexString(configureTx.getFullHash());
 					}
 
 					byte[] message = BT.callMethodMessage(contract.getMethod("take"),
 							contract.getSecurityNQT(), contract.getAmountNQT());
 
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
-							amountToSend, configureFee,
+							amountToSend, suggestedFee,
 							Constants.BURST_EXCHANGE_DEADLINE, message, null);
 				}
 				else {
@@ -521,15 +521,14 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 					String messageString = Constants.GSON.toJson(messageJson);
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
-							configureFee,
+							suggestedFee,
 							Constants.BURST_EXCHANGE_DEADLINE, messageString, null);
 				}					
 
-				Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
+				TransactionBroadcast tb = utx.flatMap(unsignedTransactionBytes -> {
 					byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
 					return g.getNS().broadcastTransaction(signedTransactionBytes);
-				});
-				TransactionBroadcast tb = tx.blockingGet();
+				}).blockingGet();
 				tb.getTransactionId();
 
 				// Send the update transaction only if the price setting was already sent
