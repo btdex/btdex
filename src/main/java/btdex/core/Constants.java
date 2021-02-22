@@ -79,6 +79,6 @@ public class Constants {
     
     public static final long MIN_OFFER = 10 * Contract.ONE_BURST;
     public static final long MAX_OFFER_OLD = 50_000 * Contract.ONE_BURST;
-    public static final long MAX_OFFER = 50_000 * Contract.ONE_BURST;
+    public static final long MAX_OFFER = 1_000_000 * Contract.ONE_BURST;
 
 }
