@@ -59,7 +59,7 @@ public class InitSC{
         }
     }
     private long accBalance(String pass) {
-        return (bns.getAccount(BT.getBurstAddressFromPassphrase(pass)).blockingGet()).getBalance().longValue();
+        return (bns.getAccount(BT.getBurstAddressFromPassphrase(pass), null, null).blockingGet()).getBalance().longValue();
     }
 
     public void initOffer(){
@@ -137,15 +137,15 @@ public class InitSC{
     }
 
     public long getMakerBalance() {
-        return bns.getAccount(maker).blockingGet().getBalance().longValue();
+        return bns.getAccount(maker, null, null).blockingGet().getBalance().longValue();
     }
 
     public long getTakerBalance() {
-        return bns.getAccount(taker).blockingGet().getBalance().longValue();
+        return bns.getAccount(taker, null, null).blockingGet().getBalance().longValue();
     }
 
     public long getFeeContractBalance() {
-        return bns.getAccount(BurstAddress.fromId(feeContract)).blockingGet().getBalance().longValue();
+        return bns.getAccount(BurstAddress.fromId(feeContract), null, null).blockingGet().getBalance().longValue();
     }
 
     public BurstAddress getMediatorOne() {

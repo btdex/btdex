@@ -187,7 +187,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener, SignCa
 
 					utx = g.getNS().generateTransactionWithMessage(state.getAddress(), g.getPubKey(),
 							amountToSend, suggestedFee.getPriorityFee(),
-							Constants.BURST_EXCHANGE_DEADLINE, message);
+							Constants.BURST_EXCHANGE_DEADLINE, message, null);
 				}
 				
 				unsigned = utx.blockingGet();

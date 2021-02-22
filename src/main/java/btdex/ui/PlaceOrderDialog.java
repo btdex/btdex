@@ -452,7 +452,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 							amountToSend, suggestedFee,
-							Constants.BURST_EXCHANGE_DEADLINE, message);
+							Constants.BURST_EXCHANGE_DEADLINE, message, null);
 
 					updateTx = utx.flatMap(unsignedTransactionBytes -> {
 						byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
@@ -470,7 +470,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 							amountToSend, suggestedFee,
-							Constants.BURST_EXCHANGE_DEADLINE, message);						
+							Constants.BURST_EXCHANGE_DEADLINE, message, null);						
 				}
 				else if(isTake) {
 					// send the take transaction with the security deposit (+ amount if a buy order)
@@ -494,7 +494,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						String messageString = Constants.GSON.toJson(messageJson);
 						utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 								configureFee,
-								Constants.BURST_EXCHANGE_DEADLINE, messageString);
+								Constants.BURST_EXCHANGE_DEADLINE, messageString, null);
 						
 						utx.flatMap(unsignedTransactionBytes -> {
 							byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
@@ -509,7 +509,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 							amountToSend, configureFee,
-							Constants.BURST_EXCHANGE_DEADLINE, message);
+							Constants.BURST_EXCHANGE_DEADLINE, message, null);
 				}
 				else {
 					// now the configuration message
@@ -522,7 +522,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					String messageString = Constants.GSON.toJson(messageJson);
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 							configureFee,
-							Constants.BURST_EXCHANGE_DEADLINE, messageString);
+							Constants.BURST_EXCHANGE_DEADLINE, messageString, null);
 				}					
 
 				Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {

@@ -278,7 +278,7 @@ public class Main extends JFrame implements ActionListener {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		boolean newAccount = false;
 		try {
-			Account address = g.getNS().getAccount(g.getAddress()).blockingGet();
+			Account address = g.getNS().getAccount(g.getAddress(), null, null).blockingGet();
 			logger.info("Active address {}", address.getId().getFullAddress());
 		}
 		catch (Exception e) {

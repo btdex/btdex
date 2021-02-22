@@ -254,7 +254,7 @@ public class BurstNode {
 					checkBlock = NS.getBlock(Constants.CHECK_HEIGHT).blockingGet();
 				}
 				try {
-					account = NS.getAccount(g.getAddress()).blockingGet();
+					account = NS.getAccount(g.getAddress(), null, null).blockingGet();
 				}
 				catch (Exception e) {
 					nodeError = e;

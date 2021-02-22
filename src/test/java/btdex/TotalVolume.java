@@ -33,7 +33,8 @@ public class TotalVolume {
 			start += N+1;
 		}
 		
-		System.out.println(NumberFormatting.TOKEN.format(quantity/10000.0));
-		System.out.println(NumberFormatting.BURST.format(volume));
+		System.out.println("Total TRT/BURST volume on BTDEX:");
+		System.out.println(NumberFormatting.TOKEN.format(quantity/10000.0) + " TRT");
+		System.out.println(NumberFormatting.BURST.format(volume) + " BURST");
 	}
 }

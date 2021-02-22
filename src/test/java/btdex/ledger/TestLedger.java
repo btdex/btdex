@@ -51,14 +51,14 @@ public class TestLedger {
 		byte[] pubKey = BurstLedger.getPublicKey(index);
 		
 		BurstAddress yourAddress = BC.getBurstAddressFromPublic(pubKey);
-		Account account = NS.getAccount(yourAddress).blockingGet();
+		Account account = NS.getAccount(yourAddress, null, null).blockingGet();
 		
 		assertTrue(account.getBalance().longValue() > BurstValue.fromBurst(1).longValue(),
 				"Account " + yourAddress.getFullAddress() + " has no balace for testing");
 
 		BurstAddress rec = BurstAddress.fromRs("BURST-JJQS-MMA4-GHB4-4ZNZU");
 		
-		byte []utx = NS.generateTransaction(rec, pubKey, BurstValue.fromBurst(0.1), BurstValue.fromBurst(0.01), 1000).blockingGet();
+		byte []utx = NS.generateTransaction(rec, pubKey, BurstValue.fromBurst(0.1), BurstValue.fromBurst(0.01), 1000, null).blockingGet();
 		byte [] signed = BurstLedger.sign(utx, index);
 				
 		byte[] messageSha256 = BC.getSha256().digest(utx);
@@ -84,7 +84,7 @@ public class TestLedger {
 		byte[] pubKey = BurstLedger.getPublicKey(index);
 		
 		BurstAddress yourAddress = BC.getBurstAddressFromPublic(pubKey);
-		Account account = NS.getAccount(yourAddress).blockingGet();
+		Account account = NS.getAccount(yourAddress, null, null).blockingGet();
 		
 		assertTrue(account.getBalance().longValue() > BurstValue.fromBurst(1).longValue(),
 				"Account " + yourAddress.getFullAddress() + " has no balace for testing");
@@ -92,7 +92,7 @@ public class TestLedger {
 		BurstAddress rec = BurstAddress.fromRs("BURST-JJQS-MMA4-GHB4-4ZNZU");
 		
 		byte []utx = NS.generateTransactionWithMessage(rec, pubKey, BurstValue.fromBurst(0.1), 1000, 
-				"test message").blockingGet();
+				"test message", null).blockingGet();
 		byte [] signed = BurstLedger.sign(utx, index);
 				
 		byte[] messageSha256 = BC.getSha256().digest(utx);
@@ -118,7 +118,7 @@ public class TestLedger {
 		byte[] pubKey = BurstLedger.getPublicKey(index);
 		
 		BurstAddress yourAddress = BC.getBurstAddressFromPublic(pubKey);
-		Account account = NS.getAccount(yourAddress).blockingGet();
+		Account account = NS.getAccount(yourAddress, null, null).blockingGet();
 		
 		assertTrue(account.getBalance().longValue() > BurstValue.fromBurst(1).longValue(),
 				"Account " + yourAddress.getFullAddress() + " has no balace for testing");
@@ -126,7 +126,7 @@ public class TestLedger {
 		BurstAddress rec = BurstAddress.fromRs("BURST-JJQS-MMA4-GHB4-4ZNZU");
 		
 		byte []utx = NS.generateTransactionWithMessage(rec, pubKey, BurstValue.fromBurst(0.1), 1000, 
-				"test message with a lot of byyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyytttttttttttttttttttttttttttttttttttttteeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeessssssssssssssssssssssssssssssssssssssss")
+				"test message with a lot of byyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyytttttttttttttttttttttttttttttttttttttteeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeessssssssssssssssssssssssssssssssssssssss", null)
 				.blockingGet();
 		byte [] signed = BurstLedger.sign(utx, index);
 				
@@ -154,7 +154,7 @@ public class TestLedger {
 		byte[] pubKey = BurstLedger.getPublicKey(index);
 		
 		BurstAddress yourAddress = BC.getBurstAddressFromPublic(pubKey);
-		Account account = NS.getAccount(yourAddress).blockingGet();
+		Account account = NS.getAccount(yourAddress, null, null).blockingGet();
 		
 		assertTrue(account.getBalance().longValue() > BurstValue.fromBurst(1).longValue(),
 				"Account " + yourAddress.getFullAddress() + " has no balace for testing");
@@ -191,7 +191,7 @@ public class TestLedger {
 		byte[] pubKey = BurstLedger.getPublicKey(index);
 		
 		BurstAddress yourAddress = BC.getBurstAddressFromPublic(pubKey);
-		Account account = NS.getAccount(yourAddress).blockingGet();
+		Account account = NS.getAccount(yourAddress, null, null).blockingGet();
 		
 		assertTrue(account.getBalance().longValue() > BurstValue.fromBurst(1).longValue(),
 				"Account " + yourAddress.getFullAddress() + " has no balace for testing");

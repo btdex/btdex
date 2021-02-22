@@ -198,7 +198,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 					else {
 						utx = g.getNS().generateTransactionWithMessage(recAddress, g.getPubKey(),
 							BurstValue.fromBurst(amountNumber.doubleValue()),
-							selectedFee, Constants.BURST_SEND_DEADLINE, msg);
+							selectedFee, Constants.BURST_SEND_DEADLINE, msg, null);
 					}
 					
 					unsigned = utx.blockingGet();

@@ -82,7 +82,7 @@ public class TestInvalidTakeReopenWithdraw extends BT {
     }
 
     private long accBalance(String pass) {
-        return (bns.getAccount(BT.getBurstAddressFromPassphrase(pass)).blockingGet()).getBalance().longValue();
+        return (bns.getAccount(BT.getBurstAddressFromPassphrase(pass), null, null).blockingGet()).getBalance().longValue();
     }
 
     @Test
