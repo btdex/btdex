@@ -287,6 +287,10 @@ public class Main extends JFrame implements ActionListener {
 				BRSError error = (BRSError) e.getCause();
 				if(error.getCode() == 5) {
 					newAccount = true;
+					
+					// the copy will use the extended address if a new account, just to be sure
+					copyAddButton.setAddress(g.getAddress().getID(), g.getAddress().getExtendedAddress());
+					
 					// unknown account
 					/* TODO: think about this auto-activation thing
 					int ret = JOptionPane.showConfirmDialog(Main.this,
