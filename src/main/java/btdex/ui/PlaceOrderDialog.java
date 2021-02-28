@@ -9,6 +9,8 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -40,8 +42,11 @@ import btdex.core.*;
 import com.google.gson.JsonObject;
 
 import bt.BT;
+import bt.compiler.Compiler;
 import btdex.markets.MarketCrypto;
 import btdex.sc.SellContract;
+import burst.kit.crypto.BurstCrypto;
+import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.TransactionBroadcast;
@@ -73,6 +78,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	private JButton disputeButton;
 
 	private boolean isUpdate, isTake, isTaken, isBuy, isSignal, isDeposit, isMediator;
+	
+	private Compiler compiler;
 
 	private BurstValue suggestedFee;
 
@@ -107,6 +114,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			isDeposit = isBuy ? contract.getCreator().equals(g.getAddress()) : contract.getTaker() == g.getAddress().getSignedLongId();
 			isSignal = !isDeposit;
 		}
+		
+		compiler = Contracts.getCompiler(isBuy ? ContractType.BUY : ContractType.SELL);
 
 		setTitle(tr((isBuy && !isTake) || (!isBuy && isTake) ? "offer_buy_burst_with" : "offer_sell_burst_for", market.toString()));
 
@@ -313,21 +322,6 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			
 			if(g.isTestnet())
 				Toast.makeText((JFrame) this.getOwner(), tr("offer_testnet_warning"), Toast.Style.NORMAL).display();
-
-			if(contract == null)
-				contract = isBuy ? Contracts.getFreeBuyContract() : Contracts.getFreeContract();
-			if(contract == null) {
-				int ret = JOptionPane.showConfirmDialog(getParent(),
-						tr("offer_no_contract_available", tr(isBuy ? "book_buy_button" : "book_sell_button", Constants.BURST_TICKER)),
-						tr("reg_register"), JOptionPane.YES_NO_OPTION);
-				if(ret == JOptionPane.YES_OPTION) {
-					// No available contract, show the option to register a contract first
-					RegisterContractDialog dlg = new RegisterContractDialog(getOwner(), isBuy);
-					dlg.setLocationRelativeTo(getOwner());
-					dlg.setVisible(true);
-				}
-				return;
-			}
 		}
 		super.setVisible(b);
 	}
@@ -417,30 +411,75 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				Account ac = BurstNode.getInstance().getAccount();
 				if(ac == null) {
 					Toast.makeText((JFrame) this.getOwner(), tr("dlg_not_enough_balance"), Toast.Style.ERROR).display(okButton);
+					setCursor(Cursor.getDefaultCursor());
 					return;
 				}
 				BurstValue balance = ac.getUnconfirmedBalance();
 
 				Single<byte[]> utx = null;
-				Single<TransactionBroadcast> updateTx = null;
 				
 				String configureTxHash = null;
 
+				String contractRegistrationHash = null;
+				
 				if(!isUpdate && !isTake && !isTaken) {
-					// configure a new contract and place the deposit
+					BurstAddress contractAddress = null;
+					// configure the contract and place the deposit
 					contract = isBuy ? Contracts.getFreeBuyContract() : Contracts.getFreeContract();
 					if(contract == null) {
-						// This should not happen, since we checked already when opening the dialog
-						Toast.makeText((JFrame) this.getOwner(), tr("offer_no_contract_error"), Toast.Style.ERROR).display(okButton);
-						setCursor(Cursor.getDefaultCursor());
-						return;
+						// we need to register a new one
+						long data[] = Contracts.getNewContractData();
+						
+						ByteBuffer dataBuffer = ByteBuffer.allocate(data==null ? 0 : data.length*8);
+						dataBuffer.order(ByteOrder.LITTLE_ENDIAN);
+						for (int i = 0; data!=null && i < data.length; i++) {
+							dataBuffer.putLong(data[i]);
+						}
+
+						byte[] creationBytes = BurstCrypto.getInstance().getATCreationBytes((short)2,
+								compiler.getCode(), dataBuffer.array(), (short)compiler.getDataPages(), (short)1, (short)1,
+								BurstValue.fromPlanck(SellContract.ACTIVATION_FEE));
+
+						Single<TransactionBroadcast> tx = g.getNS().generateCreateATTransaction(g.getPubKey(),
+								BT.getMinRegisteringFee(compiler),
+								Constants.BURST_EXCHANGE_DEADLINE, "BTDEX" + (isBuy ? "buy" : "sell"), "BTDEX contract " + System.currentTimeMillis(), creationBytes)
+								.flatMap(unsignedTransactionBytes -> {
+									byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
+									return g.getNS().broadcastTransaction(signedTransactionBytes);
+								});
+
+						TransactionBroadcast tb = tx.blockingGet();
+						contractRegistrationHash = Hex.encodeHexString(tb.getFullHash());
+						contractAddress = BurstAddress.fromId(tb.getTransactionId());
+					}
+					else {
+						contractAddress = contract.getAddress();
 					}
 
-					// send the update transaction
-					long securityAmount = amountValue.longValue() * security.getValue() / 100L;
-					byte[] message = BT.callMethodMessage(contract.getMethod("update"), isBuy? amountValue.longValue() : securityAmount);
+					// now the configuration message
+					JsonObject messageJson = new JsonObject();
+					messageJson.addProperty("market", String.valueOf(market.getID()));
+					messageJson.addProperty("rate", String.valueOf(priceValue.longValue()));
+					if(!isBuy)
+						messageJson.addProperty("account", accountDetails.getText());
 
-					BurstValue amountToSend = BurstValue.fromPlanck(securityAmount + contract.getNewOfferFee());
+					String messageString = Constants.GSON.toJson(messageJson);
+					utx = g.getNS().generateTransactionWithMessage(contractAddress, g.getPubKey(),
+							suggestedFee,
+							Constants.BURST_EXCHANGE_DEADLINE, messageString, contractRegistrationHash);
+
+					TransactionBroadcast configureTx = utx.flatMap(unsignedTransactionBytes -> {
+						byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
+						return g.getNS().broadcastTransaction(signedTransactionBytes);
+					}).blockingGet();
+
+					configureTxHash = Hex.encodeHexString(configureTx.getFullHash());
+
+					// now the update transaction
+					long securityAmount = amountValue.longValue() * security.getValue() / 100L;
+					byte[] message = BT.callMethodMessage(compiler.getMethod("update"), isBuy? amountValue.longValue() : securityAmount);
+
+					BurstValue amountToSend = BurstValue.fromPlanck(securityAmount + (contract != null ? contract.getNewOfferFee() : SellContract.NEW_OFFER_FEE));
 					if(!isBuy)
 						amountToSend = amountToSend.add(amountValue);
 					
@@ -453,25 +492,18 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						return;
 					}
 
-					// Only send after the configureTxHash
-					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
+					utx = g.getNS().generateTransactionWithMessage(contractAddress, g.getPubKey(),
 							amountToSend, suggestedFee,
 							Constants.BURST_EXCHANGE_DEADLINE, message, configureTxHash);
-
-					updateTx = utx.flatMap(unsignedTransactionBytes -> {
-						byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
-						return g.getNS().broadcastTransaction(signedTransactionBytes);
-					});
 				}
-
-				if(isTaken && isSignal) {
+				else if(isTaken && isSignal) {
 					// we are signaling that we have received
 					byte[] message = BT.callMethodMessage(contract.getMethod("reportComplete"));
 					BurstValue amountToSend = BurstValue.fromPlanck(contract.getActivationFee());
 
-					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
+					g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 							amountToSend, suggestedFee,
-							Constants.BURST_EXCHANGE_DEADLINE, message, null);						
+							Constants.BURST_EXCHANGE_DEADLINE, message, null).blockingGet();
 				}
 				else if(isTake) {
 					// send the take transaction with the security deposit (+ amount if a buy order)
@@ -509,32 +541,14 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 							amountToSend, suggestedFee,
-							Constants.BURST_EXCHANGE_DEADLINE, message, null);
+							Constants.BURST_EXCHANGE_DEADLINE, message, configureTxHash);
 				}
-				else {
-					// now the configuration message
-					JsonObject messageJson = new JsonObject();
-					messageJson.addProperty("market", String.valueOf(market.getID()));
-					messageJson.addProperty("rate", String.valueOf(priceValue.longValue()));
-					if(!isBuy)
-						messageJson.addProperty("account", accountDetails.getText());
-
-					String messageString = Constants.GSON.toJson(messageJson);
-					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
-							suggestedFee,
-							Constants.BURST_EXCHANGE_DEADLINE, messageString, null);
-				}					
 
 				TransactionBroadcast tb = utx.flatMap(unsignedTransactionBytes -> {
 					byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
 					return g.getNS().broadcastTransaction(signedTransactionBytes);
 				}).blockingGet();
 				tb.getTransactionId();
-
-				// Send the update transaction only if the price setting was already sent
-				if(updateTx!=null) {
-					updateTx.blockingGet();
-				}
 
 				setVisible(false);
 				Toast.makeText((JFrame) this.getOwner(),
