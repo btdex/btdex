@@ -91,6 +91,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 	private JPanel buttonPane;
 
+	private long networkFees;
+
 	public PlaceOrderDialog(JFrame owner, Market market, ContractState contract, boolean buy) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -637,6 +639,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				    deadline2.setTime(contract.getTakeTimestamp().getAsDate());
 				    deadline2.add(Calendar.HOUR_OF_DAY, isBuy ? 24 : market.getPaymentTimeout(account.getFields()));
 				    
+				    networkFees = suggestedFee.longValue() + contract.getActivationFee();
+				    
 					// Signaling that we have received the market amount
 					header(tr("offer_terms_signaling",
 							totalField.getText(), market,
@@ -644,8 +648,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					append(tr("offer_terms_signaling_details",
 							amountField.getText(), contract.getSecurity(),
 							HistoryPanel.DATE_FORMAT.format(deadline.getTime()),
-							NumberFormatting.BURST.format(suggestedFee.longValue() +
-									contract.getActivationFee()),
+							NumberFormatting.BURST.format(networkFees),
 							market,
 							HistoryPanel.DATE_FORMAT.format(deadline2.getTime())
 							));
@@ -683,24 +686,26 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			}
 			else if(isTake) {
 				if(isBuy) {
+					networkFees = suggestedFee.longValue()*2 + contract.getActivationFee();
+					
 					header(tr("offer_terms_take_buy",
 							amountField.getText(), priceField.getText(), market));
 					append(tr("offer_terms_take_buy_details",
 							contract.getSecurity(),
 							amountField.getText(),
-							NumberFormatting.BURST.format(suggestedFee.longValue()*2 +
-									contract.getActivationFee()),
+							NumberFormatting.BURST.format(networkFees),
 							totalField.getText(), market,
 							accountDetails.getText(), market
 							));
 				}
 				else {
+					networkFees = suggestedFee.longValue() + contract.getActivationFee();
+					
 					header(tr("offer_terms_take_sell",
 							amountField.getText(), priceField.getText(), market));
 					append(tr("offer_terms_take_sell_details",
 							amountField.getText(), contract.getSecurity(),
-							NumberFormatting.BURST.format(suggestedFee.longValue() +
-									contract.getActivationFee()),
+							NumberFormatting.BURST.format(networkFees),
 							totalField.getText(), market, market.getPaymentTimeout(account.getFields()),
 							market
 							));
@@ -711,12 +716,13 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				if(!isUpdate)
 					contract = Contracts.getFreeBuyContract();
 
+				networkFees = isUpdate ? suggestedFee.longValue() : contract.getNewOfferFee() + 2*suggestedFee.longValue();
+				
 				header(tr(isUpdate ? "offer_terms_update_buy" : "offer_terms_buy",
 						amountField.getText(), priceField.getText(), market));
 				
 				append(tr(isUpdate ? "offer_terms_update_buy_details" : "offer_terms_buy_details",
-						NumberFormatting.BURST.format(isUpdate ? suggestedFee.longValue() :
-									contract.getNewOfferFee() + 2*suggestedFee.longValue() + Constants.FEE_QUANT),
+						NumberFormatting.BURST.format(networkFees),
 						isUpdate ? contract.getSecurity() :
 							NumberFormatting.BURST.format(security.getValue()*amountValue.longValue()/100) ));
 				append(tr("offer_terms_buy_taker",
@@ -728,14 +734,15 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				// sell contract (new or update)
 				if(!isUpdate)
 					contract = Contracts.getFreeContract();
+				
+				networkFees = isUpdate ? suggestedFee.longValue() : contract.getNewOfferFee() + 2*suggestedFee.longValue();
 
 				header(tr(isUpdate ? "offer_terms_update_sell" : "offer_terms_sell",
 						amountField.getText(), priceField.getText(), market,
 						accountDetails.getText()));
 				
 				append(tr(isUpdate ? "offer_terms_update_sell_details" : "offer_terms_sell_details",
-						NumberFormatting.BURST.format(isUpdate ? suggestedFee.longValue() :
-									contract.getNewOfferFee() + 2*suggestedFee.longValue() + Constants.FEE_QUANT),
+						NumberFormatting.BURST.format(networkFees),
 						amountField.getText(),
 						isUpdate ? contract.getSecurity() :
 							NumberFormatting.BURST.format(security.getValue()*amountValue.longValue()/100) ));

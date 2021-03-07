@@ -171,7 +171,7 @@ public class BurstNode {
 
 				lastBlock = null;
 
-				suggestedFee = g.getNS().suggestFee().blockingGet();
+				suggestedFee = NS.suggestFee().blockingGet();
 
 				Mediators mediators = g.getMediators();
 
@@ -254,7 +254,7 @@ public class BurstNode {
 					checkBlock = NS.getBlock(Constants.CHECK_HEIGHT).blockingGet();
 				}
 				try {
-					account = NS.getAccount(g.getAddress(), null, null).blockingGet();
+					account = NS.getAccount(g.getAddress()).blockingGet();
 				}
 				catch (Exception e) {
 					nodeError = e;

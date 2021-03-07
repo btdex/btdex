@@ -599,6 +599,10 @@ public class Main extends JFrame implements ActionListener {
 			Account ac = bn.getAccount();
 			if(ac == null)
 				return;
+			
+			// the copy will use the short address if we have a valid account
+			copyAddButton.setAddress(g.getAddress().getID(), g.getAddress().getFullAddress());
+			
 			balance = ac.getBalance().longValue();
 			// Locked value in *market* and possibly other Burst coin stuff.
 			locked = balance - ac.getUnconfirmedBalance().longValue();
