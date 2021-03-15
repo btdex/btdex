@@ -6,6 +6,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import btdex.markets.MarketTRT;
+import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.Account;
@@ -52,6 +53,7 @@ public class BurstNode {
 	private Block checkBlock;
 	private Exception nodeError;
 	private Account account;
+	private BurstAddress rewardRecipient;
 	private FeeSuggestion suggestedFee;
 	private BurstID lastBlock;
 	private Block latestBlock;
@@ -127,6 +129,10 @@ public class BurstNode {
 
 	public Account getAccount() {
 		return account;
+	}
+
+	public BurstAddress getRewardRecipient() {
+		return rewardRecipient;
 	}
 
 	public Exception getNodeException() {
@@ -255,6 +261,7 @@ public class BurstNode {
 				}
 				try {
 					account = NS.getAccount(g.getAddress()).blockingGet();
+					rewardRecipient = NS.getRewardRecipient(g.getAddress()).blockingGet();
 				}
 				catch (Exception e) {
 					nodeError = e;
