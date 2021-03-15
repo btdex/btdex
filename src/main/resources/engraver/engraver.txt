@@ -1,0 +1,3 @@
+Version 1.7.6
+
+Source code available at https://github.com/PoC-Consortium/scavenger
