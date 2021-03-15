@@ -24,7 +24,11 @@ public class Icons {
     public static IconCode TRASH = FontAwesome.TRASH;
     public static IconCode FOLDER = FontAwesome.FOLDER_OPEN;
     public static IconCode HDD = FontAwesome.HDD_O;
-    public static IconCode MINING = FontAwesome.BRIEFCASE;
+    public static IconCode MINING = FontAwesome.HDD_O;
+    public static IconCode PLOTTING = FontAwesome.DATABASE;
+    public static IconCode PLUG = FontAwesome.PLUG;
+    public static IconCode PLUS = FontAwesome.PLUS;
+    public static IconCode MINUS = FontAwesome.MINUS;
     public static IconCode CONNECTED = FontAwesome.WIFI;
     public static IconCode TESTNET = FontAwesome.FLASK;
     public static IconCode DISCONNECTED = FontAwesome.EXCLAMATION;
