@@ -4,10 +4,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
 
+import com.binance.dex.api.client.BinanceDexEnvironment;
+import com.binance.dex.api.client.Wallet;
+import com.binance.dex.api.client.encoding.Crypto;
 import com.google.gson.JsonObject;
 
 import bt.BT;
@@ -28,6 +32,7 @@ import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.builder.api.*;
 import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
+import org.bitcoinj.core.ECKey;
 
 public class Globals {
 
@@ -44,6 +49,7 @@ public class Globals {
 	private boolean ledgerEnabled = false;
 	private boolean testnet = false;
 	private BurstAddress address;
+	private String bnbAddress;
 	private int ledgerIndex;
 
 	private Mediators mediators;
@@ -141,6 +147,13 @@ public class Globals {
 			byte[] publicKey = BC.parseHexString(publicKeyStr);
 			address = BC.getBurstAddressFromPublic(publicKey);
 			logger.debug("checkPublicKey() sets address to {}", address.getFullAddress());
+			
+			String ecKeyPubStr = conf.getProperty(Constants.PROP_ECKEY_PUB);
+			if(ecKeyPubStr != null) {
+				ECKey ecKey = ECKey.fromPublicOnly(BC.parseHexString(ecKeyPubStr));
+				bnbAddress = Crypto.getAddressFromECKey(ecKey, isTestnet() ? BinanceDexEnvironment.TEST_NET.getHrp() :
+					BinanceDexEnvironment.PROD.getHrp());
+			}
 		}
 	}
 
@@ -183,9 +196,15 @@ public class Globals {
 
 		conf.setProperty(Constants.PROP_PUBKEY, Globals.BC.toHexString(pubKey));
 		conf.setProperty(Constants.PROP_ENC_PRIVKEY, Globals.BC.toHexString(encPrivKey));
-
+		
 		address = BC.getBurstAddressFromPublic(pubKey);
-		logger.debug("Ledger keys set. Address from pubKey {}", address.getFullAddress());
+		logger.debug("Keys set. for address {}", address.getFullAddress());
+		
+		Wallet bnbWallet = new Wallet(BC.toHexString(privKey), isTestnet() ?
+				BinanceDexEnvironment.TEST_NET : BinanceDexEnvironment.PROD);
+		conf.setProperty(Constants.PROP_ECKEY_PUB, bnbWallet.getEcKey().getPublicKeyAsHex());
+		bnbAddress = bnbWallet.getAddress();
+		logger.debug("Keys set. for address {}", bnbAddress);
 	}
 
 	/**
@@ -352,6 +371,10 @@ public class Globals {
 
 	public BurstAddress getAddress() {
 		return address;
+	}
+	
+	public String getBinanceAddress() {
+		return bnbAddress;
 	}
 
 	public byte[] getPubKey() {

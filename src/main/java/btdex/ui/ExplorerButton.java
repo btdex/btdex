@@ -19,6 +19,7 @@ public class ExplorerButton extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private String id, addressRS;
 	private int type = TYPE_ADDRESS;
+	private boolean isBinance = false;
 	
 	public static final int TYPE_ADDRESS = 0;
 	public static final int TYPE_TRANSACTION = 1;
@@ -37,6 +38,10 @@ public class ExplorerButton extends JPanel {
 
 	public ExplorerButton(String text, Icon icon, Icon icon2, int type, String id, String addressRS) {
 		this(text, icon, icon2, type, id, addressRS, null);
+	}
+	
+	public void setBinance(boolean b) {
+		this.isBinance = b;
 	}
 	
 	public ExplorerButton(String text, Icon icon, Icon icon2, int type, String id, String addressRS,
@@ -71,6 +76,8 @@ public class ExplorerButton extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				ExplorerWrapper exp = Main.getInstance().getExplorer();
+				if(isBinance)
+					exp = ExplorerWrapper.binanceExplorer();
 				
 				switch (ExplorerButton.this.type) {
 				case TYPE_ADDRESS:

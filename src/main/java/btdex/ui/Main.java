@@ -41,9 +41,11 @@ import javax.swing.event.ChangeListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.binance.dex.api.client.domain.Balance;
 import com.bulenkov.darcula.DarculaLaf;
 
 import bt.BT;
+import btdex.core.BinanceNode;
 import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.ContractState;
@@ -86,11 +88,17 @@ public class Main extends JFrame implements ActionListener {
 	private JButton nodeSelector, explorerSelector;
 
 	private ExplorerWrapper explorer;
-	private ExplorerButton copyAddButton;
+	private ExplorerWrapper bnbExplorer;
+	private ExplorerButton copyAddressButton;
+	private ExplorerButton copyAddressButtonBinance;
 
 	private JLabel balanceLabel;
 	private JLabel lockedBalanceLabel;
 	private JButton sendButton;
+
+	private JLabel balanceLabelBinance;
+	private JLabel lockedBalanceLabelBinance;
+	private JButton sendButtonBinance;
 
 	private long lastUpdated;
 
@@ -197,12 +205,20 @@ public class Main extends JFrame implements ActionListener {
 		ICON_TESTNET = i.get(Icons.TESTNET);
 		ICON_DISCONNECTED = i.get(Icons.DISCONNECTED);
 
-		copyAddButton = new ExplorerButton("", i.get(Icons.COPY), i.get(Icons.EXPLORER));
-		copyAddButton.getMainButton().setFont(largeFont);
+		copyAddressButton = new ExplorerButton("", i.get(Icons.COPY), i.get(Icons.EXPLORER));
+		copyAddressButton.getMainButton().setFont(largeFont);
+
+		copyAddressButtonBinance = new ExplorerButton("", i.get(Icons.COPY), i.get(Icons.EXPLORER));
+		copyAddressButtonBinance.getMainButton().setFont(largeFont);
+		copyAddressButtonBinance.setBinance(true);
 
 		sendButton = new JButton(i.get(Icons.SEND));
 		sendButton.setToolTipText(tr("main_send", "BURST"));
 		sendButton.addActionListener(this);
+
+		sendButtonBinance = new JButton(i.get(Icons.SEND));
+		sendButtonBinance.setToolTipText(tr("main_send", "BNB"));
+		sendButtonBinance.addActionListener(this);
 
 		content.add(tabbedPane, BorderLayout.CENTER);
 		tabbedPane.setFont(largeFont);
@@ -220,16 +236,26 @@ public class Main extends JFrame implements ActionListener {
 
 		tabbedPane.addTab(tr("main_transactions"), i.get(Icons.TRANSACTION), transactionsPanel);
 		
-		top.add(new Desc(tr("main_your_burst_address"), copyAddButton));
+		top.add(new Desc(tr("main_your_address", "BURST"), copyAddressButton));
 
-		balanceLabel = new JLabel("0");
+		balanceLabel = new JLabel("0.00");
 		balanceLabel.setToolTipText(tr("main_available_balance"));
 		balanceLabel.setFont(largeFont);
-		lockedBalanceLabel = new JLabel("0");
+		lockedBalanceLabel = new JLabel(tr("main_plus_locked", NumberFormatting.BURST.format(0)));
 		lockedBalanceLabel.setToolTipText(tr("main_amount_locked"));
 		top.add(new Desc(tr("main_balance", "BURST"), balanceLabel, lockedBalanceLabel));
 		top.add(new Desc("  ", sendButton));
 
+		top.add(new Desc(tr("main_your_address", "Binance Chain"), copyAddressButtonBinance));
+		
+		balanceLabelBinance = new JLabel("0.00");
+		balanceLabelBinance.setToolTipText(tr("main_available_balance"));
+		balanceLabelBinance.setFont(largeFont);
+		lockedBalanceLabelBinance = new JLabel(tr("main_plus_locked", NumberFormatting.BURST.format(0)));
+		lockedBalanceLabelBinance.setToolTipText(tr("main_amount_locked"));
+		top.add(new Desc(tr("main_balance", "BNB"), balanceLabelBinance, lockedBalanceLabelBinance));
+		top.add(new Desc("  ", sendButtonBinance));
+		
 		topRight.add(new Desc("  ", createSettingsButton(largeFont)));
 		topRight.add(new Desc("  ", resetPinButton));
 		topRight.add(new Desc("  ", signoutButton));
@@ -272,8 +298,17 @@ public class Main extends JFrame implements ActionListener {
 
 			resetPinButton.setVisible(!g.usingLedger());
 		}
-		copyAddButton.getMainButton().setText(g.getAddress().getRawAddress());
-		copyAddButton.setAddress(g.getAddress().getID(), g.getAddress().getFullAddress());
+		String rawAddress = g.getAddress().getRawAddress();
+		rawAddress = rawAddress.substring(0, 4) + "..." + rawAddress.substring(15);
+		copyAddressButton.getMainButton().setText(rawAddress);
+		copyAddressButton.setAddress(g.getAddress().getID(), g.getAddress().getFullAddress());
+		
+		String bnbAddress = g.getBinanceAddress();
+		copyAddressButtonBinance.setAddress(bnbAddress, bnbAddress);
+		bnbAddress = bnbAddress.substring(0, 5) + "..." + bnbAddress.substring(bnbAddress.length()-5);
+		copyAddressButtonBinance.getMainButton().setText(bnbAddress);
+		// Fire the node updating thread
+		BinanceNode.getInstance();
 
 		// check if this is a known account
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -290,7 +325,7 @@ public class Main extends JFrame implements ActionListener {
 					newAccount = true;
 					
 					// the copy will use the extended address if a new account, just to be sure
-					copyAddButton.setAddress(g.getAddress().getID(), g.getAddress().getExtendedAddress());
+					copyAddressButton.setAddress(g.getAddress().getID(), g.getAddress().getExtendedAddress());
 					
 					// unknown account
 					/* TODO: think about this auto-activation thing
@@ -602,7 +637,7 @@ public class Main extends JFrame implements ActionListener {
 				return;
 			
 			// the copy will use the short address if we have a valid account
-			copyAddButton.setAddress(g.getAddress().getID(), g.getAddress().getFullAddress());
+			copyAddressButton.setAddress(g.getAddress().getID(), g.getAddress().getFullAddress());
 			
 			balance = ac.getBalance().longValue();
 			// Locked value in *market* and possibly other Burst coin stuff.
@@ -640,6 +675,16 @@ public class Main extends JFrame implements ActionListener {
 			if(bn.getLatestBlock().getTimestamp().getAsDate().before(back8Minutes)) {
 				statusLabel.setText(tr("main_node_not_sync"));
 				nodeSelector.setBackground(Color.RED);
+			}
+			
+			if(g.getBinanceAddress() != null) {
+				BinanceNode binanceNode = BinanceNode.getInstance();
+				
+				Balance bnbBal = binanceNode.getAssetBalance("BNB");
+				if(bnbBal != null) {
+					balanceLabelBinance.setText(bnbBal.getFree());
+					lockedBalanceLabelBinance.setText(tr("main_plus_locked", bnbBal.getLocked()));
+				}
 			}
 		}
 		catch (RuntimeException rex) {
