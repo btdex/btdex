@@ -95,10 +95,12 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 		amount = new JFormattedTextField(token==null ? NumberFormatting.BURST.getFormat() : token.getNumberFormat().getFormat());
 		fee = new JSlider(1, 4);
 
-		topPanel.add(new Desc(tr(type == TYPE_JOIN_POOL ? "send_pool_address" : "send_recipient"), recipient));
-		if(type == TYPE_JOIN_POOL) {
-			recipient.setEditable(false);
-			recipient.setText(pool.getFullAddress());
+		if(type == TYPE_SEND || type == TYPE_JOIN_POOL) {
+			topPanel.add(new Desc(tr(type == TYPE_JOIN_POOL ? "send_pool_address" : "send_recipient"), recipient));
+			if(type == TYPE_JOIN_POOL) {
+				recipient.setEditable(false);
+				recipient.setText(pool.getFullAddress());
+			}
 		}
 		if(type == TYPE_SEND) {
 			topPanel.add(new Desc(tr("send_message"), message));

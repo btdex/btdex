@@ -249,9 +249,11 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		addCommitmentButton = new JButton(icons.get(Icons.PLUS));
 		addCommitmentButton.setToolTipText(tr("send_add_commitment"));
 		commitmentPanel.add(addCommitmentButton);
+		addCommitmentButton.addActionListener(this);
 		removeCommitmentButton = new JButton(icons.get(Icons.MINUS));
-		removeCommitmentButton.setToolTipText(tr("send_add_commitment"));
+		removeCommitmentButton.setToolTipText(tr("send_remove_commitment"));
 		commitmentPanel.add(removeCommitmentButton);
+		removeCommitmentButton.addActionListener(this);
 		
 		
 		JPanel minerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -352,6 +354,17 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			
 		}
 		
+		if(addCommitmentButton == e.getSource() || removeCommitmentButton == e.getSource()) {
+			SendDialog dlg = new SendDialog((JFrame) SwingUtilities.getWindowAncestor(this),
+					null, addCommitmentButton == e.getSource() ? SendDialog.TYPE_ADD_COMMITMENT :
+						SendDialog.TYPE_REMOVE_COMMITMENT, null);
+
+			dlg.setLocationRelativeTo(this);
+			dlg.setVisible(true);
+			
+			return;
+		}
+		
 		if(joinPoolButton == e.getSource()) {
 			if(poolComboBox.getSelectedIndex() < 0)
 				return;
@@ -380,6 +393,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 
 			dlg.setLocationRelativeTo(this);
 			dlg.setVisible(true);
+			
+			return;
 		}
 	}
 
