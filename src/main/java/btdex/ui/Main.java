@@ -102,6 +102,8 @@ public class Main extends JFrame implements ActionListener {
 
 	private Logger logger = LogManager.getLogger();
 
+	private MiningPanel miningPanel;
+
 	private static Main instance;
 
 	public static Main getInstance() {
@@ -209,7 +211,7 @@ public class Main extends JFrame implements ActionListener {
 
 		tabbedPane.addTab(tr("main_swaps"), i.get(Icons.SWAPS), orderBookToken);
 		tabbedPane.addTab(tr("main_contracts"), i.get(Icons.CROSS_CHAIN), orderBook);
-		tabbedPane.addTab(tr("main_mining"), i.get(Icons.MINING), new MiningPanel());
+		tabbedPane.addTab(tr("main_mining"), i.get(Icons.MINING), miningPanel = new MiningPanel());
 
 		boolean isMediator = g.getAddress()!=null && g.getMediators().isMediator(g.getAddress().getSignedLongId());
 
@@ -279,7 +281,7 @@ public class Main extends JFrame implements ActionListener {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		boolean newAccount = false;
 		try {
-			Account address = g.getNS().getAccount(g.getAddress(), null, null).blockingGet();
+			Account address = g.getNS().getAccount(g.getAddress()).blockingGet();
 			logger.info("Active address {}", address.getId().getFullAddress());
 		}
 		catch (Exception e) {
@@ -542,6 +544,8 @@ public class Main extends JFrame implements ActionListener {
 			}
 			if(mediationPanel!=null && mediationPanel.isVisible())
 				mediationPanel.update();
+			if(miningPanel.isVisible() || showingSplash)
+				miningPanel.update();
 
 			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 			nodeSelector.setBackground(explorerSelector.getBackground());

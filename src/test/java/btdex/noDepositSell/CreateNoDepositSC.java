@@ -91,7 +91,7 @@ public class CreateNoDepositSC {
     }
 
     public long getFeeContractBalance() {
-        return bns.getAccount(BurstAddress.fromId(feeContract), null, null).blockingGet().getBalance().longValue();
+        return bns.getAccount(BurstAddress.fromId(feeContract)).blockingGet().getBalance().longValue();
     }
 
     public Compiler getCompiled() {

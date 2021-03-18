@@ -11,7 +11,7 @@ public class Balances {
 
 		BurstAddress ad = BurstAddress.fromEither("BURST-BTKF-8WT9-L98N-98JH2");
 		
-		Account ac = BT.getNode().getAccount(ad, null, null).blockingGet();
+		Account ac = BT.getNode().getAccount(ad).blockingGet();
 		
 		System.out.println(ac.getBalance().longValue());
 		System.out.println(ac.getUnconfirmedBalance().longValue());

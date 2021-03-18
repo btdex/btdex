@@ -51,7 +51,7 @@ public class TestLedger {
 		byte[] pubKey = BurstLedger.getPublicKey(index);
 		
 		BurstAddress yourAddress = BC.getBurstAddressFromPublic(pubKey);
-		Account account = NS.getAccount(yourAddress, null, null).blockingGet();
+		Account account = NS.getAccount(yourAddress).blockingGet();
 		
 		assertTrue(account.getBalance().longValue() > BurstValue.fromBurst(1).longValue(),
 				"Account " + yourAddress.getFullAddress() + " has no balace for testing");
@@ -84,7 +84,7 @@ public class TestLedger {
 		byte[] pubKey = BurstLedger.getPublicKey(index);
 		
 		BurstAddress yourAddress = BC.getBurstAddressFromPublic(pubKey);
-		Account account = NS.getAccount(yourAddress, null, null).blockingGet();
+		Account account = NS.getAccount(yourAddress).blockingGet();
 		
 		assertTrue(account.getBalance().longValue() > BurstValue.fromBurst(1).longValue(),
 				"Account " + yourAddress.getFullAddress() + " has no balace for testing");
@@ -118,7 +118,7 @@ public class TestLedger {
 		byte[] pubKey = BurstLedger.getPublicKey(index);
 		
 		BurstAddress yourAddress = BC.getBurstAddressFromPublic(pubKey);
-		Account account = NS.getAccount(yourAddress, null, null).blockingGet();
+		Account account = NS.getAccount(yourAddress).blockingGet();
 		
 		assertTrue(account.getBalance().longValue() > BurstValue.fromBurst(1).longValue(),
 				"Account " + yourAddress.getFullAddress() + " has no balace for testing");
@@ -154,7 +154,7 @@ public class TestLedger {
 		byte[] pubKey = BurstLedger.getPublicKey(index);
 		
 		BurstAddress yourAddress = BC.getBurstAddressFromPublic(pubKey);
-		Account account = NS.getAccount(yourAddress, null, null).blockingGet();
+		Account account = NS.getAccount(yourAddress).blockingGet();
 		
 		assertTrue(account.getBalance().longValue() > BurstValue.fromBurst(1).longValue(),
 				"Account " + yourAddress.getFullAddress() + " has no balace for testing");
@@ -191,7 +191,7 @@ public class TestLedger {
 		byte[] pubKey = BurstLedger.getPublicKey(index);
 		
 		BurstAddress yourAddress = BC.getBurstAddressFromPublic(pubKey);
-		Account account = NS.getAccount(yourAddress, null, null).blockingGet();
+		Account account = NS.getAccount(yourAddress).blockingGet();
 		
 		assertTrue(account.getBalance().longValue() > BurstValue.fromBurst(1).longValue(),
 				"Account " + yourAddress.getFullAddress() + " has no balace for testing");

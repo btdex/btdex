@@ -35,7 +35,12 @@ import com.google.gson.JsonParser;
 import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.Globals;
+import btdex.core.NumberFormatting;
 import burst.kit.entity.BurstAddress;
+import burst.kit.entity.BurstValue;
+import burst.kit.entity.response.Account;
+import burst.kit.entity.response.Block;
+import burst.kit.entity.response.MiningInfo;
 import burst.kit.entity.response.Transaction;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -326,6 +331,29 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 //        // Create a string from the buffer (excluding the trailing \0 byte)
 //        return new String(buffer, 0, buffer.length-1);
 //    }
+	
+	public void update() {
+		BurstNode BN = BurstNode.getInstance();
+
+		MiningInfo miningInfo = BN.getMiningInfo();
+		Block latestBlock = BN.getLatestBlock();
+		if(miningInfo != null && latestBlock != null) {
+			double networkTbs = 18325193796.0/miningInfo.getBaseTarget()/1.83;
+			BurstValue burstPerTbPerDay = BurstValue.fromBurst(360.0/networkTbs * latestBlock.getBlockReward().doubleValue());
+			BurstValue avgCommitment = BurstValue.fromPlanck(miningInfo.getAverageCommitmentNQT());
+			
+			String rewards = tr("mine_reward_estimation", burstPerTbPerDay.multiply(8).toFormattedString(), avgCommitment.multiply(100).toFormattedString());
+			rewards += "\n" + tr("mine_reward_estimation", burstPerTbPerDay.toFormattedString(), avgCommitment.toFormattedString());
+			rewards += "\n" + tr("mine_reward_estimation", burstPerTbPerDay.divide(8).toFormattedString(), BurstValue.fromBurst(0).toFormattedString());
+			
+			rewardsEstimationArea.setText(rewards);
+		}
+		
+		Account account = BN.getAccount();
+		if(account != null && account.getCommittedBalance() != null) {
+			committedAmountField.setText(NumberFormatting.BURST.format(account.getCommittedBalance().longValue()));
+		}
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -373,7 +401,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			
 			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedIndex());
 			String info = null;
-			if(BN.getRewardRecipient().equals(poolAddress)) {
+			if(poolAddress.equals(BN.getRewardRecipient())) {
 				info = tr("mine_already_joined");
 			}
 			for(Transaction tx : BN.getAccountTransactions()) {

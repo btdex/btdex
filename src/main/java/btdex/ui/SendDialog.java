@@ -185,9 +185,12 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 
 			String error = null;
 			String sadd = recipient.getText();
-			BurstAddress recAddress = BurstAddress.fromEither(sadd);
-			if(recAddress == null && type == TYPE_SEND)
-				error = tr("send_invalid_recipient");
+			BurstAddress recAddress = null;
+			if(type == TYPE_SEND || type == TYPE_JOIN_POOL) {
+				recAddress = BurstAddress.fromEither(sadd);
+				if(recAddress == null && type == TYPE_SEND)
+					error = tr("send_invalid_recipient");
+			}
 
 			if(error == null && !g.usingLedger() && !g.checkPIN(pin.getPassword())) {
 				error = tr("dlg_invalid_pin");
@@ -219,6 +222,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 				pin.setEnabled(false);
 				okButton.setEnabled(false);
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				BurstValue amountToSend = BurstValue.fromBurst(amountNumber.doubleValue());
 
 				try {
 					// all set, lets make the transfer
@@ -232,10 +236,17 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 						utx = g.getNS().generateTransactionSetRewardRecipient(recAddress, g.getPubKey(),
 								selectedFee, Constants.BURST_SEND_DEADLINE);
 					}
+					else if(type == TYPE_ADD_COMMITMENT){
+						utx = g.getNS().generateTransactionAddCommitment(g.getPubKey(), amountToSend,
+								selectedFee, Constants.BURST_SEND_DEADLINE);
+					}
+					else if(type == TYPE_REMOVE_COMMITMENT){
+						utx = g.getNS().generateTransactionRemoveCommitment(g.getPubKey(), amountToSend,
+								selectedFee, Constants.BURST_SEND_DEADLINE);
+					}
 					else {
 						utx = g.getNS().generateTransactionWithMessage(recAddress, g.getPubKey(),
-							BurstValue.fromBurst(amountNumber.doubleValue()),
-							selectedFee, Constants.BURST_SEND_DEADLINE, msg, null);
+							amountToSend, selectedFee, Constants.BURST_SEND_DEADLINE, msg, null);
 					}
 					
 					unsigned = utx.blockingGet();
