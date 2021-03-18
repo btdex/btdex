@@ -115,7 +115,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			JButton cancelButton = new JButton(icons.get(Icons.CANCEL));
 			cancelButton.addActionListener(this);
 			
-			JButton selectFolderButton = new JButton("Select a disk folder to use", icons.get(Icons.FOLDER));
+			JButton selectFolderButton = new JButton(tr("mine_select_disk"), icons.get(Icons.FOLDER));
 			selectFolderButton.addActionListener(this);
 			
 			JSlider fractionToPlotSlider = new JSlider(0, 100, 0);
@@ -142,7 +142,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		
 		JPanel ssdPanel = new JPanel(new BorderLayout(2, 0));
-		ssdSelectFolderButton = new JButton("SSD cache (optional, needed for external SMRs)", icons.get(Icons.FOLDER));
+		ssdSelectFolderButton = new JButton(tr("mine_ssd_cache"), icons.get(Icons.FOLDER));
 		ssdSelectFolderButton.addActionListener(this);
 		ssdPanel.add(ssdSelectFolderButton, BorderLayout.CENTER);
 		
@@ -195,14 +195,14 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		
 		plotButtonsPanel.add(new JLabel("CPU Cores"));
 		plotButtonsPanel.add(cpusToUse);
-		plotButtonsPanel.add(lowPriorityCheck = new JCheckBox("Run with low priority"));
+		plotButtonsPanel.add(lowPriorityCheck = new JCheckBox(tr("mine_run_low_prio")));
 		plotButtonsPanel.add(plotButton);
 		plottingPanel.add(plotButtonsPanel);
 		
 		
-		JPanel poolPanel = new JPanel(new FlowLayout());
+		JPanel poolPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		poolPanel.setBorder(BorderFactory.createTitledBorder(tr("mine_join_pool")));
-		poolPanel.add(new JLabel("Select Pool:"));
+		poolPanel.add(new JLabel(tr("mine_select_pool")));
 		
 		Globals g = Globals.getInstance();
 		
@@ -229,7 +229,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		poolPanel.add(poolComboBox);
 		
-		joinPoolButton = new JButton("Join pool", icons.get(Icons.PLUG));
+		joinPoolButton = new JButton(tr("send_join_pool"), icons.get(Icons.PLUG));
 		joinPoolButton.addActionListener(this);
 		poolPanel.add(joinPoolButton);
 		
@@ -239,13 +239,13 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		rewardsPanel.setLayout(new BoxLayout(rewardsPanel, BoxLayout.Y_AXIS));
 		
 		rewardsEstimationArea = new JTextArea(3, 20);
-		rewardsEstimationArea.setText("Waiting for network data...");
+		rewardsEstimationArea.setFont(rewardsEstimationArea.getFont().deriveFont(rewardsEstimationArea.getFont().getSize2D()*1.2f));
 		rewardsEstimationArea.setEditable(false);
 		rewardsPanel.add(rewardsEstimationArea);
 
 		JPanel commitmentPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		rewardsPanel.add(commitmentPanel);
-		commitmentPanel.add(new JLabel("Your Committed Amount (BURST):"));
+		commitmentPanel.add(new JLabel(tr("mine_your_amount")));
 
 		committedAmountField = new JTextField(9);
 		committedAmountField.setEditable(false);
@@ -263,9 +263,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		
 		JPanel minerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		minerPanel.setBorder(BorderFactory.createTitledBorder(tr("mine_run_miner")));
-		minerPanel.add(minerAutoStart = new JCheckBox("Start automatically"));
+		minerPanel.add(minerAutoStart = new JCheckBox(tr("mine_start_auto")));
 
-		startMiningButton = new JButton("Start Mining", icons.get(Icons.MINING));
+		startMiningButton = new JButton(tr("mine_start_mining"), icons.get(Icons.MINING));
 		minerPanel.add(startMiningButton);
 
 		
@@ -284,7 +284,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
         JScrollPane consoleScrollPane = new JScrollPane(console);        
         JPanel consolePanel = new JPanel(new BorderLayout());
         consolePanel.add(consoleScrollPane, BorderLayout.CENTER);
-        consolePanel.setBorder(BorderFactory.createTitledBorder("Console"));
+        consolePanel.setBorder(BorderFactory.createTitledBorder(tr("mine_console")));
 		
 		add(topPanel, BorderLayout.PAGE_START);
 		add(consolePanel, BorderLayout.CENTER);
@@ -340,11 +340,14 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		if(miningInfo != null && latestBlock != null) {
 			double networkTbs = 18325193796.0/miningInfo.getBaseTarget()/1.83;
 			BurstValue burstPerTbPerDay = BurstValue.fromBurst(360.0/networkTbs * latestBlock.getBlockReward().doubleValue());
-			BurstValue avgCommitment = BurstValue.fromPlanck(miningInfo.getAverageCommitmentNQT());
-			
-			String rewards = tr("mine_reward_estimation", burstPerTbPerDay.multiply(8).toFormattedString(), avgCommitment.multiply(100).toFormattedString());
-			rewards += "\n" + tr("mine_reward_estimation", burstPerTbPerDay.toFormattedString(), avgCommitment.toFormattedString());
-			rewards += "\n" + tr("mine_reward_estimation", burstPerTbPerDay.divide(8).toFormattedString(), BurstValue.fromBurst(0).toFormattedString());
+
+			String rewards = burstPerTbPerDay.toFormattedString();
+			if(miningInfo.getAverageCommitmentNQT() > 0) {
+				BurstValue avgCommitment = BurstValue.fromPlanck(miningInfo.getAverageCommitmentNQT());
+				rewards = tr("mine_reward_estimation", burstPerTbPerDay.multiply(8).toFormattedString(), avgCommitment.multiply(100).toFormattedString());
+				rewards += "\n" + tr("mine_reward_estimation", burstPerTbPerDay.toFormattedString(), avgCommitment.toFormattedString());
+				rewards += "\n" + tr("mine_reward_estimation_nothing", burstPerTbPerDay.divide(8).toFormattedString());
+			}
 			
 			rewardsEstimationArea.setText(rewards);
 		}
