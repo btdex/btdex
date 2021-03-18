@@ -52,14 +52,35 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 	private JButton calcelButton;
 
 	private Market token;
+	
+	private int type;
+	public static final int TYPE_SEND = 0;
+	public static final int TYPE_JOIN_POOL = 1;
+	public static final int TYPE_ADD_COMMITMENT = 2;
+	public static final int TYPE_REMOVE_COMMITMENT = 3;
 
 	public SendDialog(JFrame owner, Market token) {
+		this(owner, token, TYPE_SEND, null);
+	}
+	
+	public SendDialog(JFrame owner, Market token, int type, BurstAddress pool) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
+		this.type = type;
 		this.token = token;
 
-		setTitle(tr("main_send", token==null ? "BURST" : token));
+		if(type == TYPE_JOIN_POOL) {
+			setTitle(tr("send_join_pool"));
+		}
+		else if(type == TYPE_ADD_COMMITMENT) {
+			setTitle(tr("send_add_commitment"));
+		}
+		else if(type == TYPE_REMOVE_COMMITMENT) {
+			setTitle(tr("send_remove_commitment"));
+		}
+		else
+			setTitle(tr("main_send", token==null ? "BURST" : token));
 
 		JPanel topPanel = new JPanel(new GridLayout(0, 1, 4, 4));
 
@@ -74,11 +95,21 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 		amount = new JFormattedTextField(token==null ? NumberFormatting.BURST.getFormat() : token.getNumberFormat().getFormat());
 		fee = new JSlider(1, 4);
 
-		topPanel.add(new Desc(tr("send_recipient"), recipient));
-		topPanel.add(new Desc(tr("send_message"), message));
-		message.setToolTipText(tr("send_empty_for_no_message"));
+		topPanel.add(new Desc(tr(type == TYPE_JOIN_POOL ? "send_pool_address" : "send_recipient"), recipient));
+		if(type == TYPE_JOIN_POOL) {
+			recipient.setEditable(false);
+			recipient.setText(pool.getFullAddress());
+		}
+		if(type == TYPE_SEND) {
+			topPanel.add(new Desc(tr("send_message"), message));
+			message.setToolTipText(tr("send_empty_for_no_message"));
+		}
 
 		panel.add(new Desc(tr("send_amount", token==null ? "BURST" : token), amount));
+		if(type == TYPE_JOIN_POOL) {
+			amount.setEnabled(false);
+			amount.setText(BurstValue.fromBurst(0).toUnformattedString());
+		}
 		Desc feeDesc = new Desc("", fee);
 		panel.add(feeDesc);
 		FeeSuggestion suggestedFee = BurstNode.getInstance().getSuggestedFee();
@@ -153,7 +184,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 			String error = null;
 			String sadd = recipient.getText();
 			BurstAddress recAddress = BurstAddress.fromEither(sadd);
-			if(recAddress == null)
+			if(recAddress == null && type == TYPE_SEND)
 				error = tr("send_invalid_recipient");
 
 			if(error == null && !g.usingLedger() && !g.checkPIN(pin.getPassword())) {
@@ -194,6 +225,10 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 						utx = g.getNS().generateTransferAssetTransactionWithMessage(g.getPubKey(), recAddress,
 								token.getTokenID(), BurstValue.fromPlanck((long)(amountNumber.doubleValue()*token.getFactor())),
 								selectedFee, Constants.BURST_SEND_DEADLINE, msg);
+					}
+					else if(type == TYPE_JOIN_POOL){
+						utx = g.getNS().generateTransactionSetRewardRecipient(recAddress, g.getPubKey(),
+								selectedFee, Constants.BURST_SEND_DEADLINE);
 					}
 					else {
 						utx = g.getNS().generateTransactionWithMessage(recAddress, g.getPubKey(),

@@ -17,26 +17,26 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import org.jocl.CL;
-import org.jocl.Pointer;
-import org.jocl.cl_device_id;
-import org.jocl.cl_platform_id;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import btdex.core.BurstNode;
 import btdex.core.Constants;
+import btdex.core.Globals;
 import burst.kit.entity.BurstAddress;
-import burst.kit.service.BurstNodeService;
+import burst.kit.entity.response.Transaction;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -53,6 +53,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			"https://bmf100pool.burstcoin.ro:443",
 			"http://pool.burstcoin.ro:8080",
 			"http://openburstpool.ddns.net:8126"
+	};
+	
+	private static final String[] POOL_LIST_TESTNET = {
+			"http://nivbox.co.uk:9000",
 	};
 	
 	private ArrayList<BurstAddress> poolAddresses = new ArrayList<>();
@@ -77,7 +81,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 
 	private JComboBox<String> poolComboBox;
 
-	private JButton poolBindButton;
+	private JButton joinPoolButton;
 
 	private JTextField committedAmountField;
 
@@ -195,9 +199,11 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		poolPanel.setBorder(BorderFactory.createTitledBorder(tr("mine_join_pool")));
 		poolPanel.add(new JLabel("Select Pool:"));
 		
+		Globals g = Globals.getInstance();
+		
 		poolComboBox = new JComboBox<String>();
 		OkHttpClient client = new OkHttpClient();
-		for (String poolURL : POOL_LIST) {
+		for (String poolURL : (g.isTestnet() ? POOL_LIST_TESTNET : POOL_LIST)) {
 			String poolURLgetConfig = poolURL + "/api/getConfig";
 			
 			try {
@@ -218,8 +224,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		poolPanel.add(poolComboBox);
 		
-		poolBindButton = new JButton("Join pool", icons.get(Icons.PLUG));
-		poolPanel.add(poolBindButton);
+		joinPoolButton = new JButton("Join pool", icons.get(Icons.PLUG));
+		joinPoolButton.addActionListener(this);
+		poolPanel.add(joinPoolButton);
 		
 
 		JPanel rewardsPanel = new JPanel();
@@ -228,6 +235,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		
 		rewardsEstimationArea = new JTextArea(3, 20);
 		rewardsEstimationArea.setText("Waiting for network data...");
+		rewardsEstimationArea.setEditable(false);
 		rewardsPanel.add(rewardsEstimationArea);
 
 		JPanel commitmentPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -239,10 +247,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		commitmentPanel.add(committedAmountField);
 		
 		addCommitmentButton = new JButton(icons.get(Icons.PLUS));
-		addCommitmentButton.setToolTipText("Add commitment...");
+		addCommitmentButton.setToolTipText(tr("send_add_commitment"));
 		commitmentPanel.add(addCommitmentButton);
 		removeCommitmentButton = new JButton(icons.get(Icons.MINUS));
-		removeCommitmentButton.setToolTipText("Remove commitment...");
+		removeCommitmentButton.setToolTipText(tr("send_add_commitment"));
 		commitmentPanel.add(removeCommitmentButton);
 		
 		
@@ -275,47 +283,47 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		add(consolePanel, BorderLayout.CENTER);
 	}
 	
-    /**
-     * Returns the value of the device info parameter with the given name
-     *
-     * @param device The device
-     * @param paramName The parameter name
-     * @return The value
-     */
-    private static String getString(cl_device_id device, int paramName)
-    {
-        // Obtain the length of the string that will be queried
-        long size[] = new long[1];
-        CL.clGetDeviceInfo(device, paramName, 0, null, size);
-
-        // Create a buffer of the appropriate size and fill it with the info
-        byte buffer[] = new byte[(int)size[0]];
-        CL.clGetDeviceInfo(device, paramName, buffer.length, Pointer.to(buffer), null);
-
-        // Create a string from the buffer (excluding the trailing \0 byte)
-        return new String(buffer, 0, buffer.length-1);
-    }
-    
-    /**
-     * Returns the value of the platform info parameter with the given name
-     *
-     * @param platform The platform
-     * @param paramName The parameter name
-     * @return The value
-     */
-    private static String getString(cl_platform_id platform, int paramName)
-    {
-        // Obtain the length of the string that will be queried
-        long size[] = new long[1];
-        CL.clGetPlatformInfo(platform, paramName, 0, null, size);
-
-        // Create a buffer of the appropriate size and fill it with the info
-        byte buffer[] = new byte[(int)size[0]];
-        CL.clGetPlatformInfo(platform, paramName, buffer.length, Pointer.to(buffer), null);
-
-        // Create a string from the buffer (excluding the trailing \0 byte)
-        return new String(buffer, 0, buffer.length-1);
-    }
+//    /**
+//     * Returns the value of the device info parameter with the given name
+//     *
+//     * @param device The device
+//     * @param paramName The parameter name
+//     * @return The value
+//     */
+//    private static String getString(cl_device_id device, int paramName)
+//    {
+//        // Obtain the length of the string that will be queried
+//        long size[] = new long[1];
+//        CL.clGetDeviceInfo(device, paramName, 0, null, size);
+//
+//        // Create a buffer of the appropriate size and fill it with the info
+//        byte buffer[] = new byte[(int)size[0]];
+//        CL.clGetDeviceInfo(device, paramName, buffer.length, Pointer.to(buffer), null);
+//
+//        // Create a string from the buffer (excluding the trailing \0 byte)
+//        return new String(buffer, 0, buffer.length-1);
+//    }
+//    
+//    /**
+//     * Returns the value of the platform info parameter with the given name
+//     *
+//     * @param platform The platform
+//     * @param paramName The parameter name
+//     * @return The value
+//     */
+//    private static String getString(cl_platform_id platform, int paramName)
+//    {
+//        // Obtain the length of the string that will be queried
+//        long size[] = new long[1];
+//        CL.clGetPlatformInfo(platform, paramName, 0, null, size);
+//
+//        // Create a buffer of the appropriate size and fill it with the info
+//        byte buffer[] = new byte[(int)size[0]];
+//        CL.clGetPlatformInfo(platform, paramName, buffer.length, Pointer.to(buffer), null);
+//
+//        // Create a string from the buffer (excluding the trailing \0 byte)
+//        return new String(buffer, 0, buffer.length-1);
+//    }
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -342,6 +350,36 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		pos = pathCancelButtons.indexOf(e.getSource());
 		if(pos >=0) {
 			
+		}
+		
+		if(joinPoolButton == e.getSource()) {
+			if(poolComboBox.getSelectedIndex() < 0)
+				return;
+			
+			BurstNode BN = BurstNode.getInstance();
+			
+			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedIndex());
+			String info = null;
+			if(BN.getRewardRecipient().equals(poolAddress)) {
+				info = tr("mine_already_joined");
+			}
+			for(Transaction tx : BN.getAccountTransactions()) {
+				if(tx.getType() == 20 && tx.getSubtype() == 0 && tx.getConfirmations() < 4) {
+					info = tr("mine_wait_join");
+					break;
+				}
+			}
+			
+			if(info != null) {
+				JOptionPane.showMessageDialog(getParent(), info, tr("send_join_pool"), JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}
+			
+			SendDialog dlg = new SendDialog((JFrame) SwingUtilities.getWindowAncestor(this),
+					null, SendDialog.TYPE_JOIN_POOL, poolAddress);
+
+			dlg.setLocationRelativeTo(this);
+			dlg.setVisible(true);
 		}
 	}
 
