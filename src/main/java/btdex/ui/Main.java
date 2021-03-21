@@ -12,6 +12,8 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
@@ -121,7 +123,16 @@ public class Main extends JFrame implements ActionListener {
 
 	public Main() {
 		super("BTDEX" + (Globals.getInstance().isTestnet() ? "-TESTNET" : ""));
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent ev) {
+            	if(miningPanel != null)
+            		miningPanel.stop();
+            	
+            	System.exit(0);
+            }
+        });
 
 		instance = this;
 

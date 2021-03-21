@@ -20,6 +20,8 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -80,8 +82,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	private static String TMP_DIR = System.getProperty("java.io.tmpdir");
 	
 	private static final String PROP_PLOT_PATH = "plotPath";
+	private static final String PROP_PLOT_CACHE = "plotPathCache";
 	private static final String PROP_PLOT_LOW_PRIO = "plotLowPrio";
 	private static final String PROP_PLOT_CPU_CORES = "plotCpuCores";
+	private static final String PROP_MINER_POOL = "minerPool";
 	private static final String PROP_MINER_AUTO_START = "minerAutoStart";
 	
 	private static final String PLOT_APP = "[PLOTTER]";
@@ -122,6 +126,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	private JTextArea console;
 
 	private JButton ssdSelectFolderButton;
+	
+	private File ssdPath;
 
 	private JButton ssdCancelButton;
 
@@ -143,13 +149,14 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 
 	private JButton startMiningButton, stopMiningButton;
 	
-	private Process minerProcess;
+	private Process minerProcess, plotterProcess;
 
 	private JCheckBox lowPriorityCheck;
 
 	private JTextArea rewardsEstimationArea;
 
 	private ArrayList<File> newPlotFiles = new ArrayList<>();
+	private ArrayList<File> resumePlotFiles = new ArrayList<>();
 
 	private boolean plotting, mining;
 
@@ -187,6 +194,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		for (int i = 0; i < N_PATHS; i++) {
 			
 			JButton cancelButton = new JButton(icons.get(Icons.CANCEL));
+			cancelButton.setToolTipText(tr("mine_remove_path"));
 			cancelButton.addActionListener(this);
 			cancelButton.setEnabled(false);
 			
@@ -220,6 +228,16 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				cancelButton.setEnabled(true);
 				openFolderButton.setEnabled(true);
 				fractionToPlotSlider.setEnabled(true);
+				
+				// check if there are pending files to resume
+				File[] plotFiles = pathFile.listFiles(PLOT_FILE_FILTER);
+				for(File plot : plotFiles) {
+					int progress = getPlotProgress(plot);
+					if(progress >= 0) {
+						resumePlotFiles.add(plot);
+						addToConsole(PLOT_APP, "Plotting of '" + plot.getAbsolutePath() + "' will be resumed when you start plotting again");
+					}
+				}
 			}
 			
 			JPanel folderBorderPanel = new JPanel(new BorderLayout(2, 0));
@@ -234,13 +252,21 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		
 		JPanel ssdPanel = new JPanel(new BorderLayout(2, 0));
-		ssdSelectFolderButton = new JButton(tr("mine_ssd_cache"), icons.get(Icons.FOLDER));
+		ssdSelectFolderButton = new JButton(tr("mine_ssd_cache_select"), icons.get(Icons.FOLDER));
 		ssdSelectFolderButton.addActionListener(this);
 		ssdPanel.add(ssdSelectFolderButton, BorderLayout.CENTER);
 		
 		ssdCancelButton = new JButton(icons.get(Icons.CANCEL));
+		ssdCancelButton.setToolTipText(tr("mine_ssd_remove"));
 		ssdCancelButton.addActionListener(this);
 		ssdCancelButton.setEnabled(false);
+		
+		String path = g.getProperty(PROP_PLOT_CACHE);
+		if(path != null && path.length() > 0) {
+			ssdPath = new File(path);
+			ssdSelectFolderButton.setText(tr("mine_ssd_cache", path));
+			ssdCancelButton.setEnabled(true);
+		}
 		
 		ssdPanel.add(ssdCancelButton, BorderLayout.LINE_START);
 		plottingPanel.add(ssdPanel);
@@ -292,7 +318,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		iconPlot = icons.get(Icons.PLOTTING);
 		startPlotButton = new JButton(tr("mine_plot"), iconPlot);
 		startPlotButton.addActionListener(this);
-		startPlotButton.setEnabled(false);
+		startPlotButton.setEnabled(resumePlotFiles.size() > 0);
 		
 		stopPlotButton = new JButton(tr("mine_plot_stop"), icons.get(Icons.CANCEL));
 		stopPlotButton.addActionListener(this);
@@ -313,6 +339,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		poolPanel.setBorder(BorderFactory.createTitledBorder(tr("mine_join_pool")));
 		poolPanel.add(new JLabel(tr("mine_select_pool")));
 		
+		String selectedPool = g.getProperty(PROP_MINER_POOL);
 		poolComboBox = new JComboBox<String>();
 		OkHttpClient client = new OkHttpClient();
 		for (String poolURL : (g.isTestnet() ? POOL_LIST_TESTNET : POOL_LIST)) {
@@ -328,6 +355,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				if(address != null) {
 					poolComboBox.addItem(poolURL);
 					poolAddresses.add(address);
+					
+					if(poolURL.equals(selectedPool))
+						poolComboBox.setSelectedIndex(poolComboBox.getItemCount()-1);
 				}
 			}
 			catch (Exception e) {
@@ -335,6 +365,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			}
 		}
 		poolPanel.add(poolComboBox);
+		poolComboBox.addActionListener(this);
 		
 		openPoolButton = new JButton(icons.get(Icons.EXPLORER));
 		openPoolButton.addActionListener(this);
@@ -485,7 +516,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			long percentPlotted = (100*BYTES_OF_A_NONCE*noncesPlotted.get())/totalToPlot;
 			startPlotButton.setText(tr("mine_plotting", percentPlotted));
 			startPlotButton.setIcon(pendingIconRotating);
-			pendingIconRotating.addComponent(startPlotButton);			
+			pendingIconRotating.addComponent(startPlotButton);
+			
+			ssdCancelButton.setEnabled(false);
+			ssdSelectFolderButton.setEnabled(false);
 		}
 		else {
 			totalCapacity = 0;
@@ -517,6 +551,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			startPlotButton.setIcon(iconPlot);
 			pendingIconRotating.removeComponent(startPlotButton);
 			startPlotButton.setText(tr("mine_plot"));
+			
+			ssdCancelButton.setEnabled(ssdPath != null);
+			ssdSelectFolderButton.setEnabled(true);
 		}
 		
 		MiningInfo miningInfo = BN.getMiningInfo();
@@ -525,13 +562,15 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			double networkTbs = 18325193796.0/miningInfo.getBaseTarget()/1.83;
 			BurstValue burstPerTbPerDay = BurstValue.fromBurst(360.0/networkTbs * latestBlock.getBlockReward().doubleValue());
 
-			String rewards = burstPerTbPerDay.toFormattedString();
+			String rewards = tr("mine_reward_estimation_nothing", NumberFormatting.BURST_2.format(burstPerTbPerDay.longValue()));
 			BurstValue avgCommitment = null;
 			if(miningInfo.getAverageCommitmentNQT() > 0) {
 				avgCommitment = BurstValue.fromPlanck(miningInfo.getAverageCommitmentNQT());
-				rewards = tr("mine_reward_estimation", burstPerTbPerDay.multiply(8).toFormattedString(), avgCommitment.multiply(100).toFormattedString());
-				rewards += "\n" + tr("mine_reward_estimation", burstPerTbPerDay.toFormattedString(), avgCommitment.toFormattedString());
-				rewards += "\n" + tr("mine_reward_estimation_nothing", burstPerTbPerDay.divide(8).toFormattedString());
+				rewards = tr("mine_reward_estimation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(8).longValue()),
+						NumberFormatting.BURST_2.format(avgCommitment.multiply(100).longValue()));
+				rewards += "\n" + tr("mine_reward_estimation", NumberFormatting.BURST_2.format(burstPerTbPerDay.longValue()),
+						NumberFormatting.BURST_2.format(avgCommitment.longValue()));
+				rewards += "\n" + tr("mine_reward_estimation_nothing", NumberFormatting.BURST_2.format(burstPerTbPerDay.divide(8).longValue()));
 			}
 			
 			if(totalCapacity > 0) {
@@ -539,7 +578,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				
 				String capacity = formatSpace(totalCapacity);
 				if(avgCommitment != null && account.getCommitment() != null) {
-					capacity += "+" + account.getCommitment().toFormattedString() + "/TiB";
+					capacity += "+" + NumberFormatting.BURST_2.format(account.getCommitment().longValue()) + " BURST/TiB";
 					
 					double ratio = account.getCommitment().doubleValue()/avgCommitment.doubleValue();
 			        double commitmentFactor = Math.pow(ratio, 0.4515449935);
@@ -549,7 +588,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			        capacityTib *= commitmentFactor;
 				}
 				
-				rewards += "\n\n" + tr("mine_your_rewards", capacity, burstPerTbPerDay.multiply(capacityTib).toFormattedString());
+				rewards += "\n\n" + tr("mine_your_rewards", capacity, NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(capacityTib).longValue()));
 			}
 			
 			rewardsEstimationArea.setText(rewards);
@@ -562,6 +601,17 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		
 		lowPriorityCheck.setEnabled(!plotting);
 		cpusToUseComboBox.setEnabled(!plotting);
+	}
+	
+	public void stop() {
+		if(mining && minerProcess!=null && minerProcess.isAlive()) {
+			mining = false;
+			minerProcess.destroyForcibly();
+		}
+		if(plotting && plotterProcess!=null && plotterProcess.isAlive()) {
+			plotting = false;
+			plotterProcess.destroyForcibly();
+		}
 	}
 	
 	private void saveConfs(Globals g) {
@@ -598,7 +648,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			    openFolderButtons.get(pos).setEnabled(true);
 			    
 			    fractionToPlotSliders.get(pos).setEnabled(true);
-			    fractionToPlotSliders.get(pos).setValue(80);
+				File[] plotFiles = selectedPath.listFiles(PLOT_FILE_FILTER);
+			    fractionToPlotSliders.get(pos).setValue((plotFiles.length > 0) ? 0 : 80);
 			}
 			return;
 		}
@@ -618,6 +669,33 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		    return;
 		}
 		
+		if(ssdSelectFolderButton == e.getSource()) {
+			JFileChooser fileChooser = new JFileChooser();
+			if(ssdPath != null)
+				fileChooser.setCurrentDirectory(ssdPath);
+			fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			
+			int returnVal = fileChooser.showOpenDialog(this);
+			if(returnVal == JFileChooser.APPROVE_OPTION) {
+				ssdPath = fileChooser.getSelectedFile();
+			    
+			    g.setProperty(PROP_PLOT_CACHE, ssdPath.getAbsolutePath());
+			    saveConfs(g);
+			    ssdSelectFolderButton.setText(tr("mine_ssd_cache", ssdPath.getAbsolutePath()));
+			    ssdCancelButton.setEnabled(true);		    
+			}
+			return;
+		}
+		if(ssdCancelButton == e.getSource()) {
+		    ssdPath = null;
+		    ssdSelectFolderButton.setText(tr("mine_ssd_cache_select"));		    
+		    ssdCancelButton.setEnabled(false);
+
+		    g.setProperty(PROP_PLOT_CACHE, "");
+		    saveConfs(g);
+		    return;
+		}
+
 		pos = openFolderButtons.indexOf(e.getSource());
 		if(pos >=0) {
 			DesktopApi.open(pathList.get(pos));
@@ -647,7 +725,6 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			stopMiningButton.setEnabled(false);
 			return;
 		}
-		
 
 		if(lowPriorityCheck == e.getSource()) {
 			g.setProperty(PROP_PLOT_LOW_PRIO, Boolean.toString(lowPriorityCheck.isSelected()));
@@ -663,6 +740,11 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			g.setProperty(PROP_PLOT_CPU_CORES, Integer.toString(cpusToUseComboBox.getSelectedIndex()+1));
 			saveConfs(g);
 			return;
+		}
+		
+		if(poolComboBox == e.getSource()) {
+			g.setProperty(PROP_MINER_POOL, poolComboBox.getSelectedItem().toString());
+			saveConfs(g);
 		}
 		
 		if(addCommitmentButton == e.getSource() || removeCommitmentButton == e.getSource()) {
@@ -746,7 +828,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		
 		if(!plotting)
-			startPlotButton.setEnabled(totalToPlot > 0);
+			startPlotButton.setEnabled(totalToPlot > 0 || resumePlotFiles.size() > 0);
 	}
 	
 	public String formatSpace(double bytes) {
@@ -781,7 +863,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				String pieces[] = plot.getName().split("_");
 				long start = Long.parseLong(pieces[1]);
 				long nonces = Long.parseLong(pieces[2]);
-				startNonce = Math.max(startNonce, start+nonces+1);
+				startNonce = Math.max(startNonce, start+nonces);
 			}
 		}
 		logger.info("Start nonce is {}", startNonce);
@@ -838,67 +920,106 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	}
 	
 	class PlotThread extends Thread {
+
 		public void run() {
 			long noncesFinished = 0;
 			addToConsole(PLOT_APP, "Plotting started for a total of " + formatSpace(totalToPlot) + ", this can be a long process...");
 			
-			for (File plot : newPlotFiles) {
+			// Cache will use 45% of the free space, so we can have 2 (one moving and one plotting) and do not get a disk full
+			long noncesCache = 0;
+			if(ssdPath != null)
+				noncesCache = ssdPath.getFreeSpace() * 45 / 100 / BYTES_OF_A_NONCE;
+			
+			ArrayList<File> filesToPlot = new ArrayList<>();
+			filesToPlot.addAll(resumePlotFiles);
+			filesToPlot.addAll(newPlotFiles);
+			
+			for (File plot : filesToPlot) {
 				String[] sections = plot.getName().split("_");
-				String cmd = plotterFile.getAbsolutePath() + " -i " + sections[0];
-				cmd += " -s " + sections[1]; 
-				cmd += " -n " + sections[2];
-				cmd += " -c " + (cpusToUseComboBox.getSelectedIndex()+1);
-				cmd += " -q";
-				cmd += " -d"; // FIXME: enable back direct io, but we need to find out the sector size then and adjust no of nonces
-				if(lowPriorityCheck.isSelected())
-					cmd += " -l";
-
-				addToConsole(PLOT_APP, "Plotting file " + plot.getAbsolutePath());
 				
 				long noncesInThisPlot = Long.parseLong(sections[2]);
-				try {
-					Process process = Runtime.getRuntime().exec(cmd, null, plot.getParentFile());
-					
-					long counter = 0;
-					while (process.isAlive()) {
+				long nonceStart = Long.parseLong(sections[1]);
+				
+				long noncesAlreadyPlotted = 0;
+				long noncesBeingPlot = noncesInThisPlot;
+				
+				File fileBeingPlot = plot;
+				
+				if(ssdPath != null) {
+					long freeCacheSpaceNow = ssdPath.getFreeSpace()/BYTES_OF_A_NONCE;
+					while(freeCacheSpaceNow < noncesCache) {
+						addToConsole(PLOT_APP, "Waiting for enough space on your cache disk...");
+						try {
+							Thread.sleep(10000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+							plotting = false;
+						}
 						if(!plotting) {
-							// stop requested
-							process.destroyForcibly();
-							break;
+							addToConsole(PLOT_APP, "Stopped");
+							return;
 						}
-						counter++;
-						Thread.sleep(100);
-						if(counter % 100 == 0) {
-							RandomAccessFile raf = new RandomAccessFile(plot, "r");
-
-							if(raf.length() > 8) {
-								// Seek to the end of file
-								raf.seek(raf.length() - 8);
-								byte []array = new byte[8];
-								raf.read(array, 0, 8);
-
-								// Check for the magic bytes at the end of the file
-								if(array[4] == -81 && array[5] == -2 && array[6] == -81 && array[7] == -2) {
-									ByteBuffer buff = ByteBuffer.wrap(array, 0, 4);
-									buff.order(ByteOrder.LITTLE_ENDIAN);
-									int partial = buff.getInt();
-
-									noncesPlotted.set(noncesFinished + partial);
-								}
-							}
-							raf.close();
-						}
+						freeCacheSpaceNow = ssdPath.getFreeSpace()/BYTES_OF_A_NONCE;
 					}
-					noncesFinished += noncesInThisPlot;
-				} catch (Exception e) {
-					e.printStackTrace();
+					
+					noncesBeingPlot = Math.min(noncesCache, noncesInThisPlot);
+				}
+				
+				while(noncesAlreadyPlotted < noncesInThisPlot) {
+					noncesBeingPlot = Math.min(noncesInThisPlot - noncesAlreadyPlotted, noncesBeingPlot);
+					if(ssdPath != null)
+						fileBeingPlot = new File(ssdPath, sections[0] + "_" + nonceStart + "_" + noncesBeingPlot);
+
+					String cmd = plotterFile.getAbsolutePath() + " -i " + sections[0];
+					cmd += " -s " + nonceStart;
+					cmd += " -n " + noncesBeingPlot;
+					cmd += " -c " + (cpusToUseComboBox.getSelectedIndex()+1);
+					cmd += " -q";
+					cmd += " -d"; // FIXME: enable back direct io, but we need to find out the sector size then and adjust no of nonces
+					if(lowPriorityCheck.isSelected())
+						cmd += " -l";
+
+					addToConsole(PLOT_APP, "Plotting file '" + fileBeingPlot.getAbsolutePath() + "'");
+
+					try {
+						plotterProcess = Runtime.getRuntime().exec(cmd, null, fileBeingPlot.getParentFile());
+
+						long counter = 0;
+						while (plotterProcess.isAlive()) {
+							if(!plotting) {
+								addToConsole(PLOT_APP, "Stopped");
+								plotterProcess.destroyForcibly();
+								break;
+							}
+							counter++;
+							Thread.sleep(100);
+							if(counter % 100 == 0) {
+								int partial = getPlotProgress(fileBeingPlot);
+								noncesPlotted.set(noncesFinished + partial);
+							}
+						}
+						nonceStart += noncesBeingPlot;
+						noncesAlreadyPlotted += noncesBeingPlot;
+						noncesFinished += noncesBeingPlot;
+						
+						if(ssdPath != null) {
+							addToConsole(PLOT_APP, "Moving '" + fileBeingPlot.getName() + "' to '" + plot.getParent() + "'");
+							moveFile(fileBeingPlot.toPath(), new File(plot.getParent(), fileBeingPlot.getName()).toPath());
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
 			
-			addToConsole(PLOT_APP, "Plotting successfully finished!");
+			if(plotting)
+				addToConsole(PLOT_APP, "Plotting successfully finished!");
+			if(ssdPath != null)
+				addToConsole(PLOT_APP, "But your system might still be moving files from cache");
 
 			plotting = false;
 			plotterFile.delete();
+			resumePlotFiles.clear();
 			
 			// Finished, so we reset all sliders
 			SwingUtilities.invokeLater(new Runnable() {
@@ -911,6 +1032,46 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			});
 		};
 	};
+	
+	private void moveFile(Path source, Path target) {
+		Thread copyThread = new Thread(() -> {
+            try{
+            	Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err);
+            }
+        });
+		copyThread.start();
+	}
+	
+	private int getPlotProgress(File plot) {
+		int progress = -1;
+		try {
+			RandomAccessFile raf = new RandomAccessFile(plot, "r");
+
+			if(raf.length() > 8) {
+				// Seek to the end of file
+				raf.seek(raf.length() - 8);
+				byte []array = new byte[8];
+				raf.read(array, 0, 8);
+
+				// Check for the magic bytes at the end of the file
+				if(array[4] == -81 && array[5] == -2 && array[6] == -81 && array[7] == -2) {
+					ByteBuffer buff = ByteBuffer.wrap(array, 0, 4);
+					buff.order(ByteOrder.LITTLE_ENDIAN);
+					progress = buff.getInt();
+				}
+			}
+			raf.close();
+		}
+		catch (Exception e) {
+			progress = -1;
+			e.printStackTrace();
+			logger.info(e.getMessage());
+		}
+		
+		return progress;
+	}
 	
 	private static final String MINER_CONFIG_FILE = "btdex-miner.yaml";
 	
