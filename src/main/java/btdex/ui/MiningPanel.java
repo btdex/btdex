@@ -103,8 +103,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	};
 	
 	private static final String[] POOL_LIST = {
-			"https://bmf100pool.burstcoin.ro:443",
-			"http://pool.burstcoin.ro:8080",
+			"https://pool.burstcoin.ro",
 			"http://openburstpool.ddns.net:8126"
 	};
 	
@@ -562,7 +561,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			double networkTbs = 18325193796.0/miningInfo.getBaseTarget()/1.83;
 			BurstValue burstPerTbPerDay = BurstValue.fromBurst(360.0/networkTbs * latestBlock.getBlockReward().doubleValue());
 
-			String rewards = tr("mine_reward_estimation_nothing", NumberFormatting.BURST_2.format(burstPerTbPerDay.longValue()));
+			String rewards = NumberFormatting.BURST_2.format(burstPerTbPerDay.longValue()) + " BURST";
 			BurstValue avgCommitment = null;
 			if(miningInfo.getAverageCommitmentNQT() > 0) {
 				avgCommitment = BurstValue.fromPlanck(miningInfo.getAverageCommitmentNQT());

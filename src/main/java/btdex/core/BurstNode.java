@@ -269,8 +269,14 @@ public class BurstNode {
 				}
 				try {
 					miningInfo.set(NS.getMiningInfo().blockingFirst());
-					account.set(NS.getAccount(g.getAddress(), null, true, true).blockingGet());
 					rewardRecipient.set(NS.getRewardRecipient(g.getAddress()).blockingGet());
+					Boolean getCommitmentStats = null;
+					if(miningInfo.get().getAverageCommitmentNQT() > 0) {
+						// Only request commitment stats if there is support on the node
+						getCommitmentStats = Boolean.TRUE;
+					}
+					
+					account.set(NS.getAccount(g.getAddress(), null, getCommitmentStats, getCommitmentStats).blockingGet());
 				}
 				catch (Exception e) {
 					nodeError = e;
