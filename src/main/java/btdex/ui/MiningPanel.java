@@ -418,9 +418,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 
 		JPanel rightPanel = new JPanel();
 		rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-		rightPanel.add(rewardsPanel);
 		rightPanel.add(poolPanel);
 		rightPanel.add(minerPanel);
+		rightPanel.add(rewardsPanel);
 		
 		JPanel topPanel = new JPanel(new BorderLayout());
 		topPanel.add(plottingPanel, BorderLayout.CENTER);
