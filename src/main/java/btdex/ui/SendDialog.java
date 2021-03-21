@@ -4,6 +4,7 @@ import static btdex.locale.Translation.tr;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -14,6 +15,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JSlider;
@@ -44,7 +46,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 	private JTextField ledgerStatus;
 	private byte[] unsigned;
 	private JPasswordField pin;
-	private JSlider fee;
+	private JSlider feeSlider;
 	private BurstValue selectedFee;
 
 	private JButton okButton;
@@ -86,14 +88,14 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 
 		JPanel panel = new JPanel(new GridLayout(0, 2, 4, 4));
 
-		recipient = new JTextField(26);
-		message = new JTextField(26);
+		recipient = new JTextField(40);
+		message = new JTextField(40);
 
 		pin = new JPasswordField(12);
 		pin.addActionListener(this);
 
 		amount = new JFormattedTextField(token==null ? NumberFormatting.BURST.getFormat() : token.getNumberFormat().getFormat());
-		fee = new JSlider(1, 4);
+		feeSlider = new JSlider(1, 4);
 
 		if(type == TYPE_SEND || type == TYPE_JOIN_POOL) {
 			topPanel.add(new Desc(tr(type == TYPE_JOIN_POOL ? "send_pool_address" : "send_recipient"), recipient));
@@ -107,19 +109,21 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 			message.setToolTipText(tr("send_empty_for_no_message"));
 		}
 
-		panel.add(new Desc(tr("send_amount", token==null ? "BURST" : token), amount));
-		if(type == TYPE_JOIN_POOL) {
-			amount.setEnabled(false);
-			amount.setText(BurstValue.fromBurst(0).toUnformattedString());
+		if(type != TYPE_JOIN_POOL) {
+			panel.add(new Desc(tr("send_amount", token==null ? "BURST" : token), amount));
 		}
-		Desc feeDesc = new Desc("", fee);
+		if(type == TYPE_JOIN_POOL) {
+			panel.add(new Desc(" ", new JLabel(" ")));
+		}
+		Desc feeDesc = new Desc("", feeSlider);
+		feeSlider.setPreferredSize(new Dimension(20, 36));
 		panel.add(feeDesc);
 		FeeSuggestion suggestedFee = BurstNode.getInstance().getSuggestedFee();
 		
-		fee.addChangeListener(new ChangeListener() {
+		feeSlider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent evt) {
 				String feeType;
-				switch (fee.getValue()) {
+				switch (feeSlider.getValue()) {
 				case 1:
 					feeType = tr("fee_minimum");
 					selectedFee = BurstValue.fromPlanck(Constants.FEE_QUANT);
@@ -172,7 +176,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 
 		pack();
 
-		fee.getModel().setValue(4);
+		feeSlider.getModel().setValue(4);
 	}
 
 	@Override
@@ -256,7 +260,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 						recipient.setEnabled(false);
 						message.setEnabled(false);
 						amount.setEnabled(false);
-						fee.setEnabled(false);
+						feeSlider.setEnabled(false);
 						
 						Toast.makeText((JFrame) this.getOwner(), tr("ledger_authorize"), Toast.Style.NORMAL).display(okButton);
 						
@@ -292,7 +296,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 			recipient.setEnabled(true);
 			message.setEnabled(true);
 			amount.setEnabled(true);
-			fee.setEnabled(true);
+			feeSlider.setEnabled(true);
 
 			setCursor(Cursor.getDefaultCursor());
 			
