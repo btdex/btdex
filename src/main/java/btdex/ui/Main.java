@@ -71,6 +71,8 @@ import okhttp3.Response;
 public class Main extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
+	
+	public static String OS = System.getProperty("os.name").toLowerCase();
 
 	private Image icon, iconMono;
 	private Icon ICON_CONNECTED, ICON_DISCONNECTED, ICON_TESTNET;
@@ -222,7 +224,8 @@ public class Main extends JFrame implements ActionListener {
 
 		tabbedPane.addTab(tr("main_swaps"), i.get(Icons.SWAPS), orderBookToken);
 		tabbedPane.addTab(tr("main_contracts"), i.get(Icons.CROSS_CHAIN), orderBook);
-		tabbedPane.addTab(tr("main_mining"), i.get(Icons.MINING), miningPanel = new MiningPanel());
+		if(!OS.contains("mac"))
+			tabbedPane.addTab(tr("main_mining"), i.get(Icons.MINING), miningPanel = new MiningPanel());
 
 		boolean isMediator = g.getAddress()!=null && g.getMediators().isMediator(g.getAddress().getSignedLongId());
 

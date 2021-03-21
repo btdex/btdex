@@ -22,7 +22,6 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -72,13 +71,10 @@ import okhttp3.Response;
 public class MiningPanel extends JPanel implements ActionListener, ChangeListener {
 	private static final long serialVersionUID = 1L;
 	
-	private static final NumberFormat NF = NumberFormat.getNumberInstance();
-	
 	private static final int N_PATHS = 4;
 	private static final long ONE_GIB = 1073741824L;
 	private static final long BYTES_OF_A_NONCE = 262144L;
 	
-	private static String OS = System.getProperty("os.name").toLowerCase();
 	private static String TMP_DIR = System.getProperty("java.io.tmpdir");
 	
 	private static final String PROP_PLOT_PATH = "plotPath";
@@ -561,7 +557,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			double networkTbs = 18325193796.0/miningInfo.getBaseTarget()/1.83;
 			BurstValue burstPerTbPerDay = BurstValue.fromBurst(360.0/networkTbs * latestBlock.getBlockReward().doubleValue());
 
-			String rewards = NumberFormatting.BURST_2.format(burstPerTbPerDay.longValue()) + " BURST";
+			String rewards = tr("mine_reward_estimation_old", NumberFormatting.BURST_2.format(burstPerTbPerDay.longValue()),
+					formatSpace(networkTbs*1024L*ONE_GIB));
 			BurstValue avgCommitment = null;
 			if(miningInfo.getAverageCommitmentNQT() > 0) {
 				avgCommitment = BurstValue.fromPlanck(miningInfo.getAverageCommitmentNQT());
@@ -833,10 +830,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	public String formatSpace(double bytes) {
 		bytes /= ONE_GIB;
 		if(bytes < 500) {
-		    return NF.format(bytes) + " GiB";
+		    return NumberFormatting.BURST_2.format(bytes) + " GiB";
 		}
 		bytes /= 1024;
-	    return NF.format(bytes) + " TiB";
+	    return NumberFormatting.BURST_2.format(bytes) + " TiB";
 	}
 	
 	private void startPlotting() {
@@ -897,14 +894,14 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		
 		
 		String engraverName = "engraver_cpu";
-		if(OS.contains("win"))
+		if(Main.OS.contains("win"))
 			engraverName += ".exe";
 		plotterFile = new File(TMP_DIR, engraverName);
 		if (!plotterFile.exists() || plotterFile.length() == 0) {
 		     InputStream link = (getClass().getResourceAsStream("/engraver/" + engraverName));
 		     try {
 				Files.copy(link, plotterFile.getAbsoluteFile().toPath());
-				if(!OS.contains("win"))
+				if(!Main.OS.contains("win"))
 					plotterFile.setExecutable(true);
 			} catch (IOException ex) {
 				ex.printStackTrace();
@@ -1085,7 +1082,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		stopMiningButton.setEnabled(true);
 				
 		String minerName = "scavenger";
-		if(OS.contains("win"))
+		if(Main.OS.contains("win"))
 			minerName += ".exe";
 		minerFile = new File(TMP_DIR, minerName);
 		InputStream minerStream = (getClass().getResourceAsStream("/scavenger/" + minerName));
@@ -1095,7 +1092,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				minerFile.delete();
 				
 			Files.copy(minerStream, minerFile.getAbsoluteFile().toPath());
-			if(!OS.contains("win"))
+			if(!Main.OS.contains("win"))
 				minerFile.setExecutable(true);
 
 			FileWriter minerConfig = new FileWriter(minerFile.getParent() + "/" + MINER_CONFIG_FILE);
