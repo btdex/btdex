@@ -11,8 +11,10 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.MouseInfo;
 import java.awt.PopupMenu;
 import java.awt.TrayIcon;
+import java.awt.TrayIcon.MessageType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -116,7 +118,7 @@ public class Main extends JFrame implements ActionListener {
 	private MiningPanel miningPanel;
 
 	private SystemTray systemTray;
-	private TrayIcon windowsTray;
+	private TrayIcon windowsTrayIcon;
 
 	private static Main instance;
 
@@ -139,10 +141,12 @@ public class Main extends JFrame implements ActionListener {
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent ev) {
-            	if(systemTray != null || windowsTray != null) {
-					JOptionPane.showMessageDialog(Main.this,
-							tr("tray_closed"), "BTDEX",
-							JOptionPane.OK_OPTION);
+            	if(windowsTrayIcon != null) {
+            		windowsTrayIcon.displayMessage(getTitle() + " " + version, tr("tray_running"), MessageType.INFO);
+            		Main.this.setVisible(false);
+            	}
+            	else if(systemTray != null) {
+            		Toast.makeText(Main.this, tr("tray_running"), Toast.Style.SUCCESS).display(MouseInfo.getPointerInfo().getLocation());
             		Main.this.setVisible(false);
             	}
             	else {
@@ -269,6 +273,7 @@ public class Main extends JFrame implements ActionListener {
 		topRight.add(new Desc("  ", resetPinButton));
 		topRight.add(new Desc("  ", signoutButton));
 		topRight.add(new Desc(tr("main_language_name"), createLangButton(largeFont, g)));
+		topRight.add(new Desc("  ", createQuitButton()));
 
 		nodeSelector = new JButton(g.getNode());
 		nodeSelector.setToolTipText(tr("main_select_node"));
@@ -418,46 +423,43 @@ public class Main extends JFrame implements ActionListener {
 	
 	@SuppressWarnings("serial")
 	private void addSystemTray() {
-		ArrayList<Action> actions = new ArrayList<>();
 		Action showHideAction = new AbstractAction(tr("tray_show_hide")) {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Main.this.setVisible(!Main.this.isVisible());
 			}
 		};
-		actions.add(showHideAction);
 		Action quitAction = new AbstractAction(tr("tray_quit")) {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(miningPanel != null)
-	        		miningPanel.stop();
-				if(systemTray != null) {
-					systemTray.shutdown();				
-				}
-				if(windowsTray != null) {
-					java.awt.SystemTray.getSystemTray().remove(windowsTray);
-				}
-	            System.exit(0);
+				doQuit();
 			}
 		};
+		
+		ArrayList<Action> actions = new ArrayList<>();
+		actions.add(showHideAction);
 		actions.add(quitAction);
 				
 		if(OS.isWindows()) {
-			java.awt.SystemTray sysTray = java.awt.SystemTray.getSystemTray();
-			PopupMenu popup = new PopupMenu();
-			
-			for (Action a : actions) {
-				java.awt.MenuItem awtItem = new java.awt.MenuItem(a.getValue(Action.NAME).toString());
-				awtItem.addActionListener(a);
-				popup.add(awtItem);
-			}
-			
-			windowsTray = new TrayIcon(icon, getTitle());
-			windowsTray.setPopupMenu(popup);
-			try {
-				sysTray.add(windowsTray);
-			} catch (AWTException e1) {
-				e1.printStackTrace();
+			if(java.awt.SystemTray.isSupported()) {
+				java.awt.SystemTray sysTray = java.awt.SystemTray.getSystemTray();
+				PopupMenu popup = new PopupMenu();
+
+				for (Action a : actions) {
+					java.awt.MenuItem awtItem = new java.awt.MenuItem(a.getValue(Action.NAME).toString());
+					awtItem.addActionListener(a);
+					popup.add(awtItem);
+				}
+
+				windowsTrayIcon = new TrayIcon(icon, getTitle());
+				windowsTrayIcon.setImageAutoSize(true);
+				windowsTrayIcon.setPopupMenu(popup);
+				try {
+					sysTray.add(windowsTrayIcon);
+					windowsTrayIcon.displayMessage(getTitle() + " " + version, tr("tray_running"), MessageType.INFO);
+				} catch (AWTException e1) {
+					e1.printStackTrace();
+				}
 			}
 		}
 		else {
@@ -605,6 +607,27 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 		return langButton;
+	}
+	
+	private void doQuit() {
+		if(miningPanel != null)
+    		miningPanel.stop();
+		if(systemTray != null) {
+			systemTray.shutdown();				
+		}
+		if(windowsTrayIcon != null) {
+			java.awt.SystemTray.getSystemTray().remove(windowsTrayIcon);
+		}
+        System.exit(0);
+	}
+
+	private JButton createQuitButton() {
+		JButton quitButton = new JButton(i.get(Icons.QUIT));
+		quitButton.setToolTipText(tr("tray_quit"));
+		quitButton.addActionListener(e -> {
+			doQuit();
+		});
+		return quitButton;
 	}
 
 	/**

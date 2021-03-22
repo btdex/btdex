@@ -179,6 +179,11 @@ public class Toast extends JDialog {
     	return toast;
     }
     
+    public void display(Point locationOnScreen) {
+		mLocation = locationOnScreen;
+    	display();
+    }
+    
     public void display(Component c) {
 		Point p = c.getLocationOnScreen();
 		p.x += c.getWidth()/2;

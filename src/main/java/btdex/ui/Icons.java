@@ -53,6 +53,7 @@ public class Icons {
     public static IconCode NEW_TOKEN = FontAwesome.TAG;
     public static IconCode UP = FontAwesome.ARROW_UP;
     public static IconCode DOWN = FontAwesome.ARROW_DOWN;
+    public static IconCode QUIT = FontAwesome.POWER_OFF;
     public static IconCode UNKNOWN = FontAwesome.QUESTION;
 
     public static IconCode DISCORD = FontAwesomeBrands.DISCORD;
