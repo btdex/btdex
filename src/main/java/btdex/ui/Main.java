@@ -60,6 +60,9 @@ import btdex.ui.orderbook.TokenMarketPanel;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.Block;
 import burst.kit.entity.response.http.BRSError;
+import dorkbox.systemTray.MenuItem;
+import dorkbox.systemTray.SystemTray;
+import dorkbox.util.OS;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
 import io.github.novacrypto.bip39.wordlists.English;
@@ -72,8 +75,6 @@ public class Main extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 	
-	public static String OS = System.getProperty("os.name").toLowerCase();
-
 	private Image icon, iconMono;
 	private Icon ICON_CONNECTED, ICON_DISCONNECTED, ICON_TESTNET;
 	private PulsingIcon pulsingButton;
@@ -108,6 +109,8 @@ public class Main extends JFrame implements ActionListener {
 
 	private MiningPanel miningPanel;
 
+	private SystemTray systemTray;
+
 	private static Main instance;
 
 	public static Main getInstance() {
@@ -129,10 +132,17 @@ public class Main extends JFrame implements ActionListener {
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent ev) {
-            	if(miningPanel != null)
-            		miningPanel.stop();
-            	
-            	System.exit(0);
+            	if(systemTray != null) {
+					JOptionPane.showMessageDialog(Main.this,
+							tr("tray_closed"), "BTDEX",
+							JOptionPane.OK_OPTION);
+            		Main.this.setVisible(false);
+            	}
+            	else {
+		        	if(miningPanel != null)
+		        		miningPanel.stop();
+		            System.exit(0);
+            	}
             }
         });
 
@@ -140,6 +150,31 @@ public class Main extends JFrame implements ActionListener {
 
 		readLocalResources();
 		setUIManager();
+
+		systemTray = SystemTray.get();
+		if(systemTray != null) {
+			systemTray.setImage(icon);
+			systemTray.setTooltip("BTDEX");
+
+			systemTray.getMenu().add(new MenuItem(tr("tray_show_hide"), new ActionListener() {
+		        @Override
+		        public
+		        void actionPerformed(final ActionEvent e) {
+		        	Main.this.setVisible(!Main.this.isVisible());
+		        }
+		    })).setShortcut('s');
+						
+			systemTray.getMenu().add(new MenuItem(tr("tray_quit"), new ActionListener() {
+		        @Override
+		        public
+		        void actionPerformed(final ActionEvent e) {
+		        	if(miningPanel != null)
+		        		miningPanel.stop();
+		            systemTray.shutdown();
+		            System.exit(0);
+		        }
+		    })).setShortcut('q');
+		}
 
 		IconFontSwing.register(FontAwesome.getIconFont());
 		IconFontSwing.register(FontAwesomeBrands.getIconFont());
@@ -224,7 +259,7 @@ public class Main extends JFrame implements ActionListener {
 
 		tabbedPane.addTab(tr("main_swaps"), i.get(Icons.SWAPS), orderBookToken);
 		tabbedPane.addTab(tr("main_contracts"), i.get(Icons.CROSS_CHAIN), orderBook);
-		if(!OS.contains("mac"))
+		if(!OS.isMacOsX())
 			tabbedPane.addTab(tr("main_mining"), i.get(Icons.MINING), miningPanel = new MiningPanel());
 
 		boolean isMediator = g.getAddress()!=null && g.getMediators().isMediator(g.getAddress().getSignedLongId());
@@ -238,10 +273,10 @@ public class Main extends JFrame implements ActionListener {
 		
 		top.add(new Desc(tr("main_your_burst_address"), copyAddButton));
 
-		balanceLabel = new JLabel("0");
+		balanceLabel = new JLabel(NumberFormatting.BURST.format(0));
 		balanceLabel.setToolTipText(tr("main_available_balance"));
 		balanceLabel.setFont(largeFont);
-		lockedBalanceLabel = new JLabel("0");
+		lockedBalanceLabel = new JLabel(tr("main_plus_locked", NumberFormatting.BURST.format(0)));
 		lockedBalanceLabel.setToolTipText(tr("main_amount_locked"));
 		top.add(new Desc(tr("main_balance", "BURST"), balanceLabel, lockedBalanceLabel));
 		top.add(new Desc("  ", sendButton));

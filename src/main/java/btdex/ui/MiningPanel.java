@@ -64,6 +64,7 @@ import burst.kit.entity.response.Account;
 import burst.kit.entity.response.Block;
 import burst.kit.entity.response.MiningInfo;
 import burst.kit.entity.response.Transaction;
+import dorkbox.util.OS;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -92,7 +93,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	private static final FileFilter PLOT_FILE_FILTER = new FileFilter() {
 		@Override
 		public boolean accept(File pathname) {
-			return pathname.isFile() &&
+			return pathname.isFile() && Globals.getInstance().getAddress() != null &&
 					pathname.getName().startsWith(Globals.getInstance().getAddress().getID()) &&
 					pathname.getName().split("_").length == 3;
 		}
@@ -226,11 +227,13 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				
 				// check if there are pending files to resume
 				File[] plotFiles = pathFile.listFiles(PLOT_FILE_FILTER);
-				for(File plot : plotFiles) {
-					int progress = getPlotProgress(plot);
-					if(progress >= 0) {
-						resumePlotFiles.add(plot);
-						addToConsole(PLOT_APP, "Plotting of '" + plot.getAbsolutePath() + "' will be resumed when you start plotting again");
+				if(plotFiles != null) {
+					for(File plot : plotFiles) {
+						int progress = getPlotProgress(plot);
+						if(progress >= 0) {
+							resumePlotFiles.add(plot);
+							addToConsole(PLOT_APP, "Plotting of '" + plot.getAbsolutePath() + "' will be resumed when you start plotting again");
+						}
 					}
 				}
 			}
@@ -339,6 +342,11 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		OkHttpClient client = new OkHttpClient();
 		for (String poolURL : (g.isTestnet() ? POOL_LIST_TESTNET : POOL_LIST)) {
 			String poolURLgetConfig = poolURL + "/api/getConfig";
+			poolComboBox.addItem(poolURL);
+			poolAddresses.add(null);
+			
+			if(poolURL.equals(selectedPool))
+				poolComboBox.setSelectedIndex(poolComboBox.getItemCount()-1);
 			
 			try {
 				Request request = new Request.Builder().url(poolURLgetConfig).build();
@@ -348,11 +356,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 
 				BurstAddress address = BurstAddress.fromEither(json.get("poolAccount").getAsString());
 				if(address != null) {
-					poolComboBox.addItem(poolURL);
-					poolAddresses.add(address);
-					
-					if(poolURL.equals(selectedPool))
-						poolComboBox.setSelectedIndex(poolComboBox.getItemCount()-1);
+					poolAddresses.set(poolAddresses.size() -1, address);
 				}
 			}
 			catch (Exception e) {
@@ -554,7 +558,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		MiningInfo miningInfo = BN.getMiningInfo();
 		Block latestBlock = BN.getLatestBlock();
 		if(miningInfo != null && latestBlock != null) {
-			double networkTbs = 18325193796.0/miningInfo.getBaseTarget()/1.83;
+			double networkTbs = 18325193796.0/(miningInfo.getBaseTarget()*1.83);
 			BurstValue burstPerTbPerDay = BurstValue.fromBurst(360.0/networkTbs * latestBlock.getBlockReward().doubleValue());
 
 			String rewards = tr("mine_reward_estimation_old", NumberFormatting.BURST_2.format(burstPerTbPerDay.longValue()),
@@ -592,7 +596,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		
 		if(!mining) {
 			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedIndex());
-			startMiningButton.setEnabled(poolAddress.equals(BN.getRewardRecipient()) && totalCapacity > 0);
+			startMiningButton.setEnabled(poolAddress != null && poolAddress.equals(BN.getRewardRecipient()) && totalCapacity > 0);
 		}
 		
 		lowPriorityCheck.setEnabled(!plotting);
@@ -769,16 +773,27 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			
 			BurstNode BN = BurstNode.getInstance();
 			
-			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedIndex());
 			String info = null;
-			if(poolAddress.equals(BN.getRewardRecipient())) {
-				info = tr("mine_already_joined");
+			Account account = BN.getAccount();
+			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedIndex());
+			Transaction[] txs = BN.getAccountTransactions();
+			
+			if(account == null || account.getBalance().longValue() < Constants.FEE_QUANT) {
+				info = tr("dlg_not_enough_balance");
 			}
-			for(Transaction tx : BN.getAccountTransactions()) {
-				if(tx.getType() == 20 && tx.getSubtype() == 0 && tx.getConfirmations() < 4) {
-					info = tr("mine_wait_join");
-					break;
+			if(info == null && txs != null) {
+				for(Transaction tx : txs) {
+					if(tx.getType() == 20 && tx.getSubtype() == 0 && tx.getConfirmations() < 4) {
+						info = tr("mine_wait_join");
+						break;
+					}
 				}
+			}
+			if(info == null && poolAddress == null) {
+				info = tr("mine_invalid_pool");				
+			}
+			if(info == null && poolAddress.equals(BN.getRewardRecipient())) {
+				info = tr("mine_already_joined");
 			}
 			
 			if(info != null) {
@@ -894,14 +909,14 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		
 		
 		String engraverName = "engraver_cpu";
-		if(Main.OS.contains("win"))
+		if(OS.isWindows())
 			engraverName += ".exe";
 		plotterFile = new File(TMP_DIR, engraverName);
 		if (!plotterFile.exists() || plotterFile.length() == 0) {
 		     InputStream link = (getClass().getResourceAsStream("/engraver/" + engraverName));
 		     try {
 				Files.copy(link, plotterFile.getAbsoluteFile().toPath());
-				if(!Main.OS.contains("win"))
+				if(!OS.isWindows())
 					plotterFile.setExecutable(true);
 			} catch (IOException ex) {
 				ex.printStackTrace();
@@ -985,6 +1000,11 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 							if(!plotting) {
 								addToConsole(PLOT_APP, "Stopped");
 								plotterProcess.destroyForcibly();
+								if(getPlotProgress(fileBeingPlot) < 0) {
+									// delete the file, because we will not be able to resume it
+									fileBeingPlot.delete();
+								}
+								
 								break;
 							}
 							counter++;
@@ -1082,7 +1102,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		stopMiningButton.setEnabled(true);
 				
 		String minerName = "scavenger";
-		if(Main.OS.contains("win"))
+		if(OS.isWindows())
 			minerName += ".exe";
 		minerFile = new File(TMP_DIR, minerName);
 		InputStream minerStream = (getClass().getResourceAsStream("/scavenger/" + minerName));
@@ -1092,7 +1112,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				minerFile.delete();
 				
 			Files.copy(minerStream, minerFile.getAbsoluteFile().toPath());
-			if(!Main.OS.contains("win"))
+			if(!OS.isWindows())
 				minerFile.setExecutable(true);
 
 			FileWriter minerConfig = new FileWriter(minerFile.getParent() + "/" + MINER_CONFIG_FILE);
