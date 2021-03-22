@@ -2,6 +2,7 @@ package btdex.ui;
 
 import static btdex.locale.Translation.tr;
 
+import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -10,6 +11,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.PopupMenu;
+import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -18,10 +21,13 @@ import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -110,6 +116,7 @@ public class Main extends JFrame implements ActionListener {
 	private MiningPanel miningPanel;
 
 	private SystemTray systemTray;
+	private TrayIcon windowsTray;
 
 	private static Main instance;
 
@@ -132,7 +139,7 @@ public class Main extends JFrame implements ActionListener {
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent ev) {
-            	if(systemTray != null) {
+            	if(systemTray != null || windowsTray != null) {
 					JOptionPane.showMessageDialog(Main.this,
 							tr("tray_closed"), "BTDEX",
 							JOptionPane.OK_OPTION);
@@ -151,32 +158,8 @@ public class Main extends JFrame implements ActionListener {
 		readLocalResources();
 		setUIManager();
 
-		systemTray = SystemTray.get();
-		if(systemTray != null) {
-			systemTray.setImage(icon);
-			systemTray.setTooltip("BTDEX");
-			systemTray.setStatus("BTDEX " + version);
-
-			systemTray.getMenu().add(new MenuItem(tr("tray_show_hide"), new ActionListener() {
-		        @Override
-		        public
-		        void actionPerformed(final ActionEvent e) {
-		        	Main.this.setVisible(!Main.this.isVisible());
-		        }
-		    })).setShortcut('s');
-						
-			systemTray.getMenu().add(new MenuItem(tr("tray_quit"), new ActionListener() {
-		        @Override
-		        public
-		        void actionPerformed(final ActionEvent e) {
-		        	if(miningPanel != null)
-		        		miningPanel.stop();
-		            systemTray.shutdown();
-		            System.exit(0);
-		        }
-		    })).setShortcut('q');
-		}
-
+		addSystemTray();
+		
 		IconFontSwing.register(FontAwesome.getIconFont());
 		IconFontSwing.register(FontAwesomeBrands.getIconFont());
 		setBackground(Color.BLACK);
@@ -430,6 +413,64 @@ public class Main extends JFrame implements ActionListener {
 		} catch (UnsupportedLookAndFeelException e) {
 			logger.error("Error: " + e.getLocalizedMessage());
 			e.printStackTrace();
+		}
+	}
+	
+	@SuppressWarnings("serial")
+	private void addSystemTray() {
+		ArrayList<Action> actions = new ArrayList<>();
+		Action showHideAction = new AbstractAction(tr("tray_show_hide")) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Main.this.setVisible(!Main.this.isVisible());
+			}
+		};
+		actions.add(showHideAction);
+		Action quitAction = new AbstractAction(tr("tray_quit")) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(miningPanel != null)
+	        		miningPanel.stop();
+				if(systemTray != null) {
+					systemTray.shutdown();				
+				}
+				if(windowsTray != null) {
+					java.awt.SystemTray.getSystemTray().remove(windowsTray);
+				}
+	            System.exit(0);
+			}
+		};
+		actions.add(quitAction);
+				
+		if(OS.isWindows()) {
+			java.awt.SystemTray sysTray = java.awt.SystemTray.getSystemTray();
+			PopupMenu popup = new PopupMenu();
+			
+			for (Action a : actions) {
+				java.awt.MenuItem awtItem = new java.awt.MenuItem(a.getValue(Action.NAME).toString());
+				awtItem.addActionListener(a);
+				popup.add(awtItem);
+			}
+			
+			windowsTray = new TrayIcon(icon, getTitle());
+			windowsTray.setPopupMenu(popup);
+			try {
+				sysTray.add(windowsTray);
+			} catch (AWTException e1) {
+				e1.printStackTrace();
+			}
+		}
+		else {
+			systemTray = SystemTray.get();
+			if(systemTray != null) {
+				systemTray.setImage(icon);
+				systemTray.setTooltip(getTitle());
+				systemTray.setStatus(getTitle() + " " + version);
+
+				for (Action a : actions) {
+					systemTray.getMenu().add(new MenuItem(a.getValue(Action.NAME).toString(), a));
+				}
+			}
 		}
 	}
 
