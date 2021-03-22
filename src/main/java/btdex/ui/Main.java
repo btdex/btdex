@@ -155,6 +155,7 @@ public class Main extends JFrame implements ActionListener {
 		if(systemTray != null) {
 			systemTray.setImage(icon);
 			systemTray.setTooltip("BTDEX");
+			systemTray.setStatus("BTDEX " + version);
 
 			systemTray.getMenu().add(new MenuItem(tr("tray_show_hide"), new ActionListener() {
 		        @Override
