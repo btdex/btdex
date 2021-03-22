@@ -114,6 +114,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 		}
 		if(type == TYPE_JOIN_POOL) {
 			panel.add(new Desc(" ", new JLabel(" ")));
+			amount.setText("0");
 		}
 		Desc feeDesc = new Desc("", feeSlider);
 		feeSlider.setPreferredSize(new Dimension(20, 36));
