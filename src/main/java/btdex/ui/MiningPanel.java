@@ -751,6 +751,17 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		
 		if(addCommitmentButton == e.getSource() || removeCommitmentButton == e.getSource()) {
+			
+			MiningInfo miningInfo = BurstNode.getInstance().getMiningInfo();
+			if(miningInfo != null && miningInfo.getAverageCommitmentNQT() == 0) {
+				JOptionPane.showMessageDialog(getParent(),
+						tr("mine_commitment_not_available"),
+						tr(addCommitmentButton == e.getSource() ? "send_add_commitment" : "send_remove_commitment"),
+						JOptionPane.INFORMATION_MESSAGE);
+
+				return;
+			}
+			
 			SendDialog dlg = new SendDialog((JFrame) SwingUtilities.getWindowAncestor(this),
 					null, addCommitmentButton == e.getSource() ? SendDialog.TYPE_ADD_COMMITMENT :
 						SendDialog.TYPE_REMOVE_COMMITMENT, null);
@@ -823,7 +834,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			if(path == null)
 				continue;
 			
-			long freeSpace = path.getFreeSpace();
+			long freeSpace = path.getUsableSpace();
 			
 			long toUseWithPlots = (freeSpace/100 * fractionToPlotSliders.get(i).getValue());
 			totalToPlot += toUseWithPlots;
@@ -890,7 +901,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			if(path == null)
 				continue;
 			
-			long freeSpace = path.getFreeSpace();
+			long freeSpace = path.getUsableSpace();
 			
 			long toUseWithPlots = freeSpace/100 * fractionToPlotSliders.get(i).getValue();
 			
@@ -939,10 +950,11 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			long noncesFinished = 0;
 			addToConsole(PLOT_APP, "Plotting started for a total of " + formatSpace(totalToPlot) + ", this can be a long process...");
 			
-			// Cache will use 45% of the free space, so we can have 2 (one moving and one plotting) and do not get a disk full
+			// Cache will use 40% of the free space, so we can have 2 (one moving and one plotting) and do not get a disk full
 			long noncesCache = 0;
-			if(ssdPath != null)
-				noncesCache = ssdPath.getFreeSpace() * 45 / 100 / BYTES_OF_A_NONCE;
+			if(ssdPath != null) {
+				noncesCache = ssdPath.getUsableSpace() * 40 / (100 * BYTES_OF_A_NONCE);
+			}
 			
 			ArrayList<File> filesToPlot = new ArrayList<>();
 			filesToPlot.addAll(resumePlotFiles);
@@ -960,7 +972,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				File fileBeingPlot = plot;
 				
 				if(ssdPath != null) {
-					long freeCacheSpaceNow = ssdPath.getFreeSpace()/BYTES_OF_A_NONCE;
+					long freeCacheSpaceNow = ssdPath.getUsableSpace()/BYTES_OF_A_NONCE;
 					while(freeCacheSpaceNow < noncesCache) {
 						addToConsole(PLOT_APP, "Waiting for enough space on your cache disk...");
 						try {
@@ -973,7 +985,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 							addToConsole(PLOT_APP, "Stopped");
 							return;
 						}
-						freeCacheSpaceNow = ssdPath.getFreeSpace()/BYTES_OF_A_NONCE;
+						freeCacheSpaceNow = ssdPath.getUsableSpace()/BYTES_OF_A_NONCE;
 					}
 					
 					noncesBeingPlot = Math.min(noncesCache, noncesInThisPlot);
@@ -1007,7 +1019,6 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 									// delete the file, because we will not be able to resume it
 									fileBeingPlot.delete();
 								}
-								
 								break;
 							}
 							counter++;
@@ -1016,6 +1027,14 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 								int partial = getPlotProgress(fileBeingPlot);
 								noncesPlotted.set(noncesFinished + partial);
 							}
+						}
+						if(plotting && plotterProcess.exitValue()!=0) {
+							addToConsole(PLOT_APP, "Error, plotter exit code: " + plotterProcess.exitValue());
+							plotting = false;
+							break;
+						}
+						if(!plotting) {
+							break;
 						}
 						nonceStart += noncesBeingPlot;
 						noncesAlreadyPlotted += noncesBeingPlot;
