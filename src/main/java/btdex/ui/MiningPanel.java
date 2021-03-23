@@ -653,6 +653,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			if(pathList.get(pos) != null)
 				fileChooser.setCurrentDirectory(pathList.get(pos));
 			fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			fileChooser.setAcceptAllFileFilterUsed(false);
 			
 			int returnVal = fileChooser.showOpenDialog(this);
 			if(returnVal == JFileChooser.APPROVE_OPTION) {
@@ -1070,7 +1071,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			}
 			
 			if(plotting)
-				addToConsole(PLOT_APP, "Plotting successfully finished!");
+				addToConsole(PLOT_APP, "Plotting successfully finished! Be sure to stop and start the miner.");
 			if(ssdPath != null)
 				addToConsole(PLOT_APP, "But your system might still be moving files from cache");
 
