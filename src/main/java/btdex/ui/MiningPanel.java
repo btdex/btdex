@@ -531,8 +531,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				
 				File[] plotFiles = path.listFiles(PLOT_FILE_FILTER);
 				long amountInPlots = 0;
-				for(File plot : plotFiles) {
-					amountInPlots += plot.length();
+				if(plotFiles != null) {
+					for(File plot : plotFiles) {
+						amountInPlots += plot.length();
+					}
 				}
 				if(amountInPlots > 0) {
 					selectFolderButtons.get(i).setText(path.getAbsolutePath() + " " + formatSpace(amountInPlots));
@@ -563,6 +565,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 
 			String rewards = tr("mine_reward_estimation_old", NumberFormatting.BURST_2.format(burstPerTbPerDay.longValue()),
 					formatSpace(networkTbs*1024L*ONE_GIB));
+			rewards += "\n" + tr("mine_reward_poc_plus_activation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(8).longValue()));
 			BurstValue avgCommitment = null;
 			if(miningInfo.getAverageCommitmentNQT() > 0) {
 				avgCommitment = BurstValue.fromPlanck(miningInfo.getAverageCommitmentNQT());
