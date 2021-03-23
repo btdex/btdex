@@ -1046,11 +1046,12 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 								noncesPlotted.set(noncesFinished + partial);
 							}
 						}
-						if(plotting && plotterProcess.exitValue()!=0) {
-							addToConsole(PLOT_APP, "Error, plotter exit code: " + plotterProcess.exitValue());
-							plotting = false;
-							break;
-						}
+						// TODO: apparently for some systems this returns garbage, visit again later
+//						if(plotting && plotterProcess.exitValue()!=0) {
+//							addToConsole(PLOT_APP, "Error, plotter exit code: " + plotterProcess.exitValue());
+//							plotting = false;
+//							break;
+//						}
 						if(!plotting) {
 							break;
 						}

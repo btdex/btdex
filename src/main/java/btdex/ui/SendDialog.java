@@ -118,7 +118,10 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 			amount.setText("0");
 		}
 		Desc feeDesc = new Desc("", feeSlider);
-		feeSlider.setPreferredSize(new Dimension(20, 36));
+		if(type == TYPE_JOIN_POOL) {
+			// Avoid cropping the slider ball
+			feeSlider.setPreferredSize(new Dimension(20, 40));
+		}
 		panel.add(feeDesc);
 		FeeSuggestion suggestedFee = BurstNode.getInstance().getSuggestedFee();
 		
