@@ -339,29 +339,12 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		
 		String selectedPool = g.getProperty(PROP_MINER_POOL);
 		poolComboBox = new JComboBox<String>();
-		OkHttpClient client = new OkHttpClient();
 		for (String poolURL : (g.isTestnet() ? POOL_LIST_TESTNET : POOL_LIST)) {
-			String poolURLgetConfig = poolURL + "/api/getConfig";
 			poolComboBox.addItem(poolURL);
-			poolAddresses.add(null);
+			poolAddresses.add(getPoolAddress(poolURL));
 			
 			if(poolURL.equals(selectedPool))
-				poolComboBox.setSelectedIndex(poolComboBox.getItemCount()-1);
-			
-			try {
-				Request request = new Request.Builder().url(poolURLgetConfig).build();
-				Response responses = client.newCall(request).execute();
-				String jsonData = responses.body().string();
-				JsonObject json = JsonParser.parseString(jsonData).getAsJsonObject();
-
-				BurstAddress address = BurstAddress.fromEither(json.get("poolAccount").getAsString());
-				if(address != null) {
-					poolAddresses.set(poolAddresses.size() -1, address);
-				}
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
+				poolComboBox.setSelectedIndex(poolComboBox.getItemCount()-1);			
 		}
 		poolPanel.add(poolComboBox);
 		poolComboBox.addActionListener(this);
@@ -445,6 +428,25 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 	}
 	
+	private static final OkHttpClient CLIENT = new OkHttpClient();
+	
+	private BurstAddress getPoolAddress(String poolURL) {
+		try {
+			String poolURLgetConfig = poolURL + "/api/getConfig";
+
+			Request request = new Request.Builder().url(poolURLgetConfig).build();
+			Response responses = CLIENT.newCall(request).execute();
+			String jsonData = responses.body().string();
+			JsonObject json = JsonParser.parseString(jsonData).getAsJsonObject();
+
+			return BurstAddress.fromEither(json.get("poolAccount").getAsString());
+		}
+		catch (Exception e) {
+			logger.debug("Pool incompatible or down: " + poolURL);
+		}
+		return null;
+	}
+	
 //    /**
 //     * Returns the value of the device info parameter with the given name
 //     *
@@ -516,6 +518,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			startPlotButton.setText(tr("mine_plotting", percentPlotted));
 			startPlotButton.setIcon(pendingIconRotating);
 			pendingIconRotating.addComponent(startPlotButton);
+			if(ssdPath != null) {
+				ssdSelectFolderButton.setIcon(pendingIconRotating);
+				pendingIconRotating.addComponent(ssdSelectFolderButton);
+			}
 			
 			ssdCancelButton.setEnabled(false);
 			ssdSelectFolderButton.setEnabled(false);
@@ -546,6 +552,11 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				pathCancelButtons.get(i).setEnabled(true);
 				openFolderButtons.get(i).setEnabled(true);
 				fractionToPlotSliders.get(i).setEnabled(true);
+				
+				if(ssdPath != null) {
+					pendingIconRotating.removeComponent(ssdSelectFolderButton);
+					ssdSelectFolderButton.setIcon(folderIcon);
+				}
 			}
 
 			stopPlotButton.setEnabled(false);
@@ -599,6 +610,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		
 		if(!mining) {
 			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedIndex());
+			if(poolAddress == null) {
+				poolAddress = getPoolAddress(poolComboBox.getSelectedItem().toString());
+				poolAddresses.set(poolComboBox.getSelectedIndex(), poolAddress);
+			}
 			startMiningButton.setEnabled(poolAddress != null && poolAddress.equals(BN.getRewardRecipient()) && totalCapacity > 0);
 		}
 		
@@ -790,6 +805,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			String info = null;
 			Account account = BN.getAccount();
 			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedIndex());
+			if(poolAddress == null) {
+				poolAddress = getPoolAddress(poolComboBox.getSelectedItem().toString());
+			}
 			Transaction[] txs = BN.getAccountTransactions();
 			
 			if(account == null || account.getBalance().longValue() < Constants.FEE_QUANT) {
