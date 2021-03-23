@@ -214,10 +214,11 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 				}
 			}
 
-			Number amountNumber = null;
+			Number amountNumber = 0;
 			if(error == null) {
 				try {
-					amountNumber = NumberFormatting.parse(amount.getText());
+					if (amount.getText()!=null && amount.getText().length() > 0)
+						amountNumber = NumberFormatting.parse(amount.getText());
 				} catch (ParseException e1) {
 					amount.requestFocus();
 					error = tr("send_invalid_amount");
@@ -252,6 +253,10 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 					else if(type == TYPE_REMOVE_COMMITMENT){
 						utx = g.getNS().generateTransactionRemoveCommitment(g.getPubKey(), amountToSend,
 								selectedFee, Constants.BURST_SEND_DEADLINE);
+					}
+					else if (amountToSend.longValue() == 0L){
+						utx = g.getNS().generateTransactionWithMessage(recAddress, g.getPubKey(),
+								selectedFee, Constants.BURST_SEND_DEADLINE, msg, null);
 					}
 					else {
 						utx = g.getNS().generateTransactionWithMessage(recAddress, g.getPubKey(),
