@@ -143,9 +143,8 @@ public class Main extends JFrame implements ActionListener {
             public void windowClosing(WindowEvent ev) {
             	if(windowsTrayIcon != null) {
             		windowsTrayIcon.displayMessage(getTitle() + " " + version, tr("tray_running"), MessageType.INFO);
-            		Main.this.setVisible(false);
             	}
-            	else if(systemTray != null) {
+            	if(windowsTrayIcon != null || systemTray != null) {
             		Toast.makeText(Main.this, tr("tray_running"), Toast.Style.SUCCESS).display(MouseInfo.getPointerInfo().getLocation());
             		Main.this.setVisible(false);
             	}
