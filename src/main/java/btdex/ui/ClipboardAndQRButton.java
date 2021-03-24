@@ -25,19 +25,21 @@ public class ClipboardAndQRButton extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
 	private String uri;
+
+	private JLabel copyButton;
 	
 	public ClipboardAndQRButton(final Component parent, int iconSize, final Color fg) {
 		super(new FlowLayout(FlowLayout.LEFT));
 		this.setAlignmentY(0.65f);
 		
-		JLabel copyButton = new JLabel(IconFontSwing.buildIcon(FontAwesome.CLONE, iconSize, fg));
+		copyButton = new JLabel(IconFontSwing.buildIcon(FontAwesome.CLONE, iconSize, fg));
 		JLabel qrButton = new JLabel(IconFontSwing.buildIcon(FontAwesome.QRCODE, iconSize, fg));
 		
 		copyButton.setToolTipText(tr("btn_copy_to_clipboard"));
 		qrButton.setToolTipText(tr("btn_show_qr"));
 		
-		add(copyButton);
 		add(qrButton);
+		add(copyButton);
 
 		copyButton.addMouseListener(new MouseAdapter() {
 			@Override
@@ -74,5 +76,6 @@ public class ClipboardAndQRButton extends JPanel {
 		// TODO: more elaborated URI as described for instance here:
 		// https://github.com/bitcoin/bips/blob/master/bip-0021.mediawiki
 		this.uri = uri;
+		copyButton.setText(uri);
 	}
 }

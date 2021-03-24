@@ -191,7 +191,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 		conditions = new JTextPane();
 		conditions.setContentType("text/html");
-		conditions.setPreferredSize(new Dimension(80, 280));
+		conditions.setPreferredSize(new Dimension(120, 280));
 		conditions.setEditable(false);
 
 		acceptBox = new JCheckBox("I accept the terms and conditions");
@@ -627,7 +627,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					// Signaling that we have received the market amount
 					header(tr("offer_terms_signaling",
 							totalField.getText(), market,
-							contract.getMarketAccount() + BUTTON_TEXT));
+							BUTTON_TEXT));
 					append(tr("offer_terms_signaling_details",
 							amountField.getText(), contract.getSecurity(),
 							HistoryPanel.DATE_FORMAT.format(deadline.getTime()),
@@ -646,7 +646,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						header(tr("offer_terms_buy_deposit",
 								totalField.getText(), market,
 								HistoryPanel.DATE_FORMAT.format(deadline.getTime()),
-								contract.getMarketAccount() + BUTTON_TEXT));
+								BUTTON_TEXT));
 					}
 					else {
 						Calendar deadline = Calendar.getInstance();
@@ -655,7 +655,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						header(tr("offer_terms_need_transfer",
 								totalField.getText(), market,
 								HistoryPanel.DATE_FORMAT.format(deadline.getTime()),
-								contract.getMarketAccount() + BUTTON_TEXT));
+								BUTTON_TEXT));
 					}
 					append(tr("offer_terms_need_transfer_details",
 							amountField.getText(), contract.getSecurity(),
