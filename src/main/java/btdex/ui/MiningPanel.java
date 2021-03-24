@@ -804,16 +804,12 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			BurstNode BN = BurstNode.getInstance();
 			
 			String info = null;
-			Account account = BN.getAccount();
 			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedIndex());
 			if(poolAddress == null) {
 				poolAddress = getPoolAddress(poolComboBox.getSelectedItem().toString());
 			}
 			Transaction[] txs = BN.getAccountTransactions();
 			
-			if(account == null || account.getBalance().longValue() < Constants.FEE_QUANT) {
-				info = tr("dlg_not_enough_balance");
-			}
 			if(info == null && txs != null) {
 				for(Transaction tx : txs) {
 					if(tx.getType() == 20 && tx.getSubtype() == 0 && tx.getConfirmations() < 4) {
