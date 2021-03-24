@@ -106,6 +106,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	
 	private static final String[] POOL_LIST_TESTNET = {
 			"http://nivbox.co.uk:9000",
+			"https://testpool.burstcoin.ro",
 	};
 	
 	private ArrayList<BurstAddress> poolAddresses = new ArrayList<>();
