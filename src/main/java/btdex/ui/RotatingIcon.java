@@ -22,6 +22,7 @@ public class RotatingIcon implements Icon {
 	private final Timer rotatingTimer;
 	
 	private HashMap<DefaultTableModel, ArrayList<Point>> cells = new HashMap<>();
+	private ArrayList<Component> comps = new ArrayList<>();
 	
 	public RotatingIcon(Icon icon) {
 		delegateIcon = icon;
@@ -37,6 +38,9 @@ public class RotatingIcon implements Icon {
 				for(DefaultTableModel model : cells.keySet()) {
 					for(Point c : cells.get(model))
 						model.fireTableCellUpdated(c.x, c.y);
+				}
+				for(Component c : comps) {
+					c.repaint();
 				}
 			}
 		} );
@@ -58,6 +62,15 @@ public class RotatingIcon implements Icon {
 		if(points != null) {
 			points.clear();
 		}
+	}
+	
+	public void addComponent(Component c) {
+		if(!comps.contains(c))
+			comps.add(c);
+	}
+
+	public void removeComponent(Component c) {
+		comps.remove(c);
 	}
 
 	@Override

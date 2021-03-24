@@ -375,6 +375,14 @@ public class Globals {
 
 		NS = BurstNodeService.getInstance(node);
 	}
+	
+	public void setProperty(String key, String value) {
+		conf.setProperty(key, value);
+	}
+
+	public String getProperty(String key) {
+		return conf.getProperty(key);
+	}
 
 	public String getExplorer() {
 		return conf.getProperty(Constants.PROP_EXPLORER, ExplorerWrapper.BURSTCOIN_NETWORK);

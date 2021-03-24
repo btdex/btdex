@@ -22,6 +22,13 @@ public class Icons {
     public static IconCode RECYCLE = FontAwesome.RECYCLE;
     public static IconCode GITHUB = FontAwesomeBrands.GITHUB;
     public static IconCode TRASH = FontAwesome.TRASH;
+    public static IconCode FOLDER = FontAwesome.FOLDER_OPEN;
+    public static IconCode HDD = FontAwesome.HDD_O;
+    public static IconCode MINING = FontAwesome.HDD_O;
+    public static IconCode PLOTTING = FontAwesome.DATABASE;
+    public static IconCode PLUG = FontAwesome.PLUG;
+    public static IconCode PLUS = FontAwesome.PLUS;
+    public static IconCode MINUS = FontAwesome.MINUS;
     public static IconCode CONNECTED = FontAwesome.WIFI;
     public static IconCode TESTNET = FontAwesome.FLASK;
     public static IconCode DISCONNECTED = FontAwesome.EXCLAMATION;
@@ -46,6 +53,7 @@ public class Icons {
     public static IconCode NEW_TOKEN = FontAwesome.TAG;
     public static IconCode UP = FontAwesome.ARROW_UP;
     public static IconCode DOWN = FontAwesome.ARROW_DOWN;
+    public static IconCode QUIT = FontAwesome.POWER_OFF;
     public static IconCode UNKNOWN = FontAwesome.QUESTION;
 
     public static IconCode DISCORD = FontAwesomeBrands.DISCORD;

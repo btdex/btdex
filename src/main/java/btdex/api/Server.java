@@ -33,7 +33,7 @@ import fi.iki.elonen.NanoHTTPD;
  *
  */
 public class Server extends NanoHTTPD {
-    private static final Logger logger = LogManager.getLogger();;
+    private static final Logger logger = LogManager.getLogger();
     
     private static final String API_PREFIX = "/api/v1/";
 

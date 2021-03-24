@@ -7,15 +7,18 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Code from https://stackoverflow.com/questions/18004150/desktop-api-is-not-supported-on-the-current-platform/18004334#18004334
  *
  * net.mightypork.rpack.utils
  * 
- * FIXME: disabled logging for now, this needs to be improved 
- * 
  */
 public class DesktopApi {
+	
+    private static final Logger logger = LogManager.getLogger();
 
     public static boolean browse(URI uri) {
 
@@ -152,7 +155,7 @@ public class DesktopApi {
 
     private static boolean runCommand(String command, String args, String file) {
 
-        logOut("Trying to exec:\n   cmd = " + command + "\n   args = " + args + "\n   %s = " + file);
+        logOut("Trying to exec:   cmd = " + command + "   args = " + args + "   %s = " + file);
 
         String[] parts = prepareCommand(command, args, file);
 
@@ -206,7 +209,7 @@ public class DesktopApi {
     }
 
     private static void logOut(String msg) {
-        System.out.println(msg);
+        logger.debug(msg);
     }
 
     public static enum EnumOS {

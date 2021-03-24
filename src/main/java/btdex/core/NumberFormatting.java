@@ -52,6 +52,9 @@ public class NumberFormatting {
     // Minimum of 5 decimal places
     public static final NumberFormatting BURST = NF(2, 8);
 
+    // Max of 2 decimal places
+    public static final NumberFormatting BURST_2 = NF(2, 2);
+
     // Minimum of 2 decimal places, max 4
     public static final NumberFormatting TOKEN = NF(2, 4);
 

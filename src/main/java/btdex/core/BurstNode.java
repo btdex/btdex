@@ -4,8 +4,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicReference;
 
 import btdex.markets.MarketTRT;
+import burst.kit.entity.BurstAddress;
 import burst.kit.entity.BurstID;
 import burst.kit.entity.BurstValue;
 import burst.kit.entity.response.Account;
@@ -14,6 +16,7 @@ import burst.kit.entity.response.AssetOrder;
 import burst.kit.entity.response.AssetTrade;
 import burst.kit.entity.response.Block;
 import burst.kit.entity.response.FeeSuggestion;
+import burst.kit.entity.response.MiningInfo;
 import burst.kit.entity.response.Transaction;
 import burst.kit.service.BurstNodeService;
 
@@ -51,7 +54,9 @@ public class BurstNode {
 	private Transaction[] utxs;
 	private Block checkBlock;
 	private Exception nodeError;
-	private Account account;
+	private AtomicReference<MiningInfo> miningInfo = new AtomicReference<>();
+	private AtomicReference<Account> account = new AtomicReference<>();
+	private AtomicReference<BurstAddress> rewardRecipient = new AtomicReference<>();
 	private FeeSuggestion suggestedFee;
 	private BurstID lastBlock;
 	private Block latestBlock;
@@ -126,7 +131,15 @@ public class BurstNode {
 	}
 
 	public Account getAccount() {
-		return account;
+		return account.get();
+	}
+
+	public MiningInfo getMiningInfo() {
+		return miningInfo.get();
+	}
+
+	public BurstAddress getRewardRecipient() {
+		return rewardRecipient.get();
 	}
 
 	public Exception getNodeException() {
@@ -154,6 +167,7 @@ public class BurstNode {
 
 	private class NodeUpdateTask extends TimerTask {
 
+
 		@Override
 		public void run() {
 			Globals g = Globals.getInstance();
@@ -171,7 +185,7 @@ public class BurstNode {
 
 				lastBlock = null;
 
-				suggestedFee = g.getNS().suggestFee().blockingGet();
+				suggestedFee = NS.suggestFee().blockingGet();
 
 				Mediators mediators = g.getMediators();
 
@@ -254,7 +268,15 @@ public class BurstNode {
 					checkBlock = NS.getBlock(Constants.CHECK_HEIGHT).blockingGet();
 				}
 				try {
-					account = NS.getAccount(g.getAddress()).blockingGet();
+					miningInfo.set(NS.getMiningInfo().blockingFirst());
+					rewardRecipient.set(NS.getRewardRecipient(g.getAddress()).blockingGet());
+					Boolean getCommitmentStats = null;
+					if(miningInfo.get().getAverageCommitmentNQT() > 0) {
+						// Only request commitment stats if there is support on the node
+						getCommitmentStats = Boolean.TRUE;
+					}
+					
+					account.set(NS.getAccount(g.getAddress(), null, getCommitmentStats, getCommitmentStats).blockingGet());
 				}
 				catch (Exception e) {
 					nodeError = e;
