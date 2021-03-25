@@ -225,18 +225,6 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				cancelButton.setEnabled(true);
 				openFolderButton.setEnabled(true);
 				fractionToPlotSlider.setEnabled(true);
-				
-				// check if there are pending files to resume
-				File[] plotFiles = pathFile.listFiles(PLOT_FILE_FILTER);
-				if(plotFiles != null) {
-					for(File plot : plotFiles) {
-						int progress = getPlotProgress(plot);
-						if(progress >= 0) {
-							resumePlotFiles.add(plot);
-							addToConsole(PLOT_APP, "Plotting of '" + plot.getAbsolutePath() + "' will be resumed when you start plotting again");
-						}
-					}
-				}
 			}
 			
 			JPanel folderBorderPanel = new JPanel(new BorderLayout(2, 0));
@@ -269,6 +257,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		
 		ssdPanel.add(ssdCancelButton, BorderLayout.LINE_START);
 		plottingPanel.add(ssdPanel);
+		
+		checkResumeFiles();
 		
 		// CPU cores
 		int coresAvailable = Runtime.getRuntime().availableProcessors();
@@ -592,18 +582,20 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				double capacityTib = (double)totalCapacity/ ONE_GIB /1024.0;
 				
 				String capacity = formatSpace(totalCapacity);
+				double commitmentFactor = 1;
 				if(avgCommitment != null && account.getCommitment() != null) {
 					capacity += "+" + NumberFormatting.BURST_2.format(account.getCommitment().longValue()) + " BURST/TiB";
 					
 					double ratio = account.getCommitment().doubleValue()/avgCommitment.doubleValue();
-			        double commitmentFactor = Math.pow(ratio, 0.4515449935);
+			        commitmentFactor = Math.pow(ratio, 0.4515449935);
 			        commitmentFactor = Math.min(8.0, commitmentFactor);
 			        commitmentFactor = Math.max(0.125, commitmentFactor);
-			        
-			        capacityTib *= commitmentFactor;
 				}
 				
-				rewards += "\n\n" + tr("mine_your_rewards", capacity, NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(capacityTib).longValue()));
+				rewards += "\n\n" + tr("mine_your_rewards", capacity, NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(capacityTib*commitmentFactor).longValue()));
+				if(avgCommitment == null || account.getCommitment() == null) {
+					rewards += "\n" + tr("mine_reward_poc_plus_activation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(capacityTib*8).longValue()));
+				}
 			}
 			
 			rewardsEstimationArea.setText(rewards);
@@ -639,6 +631,29 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Toast.makeText((JFrame) SwingUtilities.getWindowAncestor(this), ex.getMessage(), Toast.Style.ERROR).display();
+		}
+	}
+	
+	private void checkResumeFiles() {
+		resumePlotFiles.clear();
+		
+		for (int i = 0; i < N_PATHS; i++) {
+			File pathFile = pathList.get(i);
+
+			if(pathFile == null)
+				continue;
+
+			// check if there are pending files to resume
+			File[] plotFiles = pathFile.listFiles(PLOT_FILE_FILTER);
+			if(plotFiles != null) {
+				for(File plot : plotFiles) {
+					int progress = getPlotProgress(plot);
+					if(progress >= 0) {
+						resumePlotFiles.add(plot);
+						addToConsole(PLOT_APP, "Plotting of '" + plot.getAbsolutePath() + "' will be resumed when you start plotting again");
+					}
+				}
+			}
 		}
 	}
 
@@ -729,6 +744,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		if(stopPlotButton == e.getSource()) {
 			plotting = false;
 			stopPlotButton.setEnabled(false);
+			checkResumeFiles();
 			update();
 			return;
 		}
@@ -902,8 +918,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			File[] plotFiles = path.listFiles(PLOT_FILE_FILTER);
 			for(File plot : plotFiles) {
 				String pieces[] = plot.getName().split("_");
-				long start = Long.parseLong(pieces[1]);
-				long nonces = Long.parseLong(pieces[2]);
+				long start = Long.parseUnsignedLong(pieces[1]);
+				long nonces = Long.parseUnsignedLong(pieces[2]);
 				startNonce = Math.max(startNonce, start+nonces);
 			}
 		}
@@ -966,10 +982,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			long noncesFinished = 0;
 			addToConsole(PLOT_APP, "Plotting started for a total of " + formatSpace(totalToPlot) + ", this can be a long process...");
 			
-			// Cache will use 40% of the free space, so we can have 2 (one moving and one plotting) and do not get a disk full
+			// Cache will use 45% of the free space, so we can have 2 (one moving and one plotting) and do not get a disk full
 			long noncesCache = 0;
 			if(ssdPath != null) {
-				noncesCache = ssdPath.getUsableSpace() * 40 / (100 * BYTES_OF_A_NONCE);
+				noncesCache = ssdPath.getUsableSpace() * 45 / (100 * BYTES_OF_A_NONCE);
 			}
 			
 			ArrayList<File> filesToPlot = new ArrayList<>();
@@ -988,29 +1004,30 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				File fileBeingPlot = plot;
 				
 				if(ssdPath != null) {
-					long freeCacheSpaceNow = ssdPath.getUsableSpace()/BYTES_OF_A_NONCE;
-					while(freeCacheSpaceNow < noncesCache) {
-						addToConsole(PLOT_APP, "Waiting for enough space on your cache disk...");
-						try {
-							Thread.sleep(10000);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-							plotting = false;
-						}
-						if(!plotting) {
-							addToConsole(PLOT_APP, "Stopped");
-							return;
-						}
-						freeCacheSpaceNow = ssdPath.getUsableSpace()/BYTES_OF_A_NONCE;
-					}
-					
 					noncesBeingPlot = Math.min(noncesCache, noncesInThisPlot);
 				}
 				
 				while(noncesAlreadyPlotted < noncesInThisPlot) {
 					noncesBeingPlot = Math.min(noncesInThisPlot - noncesAlreadyPlotted, noncesBeingPlot);
-					if(ssdPath != null)
+					if(ssdPath != null) {
 						fileBeingPlot = new File(ssdPath, sections[0] + "_" + nonceStart + "_" + noncesBeingPlot);
+						
+						long freeCacheSpaceNow = ssdPath.getUsableSpace()/BYTES_OF_A_NONCE;
+						while(freeCacheSpaceNow < noncesCache) {
+							addToConsole(PLOT_APP, "Waiting for enough space on your cache disk...");
+							try {
+								Thread.sleep(10000);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+								plotting = false;
+							}
+							if(!plotting) {
+								addToConsole(PLOT_APP, "Stopped");
+								return;
+							}
+							freeCacheSpaceNow = ssdPath.getUsableSpace()/BYTES_OF_A_NONCE;
+						}
+					}
 
 					String cmd = plotterFile.getAbsolutePath() + " -i " + sections[0];
 					cmd += " -s " + nonceStart;
