@@ -1056,7 +1056,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 							}
 							counter++;
 							Thread.sleep(100);
-							if(counter % 100 == 0) {
+							if(counter % 300 == 0) {
 								int partial = getPlotProgress(fileBeingPlot);
 								noncesPlotted.set(noncesFinished + partial);
 							}
