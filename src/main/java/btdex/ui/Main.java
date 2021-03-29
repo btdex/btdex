@@ -2,6 +2,7 @@ package btdex.ui;
 
 import static btdex.locale.Translation.tr;
 
+import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -10,16 +11,25 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.MouseInfo;
+import java.awt.PopupMenu;
+import java.awt.TrayIcon;
+import java.awt.TrayIcon.MessageType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -60,6 +70,9 @@ import btdex.ui.orderbook.TokenMarketPanel;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.Block;
 import burst.kit.entity.response.http.BRSError;
+import dorkbox.systemTray.MenuItem;
+import dorkbox.systemTray.SystemTray;
+import dorkbox.util.OS;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
 import io.github.novacrypto.bip39.wordlists.English;
@@ -71,7 +84,7 @@ import okhttp3.Response;
 public class Main extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
-
+	
 	private Image icon, iconMono;
 	private Icon ICON_CONNECTED, ICON_DISCONNECTED, ICON_TESTNET;
 	private PulsingIcon pulsingButton;
@@ -110,6 +123,11 @@ public class Main extends JFrame implements ActionListener {
 
 	private Logger logger = LogManager.getLogger();
 
+	private MiningPanel miningPanel;
+
+	private SystemTray systemTray;
+	private TrayIcon windowsTrayIcon;
+
 	private static Main instance;
 
 	public static Main getInstance() {
@@ -127,13 +145,32 @@ public class Main extends JFrame implements ActionListener {
 
 	public Main() {
 		super("BTDEX" + (Globals.getInstance().isTestnet() ? "-TESTNET" : ""));
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent ev) {
+            	if(windowsTrayIcon != null) {
+            		windowsTrayIcon.displayMessage(getTitle() + " " + version, tr("tray_running"), MessageType.INFO);
+            	}
+            	if(windowsTrayIcon != null || systemTray != null) {
+            		Toast.makeText(Main.this, tr("tray_running"), Toast.Style.SUCCESS).display(MouseInfo.getPointerInfo().getLocation());
+            		Main.this.setVisible(false);
+            	}
+            	else {
+		        	if(miningPanel != null)
+		        		miningPanel.stop();
+		            System.exit(0);
+            	}
+            }
+        });
 
 		instance = this;
 
 		readLocalResources();
 		setUIManager();
 
+		addSystemTray();
+		
 		IconFontSwing.register(FontAwesome.getIconFont());
 		IconFontSwing.register(FontAwesomeBrands.getIconFont());
 		setBackground(Color.BLACK);
@@ -225,7 +262,8 @@ public class Main extends JFrame implements ActionListener {
 
 		tabbedPane.addTab(tr("main_swaps"), i.get(Icons.SWAPS), orderBookToken);
 		tabbedPane.addTab(tr("main_contracts"), i.get(Icons.CROSS_CHAIN), orderBook);
-		tabbedPane.addTab(tr("main_mining"), i.get(Icons.MINING), new MiningPanel());
+		if(!OS.isMacOsX())
+			tabbedPane.addTab(tr("main_mining"), i.get(Icons.MINING), miningPanel = new MiningPanel());
 
 		boolean isMediator = g.getAddress()!=null && g.getMediators().isMediator(g.getAddress().getSignedLongId());
 
@@ -260,6 +298,7 @@ public class Main extends JFrame implements ActionListener {
 		topRight.add(new Desc("  ", resetPinButton));
 		topRight.add(new Desc("  ", signoutButton));
 		topRight.add(new Desc(tr("main_language_name"), createLangButton(largeFont, g)));
+		topRight.add(new Desc("  ", createQuitButton()));
 
 		nodeSelector = new JButton(g.getNode());
 		nodeSelector.setToolTipText(tr("main_select_node"));
@@ -314,7 +353,7 @@ public class Main extends JFrame implements ActionListener {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		boolean newAccount = false;
 		try {
-			Account address = g.getNS().getAccount(g.getAddress(), null, null).blockingGet();
+			Account address = g.getNS().getAccount(g.getAddress()).blockingGet();
 			logger.info("Active address {}", address.getId().getFullAddress());
 		}
 		catch (Exception e) {
@@ -413,6 +452,61 @@ public class Main extends JFrame implements ActionListener {
 		} catch (UnsupportedLookAndFeelException e) {
 			logger.error("Error: " + e.getLocalizedMessage());
 			e.printStackTrace();
+		}
+	}
+	
+	@SuppressWarnings("serial")
+	private void addSystemTray() {
+		Action showHideAction = new AbstractAction(tr("tray_show_hide")) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Main.this.setVisible(!Main.this.isVisible());
+			}
+		};
+		Action quitAction = new AbstractAction(tr("tray_quit")) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				doQuit();
+			}
+		};
+		
+		ArrayList<Action> actions = new ArrayList<>();
+		actions.add(showHideAction);
+		actions.add(quitAction);
+				
+		if(OS.isWindows()) {
+			if(java.awt.SystemTray.isSupported()) {
+				java.awt.SystemTray sysTray = java.awt.SystemTray.getSystemTray();
+				PopupMenu popup = new PopupMenu();
+
+				for (Action a : actions) {
+					java.awt.MenuItem awtItem = new java.awt.MenuItem(a.getValue(Action.NAME).toString());
+					awtItem.addActionListener(a);
+					popup.add(awtItem);
+				}
+
+				windowsTrayIcon = new TrayIcon(icon, getTitle());
+				windowsTrayIcon.setImageAutoSize(true);
+				windowsTrayIcon.setPopupMenu(popup);
+				try {
+					sysTray.add(windowsTrayIcon);
+					windowsTrayIcon.displayMessage(getTitle() + " " + version, tr("tray_running"), MessageType.INFO);
+				} catch (AWTException e1) {
+					e1.printStackTrace();
+				}
+			}
+		}
+		else {
+			systemTray = SystemTray.get();
+			if(systemTray != null) {
+				systemTray.setImage(icon);
+				systemTray.setTooltip(getTitle());
+				systemTray.setStatus(getTitle() + " " + version);
+
+				for (Action a : actions) {
+					systemTray.getMenu().add(new MenuItem(a.getValue(Action.NAME).toString(), a));
+				}
+			}
 		}
 	}
 
@@ -548,6 +642,27 @@ public class Main extends JFrame implements ActionListener {
 		});
 		return langButton;
 	}
+	
+	private void doQuit() {
+		if(miningPanel != null)
+    		miningPanel.stop();
+		if(systemTray != null) {
+			systemTray.shutdown();				
+		}
+		if(windowsTrayIcon != null) {
+			java.awt.SystemTray.getSystemTray().remove(windowsTrayIcon);
+		}
+        System.exit(0);
+	}
+
+	private JButton createQuitButton() {
+		JButton quitButton = new JButton(i.get(Icons.QUIT));
+		quitButton.setToolTipText(tr("tray_quit"));
+		quitButton.addActionListener(e -> {
+			doQuit();
+		});
+		return quitButton;
+	}
 
 	/**
 	 * Signal an update should take place.
@@ -577,6 +692,8 @@ public class Main extends JFrame implements ActionListener {
 			}
 			if(mediationPanel!=null && mediationPanel.isVisible())
 				mediationPanel.update();
+			if(miningPanel.isVisible() || showingSplash)
+				miningPanel.update();
 
 			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 			nodeSelector.setBackground(explorerSelector.getBackground());

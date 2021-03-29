@@ -25,11 +25,11 @@ repositories {
 
 dependencies {
     // implementation 'com.github.burst-apps-team:burstkit4j:0.16.1'
-    implementation 'com.github.burst-apps-team:burstkit4j:5518e044c4'
+    implementation 'com.github.burst-apps-team:burstkit4j:0a760efbdd'
     // implementation 'com.github.jjos2372:burstkit4j:a5ee32342f'
 
-    //implementation 'com.github.jjos2372:blocktalk:-SNAPSHOT'
-    implementation 'com.github.jjos2372:blocktalk:3337bfbf32'
+    // implementation 'com.github.jjos2372:blocktalk:183bf6861e'
+    implementation 'com.github.burst-apps-team:blocktalk:183bf6861e'    
 
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.15'
@@ -38,9 +38,14 @@ dependencies {
     implementation 'com.github.jiconfont:jiconfont-swing:1.0.0'
     //implementation 'com.github.jiconfont:jiconfont-font_awesome:4.7.0.1'
     implementation 'com.github.meisenla:jiconfont-font_awesome:8be36e8ba9'
+    
+    //implementation 'net.java.dev.jna:jna-platform:5.7.0'
+    //implementation 'net.java.dev.jna:jna:5.7.0'
 
 	//implementation 'com.github.weisj:darklaf-core:[1.4.3.1,)'
     implementation 'com.bulenkov:darcula:2018.2'
+    
+    implementation 'com.dorkbox:SystemTray:3.17'
 
     implementation 'org.apache.commons:commons-text:1.8'
 

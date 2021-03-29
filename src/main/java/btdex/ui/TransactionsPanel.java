@@ -276,7 +276,18 @@ public class TransactionsPanel extends JPanel {
 				}
 				break;
 			case 20: // TYPE_MINING
-				type = tr("txs_set_reward");
+				switch (tx.getSubtype()) {
+				case 1:
+					type = tr("txs_add_commitment");
+					// TODO: add the type on Burstkit so we can show the amount here
+					break;
+				case 2:
+					type = tr("txs_remove_commitment");
+					// TODO: add the type on Burstkit so we can show the amount here
+					break;
+				default:
+					type = tr("txs_set_reward");
+				}
 				break;
 			case 22: // TYPE_AUTOMATED_TRANSACTIONS
 				switch (tx.getSubtype()) {
