@@ -238,7 +238,7 @@ public class Main extends JFrame implements ActionListener {
 		
 		top.add(new Desc(tr("main_your_address", "BURST"), copyAddressButton));
 
-		balanceLabel = new JLabel("0.00");
+		balanceLabel = new JLabel(NumberFormatting.BURST.format(0));
 		balanceLabel.setToolTipText(tr("main_available_balance"));
 		balanceLabel.setFont(largeFont);
 		lockedBalanceLabel = new JLabel(tr("main_plus_locked", NumberFormatting.BURST.format(0)));
@@ -248,7 +248,7 @@ public class Main extends JFrame implements ActionListener {
 
 		top.add(new Desc(tr("main_your_address", "Binance Chain"), copyAddressButtonBinance));
 		
-		balanceLabelBinance = new JLabel("0.00");
+		balanceLabelBinance = new JLabel(NumberFormatting.BURST.format(0));
 		balanceLabelBinance.setToolTipText(tr("main_available_balance"));
 		balanceLabelBinance.setFont(largeFont);
 		lockedBalanceLabelBinance = new JLabel(tr("main_plus_locked", NumberFormatting.BURST.format(0)));
