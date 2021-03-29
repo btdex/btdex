@@ -51,6 +51,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -72,7 +73,7 @@ import okhttp3.Response;
 public class MiningPanel extends JPanel implements ActionListener, ChangeListener {
 	private static final long serialVersionUID = 1L;
 	
-	private static final int N_PATHS = 4;
+	private static final int N_PATHS = 5;
 	private static final long ONE_GIB = 1073741824L;
 	private static final long BYTES_OF_A_NONCE = 262144L;
 	
@@ -110,6 +111,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	};
 	
 	private ArrayList<BurstAddress> poolAddresses = new ArrayList<>();
+	private ArrayList<String> poolMaxDeadlines = new ArrayList<>();
 	
 	private ArrayList<JButton> pathCancelButtons = new ArrayList<>();
 	private ArrayList<JButton> openFolderButtons = new ArrayList<>();
@@ -332,7 +334,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		poolComboBox = new JComboBox<String>();
 		for (String poolURL : (g.isTestnet() ? POOL_LIST_TESTNET : POOL_LIST)) {
 			poolComboBox.addItem(poolURL);
-			poolAddresses.add(getPoolAddress(poolURL));
+			poolAddresses.add(null);
+			poolMaxDeadlines.add("1000000000");
 			
 			if(poolURL.equals(selectedPool))
 				poolComboBox.setSelectedIndex(poolComboBox.getItemCount()-1);			
@@ -421,21 +424,33 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	
 	private static final OkHttpClient CLIENT = new OkHttpClient();
 	
-	private BurstAddress getPoolAddress(String poolURL) {
-		try {
+	private void updatePoolInfo() {
+		
+		for (int i = 0; i < poolComboBox.getItemCount(); i++) {
+			BurstAddress poolAddress = poolAddresses.get(i);
+			if(poolAddress != null)
+				continue;
+		
+			String poolURL = poolComboBox.getItemAt(i);
 			String poolURLgetConfig = poolURL + "/api/getConfig";
+			try {
+				Request request = new Request.Builder().url(poolURLgetConfig).build();
+				Response responses = CLIENT.newCall(request).execute();
+				String jsonData = responses.body().string();
+				JsonObject json = JsonParser.parseString(jsonData).getAsJsonObject();
 
-			Request request = new Request.Builder().url(poolURLgetConfig).build();
-			Response responses = CLIENT.newCall(request).execute();
-			String jsonData = responses.body().string();
-			JsonObject json = JsonParser.parseString(jsonData).getAsJsonObject();
-
-			return BurstAddress.fromEither(json.get("poolAccount").getAsString());
+				poolAddress = BurstAddress.fromEither(json.get("poolAccount").getAsString());
+				poolAddresses.set(i, poolAddress);
+				
+				JsonElement jsonMaxDeadline = json.get("maxDeadline");
+				if(jsonMaxDeadline != null) {
+					poolMaxDeadlines.set(i, jsonMaxDeadline.getAsString());
+				}
+			}
+			catch (Exception e) {
+				logger.debug("Pool incompatible or down: " + poolURL);
+			}
 		}
-		catch (Exception e) {
-			logger.debug("Pool incompatible or down: " + poolURL);
-		}
-		return null;
 	}
 	
 //    /**
@@ -602,11 +617,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		
 		if(!mining) {
+			updatePoolInfo();
 			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedIndex());
-			if(poolAddress == null) {
-				poolAddress = getPoolAddress(poolComboBox.getSelectedItem().toString());
-				poolAddresses.set(poolComboBox.getSelectedIndex(), poolAddress);
-			}
 			startMiningButton.setEnabled(poolAddress != null && poolAddress.equals(BN.getRewardRecipient()) && totalCapacity > 0);
 		}
 		
@@ -822,9 +834,6 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			
 			String info = null;
 			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedIndex());
-			if(poolAddress == null) {
-				poolAddress = getPoolAddress(poolComboBox.getSelectedItem().toString());
-			}
 			Transaction[] txs = BN.getAccountTransactions();
 			
 			if(info == null && txs != null) {
@@ -1179,6 +1188,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				minerConfig.append(" - '" + path.getAbsolutePath() + "'\n");
 			}
 			minerConfig.append("url: '" + poolComboBox.getSelectedItem().toString() + "'\n");
+			
+			minerConfig.append("target_deadline: " + poolMaxDeadlines.get(poolComboBox.getSelectedIndex()) + "\n");
+			
 			IOUtils.copy(minerConfigStream, minerConfig);
 			minerConfig.close();
 		} catch (IOException ex) {

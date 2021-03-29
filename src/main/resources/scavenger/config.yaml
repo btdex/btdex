@@ -1,6 +1,4 @@
 
-target_deadline: 1000000000           # default u32::MAX
-
 hdd_reader_thread_count: 1            # default 0 (=auto: number of disks)
 hdd_use_direct_io: true               # default true
 hdd_wakeup_after: 120                 # default 240s
