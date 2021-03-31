@@ -344,7 +344,8 @@ public class Main extends JFrame implements ActionListener {
 		
 		String bnbAddress = g.getBinanceAddress();
 		copyAddressButtonBinance.setAddress(bnbAddress, bnbAddress);
-		bnbAddress = bnbAddress.substring(0, 5) + "..." + bnbAddress.substring(bnbAddress.length()-5);
+		if(bnbAddress!=null)
+			bnbAddress = bnbAddress.substring(0, 5) + "..." + bnbAddress.substring(bnbAddress.length()-5);
 		copyAddressButtonBinance.getMainButton().setText(bnbAddress);
 		// Fire the node updating thread
 		BinanceNode.getInstance();
