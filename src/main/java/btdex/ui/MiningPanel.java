@@ -73,7 +73,7 @@ import okhttp3.Response;
 public class MiningPanel extends JPanel implements ActionListener, ChangeListener {
 	private static final long serialVersionUID = 1L;
 	
-	private static final int N_PATHS = 5;
+	private static final int N_PATHS_MIN = 4;
 	private static final long ONE_GIB = 1073741824L;
 	private static final long BYTES_OF_A_NONCE = 262144L;
 	
@@ -174,70 +174,39 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 
 	private Icon iconPlot;
 
+	private Icons icons;
+
+	private JPanel disksPanel;
+
 	public MiningPanel() {
 		super(new BorderLayout());
 		
 		logger = LogManager.getLogger();
 		
-		Icons icons = new Icons(this.getForeground(), Constants.ICON_SIZE_MED);
+		icons = new Icons(this.getForeground(), Constants.ICON_SIZE_MED);
 		
 		Icon pendingIcon = icons.get(Icons.SPINNER);
 		pendingIconRotating = new RotatingIcon(pendingIcon);
 		folderIcon = icons.get(Icons.FOLDER);
 		
-		JPanel plottingPanel = new JPanel(new GridLayout(0, 1));
+		disksPanel = new JPanel(new GridLayout(0, 1));
+		JPanel plottingPanel = new JPanel(new BorderLayout());
+		JPanel plottingBottomPanel = new JPanel(new GridLayout(0, 1));
 		plottingPanel.setBorder(BorderFactory.createTitledBorder(tr("mine_plot_disks")));
+		plottingPanel.add(plottingBottomPanel, BorderLayout.PAGE_END);
+		JScrollPane disksScrollPane = new JScrollPane(disksPanel);
+		plottingPanel.add(disksScrollPane, BorderLayout.CENTER);
 		
 		Globals g = Globals.getInstance();
 		
-		for (int i = 0; i < N_PATHS; i++) {
+		int nPaths = N_PATHS_MIN;
+		for (int i = 0; i < nPaths; i++) {			
+			addDiskPath(i);
 			
-			JButton cancelButton = new JButton(icons.get(Icons.CANCEL));
-			cancelButton.setToolTipText(tr("mine_remove_path"));
-			cancelButton.addActionListener(this);
-			cancelButton.setEnabled(false);
-			
-			JButton openFolderButton = new JButton(icons.get(Icons.EXPLORER));
-			openFolderButton.addActionListener(this);
-			openFolderButton.setEnabled(false);
-			
-			JButton selectFolderButton = new JButton(tr("mine_select_disk"), folderIcon);
-			selectFolderButton.addActionListener(this);
-			
-			JSlider fractionToPlotSlider = new JSlider(0, 100, 0);
-			fractionToPlotSlider.addChangeListener(this);
-			fractionToPlotSlider.setEnabled(false);
-			
-			Desc sliderDesc = new Desc(" ", fractionToPlotSlider);
-			
-			pathCancelButtons.add(cancelButton);
-			openFolderButtons.add(openFolderButton);
-			selectFolderButtons.add(selectFolderButton);
-			fractionToPlotSliders.add(fractionToPlotSlider);
-			sliderListDesc.add(sliderDesc);
-			
-			String path = g.getProperty(PROP_PLOT_PATH + (i+1));
-			if(path == null || path.length() == 0) {
-				pathList.add(null);
+			if(pathList.get(i) != null && i == nPaths -1) {
+				// add more as needed
+				nPaths++;
 			}
-			else {
-				selectFolderButton.setText(path);
-				File pathFile = new File(path);
-				pathList.add(pathFile);
-				cancelButton.setEnabled(true);
-				openFolderButton.setEnabled(true);
-				fractionToPlotSlider.setEnabled(true);
-			}
-			
-			JPanel folderBorderPanel = new JPanel(new BorderLayout(2, 0));
-			folderBorderPanel.add(selectFolderButton, BorderLayout.CENTER);
-			folderBorderPanel.add(cancelButton, BorderLayout.LINE_START);
-			JPanel folderPanel = new JPanel(new BorderLayout());
-			folderPanel.add(openFolderButton, BorderLayout.LINE_START);
-			folderPanel.add(sliderDesc, BorderLayout.CENTER);
-			folderBorderPanel.add(folderPanel, BorderLayout.LINE_END);
-			
-			plottingPanel.add(folderBorderPanel);
 		}
 		
 		JPanel ssdPanel = new JPanel(new BorderLayout(2, 0));
@@ -258,7 +227,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		
 		ssdPanel.add(ssdCancelButton, BorderLayout.LINE_START);
-		plottingPanel.add(ssdPanel);
+		plottingBottomPanel.add(ssdPanel);
 		
 		checkResumeFiles();
 		
@@ -320,7 +289,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		plotButtonsPanel.add(lowPriorityCheck = new JCheckBox(tr("mine_run_low_prio")));
 		plotButtonsPanel.add(stopPlotButton);
 		plotButtonsPanel.add(startPlotButton);
-		plottingPanel.add(plotButtonsPanel);
+		plottingBottomPanel.add(plotButtonsPanel);
 		
 		lowPriorityCheck.setSelected(Boolean.parseBoolean(g.getProperty(PROP_PLOT_LOW_PRIO)));
 		lowPriorityCheck.addActionListener(this);
@@ -420,6 +389,57 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			            }
 			        }, 3000);
 		}
+	}
+	
+	private void addDiskPath(int i) {
+		Globals g = Globals.getInstance();
+		
+		JButton cancelButton = new JButton(icons.get(Icons.CANCEL));
+		cancelButton.setToolTipText(tr("mine_remove_path"));
+		cancelButton.addActionListener(this);
+		cancelButton.setEnabled(false);
+		
+		JButton openFolderButton = new JButton(icons.get(Icons.EXPLORER));
+		openFolderButton.addActionListener(this);
+		openFolderButton.setEnabled(false);
+		
+		JButton selectFolderButton = new JButton(tr("mine_select_disk"), folderIcon);
+		selectFolderButton.addActionListener(this);
+		
+		JSlider fractionToPlotSlider = new JSlider(0, 100, 0);
+		fractionToPlotSlider.addChangeListener(this);
+		fractionToPlotSlider.setEnabled(false);
+		
+		Desc sliderDesc = new Desc(" ", fractionToPlotSlider);
+		
+		pathCancelButtons.add(cancelButton);
+		openFolderButtons.add(openFolderButton);
+		selectFolderButtons.add(selectFolderButton);
+		fractionToPlotSliders.add(fractionToPlotSlider);
+		sliderListDesc.add(sliderDesc);
+		
+		String path = g.getProperty(PROP_PLOT_PATH + (i+1));
+		if(path == null || path.length() == 0) {
+			pathList.add(null);
+		}
+		else {
+			selectFolderButton.setText(path);
+			File pathFile = new File(path);
+			pathList.add(pathFile);
+			cancelButton.setEnabled(true);
+			openFolderButton.setEnabled(true);
+			fractionToPlotSlider.setEnabled(true);
+		}
+		
+		JPanel folderBorderPanel = new JPanel(new BorderLayout(2, 0));
+		folderBorderPanel.add(selectFolderButton, BorderLayout.CENTER);
+		folderBorderPanel.add(cancelButton, BorderLayout.LINE_START);
+		JPanel folderPanel = new JPanel(new BorderLayout());
+		folderPanel.add(openFolderButton, BorderLayout.LINE_START);
+		folderPanel.add(sliderDesc, BorderLayout.CENTER);
+		folderBorderPanel.add(folderPanel, BorderLayout.LINE_END);
+		
+		disksPanel.add(folderBorderPanel);
 	}
 	
 	private static final OkHttpClient CLIENT = new OkHttpClient();
@@ -649,7 +669,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	private void checkResumeFiles() {
 		resumePlotFiles.clear();
 		
-		for (int i = 0; i < N_PATHS; i++) {
+		for (int i = 0; i < pathList.size(); i++) {
 			File pathFile = pathList.get(i);
 
 			if(pathFile == null)
@@ -697,6 +717,12 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			    fractionToPlotSliders.get(pos).setEnabled(true);
 				File[] plotFiles = selectedPath.listFiles(PLOT_FILE_FILTER);
 			    fractionToPlotSliders.get(pos).setValue((plotFiles.length > 0) ? 0 : 80);
+			    
+			    if(pos == pathList.size() - 1) {
+			    	// using the last one, add one more
+			    	addDiskPath(pos+1);
+			    	this.revalidate();
+			    }
 			}
 			return;
 		}
