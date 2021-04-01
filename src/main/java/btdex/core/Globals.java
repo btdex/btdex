@@ -392,12 +392,13 @@ public class Globals {
 		conf.setProperty(Constants.PROP_EXPLORER, value);
 	}
 
-	public Response activate() throws IOException {
+	public Response activate(String ref) throws IOException {
 		OkHttpClient client = new OkHttpClient();
 
 		JsonObject params = new JsonObject();
 		params.addProperty("account", getAddress().getID());
 		params.addProperty("publickey", BC.toHexString(getPubKey()));
+		params.addProperty("ref", ref);
 		
 		RequestBody body = RequestBody.create(params.toString(), Constants.JSON);
 

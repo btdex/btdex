@@ -342,7 +342,7 @@ public class Main extends JFrame implements ActionListener {
 						// try to activate this account
 						setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 						try {
-							Response response = g.activate();
+							Response response = g.activate("btdex-" + version);
 							if(response.isSuccessful()) {
 								Toast.makeText(this, tr("main_account_activate"), Toast.Style.SUCCESS).display();
 								tabbedPane.setSelectedComponent(transactionsPanel);
