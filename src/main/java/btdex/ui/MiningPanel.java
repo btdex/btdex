@@ -83,6 +83,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	private static final String PROP_PLOT_CACHE = "plotPathCache";
 	private static final String PROP_PLOT_LOW_PRIO = "plotLowPrio";
 	private static final String PROP_PLOT_CPU_CORES = "plotCpuCores";
+	private static final String PROP_MINE_CPU_CORES = "mineCpuCores";
 	private static final String PROP_MINER_POOL = "minerPool";
 	private static final String PROP_MINER_AUTO_START = "minerAutoStart";
 	
@@ -132,7 +133,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 
 	private JButton startPlotButton, stopPlotButton;
 
-	private JComboBox<String> cpusToUseComboBox;
+	private JComboBox<String> cpusToPlotComboBox;
+
+	private JComboBox<String> cpusToMineComboBox;
 
 	private JComboBox<String> poolComboBox;
 
@@ -239,12 +242,12 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		selectedCores = Math.min(selectedCores, coresAvailable);
 		selectedCores = Math.max(selectedCores, 1);
-		cpusToUseComboBox = new JComboBox<String>();
+		cpusToPlotComboBox = new JComboBox<String>();
 		for (int i = 1; i <= coresAvailable; i++) {
-			cpusToUseComboBox.addItem(Integer.toString(i));			
+			cpusToPlotComboBox.addItem(Integer.toString(i));			
 		}
-		cpusToUseComboBox.setSelectedIndex(selectedCores-1);
-		cpusToUseComboBox.addActionListener(this);
+		cpusToPlotComboBox.setSelectedIndex(selectedCores-1);
+		cpusToPlotComboBox.addActionListener(this);
 		
 		/* TODO: add GPU support
 		int numPlatforms[] = new int[1];
@@ -284,8 +287,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		stopPlotButton.addActionListener(this);
 		stopPlotButton.setEnabled(false);
 		
-		plotButtonsPanel.add(new JLabel("CPU Cores"));
-		plotButtonsPanel.add(cpusToUseComboBox);
+		plotButtonsPanel.add(new JLabel(tr("mine_cpus")));
+		plotButtonsPanel.add(cpusToPlotComboBox);
 		plotButtonsPanel.add(lowPriorityCheck = new JCheckBox(tr("mine_run_low_prio")));
 		plotButtonsPanel.add(stopPlotButton);
 		plotButtonsPanel.add(startPlotButton);
@@ -349,6 +352,23 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		
 		JPanel minerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		minerPanel.setBorder(BorderFactory.createTitledBorder(tr("mine_run_miner")));
+		
+		cpusToMineComboBox = new JComboBox<String>();
+		for (int i = 1; i <= coresAvailable; i++) {
+			cpusToMineComboBox.addItem(Integer.toString(i));			
+		}
+		cpusToMineComboBox.setSelectedIndex(0);
+		int coresToMine = 0;
+		if(g.getProperty(PROP_MINE_CPU_CORES) != null && g.getProperty(PROP_MINE_CPU_CORES).length() > 0) {
+			coresToMine = Integer.parseInt(g.getProperty(PROP_PLOT_CPU_CORES));
+		}
+		if(coresToMine < cpusToMineComboBox.getItemCount())
+			cpusToMineComboBox.setSelectedIndex(coresToMine);
+		
+		cpusToMineComboBox.addActionListener(this);
+		minerPanel.add(new JLabel(tr("mine_cpus")));
+		minerPanel.add(cpusToMineComboBox);
+		
 		minerPanel.add(minerAutoStartCheck = new JCheckBox(tr("mine_start_auto")));
 		minerAutoStartCheck.setSelected(Boolean.parseBoolean(g.getProperty(PROP_MINER_AUTO_START)));
 		minerAutoStartCheck.addActionListener(this);
@@ -643,7 +663,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		
 		lowPriorityCheck.setEnabled(!plotting);
-		cpusToUseComboBox.setEnabled(!plotting);
+		cpusToPlotComboBox.setEnabled(!plotting);
 	}
 	
 	public void stop() {
@@ -810,8 +830,13 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			saveConfs(g);
 			return;
 		}
-		if(cpusToUseComboBox == e.getSource()) {
-			g.setProperty(PROP_PLOT_CPU_CORES, Integer.toString(cpusToUseComboBox.getSelectedIndex()+1));
+		if(cpusToPlotComboBox == e.getSource()) {
+			g.setProperty(PROP_PLOT_CPU_CORES, Integer.toString(cpusToPlotComboBox.getSelectedIndex()+1));
+			saveConfs(g);
+			return;
+		}
+		if(cpusToMineComboBox == e.getSource()) {
+			g.setProperty(PROP_MINE_CPU_CORES, Integer.toString(cpusToMineComboBox.getSelectedIndex()+1));
 			saveConfs(g);
 			return;
 		}
@@ -1067,7 +1092,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 					String cmd = plotterFile.getAbsolutePath() + " -i " + sections[0];
 					cmd += " -s " + nonceStart;
 					cmd += " -n " + noncesBeingPlot;
-					cmd += " -c " + (cpusToUseComboBox.getSelectedIndex()+1);
+					cmd += " -c " + (cpusToPlotComboBox.getSelectedIndex()+1);
 					cmd += " -q";
 					cmd += " -d"; // FIXME: enable back direct io, but we need to find out the sector size then and adjust no of nonces
 					if(lowPriorityCheck.isSelected())
@@ -1216,6 +1241,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			minerConfig.append("url: '" + poolComboBox.getSelectedItem().toString() + "'\n");
 			
 			minerConfig.append("target_deadline: " + poolMaxDeadlines.get(poolComboBox.getSelectedIndex()) + "\n");
+
+			minerConfig.append("cpu_threads: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
+			minerConfig.append("cpu_worker_task_count: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
 			
 			IOUtils.copy(minerConfigStream, minerConfig);
 			minerConfig.close();
