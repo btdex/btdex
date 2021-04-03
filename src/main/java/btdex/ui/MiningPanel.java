@@ -360,9 +360,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		cpusToMineComboBox.setSelectedIndex(0);
 		int coresToMine = 0;
 		if(g.getProperty(PROP_MINE_CPU_CORES) != null && g.getProperty(PROP_MINE_CPU_CORES).length() > 0) {
-			coresToMine = Integer.parseInt(g.getProperty(PROP_PLOT_CPU_CORES));
+			coresToMine = Integer.parseInt(g.getProperty(PROP_MINE_CPU_CORES))- 1;
 		}
-		if(coresToMine < cpusToMineComboBox.getItemCount())
+		if(coresToMine > 0 && coresToMine < cpusToMineComboBox.getItemCount())
 			cpusToMineComboBox.setSelectedIndex(coresToMine);
 		
 		cpusToMineComboBox.addActionListener(this);
