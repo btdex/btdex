@@ -102,7 +102,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	};
 	
 	private static final String[] POOL_LIST = {
-			"https://pool.burstcoin.ro",
+			"http://pool.burstcoin.ro:8080",
+			"http://burst.voiplanparty.com:8124",
 			"http://openburstpool.ddns.net:8126"
 	};
 	
