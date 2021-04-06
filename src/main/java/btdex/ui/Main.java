@@ -657,8 +657,11 @@ public class Main extends JFrame implements ActionListener {
 			}
 			if(mediationPanel!=null && mediationPanel.isVisible())
 				mediationPanel.update();
-			if(miningPanel.isVisible() || showingSplash)
-				miningPanel.update();
+			if(miningPanel != null) {
+				if(miningPanel.isVisible() || showingSplash) {
+					miningPanel.update();
+				}
+			}
 
 			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 			nodeSelector.setBackground(explorerSelector.getBackground());
