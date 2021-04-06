@@ -625,7 +625,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 					formatSpace(networkTbs*1024L*ONE_GIB));
 			rewards += "\n" + tr("mine_reward_poc_plus_activation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(8).longValue()));
 			BurstValue avgCommitment = null;
-			if(miningInfo.getAverageCommitmentNQT() > 0) {
+			int pocPlusBlock = Globals.getInstance().isTestnet() ? 269_700 : 878_000;
+			if(miningInfo.getAverageCommitmentNQT() > 0 && miningInfo.getHeight() > pocPlusBlock) {
 				avgCommitment = BurstValue.fromPlanck(miningInfo.getAverageCommitmentNQT());
 				rewards = tr("mine_reward_estimation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(8).longValue()),
 						NumberFormatting.BURST_2.format(avgCommitment.multiply(100).longValue()));
