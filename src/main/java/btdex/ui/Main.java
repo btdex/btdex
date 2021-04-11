@@ -810,7 +810,7 @@ public class Main extends JFrame implements ActionListener {
 
 			Globals g = Globals.getInstance();
 
-			String[] list = {BT.NODE_BURSTCOIN_RO, BT.NODE_BURST_TEAM, Constants.NODE_LOCALHOST};
+			String[] list = Constants.NODE_LIST;
 			if(g.isTestnet()){
 				list = new String[]{Constants.NODE_TESTNET, BT.NODE_LOCAL_TESTNET };
 			}

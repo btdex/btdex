@@ -2,6 +2,7 @@ package btdex.core;
 
 import com.google.gson.Gson;
 
+import bt.BT;
 import bt.Contract;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstID;
@@ -10,6 +11,15 @@ import okhttp3.MediaType;
 public class Constants {
     public static final String NODE_LOCALHOST = "http://localhost:8125";
     public static final String NODE_TESTNET = "https://testnetwallet.burstcoin.ro";
+    
+    public static final String NODE_LIST[] = {
+    		BT.NODE_BURSTCOIN_RO,
+    		"https://europe.signum.network",
+    		"https://uk.signum.network:8125",
+    		"https://brazil.signum.network",
+    		"https://australia.signum.network",
+    		Constants.NODE_LOCALHOST
+    };
 
     public static final String PROP_LANG = "lang";
     public static final String PROP_NODE = "node";
