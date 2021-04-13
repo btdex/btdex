@@ -16,6 +16,8 @@ public class Constants {
     		BT.NODE_BURSTCOIN_RO,
     		"https://europe.signum.network",
     		"https://uk.signum.network:8125",
+    		"https://europe2.signum.network",
+    		"https://europe3.signum.network",
     		"https://brazil.signum.network",
     		"https://australia.signum.network",
     		Constants.NODE_LOCALHOST
@@ -42,7 +44,7 @@ public class Constants {
 
     public static final String FAUCET_TESTNET =
             "https://burst-account-activator-testnet.ohager.now.sh/api/activate";
-    public static final String FAUCET = "https://burst-account-activator.now.sh/api/activate";
+    public static final String FAUCET = "https://burst-account-activator.vercel.app/api/activate";
 
     public static final String CHECK_BLOCK_TESTNET = "12645549025663958301";
     public static final String CHECK_BLOCK = "8868708821622932189";
