@@ -37,8 +37,12 @@ public class Server extends NanoHTTPD {
     
     private static final String API_PREFIX = "/api/v1/";
 
-    public Server(int port) {
+	private String allowOrigin;
+
+    public Server(int port, String allowOrigin) {
         super(port);
+        this.allowOrigin = allowOrigin;
+        
         try {
 			start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
 	        logger.info("API server started at port {}", port);
@@ -58,7 +62,15 @@ public class Server extends NanoHTTPD {
             	// Not found (404)
                 return super.serve(session);
             }
-            return NanoHTTPD.newFixedLengthResponse(Response.Status.OK, "application/json", json);
+            Response resp = NanoHTTPD.newFixedLengthResponse(Response.Status.OK, "application/json", json);
+            // CORS handling
+            resp.addHeader("Access-Control-Allow-Origin", allowOrigin);
+            resp.addHeader("Access-Control-Max-Age", "3628800");
+            resp.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS");
+            resp.addHeader("Access-Control-Allow-Headers", "X-Requested-With");
+            resp.addHeader("Access-Control-Allow-Headers", "Authorization");
+            
+            return resp;
         } catch (Exception e) {
             logger.warn("Error getting response", e);
             return NanoHTTPD.newFixedLengthResponse(e.getMessage());

@@ -107,8 +107,9 @@ public class Globals {
 			loadAccounts();
 			
 			int apiPort = Integer.parseInt(conf.getProperty(Constants.PROP_API_PORT, "-1"));
+			String allowOrign = conf.getProperty(Constants.PROP_API_CORS_ALLOW_ORIGIN, "*");
 			if(apiPort > 0) {
-				new Server(apiPort);
+				new Server(apiPort, allowOrign);
 			}
 		}
 		catch (Exception e) {

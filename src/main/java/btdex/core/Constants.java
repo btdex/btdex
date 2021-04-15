@@ -31,6 +31,7 @@ public class Constants {
     public static final String PROP_PUBKEY = "pubKey";
     public static final String PROP_LEDGER = "ledger";
     public static final String PROP_API_PORT = "apiPort";    
+    public static final String PROP_API_CORS_ALLOW_ORIGIN = "apiCORSAllowOrigin";    
 
     public static final String PROP_USER_TOKEN_ID = "userTokenID";
 
