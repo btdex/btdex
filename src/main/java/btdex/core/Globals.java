@@ -45,6 +45,7 @@ public class Globals {
 	private boolean testnet = false;
 	private BurstAddress address;
 	private int ledgerIndex;
+	private String version = "dev";
 
 	private Mediators mediators;
 
@@ -82,6 +83,12 @@ public class Globals {
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
 			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET : BT.NODE_BURSTCOIN_RO));
 			BT.activateCIP20(true);
+			
+			// Read the version
+			Properties versionProp = new Properties();
+			versionProp.load(Globals.class.getResourceAsStream("/version.properties"));
+			version = versionProp.getProperty("version");
+			logger.info("Local resources, Version {}", version);
 
 			// possible ledger account index
 			ledgerEnabled = Boolean.parseBoolean(conf.getProperty(Constants.PROP_LEDGER_ENABLED, "false"));
@@ -107,6 +114,10 @@ public class Globals {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public String getVersion() {
+		return version;
 	}
 
 	public boolean isLedgerEnabled() {
@@ -373,7 +384,7 @@ public class Globals {
 	public void setNode(String node) {
 		conf.setProperty(Constants.PROP_NODE, node);
 
-		NS = BurstNodeService.getInstance(node);
+		NS = BurstNodeService.getInstance(node, "btdex-" + version);
 	}
 	
 	public void setProperty(String key, String value) {
