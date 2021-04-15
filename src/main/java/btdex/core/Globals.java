@@ -221,6 +221,29 @@ public class Globals {
 		bnbAddress = bnbWallet.getAddress();
 		logger.debug("Keys set. for address {}", bnbAddress);
 	}
+	
+	public boolean addBnb(char []pin) {
+		boolean result = false;
+		try {
+			byte[] pinKey = BC.getSha256().digest(new String(pin).getBytes("UTF-8"));
+			String encPrivKey = conf.getProperty(Constants.PROP_ENC_PRIVKEY);
+			byte []privKey = BC.aesDecrypt(BC.parseHexString(encPrivKey), pinKey);
+			String pubKey = BC.toHexString(BC.getPublicKey(privKey));
+			result = pubKey.equals(conf.getProperty(Constants.PROP_PUBKEY));
+			logger.debug("PIN checked, result: {}", result);
+
+			if(result) {
+				Wallet bnbWallet = new Wallet(BC.toHexString(privKey), isTestnet() ?
+						BinanceDexEnvironment.TEST_NET : BinanceDexEnvironment.PROD);
+				conf.setProperty(Constants.PROP_ECKEY_PUB, bnbWallet.getEcKey().getPublicKeyAsHex());
+				bnbAddress = bnbWallet.getAddress();
+				logger.debug("Keys set. for address {}", bnbAddress);
+			}
+		} catch (Exception e) {
+			logger.error("Error: {}", e.getLocalizedMessage());
+		}
+		return result;
+	}
 
 	/**
 	 * @param pin

@@ -44,6 +44,10 @@ public class ExplorerButton extends JPanel {
 		this.isBinance = b;
 	}
 	
+	public String getId() {
+		return id;
+	}
+	
 	public ExplorerButton(String text, Icon icon, Icon icon2, int type, String id, String addressRS,
 			String tooltipText) {
 		super(new BorderLayout(0, 0));
@@ -63,6 +67,8 @@ public class ExplorerButton extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String t = ExplorerButton.this.type == TYPE_ADDRESS ? ExplorerButton.this.addressRS : ExplorerButton.this.id;
+				if(t == null || t.length() == 0)
+					return;
 				
 				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 				StringSelection stringSelection = new StringSelection(t);
@@ -75,6 +81,9 @@ public class ExplorerButton extends JPanel {
 		explorerButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				if(ExplorerButton.this.id == null || ExplorerButton.this.id.length() == 0)
+					return;
+				
 				ExplorerWrapper exp = Main.getInstance().getExplorer();
 				if(isBinance)
 					exp = ExplorerWrapper.binanceExplorer();
