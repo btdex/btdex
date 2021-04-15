@@ -13,8 +13,8 @@ public class Constants {
     public static final String NODE_TESTNET = "https://testnetwallet.burstcoin.ro";
     
     public static final String NODE_LIST[] = {
-    		BT.NODE_BURSTCOIN_RO,
     		"https://europe.signum.network",
+    		BT.NODE_BURSTCOIN_RO,
     		"https://uk.signum.network:8125",
     		"https://brazil.signum.network",
     		"https://australia.signum.network",
