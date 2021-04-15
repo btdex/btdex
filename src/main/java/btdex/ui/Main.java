@@ -342,42 +342,50 @@ public class Main extends JFrame implements ActionListener {
 		
 		String bnbAddress = g.getBinanceAddress();
 		copyAddressButtonBinance.setAddress(bnbAddress, bnbAddress);
-		copyAddressButtonBinance.getMainButton().addActionListener(e -> {
-			if(copyAddressButtonBinance.getId() == null || copyAddressButtonBinance.getId().length() == 0) {
-				// not yet available, lets add
-				JPanel panel = new JPanel();
-				JLabel label = new JLabel(tr("dlg_pin"));
-				JPasswordField pass = new JPasswordField(10);
-				panel.add(label);
-				panel.add(pass);
-				String[] options = new String[]{tr("dlg_ok"), tr("dlg_cancel")};
-				int option = JOptionPane.showOptionDialog(null, panel, tr("dlg_add_binance"),
-				                         JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE,
-				                         null, options, options[1]);
-				if(option == 0) {
-					// pressing OK button
-				    char[] pin = pass.getPassword();
-				    if(g.addBnb(pin)) {
-				    	String newBnbAddress = g.getBinanceAddress();
-				    	copyAddressButtonBinance.setAddress(newBnbAddress, newBnbAddress);
-				    	newBnbAddress = newBnbAddress.substring(0, 5) + "..." + newBnbAddress.substring(newBnbAddress.length()-5);
-				    	copyAddressButtonBinance.getMainButton().setText(newBnbAddress);
-				    	try {
-							g.saveConfs();
-						} catch (Exception e1) {
-							Toast.makeText(Main.this, e1.getLocalizedMessage(), Toast.Style.ERROR).display();
-						}
-				    }
-				    else {
-						Toast.makeText(Main.this, tr("dlg_invalid_pin"), Toast.Style.ERROR).display();
-				    }
-				}
-			}
-		});
 		if(bnbAddress!=null)
 			bnbAddress = bnbAddress.substring(0, 5) + "..." + bnbAddress.substring(bnbAddress.length()-5);
-		else
+		else {
 			bnbAddress = tr("acc_add_button");
+			copyAddressButtonBinance.getExplorerButton().setVisible(false);
+			copyAddressButtonBinance.getMainButton().setToolTipText(tr("dlg_add_binance"));
+			
+			copyAddressButtonBinance.getMainButton().addActionListener(e -> {
+				if(copyAddressButtonBinance.getId() == null || copyAddressButtonBinance.getId().length() == 0) {
+					// not yet available, lets add
+					JPanel panel = new JPanel();
+					JLabel label = new JLabel(tr("dlg_pin"));
+					JPasswordField pass = new JPasswordField(10);
+					panel.add(label);
+					panel.add(pass);
+					String[] options = new String[]{tr("dlg_ok"), tr("dlg_cancel")};
+					int option = JOptionPane.showOptionDialog(null, panel, tr("dlg_add_binance"),
+					                         JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE,
+					                         null, options, options[1]);
+					if(option == 0) {
+						// pressing OK button
+					    char[] pin = pass.getPassword();
+					    if(g.addBnb(pin)) {
+					    	String newBnbAddress = g.getBinanceAddress();
+					    	copyAddressButtonBinance.setAddress(newBnbAddress, newBnbAddress);
+					    	newBnbAddress = newBnbAddress.substring(0, 5) + "..." + newBnbAddress.substring(newBnbAddress.length()-5);
+					    	copyAddressButtonBinance.getMainButton().setText(newBnbAddress);
+					    	
+							copyAddressButtonBinance.getExplorerButton().setVisible(true);
+							copyAddressButtonBinance.getMainButton().setToolTipText(tr("btn_open_on_explorer"));
+
+					    	try {
+								g.saveConfs();
+							} catch (Exception e1) {
+								Toast.makeText(Main.this, e1.getLocalizedMessage(), Toast.Style.ERROR).display();
+							}
+					    }
+					    else {
+							Toast.makeText(Main.this, tr("dlg_invalid_pin"), Toast.Style.ERROR).display();
+					    }
+					}
+				}
+			});
+		}
 		copyAddressButtonBinance.getMainButton().setText(bnbAddress);
 		// Fire the node updating thread
 		BinanceNode.getInstance();
