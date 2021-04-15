@@ -405,7 +405,7 @@ public class MarketPanel extends JPanel implements ActionListener {
 
 			if(s.getSecurityNQT() > 0 && s.getAmountNQT() > 0 && s.getRate() > 0 &&
 					s.getState() >= SellContract.STATE_OPEN) {
-				long securityPercent = s.getSecurityNQT()*100L / s.getAmountNQT();
+				long securityPercent = s.getSecurityNQT()*101L / s.getAmountNQT();
 				String sizeString = s.getAmount() + " (" + securityPercent + "%)";
 
 				model.setValueAt(sizeString, row, cols[OrderBookSettings.COL_SIZE]);

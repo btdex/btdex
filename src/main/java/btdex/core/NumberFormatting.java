@@ -1,7 +1,5 @@
 package btdex.core;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
@@ -18,12 +16,10 @@ public class NumberFormatting {
 	
     //NF_FULL min 5, max 8
     public static NumberFormatting NF(int minimumFractionDigits, int maximumFractionDigits){
+        // NumberFormat nf = NumberFormat.getInstance(Translation.getCurrentLocale());
         NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);
         nf.setMinimumFractionDigits(minimumFractionDigits);
         nf.setMaximumFractionDigits(maximumFractionDigits);
-        DecimalFormatSymbols s = new DecimalFormatSymbols(Locale.ENGLISH);
-        s.setGroupingSeparator('\'');
-        ((DecimalFormat)nf).setDecimalFormatSymbols(s);
         return new NumberFormatting(nf);
     }
     

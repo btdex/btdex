@@ -73,7 +73,7 @@ import okhttp3.Response;
 public class MiningPanel extends JPanel implements ActionListener, ChangeListener {
 	private static final long serialVersionUID = 1L;
 	
-	private static final int N_PATHS = 5;
+	private static final int N_PATHS_MIN = 4;
 	private static final long ONE_GIB = 1073741824L;
 	private static final long BYTES_OF_A_NONCE = 262144L;
 	
@@ -83,6 +83,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	private static final String PROP_PLOT_CACHE = "plotPathCache";
 	private static final String PROP_PLOT_LOW_PRIO = "plotLowPrio";
 	private static final String PROP_PLOT_CPU_CORES = "plotCpuCores";
+	private static final String PROP_MINE_CPU_CORES = "mineCpuCores";
 	private static final String PROP_MINER_POOL = "minerPool";
 	private static final String PROP_MINER_AUTO_START = "minerAutoStart";
 	
@@ -101,7 +102,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	};
 	
 	private static final String[] POOL_LIST = {
-			"https://pool.burstcoin.ro",
+			"http://pool.burstcoin.ro:8080",
+			"http://burst.voiplanparty.com:8124",
 			"http://openburstpool.ddns.net:8126"
 	};
 	
@@ -132,7 +134,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 
 	private JButton startPlotButton, stopPlotButton;
 
-	private JComboBox<String> cpusToUseComboBox;
+	private JComboBox<String> cpusToPlotComboBox;
+
+	private JComboBox<String> cpusToMineComboBox;
 
 	private JComboBox<String> poolComboBox;
 
@@ -174,70 +178,39 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 
 	private Icon iconPlot;
 
+	private Icons icons;
+
+	private JPanel disksPanel;
+
 	public MiningPanel() {
 		super(new BorderLayout());
 		
 		logger = LogManager.getLogger();
 		
-		Icons icons = new Icons(this.getForeground(), Constants.ICON_SIZE_MED);
+		icons = new Icons(this.getForeground(), Constants.ICON_SIZE_MED);
 		
 		Icon pendingIcon = icons.get(Icons.SPINNER);
 		pendingIconRotating = new RotatingIcon(pendingIcon);
 		folderIcon = icons.get(Icons.FOLDER);
 		
-		JPanel plottingPanel = new JPanel(new GridLayout(0, 1));
+		disksPanel = new JPanel(new GridLayout(0, 1));
+		JPanel plottingPanel = new JPanel(new BorderLayout());
+		JPanel plottingBottomPanel = new JPanel(new GridLayout(0, 1));
 		plottingPanel.setBorder(BorderFactory.createTitledBorder(tr("mine_plot_disks")));
+		plottingPanel.add(plottingBottomPanel, BorderLayout.PAGE_END);
+		JScrollPane disksScrollPane = new JScrollPane(disksPanel);
+		plottingPanel.add(disksScrollPane, BorderLayout.CENTER);
 		
 		Globals g = Globals.getInstance();
 		
-		for (int i = 0; i < N_PATHS; i++) {
+		int nPaths = N_PATHS_MIN;
+		for (int i = 0; i < nPaths; i++) {			
+			addDiskPath(i);
 			
-			JButton cancelButton = new JButton(icons.get(Icons.CANCEL));
-			cancelButton.setToolTipText(tr("mine_remove_path"));
-			cancelButton.addActionListener(this);
-			cancelButton.setEnabled(false);
-			
-			JButton openFolderButton = new JButton(icons.get(Icons.EXPLORER));
-			openFolderButton.addActionListener(this);
-			openFolderButton.setEnabled(false);
-			
-			JButton selectFolderButton = new JButton(tr("mine_select_disk"), folderIcon);
-			selectFolderButton.addActionListener(this);
-			
-			JSlider fractionToPlotSlider = new JSlider(0, 100, 0);
-			fractionToPlotSlider.addChangeListener(this);
-			fractionToPlotSlider.setEnabled(false);
-			
-			Desc sliderDesc = new Desc(" ", fractionToPlotSlider);
-			
-			pathCancelButtons.add(cancelButton);
-			openFolderButtons.add(openFolderButton);
-			selectFolderButtons.add(selectFolderButton);
-			fractionToPlotSliders.add(fractionToPlotSlider);
-			sliderListDesc.add(sliderDesc);
-			
-			String path = g.getProperty(PROP_PLOT_PATH + (i+1));
-			if(path == null || path.length() == 0) {
-				pathList.add(null);
+			if(pathList.get(i) != null && i == nPaths -1) {
+				// add more as needed
+				nPaths++;
 			}
-			else {
-				selectFolderButton.setText(path);
-				File pathFile = new File(path);
-				pathList.add(pathFile);
-				cancelButton.setEnabled(true);
-				openFolderButton.setEnabled(true);
-				fractionToPlotSlider.setEnabled(true);
-			}
-			
-			JPanel folderBorderPanel = new JPanel(new BorderLayout(2, 0));
-			folderBorderPanel.add(selectFolderButton, BorderLayout.CENTER);
-			folderBorderPanel.add(cancelButton, BorderLayout.LINE_START);
-			JPanel folderPanel = new JPanel(new BorderLayout());
-			folderPanel.add(openFolderButton, BorderLayout.LINE_START);
-			folderPanel.add(sliderDesc, BorderLayout.CENTER);
-			folderBorderPanel.add(folderPanel, BorderLayout.LINE_END);
-			
-			plottingPanel.add(folderBorderPanel);
 		}
 		
 		JPanel ssdPanel = new JPanel(new BorderLayout(2, 0));
@@ -258,7 +231,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		
 		ssdPanel.add(ssdCancelButton, BorderLayout.LINE_START);
-		plottingPanel.add(ssdPanel);
+		plottingBottomPanel.add(ssdPanel);
 		
 		checkResumeFiles();
 		
@@ -270,12 +243,12 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		selectedCores = Math.min(selectedCores, coresAvailable);
 		selectedCores = Math.max(selectedCores, 1);
-		cpusToUseComboBox = new JComboBox<String>();
+		cpusToPlotComboBox = new JComboBox<String>();
 		for (int i = 1; i <= coresAvailable; i++) {
-			cpusToUseComboBox.addItem(Integer.toString(i));			
+			cpusToPlotComboBox.addItem(Integer.toString(i));			
 		}
-		cpusToUseComboBox.setSelectedIndex(selectedCores-1);
-		cpusToUseComboBox.addActionListener(this);
+		cpusToPlotComboBox.setSelectedIndex(selectedCores-1);
+		cpusToPlotComboBox.addActionListener(this);
 		
 		/* TODO: add GPU support
 		int numPlatforms[] = new int[1];
@@ -315,12 +288,12 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		stopPlotButton.addActionListener(this);
 		stopPlotButton.setEnabled(false);
 		
-		plotButtonsPanel.add(new JLabel("CPU Cores"));
-		plotButtonsPanel.add(cpusToUseComboBox);
+		plotButtonsPanel.add(new JLabel(tr("mine_cpus")));
+		plotButtonsPanel.add(cpusToPlotComboBox);
 		plotButtonsPanel.add(lowPriorityCheck = new JCheckBox(tr("mine_run_low_prio")));
 		plotButtonsPanel.add(stopPlotButton);
 		plotButtonsPanel.add(startPlotButton);
-		plottingPanel.add(plotButtonsPanel);
+		plottingBottomPanel.add(plotButtonsPanel);
 		
 		lowPriorityCheck.setSelected(Boolean.parseBoolean(g.getProperty(PROP_PLOT_LOW_PRIO)));
 		lowPriorityCheck.addActionListener(this);
@@ -380,6 +353,23 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		
 		JPanel minerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		minerPanel.setBorder(BorderFactory.createTitledBorder(tr("mine_run_miner")));
+		
+		cpusToMineComboBox = new JComboBox<String>();
+		for (int i = 1; i <= coresAvailable; i++) {
+			cpusToMineComboBox.addItem(Integer.toString(i));			
+		}
+		cpusToMineComboBox.setSelectedIndex(0);
+		int coresToMine = 0;
+		if(g.getProperty(PROP_MINE_CPU_CORES) != null && g.getProperty(PROP_MINE_CPU_CORES).length() > 0) {
+			coresToMine = Integer.parseInt(g.getProperty(PROP_MINE_CPU_CORES))- 1;
+		}
+		if(coresToMine > 0 && coresToMine < cpusToMineComboBox.getItemCount())
+			cpusToMineComboBox.setSelectedIndex(coresToMine);
+		
+		cpusToMineComboBox.addActionListener(this);
+		minerPanel.add(new JLabel(tr("mine_cpus")));
+		minerPanel.add(cpusToMineComboBox);
+		
 		minerPanel.add(minerAutoStartCheck = new JCheckBox(tr("mine_start_auto")));
 		minerAutoStartCheck.setSelected(Boolean.parseBoolean(g.getProperty(PROP_MINER_AUTO_START)));
 		minerAutoStartCheck.addActionListener(this);
@@ -420,6 +410,57 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			            }
 			        }, 3000);
 		}
+	}
+	
+	private void addDiskPath(int i) {
+		Globals g = Globals.getInstance();
+		
+		JButton cancelButton = new JButton(icons.get(Icons.CANCEL));
+		cancelButton.setToolTipText(tr("mine_remove_path"));
+		cancelButton.addActionListener(this);
+		cancelButton.setEnabled(false);
+		
+		JButton openFolderButton = new JButton(icons.get(Icons.EXPLORER));
+		openFolderButton.addActionListener(this);
+		openFolderButton.setEnabled(false);
+		
+		JButton selectFolderButton = new JButton(tr("mine_select_disk"), folderIcon);
+		selectFolderButton.addActionListener(this);
+		
+		JSlider fractionToPlotSlider = new JSlider(0, 100, 0);
+		fractionToPlotSlider.addChangeListener(this);
+		fractionToPlotSlider.setEnabled(false);
+		
+		Desc sliderDesc = new Desc(" ", fractionToPlotSlider);
+		
+		pathCancelButtons.add(cancelButton);
+		openFolderButtons.add(openFolderButton);
+		selectFolderButtons.add(selectFolderButton);
+		fractionToPlotSliders.add(fractionToPlotSlider);
+		sliderListDesc.add(sliderDesc);
+		
+		String path = g.getProperty(PROP_PLOT_PATH + (i+1));
+		if(path == null || path.length() == 0) {
+			pathList.add(null);
+		}
+		else {
+			selectFolderButton.setText(path);
+			File pathFile = new File(path);
+			pathList.add(pathFile);
+			cancelButton.setEnabled(true);
+			openFolderButton.setEnabled(true);
+			fractionToPlotSlider.setEnabled(true);
+		}
+		
+		JPanel folderBorderPanel = new JPanel(new BorderLayout(2, 0));
+		folderBorderPanel.add(selectFolderButton, BorderLayout.CENTER);
+		folderBorderPanel.add(cancelButton, BorderLayout.LINE_START);
+		JPanel folderPanel = new JPanel(new BorderLayout());
+		folderPanel.add(openFolderButton, BorderLayout.LINE_START);
+		folderPanel.add(sliderDesc, BorderLayout.CENTER);
+		folderBorderPanel.add(folderPanel, BorderLayout.LINE_END);
+		
+		disksPanel.add(folderBorderPanel);
 	}
 	
 	private static final OkHttpClient CLIENT = new OkHttpClient();
@@ -584,7 +625,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 					formatSpace(networkTbs*1024L*ONE_GIB));
 			rewards += "\n" + tr("mine_reward_poc_plus_activation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(8).longValue()));
 			BurstValue avgCommitment = null;
-			if(miningInfo.getAverageCommitmentNQT() > 0) {
+			int pocPlusBlock = Globals.getInstance().isTestnet() ? 269_700 : 878_000;
+			if(miningInfo.getAverageCommitmentNQT() > 0 && miningInfo.getHeight() > pocPlusBlock) {
 				avgCommitment = BurstValue.fromPlanck(miningInfo.getAverageCommitmentNQT());
 				rewards = tr("mine_reward_estimation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(8).longValue()),
 						NumberFormatting.BURST_2.format(avgCommitment.multiply(100).longValue()));
@@ -623,7 +665,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		
 		lowPriorityCheck.setEnabled(!plotting);
-		cpusToUseComboBox.setEnabled(!plotting);
+		cpusToPlotComboBox.setEnabled(!plotting);
 	}
 	
 	public void stop() {
@@ -649,7 +691,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	private void checkResumeFiles() {
 		resumePlotFiles.clear();
 		
-		for (int i = 0; i < N_PATHS; i++) {
+		for (int i = 0; i < pathList.size(); i++) {
 			File pathFile = pathList.get(i);
 
 			if(pathFile == null)
@@ -697,6 +739,12 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			    fractionToPlotSliders.get(pos).setEnabled(true);
 				File[] plotFiles = selectedPath.listFiles(PLOT_FILE_FILTER);
 			    fractionToPlotSliders.get(pos).setValue((plotFiles.length > 0) ? 0 : 80);
+			    
+			    if(pos == pathList.size() - 1) {
+			    	// using the last one, add one more
+			    	addDiskPath(pos+1);
+			    	this.revalidate();
+			    }
 			}
 			return;
 		}
@@ -784,8 +832,13 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			saveConfs(g);
 			return;
 		}
-		if(cpusToUseComboBox == e.getSource()) {
-			g.setProperty(PROP_PLOT_CPU_CORES, Integer.toString(cpusToUseComboBox.getSelectedIndex()+1));
+		if(cpusToPlotComboBox == e.getSource()) {
+			g.setProperty(PROP_PLOT_CPU_CORES, Integer.toString(cpusToPlotComboBox.getSelectedIndex()+1));
+			saveConfs(g);
+			return;
+		}
+		if(cpusToMineComboBox == e.getSource()) {
+			g.setProperty(PROP_MINE_CPU_CORES, Integer.toString(cpusToMineComboBox.getSelectedIndex()+1));
 			saveConfs(g);
 			return;
 		}
@@ -1041,7 +1094,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 					String cmd = plotterFile.getAbsolutePath() + " -i " + sections[0];
 					cmd += " -s " + nonceStart;
 					cmd += " -n " + noncesBeingPlot;
-					cmd += " -c " + (cpusToUseComboBox.getSelectedIndex()+1);
+					cmd += " -c " + (cpusToPlotComboBox.getSelectedIndex()+1);
 					cmd += " -q";
 					cmd += " -d"; // FIXME: enable back direct io, but we need to find out the sector size then and adjust no of nonces
 					if(lowPriorityCheck.isSelected())
@@ -1190,6 +1243,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			minerConfig.append("url: '" + poolComboBox.getSelectedItem().toString() + "'\n");
 			
 			minerConfig.append("target_deadline: " + poolMaxDeadlines.get(poolComboBox.getSelectedIndex()) + "\n");
+
+			minerConfig.append("cpu_threads: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
+			minerConfig.append("cpu_worker_task_count: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
 			
 			IOUtils.copy(minerConfigStream, minerConfig);
 			minerConfig.close();

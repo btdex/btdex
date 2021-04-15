@@ -51,6 +51,7 @@ public class Globals {
 	private BurstAddress address;
 	private String bnbAddress;
 	private int ledgerIndex;
+	private String version = "dev";
 
 	private Mediators mediators;
 
@@ -88,6 +89,12 @@ public class Globals {
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
 			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET : BT.NODE_BURSTCOIN_RO));
 			BT.activateCIP20(true);
+			
+			// Read the version
+			Properties versionProp = new Properties();
+			versionProp.load(Globals.class.getResourceAsStream("/version.properties"));
+			version = versionProp.getProperty("version");
+			logger.info("Local resources, Version {}", version);
 
 			// possible ledger account index
 			ledgerEnabled = Boolean.parseBoolean(conf.getProperty(Constants.PROP_LEDGER_ENABLED, "false"));
@@ -113,6 +120,10 @@ public class Globals {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public String getVersion() {
+		return version;
 	}
 
 	public boolean isLedgerEnabled() {
@@ -396,7 +407,7 @@ public class Globals {
 	public void setNode(String node) {
 		conf.setProperty(Constants.PROP_NODE, node);
 
-		NS = BurstNodeService.getInstance(node);
+		NS = BurstNodeService.getInstance(node, "btdex-" + version);
 	}
 	
 	public void setProperty(String key, String value) {
@@ -415,12 +426,13 @@ public class Globals {
 		conf.setProperty(Constants.PROP_EXPLORER, value);
 	}
 
-	public Response activate() throws IOException {
+	public Response activate(String ref) throws IOException {
 		OkHttpClient client = new OkHttpClient();
 
 		JsonObject params = new JsonObject();
 		params.addProperty("account", getAddress().getID());
 		params.addProperty("publickey", BC.toHexString(getPubKey()));
+		params.addProperty("ref", ref);
 		
 		RequestBody body = RequestBody.create(params.toString(), Constants.JSON);
 

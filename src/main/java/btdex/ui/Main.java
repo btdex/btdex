@@ -26,7 +26,6 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Properties;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -116,7 +115,6 @@ public class Main extends JFrame implements ActionListener {
 	private long lastUpdated;
 
 	private JButton signoutButton;
-	private String version = "dev";
 	private Icons i;
 
 	private JButton resetPinButton;
@@ -150,7 +148,7 @@ public class Main extends JFrame implements ActionListener {
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent ev) {
             	if(windowsTrayIcon != null) {
-            		windowsTrayIcon.displayMessage(getTitle() + " " + version, tr("tray_running"), MessageType.INFO);
+            		windowsTrayIcon.displayMessage(getTitle() + " " + Globals.getInstance().getVersion(), tr("tray_running"), MessageType.INFO);
             	}
             	if(windowsTrayIcon != null || systemTray != null) {
             		Toast.makeText(Main.this, tr("tray_running"), Toast.Style.SUCCESS).display(MouseInfo.getPointerInfo().getLocation());
@@ -377,7 +375,7 @@ public class Main extends JFrame implements ActionListener {
 						// try to activate this account
 						setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 						try {
-							Response response = g.activate();
+							Response response = g.activate("btdex-" + g.getVersion());
 							if(response.isSuccessful()) {
 								Toast.makeText(this, tr("main_account_activate"), Toast.Style.SUCCESS).display();
 								tabbedPane.setSelectedComponent(transactionsPanel);
@@ -430,11 +428,6 @@ public class Main extends JFrame implements ActionListener {
 			icon = Icons.getIcon();
 			setIconImage(icon);
 			iconMono = Icons.getIconMono();
-
-			Properties versionProp = new Properties();
-			versionProp.load(Main.class.getResourceAsStream("/version.properties"));
-			version = versionProp.getProperty("version");
-			logger.info("Local resources, Version {}", version);
 		} catch (Exception ex) {
 			logger.error("Error in reading local resources :" + ex.getLocalizedMessage());
 			ex.printStackTrace();
@@ -473,6 +466,7 @@ public class Main extends JFrame implements ActionListener {
 		ArrayList<Action> actions = new ArrayList<>();
 		actions.add(showHideAction);
 		actions.add(quitAction);
+		Globals g = Globals.getInstance();
 				
 		if(OS.isWindows()) {
 			if(java.awt.SystemTray.isSupported()) {
@@ -490,7 +484,7 @@ public class Main extends JFrame implements ActionListener {
 				windowsTrayIcon.setPopupMenu(popup);
 				try {
 					sysTray.add(windowsTrayIcon);
-					windowsTrayIcon.displayMessage(getTitle() + " " + version, tr("tray_running"), MessageType.INFO);
+					windowsTrayIcon.displayMessage(getTitle() + " " + g.getVersion(), tr("tray_running"), MessageType.INFO);
 				} catch (AWTException e1) {
 					e1.printStackTrace();
 				}
@@ -501,7 +495,7 @@ public class Main extends JFrame implements ActionListener {
 			if(systemTray != null) {
 				systemTray.setImage(icon);
 				systemTray.setTooltip(getTitle());
-				systemTray.setStatus(getTitle() + " " + version);
+				systemTray.setStatus(getTitle() + " " + g.getVersion());
 
 				for (Action a : actions) {
 					systemTray.getMenu().add(new MenuItem(a.getValue(Action.NAME).toString(), a));
@@ -511,7 +505,7 @@ public class Main extends JFrame implements ActionListener {
 	}
 
 	private JButton createVersionButton() {
-		JButton versionButton = new JButton(version, i.get(Icons.VERSION));
+		JButton versionButton = new JButton(Globals.getInstance().getVersion(), i.get(Icons.VERSION));
 		versionButton.setToolTipText(tr("main_check_new_release"));
 		versionButton.setVerticalAlignment(SwingConstants.CENTER);
 		versionButton.addActionListener(new ActionListener() {
@@ -692,8 +686,11 @@ public class Main extends JFrame implements ActionListener {
 			}
 			if(mediationPanel!=null && mediationPanel.isVisible())
 				mediationPanel.update();
-			if(miningPanel.isVisible() || showingSplash)
-				miningPanel.update();
+			if(miningPanel != null) {
+				if(miningPanel.isVisible() || showingSplash) {
+					miningPanel.update();
+				}
+			}
 
 			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 			nodeSelector.setBackground(explorerSelector.getBackground());
@@ -852,7 +849,7 @@ public class Main extends JFrame implements ActionListener {
 
 			Globals g = Globals.getInstance();
 
-			String[] list = {BT.NODE_BURSTCOIN_RO, BT.NODE_BURST_TEAM, Constants.NODE_LOCALHOST};
+			String[] list = Constants.NODE_LIST;
 			if(g.isTestnet()){
 				list = new String[]{Constants.NODE_TESTNET, BT.NODE_LOCAL_TESTNET };
 			}
