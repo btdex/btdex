@@ -39,6 +39,10 @@ dependencies {
     //implementation 'com.github.jiconfont:jiconfont-font_awesome:4.7.0.1'
     implementation 'com.github.meisenla:jiconfont-font_awesome:8be36e8ba9'
     
+    implementation 'com.github.jjos2372:java-sdk:4739af9c11'
+    
+    implementation 'com.github.sealedtx:bitcoin-cash-converter:1.0'
+    
     //implementation 'net.java.dev.jna:jna-platform:5.7.0'
     //implementation 'net.java.dev.jna:jna:5.7.0'
 

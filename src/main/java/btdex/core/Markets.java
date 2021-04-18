@@ -3,6 +3,9 @@ package btdex.core;
 import java.util.ArrayList;
 
 import btdex.markets.MarketARRR;
+import btdex.markets.MarketBCH;
+import btdex.markets.MarketBNB;
+import btdex.markets.MarketBSV;
 import btdex.markets.MarketBTC;
 import btdex.markets.MarketDOGE;
 import btdex.markets.MarketETH;
@@ -33,6 +36,12 @@ public class Markets {
 		logger.info("ETH market loaded");
         markets.add(new MarketLTC());
 		logger.info("LTC market loaded");
+        markets.add(new MarketBNB());
+		logger.info("BNB market loaded");
+        markets.add(new MarketBCH());
+		logger.info("BCH market loaded");
+        markets.add(new MarketBSV());
+		logger.info("BSV market loaded");
         markets.add(new MarketXMR());
 		logger.info("XMR market loaded");
         markets.add(new MarketDOGE());
