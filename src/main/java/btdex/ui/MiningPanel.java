@@ -929,6 +929,11 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				continue;
 			
 			long freeSpace = path.getUsableSpace();
+			if(ssdPath != null) {
+				// Leave some free space to avoid problems with the sector alignment when moving multiple files.
+				// TODO we can remove this if we force to use exact sector sizes
+				freeSpace -= 10*BYTES_OF_A_NONCE;
+			}
 			
 			long toUseWithPlots = (freeSpace/100 * fractionToPlotSliders.get(i).getValue());
 			totalToPlot += toUseWithPlots;
