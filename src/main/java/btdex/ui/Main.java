@@ -823,6 +823,7 @@ public class Main extends JFrame implements ActionListener {
 				}
 
 				nodeSelector.setText(g.getNode());
+				statusLabel.setText("");
 				update();
 			}
 		}
