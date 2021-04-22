@@ -12,12 +12,15 @@ public class Constants {
     public static final String NODE_LOCALHOST = "http://localhost:8125";
     public static final String NODE_TESTNET = "https://testnetwallet.burstcoin.ro";
     
+    public static final String NODE_DEFAULT = "https://europe.signum.network";
+    
     public static final String NODE_LIST[] = {
-    		"https://europe.signum.network",
-    		BT.NODE_BURSTCOIN_RO,
-    		"https://uk.signum.network:8125",
-    		"https://brazil.signum.network",
+    		NODE_DEFAULT,
     		"https://australia.signum.network",
+    		"https://brazil.signum.network",
+    		"https://canada.signum.network:8125",
+    		"https://uk.signum.network:8125",
+    		BT.NODE_BURSTCOIN_RO,
     		Constants.NODE_LOCALHOST
     };
 
