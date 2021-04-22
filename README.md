@@ -10,11 +10,16 @@ The exchange method is serverless and fees are distributed among [Trade Token (T
 You will also find more details at [https://btdex.trade](https://btdex.trade).
 Currently the following pairs are available with BURST:
  - BTC
+ - ARRR
+ - BCH
+ - BNB
+ - BSV
+ - DOGE
  - ETH
  - LTC
- - DOGE
  - XMR
- - ARRR
+ - XLA
+
  
 Additionally, any Burst-based token can be listed instantly and traded.
 
