@@ -27,29 +27,20 @@ public class Markets {
 
     public static void loadStandardMarkets(Boolean testnet, BurstNodeService NS) {
         markets.add(token = new MarketTRT());
-        logger.info("TRT market loaded");
+        
 //        markets.add(new MarketEUR());
 //        markets.add(new MarketBRL());
+        
         markets.add(new MarketBTC());
-		logger.info("BTC market loaded");
-        markets.add(new MarketETH());
-		logger.info("ETH market loaded");
-        markets.add(new MarketLTC());
-		logger.info("LTC market loaded");
-        markets.add(new MarketBNB());
-		logger.info("BNB market loaded");
-        markets.add(new MarketBCH());
-		logger.info("BCH market loaded");
-        markets.add(new MarketBSV());
-		logger.info("BSV market loaded");
-        markets.add(new MarketXMR());
-		logger.info("XMR market loaded");
-        markets.add(new MarketDOGE());
-		logger.info("DOGE market loaded");
         markets.add(new MarketARRR());
-		logger.info("ARRR market loaded");
+        markets.add(new MarketBCH());
+        markets.add(new MarketBNB());
+        markets.add(new MarketBSV());
+        markets.add(new MarketDOGE());
+        markets.add(new MarketETH());
+        markets.add(new MarketLTC());
+        markets.add(new MarketXMR());
         markets.add(new MarketXLA());
-		logger.info("XLA market loaded");
     }
 
     public static void addUserMarket(Market m) {
