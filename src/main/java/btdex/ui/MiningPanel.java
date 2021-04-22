@@ -22,6 +22,7 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -978,7 +979,13 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		
 		update();
 		
-		long startNonce = 0;
+		// Start nonce is random and we leave still enough bits for many PiB of unique nonces.
+		// This way he user can disconnect disks and plot later or can use it on multiple machines.
+		byte[] entropy = new byte[Short.BYTES];
+		new SecureRandom().nextBytes(entropy);
+		ByteBuffer bb = ByteBuffer.wrap(entropy);
+		long startNonce = (bb.getShort() & 0x0FFF) * 100000000000000L;
+		
 		for(File path : pathList) {
 			if(path == null)
 				continue;
