@@ -18,7 +18,7 @@ public class Constants {
     		NODE_DEFAULT,
     		"https://australia.signum.network",
     		"https://brazil.signum.network",
-    		"https://canada.signum.network:8125",
+    		"https://canada.signum.network",
     		"https://uk.signum.network:8125",
     		BT.NODE_BURSTCOIN_RO,
     		Constants.NODE_LOCALHOST
