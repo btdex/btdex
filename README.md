@@ -17,6 +17,7 @@ Currently the following pairs are available with BURST:
  - DOGE
  - ETH
  - LTC
+ - ONION
  - XMR
  - XLA
 

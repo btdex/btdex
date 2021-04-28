@@ -10,6 +10,7 @@ import btdex.markets.MarketBTC;
 import btdex.markets.MarketDOGE;
 import btdex.markets.MarketETH;
 import btdex.markets.MarketLTC;
+import btdex.markets.MarketONION;
 import btdex.markets.MarketTRT;
 import btdex.markets.MarketXMR;
 import btdex.markets.MarketXLA;
@@ -39,6 +40,7 @@ public class Markets {
         markets.add(new MarketDOGE());
         markets.add(new MarketETH());
         markets.add(new MarketLTC());
+        markets.add(new MarketONION());
         markets.add(new MarketXMR());
         markets.add(new MarketXLA());
     }
