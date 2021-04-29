@@ -12,6 +12,7 @@ Currently the following pairs are available with BURST:
  - BTC
  - ARRR
  - BCH
+ - BHD
  - BNB
  - BSV
  - DOGE
