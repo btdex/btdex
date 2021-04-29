@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import btdex.markets.MarketARRR;
 import btdex.markets.MarketBCH;
+import btdex.markets.MarketBHD;
 import btdex.markets.MarketBNB;
 import btdex.markets.MarketBSV;
 import btdex.markets.MarketBTC;
@@ -38,6 +39,7 @@ public class Markets {
         markets.add(new MarketBTC());
         markets.add(new MarketARRR());
         markets.add(new MarketBCH());
+        markets.add(new MarketBHD());
         markets.add(new MarketBNB());
         markets.add(new MarketBSV());
         markets.add(new MarketBUSDT());

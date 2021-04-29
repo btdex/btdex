@@ -12,6 +12,7 @@ Currently the following pairs are available with SIGNA:
  - BTC
  - ARRR
  - BCH
+ - BHD
  - BNB
  - BSV
  - DOGE
