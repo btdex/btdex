@@ -83,6 +83,7 @@ public class MarketPanel extends JPanel implements ActionListener {
 
 		marketComboBox = new JComboBox<Market>();
 		marketComboBox.setToolTipText(tr("main_select_market"));
+		marketComboBox.setMaximumRowCount(12);
 		
 		Font largeFont = marketComboBox.getFont().deriveFont(Font.BOLD, Constants.ICON_SIZE);
 		marketComboBox.setFont(largeFont);
