@@ -14,6 +14,8 @@ import btdex.markets.MarketTRT;
 import btdex.markets.MarketXCH;
 import btdex.markets.MarketXMR;
 import btdex.markets.MarketXLA;
+import btdex.markets.MarketB1MT;
+import btdex.markets.MarketOK;
 import burst.kit.service.BurstNodeService;
 
 import org.apache.logging.log4j.LogManager;
@@ -43,6 +45,8 @@ public class Markets {
         markets.add(new MarketXCH());
         markets.add(new MarketXMR());
         markets.add(new MarketXLA());
+        markets.add(new MarketB1MT());
+        markets.add(new MarketOK());
     }
 
     public static void addUserMarket(Market m) {

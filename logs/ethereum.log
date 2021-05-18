@@ -1,0 +1,2 @@
+00:11:44.233 INFO [d.s.SystemTray]  Successfully loaded
+00:11:44.286 WARN [d.s.SystemTray]  Please disable tooltips, as they are not consistent across all platforms and tray types.

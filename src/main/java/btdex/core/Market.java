@@ -29,7 +29,8 @@ public abstract class Market {
 	public static long MARKET_BCH            = 0x000000008;
 	public static long MARKET_BSV            = 0x000000009;
 	public static long MARKET_BNB            = 0x000000010;
-
+	public static long MARKET_B1MT			 = 0x000000011;
+	public static long MARKET_OK			 = 0x000000012;
 	public static long MARKET_XCH            = 0x000000060;
 
 	// TODO: fill with other cryptos here
