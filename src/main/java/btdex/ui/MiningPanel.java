@@ -817,8 +817,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		if(stopMiningButton == e.getSource()) {
 			addToConsole(MINER_APP, "Stopping miner");
-			minerProcess.destroyForcibly();
 			mining = false;
+			minerProcess.destroyForcibly();
 
 			stopMiningButton.setEnabled(false);
 			return;
@@ -1283,7 +1283,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				InputStreamReader isr = new InputStreamReader(stdIn);
 				BufferedReader br = new BufferedReader(isr);
 
-				while (minerProcess.isAlive()) {
+				while (mining && minerProcess != null && minerProcess.isAlive()) {
 					String line = br.readLine();
 					if(line != null)
 						addToConsole(MINER_APP, line);
@@ -1294,6 +1294,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				e.printStackTrace();
 			}
 		}
+
+
 	};
 
 	private void addToConsole(String app, String line) {
