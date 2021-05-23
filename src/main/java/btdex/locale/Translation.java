@@ -24,6 +24,7 @@ public class Translation {
 		Locale.ENGLISH,
 		Locale.GERMAN,
 		// Locale.forLanguageTag("es"),
+		Locale.forLanguageTag("be"),
 		Locale.forLanguageTag("pt"),
 		Locale.forLanguageTag("it"),
 		Locale.forLanguageTag("da"),
