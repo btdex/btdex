@@ -1247,18 +1247,20 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				minerFile.setExecutable(true);
 
 			FileWriter minerConfig = new FileWriter(minerFile.getParent() + "/" + MINER_CONFIG_FILE);
-			minerConfig.append("plot_dirs:\n");
+			if (minerConfig!=null)
+				minerConfig.append("plot_dirs:\n");
 			for (File path : pathList) {
 				if(path == null)
 					continue;
-				minerConfig.append(" - '" + path.getAbsolutePath() + "'\n");
+					if (minerConfig!=null)
+						minerConfig.append(" - '" + path.getAbsolutePath() + "'\n");
 			}
-			minerConfig.append("url: '" + poolComboBox.getSelectedItem().toString() + "'\n");
-			
-			minerConfig.append("target_deadline: " + poolMaxDeadlines.get(poolComboBox.getSelectedIndex()) + "\n");
-
-			minerConfig.append("cpu_threads: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
-			minerConfig.append("cpu_worker_task_count: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
+			if (minerConfig!=null) {
+				minerConfig.append("url: '" + poolComboBox.getSelectedItem().toString() + "'\n");
+				minerConfig.append("target_deadline: " + poolMaxDeadlines.get(poolComboBox.getSelectedIndex()) + "\n");
+				minerConfig.append("cpu_threads: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
+				minerConfig.append("cpu_worker_task_count: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
+			}
 			
 			IOUtils.copy(minerConfigStream, minerConfig);
 			minerConfig.close();
