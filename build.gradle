@@ -29,7 +29,7 @@ dependencies {
     // implementation 'com.github.jjos2372:burstkit4j:a5ee32342f'
 
     // implementation 'com.github.jjos2372:blocktalk:183bf6861e'
-    implementation 'com.github.burst-apps-team:blocktalk:183bf6861e'    
+    implementation 'com.github.burst-apps-team:blocktalk:121e144cfe'    
 
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.15'
