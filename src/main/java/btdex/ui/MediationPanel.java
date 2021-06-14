@@ -184,13 +184,13 @@ public class MediationPanel extends JPanel {
 			BurstAddress maker = s.getCreator();
 			BurstAddress taker = BurstAddress.fromId(s.getTaker());
 
-			model.setValueAt(new ExplorerButton(maker.getRawAddress(), copyIcon, expIcon,
+			model.setValueAt(new ExplorerButton(maker.getFullAddress(), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, maker.getID(), maker.getFullAddress()), row, COL_MAKER);
-			model.setValueAt(new ExplorerButton(taker.getRawAddress(), copyIcon, expIcon,
+			model.setValueAt(new ExplorerButton(taker.getFullAddress(), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, taker.getID(), taker.getFullAddress()), row, COL_TAKER);
 
 			model.setValueAt(new ExplorerButton(
-					s.getAddress().getRawAddress(), copyIcon, expIcon,
+					s.getAddress().getFullAddress(), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(),
 							s.getAddress().getFullAddress()), row, COL_CONTRACT);
 

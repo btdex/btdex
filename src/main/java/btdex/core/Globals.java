@@ -17,6 +17,7 @@ import btdex.ui.ExplorerWrapper;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstAddress;
 import burst.kit.service.BurstNodeService;
+import burst.kit.util.BurstKitUtils;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -83,6 +84,10 @@ public class Globals {
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
 			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET : Constants.NODE_DEFAULT));
 			BT.activateCIP20(true);
+			
+			BurstKitUtils.setAddressPrefix(isTestnet() ? "TS" : "S");
+			BurstKitUtils.addAddressPrefix("BURST");
+			BurstKitUtils.setValueSuffix("SIGNA");
 			
 			// Read the version
 			Properties versionProp = new Properties();

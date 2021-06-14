@@ -123,7 +123,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener, SignCa
 		StringBuilder terms = new StringBuilder();
 		terms.append(PlaceOrderDialog.HTML_STYLE);
 		terms.append("<h3>").append(tr("canc_terms_brief", isBuy ? tr("token_buy") : tr("token_sell"), market,
-				isToken ? order.getId() : state.getAddress().getRawAddress())).append("</h3>");
+				isToken ? order.getId() : state.getAddress().getFullAddress())).append("</h3>");
 		if(isToken) {
 			terms.append("<p>").append(tr("canc_terms_token",
 					NumberFormatting.BURST.format(suggestedFee.getPriorityFee().longValue()))).append("</p>");

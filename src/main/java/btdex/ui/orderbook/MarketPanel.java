@@ -419,7 +419,7 @@ public class MarketPanel extends JPanel implements ActionListener {
 				model.setValueAt(null, row, cols[OrderBookSettings.COL_TOTAL]);
 			}
 
-			ExplorerButton exp = new ExplorerButton(s.getAddress().getRawAddress(), copyIcon, expIcon,
+			ExplorerButton exp = new ExplorerButton(s.getAddress().getFullAddress(), copyIcon, expIcon,
 					ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(), s.getAddress().getFullAddress(), null);
 			if(s.getCreator().getSignedLongId() == g.getAddress().getSignedLongId()
 					&& s.getBalance().longValue() > 0 && s.getState() < SellContract.STATE_WAITING_PAYMT

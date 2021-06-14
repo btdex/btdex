@@ -312,7 +312,7 @@ public class TransactionsPanel extends JPanel {
 
 			model.setValueAt(tx.getBlockId()==null ? tr("book_pending_button") : tx.getConfirmations(), row, COL_CONF);
 			model.setValueAt(account==null ? new JLabel() :
-				new ExplorerButton(account.getRawAddress(), copyIcon, expIcon, ExplorerButton.TYPE_ADDRESS,
+				new ExplorerButton(account.getFullAddress(), copyIcon, expIcon, ExplorerButton.TYPE_ADDRESS,
 						account.getID(), account.getFullAddress()), row, COL_ACCOUNT);
 			model.setValueAt(new ExplorerButton(tx.getId().toString(), copyIcon, expIcon), row, COL_ID);
 
