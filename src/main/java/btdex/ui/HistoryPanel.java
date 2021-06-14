@@ -108,9 +108,9 @@ public class HistoryPanel extends JPanel {
 			
 			boolean isToken = market.getTokenID()!=null;
 			if(col == COL_PRICE)
-				colName = tr(colName, isToken ? "BURST" : market);
+				colName = tr(colName, isToken ? Constants.BURST_TICKER : market);
 			else if(col == COL_AMOUNT)
-				colName = tr(colName, isToken ? market : "BURST");
+				colName = tr(colName, isToken ? market : Constants.BURST_TICKER);
 			else if(col == COL_CONTRACT)
 				colName = tr(isToken ? "book_order" : colName);				
 			else
@@ -279,7 +279,7 @@ public class HistoryPanel extends JPanel {
 
 		if(lastTrade != null) {
 			// set the last price label
-			String priceText = NumberFormatting.BURST.format(lastTrade.getPrice().longValue()*market.getFactor()) + " BURST";
+			String priceText = NumberFormatting.BURST.format(lastTrade.getPrice().longValue()*market.getFactor()) + " " + Constants.BURST_TICKER;
 			JLabel priceLabel = (JLabel) lastPrice.getChild();
 			lastPrice.setVisible(true);
 			priceLabel.setText(priceText);

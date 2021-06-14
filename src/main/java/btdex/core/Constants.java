@@ -64,9 +64,9 @@ public class Constants {
     
     public static final long TRT_DIVIDENDS = BurstID.fromLong("14893248166511032525").getSignedLongId();
 
-    public static final String BURST_SYMBOL = "\u0243";
+    public static final String BURST_SYMBOL = "\uA7A8";
 
-    public static final String BURST_TICKER = "BURST";
+    public static final String BURST_TICKER = "SIGNA";
 
     // Number of confirmations needed for SC update to be taken into account
     public static final int PRICE_NCONF = 1;
