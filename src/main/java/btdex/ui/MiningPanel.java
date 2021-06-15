@@ -3,6 +3,7 @@ package btdex.ui;
 import static btdex.locale.Translation.tr;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -204,6 +205,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		plottingPanel.setBorder(BorderFactory.createTitledBorder(tr("mine_plot_disks")));
 		plottingPanel.add(plottingBottomPanel, BorderLayout.PAGE_END);
 		JScrollPane disksScrollPane = new JScrollPane(disksPanel);
+		plottingPanel.setPreferredSize(new Dimension(200, 300));
 		plottingPanel.add(disksScrollPane, BorderLayout.CENTER);
 		
 		Globals g = Globals.getInstance();
