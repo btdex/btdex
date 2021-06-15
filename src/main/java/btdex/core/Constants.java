@@ -16,11 +16,14 @@ public class Constants {
     
     public static final String NODE_LIST[] = {
     		NODE_DEFAULT,
-    		"https://australia.signum.network",
+    		"https://europe1.signum.network",
+    		"https://europe2.signum.network",
+    		"https://europe3.signum.network",
     		"https://brazil.signum.network",
-    		"https://canada.signum.network",
     		"https://uk.signum.network:8125",
     		BT.NODE_BURSTCOIN_RO,
+    		"https://canada.signum.network",
+    		"https://australia.signum.network",
     		Constants.NODE_LOCALHOST
     };
 

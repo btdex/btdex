@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.Random;
 
 import com.google.gson.JsonObject;
 
@@ -82,7 +83,14 @@ public class Globals {
 			
 			logger.info("Using properties file {}", confFile);
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
-			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET : Constants.NODE_DEFAULT));
+			
+			String nodeAddress = conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET : Constants.NODE_DEFAULT);
+			if(nodeAddress.contains("europe")) {
+				// Rotate the Europe nodes until the automatic node selection is in place.
+				Random rand = new Random();
+				nodeAddress = Constants.NODE_LIST[rand.nextInt(4)];
+			}
+			setNode(nodeAddress);
 			BT.activateCIP20(true);
 			
 			BurstKitUtils.setAddressPrefix(isTestnet() ? "TS" : "S");
