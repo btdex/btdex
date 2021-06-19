@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.Random;
 
 import com.google.gson.JsonObject;
 
@@ -17,6 +18,7 @@ import btdex.ui.ExplorerWrapper;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstAddress;
 import burst.kit.service.BurstNodeService;
+import burst.kit.util.BurstKitUtils;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -81,8 +83,19 @@ public class Globals {
 			
 			logger.info("Using properties file {}", confFile);
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
-			setNode(conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET : Constants.NODE_DEFAULT));
+			
+			String nodeAddress = conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET : Constants.NODE_DEFAULT);
+			if(nodeAddress.contains("europe")) {
+				// Rotate the Europe nodes until the automatic node selection is in place.
+				Random rand = new Random();
+				nodeAddress = Constants.NODE_LIST[rand.nextInt(4)];
+			}
+			setNode(nodeAddress);
 			BT.activateCIP20(true);
+			
+			BurstKitUtils.setAddressPrefix(isTestnet() ? "TS" : "S");
+			BurstKitUtils.addAddressPrefix("BURST");
+			BurstKitUtils.setValueSuffix("SIGNA");
 			
 			// Read the version
 			Properties versionProp = new Properties();

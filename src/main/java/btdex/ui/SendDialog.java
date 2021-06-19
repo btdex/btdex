@@ -83,7 +83,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 			setTitle(tr("send_remove_commitment"));
 		}
 		else
-			setTitle(tr("main_send", token==null ? "BURST" : token));
+			setTitle(tr("main_send", token==null ? Constants.BURST_TICKER : token));
 
 		JPanel topPanel = new JPanel(new GridLayout(0, 1, 4, 4));
 
@@ -111,7 +111,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 		}
 
 		if(type != TYPE_JOIN_POOL) {
-			panel.add(new Desc(tr("send_amount", token==null ? "BURST" : token), amount));
+			panel.add(new Desc(tr("send_amount", token==null ? Constants.BURST_TICKER : token), amount));
 		}
 		if(type == TYPE_JOIN_POOL) {
 			panel.add(new Desc(" ", new JLabel(" ")));

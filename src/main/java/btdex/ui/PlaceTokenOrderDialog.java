@@ -86,9 +86,9 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 
 		fieldPanel.setBorder(BorderFactory.createTitledBorder(tr("token_offer_details")));
 
-		fieldPanel.add(new Desc(tr("offer_price", "BURST"), priceField));
+		fieldPanel.add(new Desc(tr("offer_price", Constants.BURST_TICKER), priceField));
 		fieldPanel.add(new Desc(tr("offer_size", market), amountField));
-		fieldPanel.add(new Desc(tr("offer_total", "BURST"), totalField));
+		fieldPanel.add(new Desc(tr("offer_total", Constants.BURST_TICKER), totalField));
 
 		conditions = new JTextPane();
 		conditions.setContentType("text/html");

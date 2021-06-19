@@ -3,6 +3,7 @@ package btdex.ui;
 import static btdex.locale.Translation.tr;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -106,12 +107,15 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			"http://pool.burstcoin.ro:8080",
 			"http://burst.voiplanparty.com:8124",
 			"http://openburstpool.ddns.net:8126",
-			"http://burstpool.de:8080"
+			"http://burstpool.de:8080",
+			"http://yabpool.com:8000",
+			"https://signapool.notallmine.net"
 	};
 	
 	private static final String[] POOL_LIST_TESTNET = {
 			"http://nivbox.co.uk:9000",
 			"https://testpool.burstcoin.ro",
+			"http://localhost:8000"
 	};
 	
 	private ArrayList<BurstAddress> poolAddresses = new ArrayList<>();
@@ -201,6 +205,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		plottingPanel.setBorder(BorderFactory.createTitledBorder(tr("mine_plot_disks")));
 		plottingPanel.add(plottingBottomPanel, BorderLayout.PAGE_END);
 		JScrollPane disksScrollPane = new JScrollPane(disksPanel);
+		plottingPanel.setPreferredSize(new Dimension(200, 300));
 		plottingPanel.add(disksScrollPane, BorderLayout.CENTER);
 		
 		Globals g = Globals.getInstance();
@@ -630,8 +635,12 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			int pocPlusBlock = Globals.getInstance().isTestnet() ? 269_700 : 878_000;
 			if(miningInfo.getAverageCommitmentNQT() > 0 && miningInfo.getHeight() > pocPlusBlock) {
 				avgCommitment = BurstValue.fromPlanck(miningInfo.getAverageCommitmentNQT());
-				rewards = tr("mine_reward_estimation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(8).longValue()),
+//				rewards = tr("mine_reward_estimation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(8).longValue()),
+//						NumberFormatting.BURST_2.format(avgCommitment.multiply(100*8).longValue()));
+				rewards = tr("mine_reward_estimation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(4.18).longValue()),
 						NumberFormatting.BURST_2.format(avgCommitment.multiply(100).longValue()));
+				rewards += "\n" + tr("mine_reward_estimation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(2.04).longValue()),
+						NumberFormatting.BURST_2.format(avgCommitment.multiply(10).longValue()));
 				rewards += "\n" + tr("mine_reward_estimation", NumberFormatting.BURST_2.format(burstPerTbPerDay.longValue()),
 						NumberFormatting.BURST_2.format(avgCommitment.longValue()));
 				rewards += "\n" + tr("mine_reward_estimation_nothing", NumberFormatting.BURST_2.format(burstPerTbPerDay.divide(8).longValue()));
@@ -1232,12 +1241,12 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		startMiningButton.setEnabled(false);
 		stopMiningButton.setEnabled(true);
 				
-		String minerName = "scavenger";
+		String minerName = "signum-miner";
 		if(OS.isWindows())
 			minerName += ".exe";
 		minerFile = new File(TMP_DIR, minerName);
-		InputStream minerStream = (getClass().getResourceAsStream("/scavenger/" + minerName));
-		InputStream minerConfigStream = (getClass().getResourceAsStream("/scavenger/config.yaml"));
+		InputStream minerStream = (getClass().getResourceAsStream("/miner/" + minerName));
+		InputStream minerConfigStream = (getClass().getResourceAsStream("/miner/config.yaml"));
 		try {
 			if(minerFile.exists() && minerFile.isFile())
 				minerFile.delete();

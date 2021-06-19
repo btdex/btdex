@@ -4,6 +4,8 @@ import static btdex.locale.Translation.tr;
 
 import javax.swing.table.DefaultTableModel;
 
+import btdex.core.Constants;
+
 class TableModelMarket extends DefaultTableModel {
     private static final long serialVersionUID = 1L;
 
@@ -26,7 +28,7 @@ class TableModelMarket extends DefaultTableModel {
         else if(col == COLS[OrderBookSettings.COL_TOTAL])
             colName = tr("book_total", orderBook.getMarket());
         else if(col == COLS[OrderBookSettings.COL_SIZE]) {
-                colName = tr("book_size", "BURST") + " (" + tr("book_deposit") + ")";
+                colName = tr("book_size", Constants.BURST_TICKER) + " (" + tr("book_deposit") + ")";
         }
         else
             colName = tr(colName);

@@ -236,7 +236,7 @@ public class Main extends JFrame implements ActionListener {
 		copyAddButton.getMainButton().setFont(largeFont);
 
 		sendButton = new JButton(i.get(Icons.SEND));
-		sendButton.setToolTipText(tr("main_send", "BURST"));
+		sendButton.setToolTipText(tr("main_send", Constants.BURST_TICKER));
 		sendButton.addActionListener(this);
 
 		content.add(tabbedPane, BorderLayout.CENTER);
@@ -263,7 +263,7 @@ public class Main extends JFrame implements ActionListener {
 		balanceLabel.setFont(largeFont);
 		lockedBalanceLabel = new JLabel(tr("main_plus_locked", NumberFormatting.BURST.format(0)));
 		lockedBalanceLabel.setToolTipText(tr("main_amount_locked"));
-		top.add(new Desc(tr("main_balance", "BURST"), balanceLabel, lockedBalanceLabel));
+		top.add(new Desc(tr("main_balance", Constants.BURST_TICKER), balanceLabel, lockedBalanceLabel));
 		top.add(new Desc("  ", sendButton));
 
 		topRight.add(new Desc("  ", createSettingsButton(largeFont)));
@@ -309,7 +309,7 @@ public class Main extends JFrame implements ActionListener {
 
 			resetPinButton.setVisible(!g.usingLedger());
 		}
-		copyAddButton.getMainButton().setText(g.getAddress().getRawAddress());
+		copyAddButton.getMainButton().setText(g.getAddress().getFullAddress());
 		copyAddButton.setAddress(g.getAddress().getID(), g.getAddress().getFullAddress());
 
 		// check if this is a known account
@@ -777,10 +777,10 @@ public class Main extends JFrame implements ActionListener {
 		if(e.getSource() == signoutButton) {
 			Globals g = Globals.getInstance();
 			String response = JOptionPane.showInputDialog(this,
-					tr(g.usingLedger() ? "main_exit_message_ledger" : "main_exit_message", g.getAddress().getRawAddress()),
+					tr(g.usingLedger() ? "main_exit_message_ledger" : "main_exit_message", g.getAddress().getFullAddress()),
 					tr("main_exit"), JOptionPane.OK_CANCEL_OPTION);
 			if(response != null) {
-				String strAddress = g.getAddress().getRawAddress();
+				String strAddress = g.getAddress().getFullAddress();
 				if(!response.equalsIgnoreCase(strAddress.substring(strAddress.length()-5))) {
 					Toast.makeText(this, tr("main_exit_error"), Toast.Style.ERROR).display();
 					return;

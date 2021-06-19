@@ -137,7 +137,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		fieldPanel.setBorder(BorderFactory.createTitledBorder(tr("offer_offer_details")));
 
 		fieldPanel.add(new Desc(tr("offer_price", market), priceField));
-		fieldPanel.add(new Desc(tr("offer_size", "BURST"), amountField));
+		fieldPanel.add(new Desc(tr("offer_size", Constants.BURST_TICKER), amountField));
 		fieldPanel.add(new Desc(tr("offer_total", market), totalField));
 		
 		addressButton = new ClipboardAndQRButton(this, 18, amountField.getForeground());

@@ -16,11 +16,14 @@ public class Constants {
     
     public static final String NODE_LIST[] = {
     		NODE_DEFAULT,
-    		"https://australia.signum.network",
+    		"https://europe1.signum.network",
+    		"https://europe2.signum.network",
+    		"https://europe3.signum.network",
     		"https://brazil.signum.network",
-    		"https://canada.signum.network",
     		"https://uk.signum.network:8125",
     		BT.NODE_BURSTCOIN_RO,
+    		"https://canada.signum.network",
+    		"https://australia.signum.network",
     		Constants.NODE_LOCALHOST
     };
 
@@ -64,9 +67,9 @@ public class Constants {
     
     public static final long TRT_DIVIDENDS = BurstID.fromLong("14893248166511032525").getSignedLongId();
 
-    public static final String BURST_SYMBOL = "\u0243";
+    public static final String BURST_SYMBOL = "\uA7A8";
 
-    public static final String BURST_TICKER = "BURST";
+    public static final String BURST_TICKER = "SIGNA";
 
     // Number of confirmations needed for SC update to be taken into account
     public static final int PRICE_NCONF = 1;

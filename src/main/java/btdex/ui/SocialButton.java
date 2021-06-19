@@ -110,7 +110,7 @@ public class SocialButton extends JButton implements ActionListener {
 			if(orders.size() > 2)
 				break;
 			if(c.getState() > 0 && c.getCreator().equals(g.getAddress())) {
-				orders.add(c.getAddress().getRawAddress());
+				orders.add(c.getAddress().getFullAddress());
 				for(Market m : Markets.getMarkets()) {
 					if(m.getID() == c.getMarket()) {
 						markets.add(m.toString());
