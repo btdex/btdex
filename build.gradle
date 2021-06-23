@@ -25,7 +25,7 @@ repositories {
 
 dependencies {
     // implementation 'com.github.burst-apps-team:burstkit4j:0.16.1'
-    implementation 'com.github.burst-apps-team:burstkit4j:0a760efbdd'
+    implementation 'com.github.burst-apps-team:burstkit4j:2e15beb4b4'
     // implementation 'com.github.jjos2372:burstkit4j:a5ee32342f'
 
     // implementation 'com.github.jjos2372:blocktalk:183bf6861e'

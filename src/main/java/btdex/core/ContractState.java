@@ -41,6 +41,7 @@ public class ContractState {
 	private long mediator2;
 	private long offerType;
 	private long feeContract;
+	private long activationFee;
 	private Compiler compiler;
 
 	private long state;
@@ -64,6 +65,7 @@ public class ContractState {
 	private long rateHistory;
 	private long marketHistory;
 	private int blockHistory;
+	private BurstAddress creator;
 
 	private static Logger logger = LogManager.getLogger();
 
@@ -83,6 +85,9 @@ public class ContractState {
 		mediator1 = getContractFieldValue("mediator1");
 		mediator2 = getContractFieldValue("mediator2");
 		feeContract = getContractFieldValue("feeContract");
+		creator = at.getCreator();
+		this.address = at.getId();
+		this.activationFee = at.getMinimumActivation().longValue();
 	}
 	
 	public int getVersion() {
@@ -203,11 +208,12 @@ public class ContractState {
 	private void updateState(AT at, Transaction[] utxs, boolean onlyUnconf) {
 		Globals g = Globals.getInstance();
 
-		if(at == null)
-			at = g.getNS().getAt(address).blockingGet();
+		if(at == null) {
+			// now we get only the volatile information
+			at = g.getNS().getAt(address, false).blockingGet();
+		}
 
 		this.at = at;
-		this.address = at.getId();
 		this.balance = at.getBalance();
 
 		if(at.isDead())
@@ -324,7 +330,7 @@ public class ContractState {
 			}
 
 			// order configurations should be set by the creator (or the taker of a buy is sending his address)
-			if(!tx.getSender().equals(at.getCreator()))
+			if(!tx.getSender().equals(creator))
 				continue;
 
 			if(tx.getType() == 1 /* TYPE_MESSAGING */
@@ -407,7 +413,7 @@ public class ContractState {
 
 				PlaintextMessageAppendix appendMessage = (PlaintextMessageAppendix) tx.getAppendages()[0];
 				String messageString = appendMessage.getMessage();
-				if(tx.getSender().equals(at.getCreator()) && messageString.startsWith("{")) {
+				if(tx.getSender().equals(creator) && messageString.startsWith("{")) {
 					// price update
 					try {
 						JsonObject json = JsonParser.parseString(messageString).getAsJsonObject();
@@ -475,7 +481,7 @@ public class ContractState {
 	}
 
 	public long getActivationFee() {
-		return at.getMinimumActivation().longValue();
+		return activationFee;
 	}
 
 	public ContractType getType() {
@@ -495,7 +501,7 @@ public class ContractState {
 	}
 
 	public BurstAddress getCreator() {
-		return at.getCreator();
+		return creator;
 	}
 
 	public BurstValue getBalance() {
