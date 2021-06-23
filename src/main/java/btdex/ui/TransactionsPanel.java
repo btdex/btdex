@@ -29,6 +29,8 @@ import burst.kit.entity.response.Transaction;
 import burst.kit.entity.response.attachment.AskOrderPlacementAttachment;
 import burst.kit.entity.response.attachment.AssetTransferAttachment;
 import burst.kit.entity.response.attachment.BidOrderPlacementAttachment;
+import burst.kit.entity.response.attachment.CommitmentAddAttachment;
+import burst.kit.entity.response.attachment.CommitmentRemoveAttachment;
 import burst.kit.entity.response.attachment.MultiOutAttachment;
 import burst.kit.entity.response.attachment.MultiOutSameAttachment;
 import burst.kit.entity.response.http.BRSError;
@@ -279,11 +281,17 @@ public class TransactionsPanel extends JPanel {
 				switch (tx.getSubtype()) {
 				case 1:
 					type = tr("txs_add_commitment");
-					// TODO: add the type on Burstkit so we can show the amount here
+					if(tx.getAttachment() instanceof CommitmentAddAttachment) {
+						CommitmentAddAttachment commitment = (CommitmentAddAttachment) tx.getAttachment();
+						amountFormatted = NumberFormatting.BURST.format(Long.parseLong(commitment.getAmountNQT())) + " " + Constants.BURST_TICKER;
+					}
 					break;
 				case 2:
 					type = tr("txs_remove_commitment");
-					// TODO: add the type on Burstkit so we can show the amount here
+					if(tx.getAttachment() instanceof CommitmentRemoveAttachment) {
+						CommitmentRemoveAttachment commitment = (CommitmentRemoveAttachment) tx.getAttachment();
+						amountFormatted = NumberFormatting.BURST.format(Long.parseLong(commitment.getAmountNQT())) + " " + Constants.BURST_TICKER;
+					}
 					break;
 				default:
 					type = tr("txs_set_reward");
