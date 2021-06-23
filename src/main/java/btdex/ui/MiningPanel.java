@@ -27,6 +27,8 @@ import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.BorderFactory;
@@ -104,12 +106,13 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	};
 	
 	private static final String[] POOL_LIST = {
-			"http://pool.burstcoin.ro:8080",
+			"https://pool.signumcoin.ro",
 			"http://burst.voiplanparty.com:8124",
 			"http://openburstpool.ddns.net:8126",
-			"http://burstpool.de:8080",
-			"http://yabpool.com:8000",
-			"https://signapool.notallmine.net"
+			"http://signumpool.de:8080",
+			"https://signumpool.com",
+			"https://signapool.notallmine.net",
+			"http://signum.land",
 	};
 	
 	private static final String[] POOL_LIST_TESTNET = {
@@ -118,8 +121,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			"http://localhost:8000"
 	};
 	
-	private ArrayList<BurstAddress> poolAddresses = new ArrayList<>();
-	private ArrayList<String> poolMaxDeadlines = new ArrayList<>();
+	private LinkedHashMap<String, BurstAddress> poolAddresses = new LinkedHashMap<>();
+	private HashMap<String, String> poolMaxDeadlines = new HashMap<>();
 	
 	private ArrayList<JButton> pathCancelButtons = new ArrayList<>();
 	private ArrayList<JButton> openFolderButtons = new ArrayList<>();
@@ -310,16 +313,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		poolPanel.setBorder(BorderFactory.createTitledBorder(tr("mine_join_pool")));
 		poolPanel.add(new JLabel(tr("mine_select_pool")));
 		
-		String selectedPool = g.getProperty(PROP_MINER_POOL);
 		poolComboBox = new JComboBox<String>();
-		for (String poolURL : (g.isTestnet() ? POOL_LIST_TESTNET : POOL_LIST)) {
-			poolComboBox.addItem(poolURL);
-			poolAddresses.add(null);
-			poolMaxDeadlines.add("1000000000");
-			
-			if(poolURL.equals(selectedPool))
-				poolComboBox.setSelectedIndex(poolComboBox.getItemCount()-1);			
-		}
 		poolPanel.add(poolComboBox);
 		poolComboBox.addActionListener(this);
 		
@@ -409,6 +403,22 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		add(topPanel, BorderLayout.PAGE_START);
 		add(consolePanel, BorderLayout.CENTER);
 		
+		String []poolList = Globals.getInstance().isTestnet() ? POOL_LIST_TESTNET : POOL_LIST;
+		String selectedPool = Globals.getInstance().getProperty(PROP_MINER_POOL);
+		for(String poolURL : poolList) {
+			poolComboBox.addItem(poolURL);
+			if(poolURL.equals(selectedPool))
+				poolComboBox.setSelectedIndex(poolComboBox.getItemCount()-1);
+		}
+		
+		// Query pool API for their info
+		Thread thread = new Thread(){
+			public void run(){
+				updatePoolInfo(poolList);
+			}
+		};
+		thread.start();
+		
 		if(minerAutoStartCheck.isSelected()) {
 			new java.util.Timer().schedule( 
 			        new java.util.TimerTask() {
@@ -472,14 +482,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	
 	private static final OkHttpClient CLIENT = new OkHttpClient();
 	
-	private void updatePoolInfo() {
+	private void updatePoolInfo(String []urlList) {
 		
-		for (int i = 0; i < poolComboBox.getItemCount(); i++) {
-			BurstAddress poolAddress = poolAddresses.get(i);
-			if(poolAddress != null)
-				continue;
-		
-			String poolURL = poolComboBox.getItemAt(i);
+		for (int i = 0; i < urlList.length; i++) {
+			String poolURL = urlList[i];
 			String poolURLgetConfig = poolURL + "/api/getConfig";
 			try {
 				Request request = new Request.Builder().url(poolURLgetConfig).build();
@@ -487,12 +493,13 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				String jsonData = responses.body().string();
 				JsonObject json = JsonParser.parseString(jsonData).getAsJsonObject();
 
-				poolAddress = BurstAddress.fromEither(json.get("poolAccount").getAsString());
-				poolAddresses.set(i, poolAddress);
+				BurstAddress poolAddress = BurstAddress.fromEither(json.get("poolAccount").getAsString());
+				poolAddresses.put(poolURL, poolAddress);
+				poolMaxDeadlines.put(poolURL, "100000000");
 				
 				JsonElement jsonMaxDeadline = json.get("maxDeadline");
 				if(jsonMaxDeadline != null) {
-					poolMaxDeadlines.set(i, jsonMaxDeadline.getAsString());
+					poolMaxDeadlines.put(poolURL, jsonMaxDeadline.getAsString());
 				}
 			}
 			catch (Exception e) {
@@ -646,32 +653,32 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				rewards += "\n" + tr("mine_reward_estimation_nothing", NumberFormatting.BURST_2.format(burstPerTbPerDay.divide(8).longValue()));
 			}
 			
-			if(totalCapacity > 0) {
-				double capacityTib = (double)totalCapacity/ ONE_GIB /1024.0;
-				
-				String capacity = formatSpace(totalCapacity);
-				double commitmentFactor = 1;
-				if(avgCommitment != null && account.getCommitment() != null) {
-					capacity += "+" + NumberFormatting.BURST_2.format(account.getCommitment().longValue()) + " BURST/TiB";
-					
-					double ratio = account.getCommitment().doubleValue()/avgCommitment.doubleValue();
-			        commitmentFactor = Math.pow(ratio, 0.4515449935);
-			        commitmentFactor = Math.min(8.0, commitmentFactor);
-			        commitmentFactor = Math.max(0.125, commitmentFactor);
-				}
-				
-				rewards += "\n\n" + tr("mine_your_rewards", capacity, NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(capacityTib*commitmentFactor).longValue()));
-				if(avgCommitment == null || account.getCommitment() == null) {
-					rewards += "\n" + tr("mine_reward_poc_plus_activation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(capacityTib*8).longValue()));
-				}
-			}
+			// TODO: leaving this out for now
+//			if(totalCapacity > 0) {
+//				double capacityTib = (double)totalCapacity/ ONE_GIB /1024.0;
+//				
+//				String capacity = formatSpace(totalCapacity);
+//				double commitmentFactor = 1;
+//				if(avgCommitment != null && account.getCommitment() != null) {
+//					capacity += "+" + NumberFormatting.BURST_2.format(account.getCommitment().longValue()) + " BURST/TiB";
+//					
+//					double ratio = account.getCommitment().doubleValue()/avgCommitment.doubleValue();
+//			        commitmentFactor = Math.pow(ratio, 0.4515449935);
+//			        commitmentFactor = Math.min(8.0, commitmentFactor);
+//			        commitmentFactor = Math.max(0.125, commitmentFactor);
+//				}
+//				
+//				rewards += "\n\n" + tr("mine_your_rewards", capacity, NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(capacityTib*commitmentFactor).longValue()));
+//				if(avgCommitment == null || account.getCommitment() == null) {
+//					rewards += "\n" + tr("mine_reward_poc_plus_activation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(capacityTib*8).longValue()));
+//				}
+//			}
 			
 			rewardsEstimationArea.setText(rewards);
 		}
 		
-		if(!mining) {
-			updatePoolInfo();
-			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedIndex());
+		if(!mining && poolComboBox.getSelectedItem() != null) {
+			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedItem().toString());
 			startMiningButton.setEnabled(poolAddress != null && poolAddress.equals(BN.getRewardRecipient()) && totalCapacity > 0);
 		}
 		
@@ -897,7 +904,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			BurstNode BN = BurstNode.getInstance();
 			
 			String info = null;
-			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedIndex());
+			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedItem().toString());
 			Transaction[] txs = BN.getAccountTransactions();
 			
 			if(info == null && txs != null) {
@@ -1264,7 +1271,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			}
 			minerConfig.append("url: '" + poolComboBox.getSelectedItem().toString() + "'\n");
 			
-			minerConfig.append("target_deadline: " + poolMaxDeadlines.get(poolComboBox.getSelectedIndex()) + "\n");
+			minerConfig.append("target_deadline: " + poolMaxDeadlines.get(poolComboBox.getSelectedItem().toString()) + "\n");
 
 			minerConfig.append("cpu_threads: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
 			minerConfig.append("cpu_worker_task_count: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
