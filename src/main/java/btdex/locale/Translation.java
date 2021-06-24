@@ -9,6 +9,8 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.Properties;
 
+import javax.swing.JOptionPane;
+
 public class Translation {
 
 	private static final String RESOURCE_FILE = "/locale/i18n.btdex";
@@ -59,6 +61,7 @@ public class Translation {
 			logger.debug("Machine language: {}", language);
 		}
 		locale = Locale.forLanguageTag(language);
+		JOptionPane.setDefaultLocale(locale);
 		try {
 			InputStream stream = Translation.class.getResourceAsStream(RESOURCE_TR_FILE + "_" + language.replace('-', '_') + ".properties");
 			if(stream != null) {
