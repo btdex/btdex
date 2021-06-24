@@ -584,7 +584,8 @@ public class Main extends JFrame implements ActionListener {
 						@Override
 						public void actionPerformed(ActionEvent e) {
 							logger.debug("Language selected");
-							g.setLanguage(l.getLanguage());
+							String country = l.getCountry();
+							g.setLanguage(l.getLanguage() + (country.length() > 0 ? "-" + country : ""));
 							try {
 								g.saveConfs();
 							} catch (Exception e1) {
