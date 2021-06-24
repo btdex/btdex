@@ -410,7 +410,7 @@ public class Globals {
 	}
 
 	public String getExplorer() {
-		return conf.getProperty(Constants.PROP_EXPLORER, ExplorerWrapper.BURSTCOIN_NETWORK);
+		return conf.getProperty(Constants.PROP_EXPLORER, ExplorerWrapper.SIGNUM_NETWORK);
 	}
 
 	public void setExplorer(String value) {
