@@ -26,6 +26,8 @@ import java.nio.file.StandardCopyOption;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -906,13 +908,15 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			String info = null;
 			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedItem().toString());
 			Transaction[] txs = BN.getAccountTransactions();
+			Transaction[] utx = BN.getUnconfirmedTransactions();
+			ArrayList<Transaction> allTxs = new ArrayList<>();
+			Collections.addAll(allTxs, txs);
+			Collections.addAll(allTxs, utx);
 			
-			if(info == null && txs != null) {
-				for(Transaction tx : txs) {
-					if(tx.getType() == 20 && tx.getSubtype() == 0 && tx.getConfirmations() < 4) {
-						info = tr("mine_wait_join");
-						break;
-					}
+			for(Transaction tx : allTxs) {
+				if(tx.getSender().equals(g.getAddress()) && tx.getType() == 20 && tx.getSubtype() == 0 && tx.getConfirmations() < 4) {
+					info = tr("mine_wait_join");
+					break;
 				}
 			}
 			if(info == null && poolAddress == null) {
@@ -967,6 +971,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			}
 			
 		    sliderListDesc.get(i).setDesc(desc);
+		}
+		// Add the files to be resumed to the total
+		for(File fr : resumePlotFiles) {
+			totalToPlot += fr.length();
 		}
 		
 		if(!plotting)
@@ -1084,6 +1092,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			filesToPlot.addAll(newPlotFiles);
 			
 			for (File plot : filesToPlot) {
+				if(resumePlotFiles.contains(plot)) {
+					addToConsole(PLOT_APP, "Resuming plot file '" + plot.getName() + "'");
+				}
 				String[] sections = plot.getName().split("_");
 				
 				long noncesInThisPlot = Long.parseLong(sections[2]);
