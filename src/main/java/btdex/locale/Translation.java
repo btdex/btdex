@@ -23,13 +23,14 @@ public class Translation {
 	private static final Locale[] languages = {
 		Locale.ENGLISH,
 		Locale.GERMAN,
-		// Locale.forLanguageTag("es"),
+		Locale.forLanguageTag("es"),
 		Locale.forLanguageTag("pt"),
 		Locale.forLanguageTag("it"),
 		Locale.forLanguageTag("da"),
 		Locale.forLanguageTag("lt"),
 		Locale.forLanguageTag("ru"),
 		Locale.forLanguageTag("zh"),
+		Locale.forLanguageTag("zh-TW"),
 		Locale.forLanguageTag("ms"),
 	};
 
@@ -59,7 +60,7 @@ public class Translation {
 		}
 		locale = Locale.forLanguageTag(language);
 		try {
-			InputStream stream = Translation.class.getResourceAsStream(RESOURCE_TR_FILE + "_" + language + ".properties");
+			InputStream stream = Translation.class.getResourceAsStream(RESOURCE_TR_FILE + "_" + language.replace('-', '_') + ".properties");
 			if(stream != null) {
 				resource = new Properties();
 				resource.load(stream);

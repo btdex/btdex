@@ -159,8 +159,6 @@ public class Main extends JFrame implements ActionListener {
 		readLocalResources();
 		setUIManager();
 
-		addSystemTray();
-		
 		IconFontSwing.register(FontAwesome.getIconFont());
 		IconFontSwing.register(FontAwesomeBrands.getIconFont());
 		setBackground(Color.BLACK);
@@ -169,6 +167,8 @@ public class Main extends JFrame implements ActionListener {
 
 		Translation.setLanguage(g.getLanguage());
 
+		addSystemTray();
+		
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setOpaque(true);
 		tabbedPane.addChangeListener(new ChangeListener() {
@@ -577,7 +577,9 @@ public class Main extends JFrame implements ActionListener {
 				logger.debug("Lang Button clicked");
 				JPopupMenu menu = new JPopupMenu();
 				for(Locale l : Translation.getSupportedLanguages()) {
-					JMenuItem item = new JMenuItem(l.getDisplayLanguage(Translation.getCurrentLocale()));
+					String country = l.getDisplayCountry(Translation.getCurrentLocale());
+					JMenuItem item = new JMenuItem(l.getDisplayLanguage(Translation.getCurrentLocale())
+							+ (country.length() > 0 ? "-" + country : ""));
 					item.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
