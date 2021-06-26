@@ -40,6 +40,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.UIManager;
@@ -52,7 +53,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.bulenkov.darcula.DarculaLaf;
 
-import bt.BT;
 import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.ContractState;
@@ -663,6 +663,19 @@ public class Main extends JFrame implements ActionListener {
 			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 			nodeSelector.setBackground(explorerSelector.getBackground());
 
+			String nodeAddress = g.getNS().getAddress();
+			if(!nodeSelector.getText().equals(nodeAddress)) {
+				// if the best node changed
+				nodeSelector.setText(nodeAddress);
+				g.setNode(true, nodeAddress);
+				try {
+					g.saveConfs();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					Toast.makeText(this, ex.getMessage(), Toast.Style.ERROR).display();
+				}
+			}
+
 			Exception nodeException = bn.getNodeException();
 			if(nodeException != null) {
 				logger.warn("nodeException {}", nodeException.getLocalizedMessage());
@@ -806,18 +819,27 @@ public class Main extends JFrame implements ActionListener {
 		else if (e.getSource() == nodeSelector) {
 
 			Globals g = Globals.getInstance();
+			String customNode = "";
+			if(!g.isNodeAutomatic())
+				customNode = g.getNode();
 
-			String[] list = Constants.NODE_LIST;
-			if(g.isTestnet()){
-				list = new String[]{Constants.NODE_TESTNET, BT.NODE_LOCAL_TESTNET };
-			}
-
-			JComboBox<String> nodeComboBox = new JComboBox<String>(list);
-			nodeComboBox.setEditable(true);
-			int ret = JOptionPane.showConfirmDialog(this, nodeComboBox, tr("main_select_node"), JOptionPane.OK_CANCEL_OPTION);
+			JTextField customNodeField = new JTextField(20);
+			customNodeField.setText(customNode);
+			JPanel customNodePanel = new JPanel(new BorderLayout());
+			customNodePanel.add(new JLabel(tr("main_select_node_text")), BorderLayout.PAGE_START);
+			customNodePanel.add(customNodeField, BorderLayout.PAGE_END);
+			int ret = JOptionPane.showConfirmDialog(this, customNodePanel, tr("main_select_node"), JOptionPane.OK_CANCEL_OPTION);
 
 			if(ret == JOptionPane.OK_OPTION) {
-				g.setNode(nodeComboBox.getSelectedItem().toString());
+				customNode = customNodeField.getText().trim();
+				if(customNode.length() > 0) {
+					g.setNode(false, customNode);
+				}
+				else {
+					if(g.isNodeAutomatic())
+						return;
+					g.setNode(true, g.getNS().getAddress());
+				}
 				try {
 					g.saveConfs();
 				} catch (Exception ex) {
@@ -825,9 +847,9 @@ public class Main extends JFrame implements ActionListener {
 					Toast.makeText(this, ex.getMessage(), Toast.Style.ERROR).display();
 				}
 
-				nodeSelector.setText(g.getNode());
-				statusLabel.setText("");
-				update();
+				JOptionPane.showMessageDialog(Main.this,
+						tr("main_restart_to_apply_changes"), tr("main_select_node"),
+						JOptionPane.OK_OPTION);
 			}
 		}
 

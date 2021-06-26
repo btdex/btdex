@@ -9,26 +9,28 @@ import burst.kit.entity.BurstID;
 import okhttp3.MediaType;
 
 public class Constants {
-    public static final String NODE_LOCALHOST = "http://localhost:8125";
-    public static final String NODE_TESTNET = "https://testnetwallet.burstcoin.ro";
     
-    public static final String NODE_DEFAULT = "https://europe.signum.network";
+    public static final String NODE_LIST_TESTNET[] = {
+    		"https://testnetwallet.burstcoin.ro",
+    		"http://localhost:6876",
+    };
     
     public static final String NODE_LIST[] = {
-    		NODE_DEFAULT,
-    		"https://europe1.signum.network",
     		"https://europe2.signum.network",
+    		"https://europe.signum.network",
+    		"https://europe1.signum.network",
     		"https://europe3.signum.network",
     		"https://brazil.signum.network",
     		"https://uk.signum.network:8125",
     		BT.NODE_BURSTCOIN_RO,
     		"https://canada.signum.network",
     		"https://australia.signum.network",
-    		Constants.NODE_LOCALHOST
+    		"http://localhost:8125",
     };
 
     public static final String PROP_LANG = "lang";
     public static final String PROP_NODE = "node";
+    public static final String PROP_NODE_AUTO = "nodeAutomatic";
     public static final String PROP_LOGGER = "logger";
     public static final String PROP_TESTNET = "testnet";
     public static final String PROP_LEDGER_ENABLED = "ledgerEnabled";

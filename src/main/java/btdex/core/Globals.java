@@ -5,7 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
@@ -18,6 +20,8 @@ import btdex.ui.ExplorerWrapper;
 import burst.kit.crypto.BurstCrypto;
 import burst.kit.entity.BurstAddress;
 import burst.kit.service.BurstNodeService;
+import burst.kit.service.impl.HttpBurstNodeService;
+import burst.kit.service.impl.UseBestNodeService;
 import burst.kit.util.BurstKitUtils;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -84,13 +88,18 @@ public class Globals {
 			logger.info("Using properties file {}", confFile);
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
 			
-			String nodeAddress = conf.getProperty(Constants.PROP_NODE, isTestnet() ? Constants.NODE_TESTNET : Constants.NODE_DEFAULT);
-			if(nodeAddress.contains("europe")) {
-				// Rotate the Europe nodes until the automatic node selection is in place.
-				Random rand = new Random();
-				nodeAddress = Constants.NODE_LIST[rand.nextInt(4)];
+			String nodeAutomatic = conf.getProperty(Constants.PROP_NODE_AUTO, "true");
+			String nodeAddress = conf.getProperty(Constants.PROP_NODE, "");
+			ArrayList<String> nodeList = new ArrayList<>();
+			if(nodeAddress.length() > 0) {
+				// the stored node always goes to the list as first
+				nodeList.add(nodeAddress);
 			}
-			setNode(nodeAddress);
+			if("true".equals(nodeAutomatic)) {
+				nodeList.addAll(Arrays.asList(isTestnet() ? Constants.NODE_LIST_TESTNET : Constants.NODE_LIST));
+			}
+			
+			setNodeList(nodeList);
 			BT.activateCIP20(true);
 			
 			BurstKitUtils.setAddressPrefix(isTestnet() ? "TS" : "S");
@@ -395,10 +404,21 @@ public class Globals {
 		return conf.getProperty(Constants.PROP_LANG);
 	}
 
-	public void setNode(String node) {
-		conf.setProperty(Constants.PROP_NODE, node);
-
-		NS = BurstNodeService.getInstance(node, "btdex-" + version);
+	public void setNodeList(List<String> nodeList) {
+		List<BurstNodeService> nsList = new ArrayList<BurstNodeService>();
+		for (String nodeAddress : nodeList) {
+			nsList.add(new HttpBurstNodeService(nodeAddress, "btdex-" + version));
+		}
+		NS = new UseBestNodeService(true, nsList);
+	}
+	
+	public void setNode(boolean automatic, String node) {
+		conf.setProperty(Constants.PROP_NODE, node);		
+		conf.setProperty(Constants.PROP_NODE_AUTO, Boolean.toString(automatic));
+	}
+	
+	public boolean isNodeAutomatic() {
+		return "true".equals(conf.getProperty(Constants.PROP_NODE_AUTO, "true"));
 	}
 	
 	public void setProperty(String key, String value) {
