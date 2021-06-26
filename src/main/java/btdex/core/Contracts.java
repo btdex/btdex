@@ -6,7 +6,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,7 +29,7 @@ public class Contracts {
 
     private static String contractTakeHash[], contractBuyTakeHash[];
 
-	private static HashMap<BurstAddress, ContractState> contractsMap = new HashMap<>();
+	private static ConcurrentHashMap<BurstAddress, ContractState> contractsMap = new ConcurrentHashMap<>();
 	private static boolean loading = true;
 	private static BurstID mostRecentID;
 	private static BurstID lastBlock;

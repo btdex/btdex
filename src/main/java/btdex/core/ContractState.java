@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bouncycastle.util.encoders.Hex;
 
@@ -145,7 +146,7 @@ public class ContractState {
 	 *
 	 * @return the most recent ID visited
 	 */
-	public static BurstID addContracts(HashMap<BurstAddress, ContractState> map, BurstID mostRecent) {
+	public static BurstID addContracts(ConcurrentHashMap<BurstAddress, ContractState> map, BurstID mostRecent) {
 		Globals g = Globals.getInstance();
 		BT.setNodeInstance(g.getNS());
 
