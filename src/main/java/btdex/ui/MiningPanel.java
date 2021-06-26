@@ -26,7 +26,6 @@ import java.nio.file.StandardCopyOption;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -245,8 +244,6 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		ssdPanel.add(ssdCancelButton, BorderLayout.LINE_START);
 		plottingBottomPanel.add(ssdPanel);
 		
-		checkResumeFiles();
-		
 		// CPU cores
 		int coresAvailable = Runtime.getRuntime().availableProcessors();
 		int selectedCores = Math.max(1, coresAvailable-2);
@@ -412,6 +409,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			if(poolURL.equals(selectedPool))
 				poolComboBox.setSelectedIndex(poolComboBox.getItemCount()-1);
 		}
+		
+		checkResumeFiles();
+		stateChanged(null);
 		
 		// Query pool API for their info
 		Thread thread = new Thread(){
@@ -724,7 +724,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 					int progress = getPlotProgress(plot);
 					if(progress >= 0) {
 						resumePlotFiles.add(plot);
-						addToConsole(PLOT_APP, "Plotting of '" + plot.getAbsolutePath() + "' will be resumed when you start plotting again");
+						addToConsole(PLOT_APP, "Plot '" + plot.getName() + "' is incomplete, start plotting again to resume it");
 					}
 				}
 			}
@@ -1047,18 +1047,18 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			startNonce += noncesToAdd + 1;
 		}
 		
-		if(newPlotFiles.size() == 0) {
+		if(newPlotFiles.size() == 0 && resumePlotFiles.size()==0) {
 			plotting = false;
 			return;
 		}
 		
 		
-		String engraverName = "engraver_cpu";
+		String plotterName = "signum-plotter";
 		if(OS.isWindows())
-			engraverName += ".exe";
-		plotterFile = new File(TMP_DIR, engraverName);
+			plotterName += ".exe";
+		plotterFile = new File(TMP_DIR, plotterName);
 		if (!plotterFile.exists() || plotterFile.length() == 0) {
-		     InputStream link = (getClass().getResourceAsStream("/engraver/" + engraverName));
+		     InputStream link = (getClass().getResourceAsStream("/plotter/" + plotterName));
 		     try {
 				Files.copy(link, plotterFile.getAbsoluteFile().toPath());
 				if(!OS.isWindows())
@@ -1105,13 +1105,13 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				
 				File fileBeingPlot = plot;
 				
-				if(ssdPath != null) {
+				if(ssdPath != null && !resumePlotFiles.contains(plot)) {
 					noncesBeingPlot = Math.min(noncesCache, noncesInThisPlot);
 				}
 				
 				while(noncesAlreadyPlotted < noncesInThisPlot) {
 					noncesBeingPlot = Math.min(noncesInThisPlot - noncesAlreadyPlotted, noncesBeingPlot);
-					if(ssdPath != null) {
+					if(ssdPath != null && !resumePlotFiles.contains(plot)) {
 						fileBeingPlot = new File(ssdPath, sections[0] + "_" + nonceStart + "_" + noncesBeingPlot);
 						
 						long freeCacheSpaceNow = ssdPath.getUsableSpace()/BYTES_OF_A_NONCE;
