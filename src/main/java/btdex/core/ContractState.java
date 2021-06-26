@@ -210,7 +210,7 @@ public class ContractState {
 
 		if(at == null) {
 			// now we get only the volatile information
-			at = g.getNS().getAt(address, false).blockingGet();
+			at = g.getNS().getAt(address /* TODO: enable this when nodes have support for it, false */).blockingGet();
 		}
 
 		this.at = at;

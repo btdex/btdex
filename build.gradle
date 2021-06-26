@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.signum-network:signumj:05cf33a9e4'
+    implementation 'com.github.signum-network:signumj:5c50f14607'
 
     // implementation 'com.github.jjos2372:blocktalk:183bf6861e'
     implementation 'com.github.burst-apps-team:blocktalk:121e144cfe'    
