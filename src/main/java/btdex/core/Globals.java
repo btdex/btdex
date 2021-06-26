@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
-import java.util.Random;
 
 import com.google.gson.JsonObject;
 
@@ -369,6 +368,8 @@ public class Globals {
 	}
 
 	public void addUserMarket(Market m, boolean save) {
+		if(m.getTicker() == null)
+			return;
 		Markets.addUserMarket(m);
 		if(save)
 			saveUserMarkets();
