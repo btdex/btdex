@@ -3,7 +3,6 @@ package btdex.core;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bouncycastle.util.encoders.Hex;
