@@ -68,9 +68,9 @@ import burst.kit.entity.BurstAddress;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.Block;
 import burst.kit.entity.response.http.BRSError;
+import dorkbox.os.OS;
 import dorkbox.systemTray.MenuItem;
 import dorkbox.systemTray.SystemTray;
-import dorkbox.util.OS;
 import io.github.novacrypto.bip39.MnemonicGenerator;
 import io.github.novacrypto.bip39.Words;
 import io.github.novacrypto.bip39.wordlists.English;
@@ -416,6 +416,7 @@ public class Main extends JFrame implements ActionListener {
 	
 	@SuppressWarnings("serial")
 	private void addSystemTray() {
+		logger.debug("adding to system tray");
 		Action showHideAction = new AbstractAction(tr("tray_show_hide")) {
 			@Override
 			public void actionPerformed(ActionEvent e) {
