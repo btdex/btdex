@@ -70,7 +70,7 @@ import burst.kit.entity.response.Account;
 import burst.kit.entity.response.Block;
 import burst.kit.entity.response.MiningInfo;
 import burst.kit.entity.response.Transaction;
-import dorkbox.os.OS;
+import dorkbox.util.OS;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
