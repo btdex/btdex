@@ -1084,6 +1084,15 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			// Cache will use 45% of the free space, so we can have 2 (one moving and one plotting) and do not get a disk full
 			long noncesCache = 0;
 			if(ssdPath != null) {
+				// clear possibly forgotten or killed plots on the cache folder
+				File[] lostCacheFiles = ssdPath.listFiles(PLOT_FILE_FILTER);
+				if(lostCacheFiles != null) {
+					for(File plot : lostCacheFiles) {
+						addToConsole(PLOT_APP, "Deleting plot on cache '" + plot.getName() + "'");
+						plot.delete();
+					}
+				}
+				
 				noncesCache = ssdPath.getUsableSpace() * 45 / (100 * BYTES_OF_A_NONCE);
 			}
 			
