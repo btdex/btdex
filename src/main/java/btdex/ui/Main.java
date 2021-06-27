@@ -64,6 +64,7 @@ import btdex.locale.Translation;
 import btdex.sc.SellContract;
 import btdex.ui.orderbook.MarketPanel;
 import btdex.ui.orderbook.TokenMarketPanel;
+import burst.kit.entity.BurstAddress;
 import burst.kit.entity.response.Account;
 import burst.kit.entity.response.Block;
 import burst.kit.entity.response.http.BRSError;
@@ -309,7 +310,7 @@ public class Main extends JFrame implements ActionListener {
 
 			resetPinButton.setVisible(!g.usingLedger());
 		}
-		copyAddButton.getMainButton().setText(g.getAddress().getFullAddress());
+		copyAddButton.getMainButton().setText(printAddress(g.getAddress()));
 		copyAddButton.setAddress(g.getAddress().getID(), g.getAddress().getFullAddress());
 
 		// check if this is a known account
@@ -603,6 +604,13 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 		return langButton;
+	}
+	
+	public static String printAddress(BurstAddress address) {
+		String fullAddress = address.getFullAddress();
+		return fullAddress;
+		//return fullAddress.substring(0, 4) + "..." + fullAddress.substring(19);
+		//return fullAddress.substring(0, 6) + "..." + fullAddress.substring(17);
 	}
 	
 	private void doQuit() {

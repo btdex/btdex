@@ -322,10 +322,10 @@ public class HistoryPanel extends JPanel {
 			long price = tr.getPrice().longValue();
 			
 			model.setValueAt(new ExplorerButton(
-					tr.getBuyerAddress().equals(g.getAddress()) ? tr("hist_you") : tr.getBuyerAddress().getFullAddress(), copyIcon, expIcon,
+					tr.getBuyerAddress().equals(g.getAddress()) ? tr("hist_you") : Main.printAddress(tr.getBuyerAddress()), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, tr.getBuyerAddress().getID(), tr.getBuyerAddress().getFullAddress()), row, COL_BUYER);
 			model.setValueAt(new ExplorerButton(
-					tr.getSellerAddress().equals(g.getAddress()) ? tr("hist_you") : tr.getSellerAddress().getFullAddress(), copyIcon, expIcon,
+					tr.getSellerAddress().equals(g.getAddress()) ? tr("hist_you") : Main.printAddress(tr.getSellerAddress()), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, tr.getSellerAddress().getID(), tr.getSellerAddress().getFullAddress()), row, COL_SELLER);
 			
 			// TODO: check if ask or bid was more recent to add one here (missing burstkit4j function for this)
@@ -457,14 +457,14 @@ public class HistoryPanel extends JPanel {
 			BurstAddress seller = tr.getContract().getType() == ContractType.BUY ? tr.getTaker() : tr.getCreator();
 
 			model.setValueAt(new ExplorerButton(
-					buyer.equals(g.getAddress()) ? tr("hist_you") : buyer.getFullAddress(), copyIcon, expIcon,
+					buyer.equals(g.getAddress()) ? tr("hist_you") : Main.printAddress(buyer), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, buyer.getID(), buyer.getFullAddress()), row, COL_BUYER);
 			model.setValueAt(new ExplorerButton(
-					seller.equals(g.getAddress()) ? tr("hist_you") : seller.getFullAddress(), copyIcon, expIcon,
+					seller.equals(g.getAddress()) ? tr("hist_you") : Main.printAddress(seller), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, seller.getID(), seller.getFullAddress()), row, COL_SELLER);
 
 			model.setValueAt(new ExplorerButton(
-					tr.getContract().getAddress().getFullAddress(), copyIcon, expIcon,
+					Main.printAddress(tr.getContract().getAddress()), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, tr.getContract().getAddress().getID(),
 							tr.getContract().getAddress().getFullAddress()), row, COL_CONTRACT);
 
