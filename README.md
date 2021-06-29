@@ -1,10 +1,10 @@
-# BTDEX - BlockTalk Decentralized Exchange reference client
+# BTDEX - decentralized exchange, wallet, plotting, and mining tool
 
 ![](https://github.com//btdex/btdex/workflows/BTDEX%20Build/badge.svg)
 [![GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 
-BTDEX is a decentralized exchange system running on the [Burst](https://www.burst-coin.org/) blockchain.
-It implements a unique non-custodial exchange method for cryptocurrencies and conventional fiat currencies based on [BlockTalk](https://github.com/jjos2372/blocktalk) Smart Contracts and Burstcoin on-chain encrypted messages.
+BTDEX is a decentralized exchange system running on the [Signum](https://signum.network/) blockchain.
+It implements a unique non-custodial exchange method for cryptocurrencies and conventional fiat currencies based on [BlockTalk](https://github.com/jjos2372/blocktalk) Smart Contracts and Signum on-chain encrypted messages.
 The exchange method is serverless and fees are distributed among [Trade Token (TRT)](https://explore.burstcoin.ro/asset/12402415494995249540) holders.
 
 You will also find more details at [https://btdex.trade](https://btdex.trade).
@@ -21,7 +21,7 @@ Currently the following pairs are available with BURST:
  - XLA
 
  
-Additionally, any Burst-based token can be listed instantly and traded.
+Additionally, any Signum-based token can be listed instantly and traded.
 
 ## Download
 
@@ -37,9 +37,6 @@ Double click on `btdex-version.exe` to start the application.
 #### Ubuntu and other Debian-based distributions
 Just download the `btdex_version_all.deb` [latest release](https://github.com/btdex/btdex/releases) and install it.
 The application `BTDEX` will be available on the system (config file will go to `.config/btdex/` inside your home folder).
-
-#### Archlinux
-A package is available at [AUR](https://aur.archlinux.org/packages/btdex/).
 
 ### Running on MacOS
 Make sure you have an up-to-date Java JRE on your machine.
@@ -63,18 +60,14 @@ Clone this repository code and run the gradle build (requires Java 8 to build):
 ```
 $ git clone https://github.com/btdex/btdex.git
 $ cd btdex
-$ ./gradlew shadowJar
+$ ./gradlew release
 ```
 
-This will result on the following file:
+The many resulting files will be found inside the `build` folder, like:
 
 `build/libs/btdex-all.jar`
 
-To build the windows executable run:
-
-`$ ./gradlew createExe`
-
-This will result on the following file:
+The Windows executable will be found at:
 
 `build/launch4j/btdex.exe`
 
@@ -127,4 +120,4 @@ The same logging level is used to print log messages to the console and as well 
 ## Author
 jjos
 
-Donation address: BURST-JJQS-MMA4-GHB4-4ZNZU
+Donation address: S-JJQS-MMA4-GHB4-4ZNZU
