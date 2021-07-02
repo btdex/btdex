@@ -45,7 +45,8 @@ dependencies {
     //implementation 'net.java.dev.jna:jna:5.7.0'
 
 	//implementation 'com.github.weisj:darklaf-core:2.5.5'
-    implementation 'com.bulenkov:darcula:2018.2'
+    //implementation 'com.bulenkov:darcula:2018.2'
+    implementation 'com.github.jjos2372:Darcula:3b47831130' // this one is compatible with Java16
     //implementation 'com.formdev:flatlaf-intellij-themes:1.0'
     
     implementation 'com.dorkbox:SystemTray:3.17'
