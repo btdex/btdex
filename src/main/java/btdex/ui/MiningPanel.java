@@ -78,7 +78,7 @@ import okhttp3.Response;
 public class MiningPanel extends JPanel implements ActionListener, ChangeListener {
 	private static final long serialVersionUID = 1L;
 	
-	private static final int N_PATHS_MIN = 4;
+	private static final int N_PATHS_MIN = 3;
 	private static final long ONE_GIB = 1073741824L;
 	private static final long BYTES_OF_A_NONCE = 262144L;
 	
@@ -286,7 +286,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
         }
         */
 				
-		JPanel plotButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		JPanel plotButtonsPanelLine1 = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		JPanel plotButtonsPanelLine2 = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
 		iconPlot = icons.get(Icons.PLOTTING);
 		startPlotButton = new JButton(tr("mine_plot"), iconPlot);
@@ -297,12 +298,14 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		stopPlotButton.addActionListener(this);
 		stopPlotButton.setEnabled(false);
 		
-		plotButtonsPanel.add(new JLabel(tr("mine_cpus")));
-		plotButtonsPanel.add(cpusToPlotComboBox);
-		plotButtonsPanel.add(lowPriorityCheck = new JCheckBox(tr("mine_run_low_prio")));
-		plotButtonsPanel.add(stopPlotButton);
-		plotButtonsPanel.add(startPlotButton);
-		plottingBottomPanel.add(plotButtonsPanel);
+		plotButtonsPanelLine2.add(new JLabel(tr("mine_cpus")));
+		plotButtonsPanelLine2.add(cpusToPlotComboBox);
+		plotButtonsPanelLine2.add(lowPriorityCheck = new JCheckBox(tr("mine_run_low_prio")));
+		plotButtonsPanelLine1.add(stopPlotButton);
+		plotButtonsPanelLine1.add(startPlotButton);
+		
+		plottingBottomPanel.add(plotButtonsPanelLine1);
+		plottingBottomPanel.add(plotButtonsPanelLine2);
 		
 		lowPriorityCheck.setSelected(Boolean.parseBoolean(g.getProperty(PROP_PLOT_LOW_PRIO)));
 		lowPriorityCheck.addActionListener(this);
