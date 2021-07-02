@@ -3,7 +3,7 @@ package brs;
 import java.util.ArrayList;
 
 import bt.BT;
-import burst.kit.entity.response.Block;
+import signumj.entity.response.Block;
 
 /**
  * Check the deadlines of a series of blocks and computes alternative deadlines.

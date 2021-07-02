@@ -1,9 +1,9 @@
 package btdex.core;
 
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstID;
-import burst.kit.entity.BurstTimestamp;
-import burst.kit.entity.response.Transaction;
+import signumj.entity.SignumAddress;
+import signumj.entity.SignumID;
+import signumj.entity.SignumTimestamp;
+import signumj.entity.response.Transaction;
 
 public class ContractTrade {
 	private ContractState contract;
@@ -28,16 +28,16 @@ public class ContractTrade {
 	public ContractState getContract() {
 		return contract;
 	}
-	public BurstTimestamp getTimestamp() {
+	public SignumTimestamp getTimestamp() {
 		return tx.getTimestamp();
 	}
-	public BurstAddress getCreator() {
+	public SignumAddress getCreator() {
 		return contract.getCreator();
 	}
-	public BurstAddress getTaker() {
+	public SignumAddress getTaker() {
 		return tx.getSender();
 	}
-	public BurstID getTakeID() {
+	public SignumID getTakeID() {
 		return tx.getId();
 	}
 	public long getRate() {

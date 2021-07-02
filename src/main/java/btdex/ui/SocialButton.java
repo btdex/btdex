@@ -13,7 +13,7 @@ import javax.swing.JButton;
 
 import btdex.core.*;
 import btdex.locale.Translation;
-import burst.kit.entity.response.AssetOrder;
+import signumj.entity.response.AssetOrder;
 import jiconfont.IconCode;
 import jiconfont.swing.IconFontSwing;
 

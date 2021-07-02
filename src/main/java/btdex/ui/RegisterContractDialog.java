@@ -32,9 +32,9 @@ import btdex.core.*;
 
 import static btdex.locale.Translation.tr;
 import btdex.sc.SellContract;
-import burst.kit.crypto.BurstCrypto;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.TransactionBroadcast;
+import signumj.crypto.SignumCrypto;
+import signumj.entity.SignumValue;
+import signumj.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
 public class RegisterContractDialog extends JDialog implements ActionListener, ChangeListener {
@@ -155,9 +155,9 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 						dataBuffer.putLong(data[i]);
 					}
 
-					byte[] creationBytes = BurstCrypto.getInstance().getATCreationBytes((short)2,
+					byte[] creationBytes = SignumCrypto.getInstance().getATCreationBytes((short)2,
 							contract.getCode(), dataBuffer.array(), (short)contract.getDataPages(), (short)1, (short)1,
-							BurstValue.fromPlanck(SellContract.ACTIVATION_FEE));
+							SignumValue.fromNQT(SellContract.ACTIVATION_FEE));
 
 					Single<TransactionBroadcast> tx = g.getNS().generateCreateATTransaction(g.getPubKey(),
 							BT.getMinRegisteringFee(contract),

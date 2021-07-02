@@ -64,12 +64,12 @@ import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.Globals;
 import btdex.core.NumberFormatting;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.Account;
-import burst.kit.entity.response.Block;
-import burst.kit.entity.response.MiningInfo;
-import burst.kit.entity.response.Transaction;
+import signumj.entity.SignumAddress;
+import signumj.entity.SignumValue;
+import signumj.entity.response.Account;
+import signumj.entity.response.Block;
+import signumj.entity.response.MiningInfo;
+import signumj.entity.response.Transaction;
 import dorkbox.util.OS;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -122,7 +122,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			"http://localhost:8000"
 	};
 	
-	private LinkedHashMap<String, BurstAddress> poolAddresses = new LinkedHashMap<>();
+	private LinkedHashMap<String, SignumAddress> poolAddresses = new LinkedHashMap<>();
 	private HashMap<String, String> poolMaxDeadlines = new HashMap<>();
 	
 	private ArrayList<JButton> pathCancelButtons = new ArrayList<>();
@@ -495,7 +495,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				String jsonData = responses.body().string();
 				JsonObject json = JsonParser.parseString(jsonData).getAsJsonObject();
 
-				BurstAddress poolAddress = BurstAddress.fromEither(json.get("poolAccount").getAsString());
+				SignumAddress poolAddress = SignumAddress.fromEither(json.get("poolAccount").getAsString());
 				poolAddresses.put(poolURL, poolAddress);
 				poolMaxDeadlines.put(poolURL, "100000000");
 				
@@ -635,15 +635,15 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		Block latestBlock = BN.getLatestBlock();
 		if(miningInfo != null && latestBlock != null) {
 			double networkTbs = 18325193796.0/(miningInfo.getBaseTarget()*1.83);
-			BurstValue burstPerTbPerDay = BurstValue.fromBurst(360.0/networkTbs * latestBlock.getBlockReward().doubleValue());
+			SignumValue burstPerTbPerDay = SignumValue.fromSigna(360.0/networkTbs * latestBlock.getBlockReward().doubleValue());
 
 			String rewards = tr("mine_reward_estimation_old", NumberFormatting.BURST_2.format(burstPerTbPerDay.longValue()),
 					formatSpace(networkTbs*1024L*ONE_GIB));
 			rewards += "\n" + tr("mine_reward_poc_plus_activation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(8).longValue()));
-			BurstValue avgCommitment = null;
+			SignumValue avgCommitment = null;
 			int pocPlusBlock = Globals.getInstance().isTestnet() ? 269_700 : 878_000;
 			if(miningInfo.getAverageCommitmentNQT() > 0 && miningInfo.getHeight() > pocPlusBlock) {
-				avgCommitment = BurstValue.fromPlanck(miningInfo.getAverageCommitmentNQT());
+				avgCommitment = SignumValue.fromNQT(miningInfo.getAverageCommitmentNQT());
 //				rewards = tr("mine_reward_estimation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(8).longValue()),
 //						NumberFormatting.BURST_2.format(avgCommitment.multiply(100*8).longValue()));
 				rewards = tr("mine_reward_estimation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(4.18).longValue()),
@@ -680,7 +680,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		
 		if(!mining && poolComboBox.getSelectedItem() != null) {
-			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedItem().toString());
+			SignumAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedItem().toString());
 			startMiningButton.setEnabled(poolAddress != null && poolAddress.equals(BN.getRewardRecipient()) && totalCapacity > 0);
 		}
 		
@@ -906,7 +906,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			BurstNode BN = BurstNode.getInstance();
 			
 			String info = null;
-			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedItem().toString());
+			SignumAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedItem().toString());
 			Transaction[] txs = BN.getAccountTransactions();
 			Transaction[] utx = BN.getUnconfirmedTransactions();
 			ArrayList<Transaction> allTxs = new ArrayList<>();

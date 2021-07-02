@@ -37,8 +37,8 @@ import btdex.core.Globals;
 import btdex.core.NumberFormatting;
 import btdex.markets.MarketBurstToken;
 import btdex.ui.orderbook.TokenMarketPanel;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.TransactionBroadcast;
+import signumj.entity.SignumValue;
+import signumj.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
 public class CreateTokenDialog extends JDialog implements ActionListener, ChangeListener, DocumentListener {
@@ -190,7 +190,7 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				
 				Single<TransactionBroadcast> tx = g.getNS().generateIssueAssetTransaction(g.getPubKey(), ticker,
-						descriptionField.getText(), BurstValue.fromPlanck(totalSupplyLong), ndecimals, BurstValue.fromBurst(1000), 1000)
+						descriptionField.getText(), SignumValue.fromNQT(totalSupplyLong), ndecimals, SignumValue.fromSigna(1000), 1000)
 						.flatMap(unsignedTransactionBytes -> {
 							byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
 							return g.getNS().broadcastTransaction(signedTransactionBytes);

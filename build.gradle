@@ -24,10 +24,10 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.signum-network:signumj:v0.20.0'
+    implementation 'com.github.signum-network:signumj:v1.0.0'
 
-    // implementation 'com.github.jjos2372:blocktalk:183bf6861e'
-    implementation 'com.github.burst-apps-team:blocktalk:121e144cfe'    
+    // implementation 'com.github.burst-apps-team:blocktalk:121e144cfe'   
+    implementation 'com.github.signum-network:signum-smartj:1eb7a1587c' 
 
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.15'
@@ -44,8 +44,9 @@ dependencies {
     //implementation 'net.java.dev.jna:jna-platform:5.7.0'
     //implementation 'net.java.dev.jna:jna:5.7.0'
 
-	//implementation 'com.github.weisj:darklaf-core:[1.4.3.1,)'
+	//implementation 'com.github.weisj:darklaf-core:2.5.5'
     implementation 'com.bulenkov:darcula:2018.2'
+    //implementation 'com.formdev:flatlaf-intellij-themes:1.0'
     
     implementation 'com.dorkbox:SystemTray:3.17'
 

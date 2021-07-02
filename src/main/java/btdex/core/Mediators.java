@@ -1,8 +1,8 @@
 package btdex.core;
 
-import burst.kit.crypto.BurstCrypto;
-import burst.kit.entity.BurstID;
-import burst.kit.entity.BurstValue;
+import signumj.crypto.SignumCrypto;
+import signumj.entity.SignumID;
+import signumj.entity.SignumValue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,24 +10,24 @@ import org.apache.logging.log4j.Logger;
 import java.util.Random;
 
 public class Mediators {
-    private BurstID[] mediators;
-    private BurstValue[] mediatorBalances;
+    private SignumID[] mediators;
+    private SignumValue[] mediatorBalances;
 
     private static Logger logger = LogManager.getLogger();
 
-    private static final BurstValue MIN_TRT = BurstValue.fromPlanck(10_000L * 1_000_000L);
+    private static final SignumValue MIN_TRT = SignumValue.fromNQT(10_000L * 1_000_000L);
 
     public Mediators(Boolean testnet) {
         String[] mediators = (testnet) ? Constants.MEDIATORS_TESTNET : Constants.MEDIATORS;
 
-        this.mediators = convertStringToBurstID(mediators);
-        mediatorBalances = new BurstValue[mediators.length];
+        this.mediators = convertStringToSignumID(mediators);
+        mediatorBalances = new SignumValue[mediators.length];
     }
 
-    private BurstID[] convertStringToBurstID (String[] md) {
-        BurstCrypto BC = BurstCrypto.getInstance();
+    private SignumID[] convertStringToSignumID (String[] md) {
+        SignumCrypto BC = SignumCrypto.getInstance();
         int mediatorsCount = md.length;
-        BurstID[] converted = new BurstID[mediatorsCount];
+        SignumID[] converted = new SignumID[mediatorsCount];
         for (int i = 0; i < mediatorsCount; i++) {
             converted[i] = BC.rsDecode(md[i]);
         }
@@ -35,14 +35,14 @@ public class Mediators {
         return converted;
     }
 
-    public BurstID[] getMediators() {
+    public SignumID[] getMediators() {
         return mediators;
     }
 
-    public BurstID[] getTwoRandomMediators() {
+    public SignumID[] getTwoRandomMediators() {
     	Globals g = Globals.getInstance();
         Random rand = new Random();
-        BurstID[] randomMediators = new BurstID[2];
+        SignumID[] randomMediators = new SignumID[2];
 
         randomMediators[0] = mediators[rand.nextInt(mediators.length)];
         while(randomMediators[0].getSignedLongId() == g.getAddress().getSignedLongId()) {
@@ -70,12 +70,12 @@ public class Mediators {
         return false;
     }
 
-    public void setMediatorBalance(int i, BurstValue value) {
+    public void setMediatorBalance(int i, SignumValue value) {
     	mediatorBalances[i] = value;
     }
 
     public boolean isMediator(long id) {
-    	for (BurstID m : mediators) {
+    	for (SignumID m : mediators) {
             if(m.getSignedLongId() == id){
 				logger.trace("isMediator {} true", id);
 				return true;

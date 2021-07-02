@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 
 import bt.BT;
 import bt.Contract;
-import burst.kit.crypto.BurstCrypto;
-import burst.kit.entity.BurstID;
+import signumj.crypto.SignumCrypto;
+import signumj.entity.SignumID;
 import okhttp3.MediaType;
 
 public class Constants {
@@ -63,11 +63,11 @@ public class Constants {
     
     public static final String[] MEDIATORS_TESTNET = {"6ET8-WUKM-3HS8-CN4KM", "D3S9-8L56-UMLL-6EDFX", "E9UA-FX37-CHPE-568RD"};
 
-    public static final long FEE_CONTRACT = BurstCrypto.getInstance().rsDecode("BNR6-GMFS-S6CF-8XFGU").getSignedLongId();
+    public static final long FEE_CONTRACT = SignumCrypto.getInstance().rsDecode("BNR6-GMFS-S6CF-8XFGU").getSignedLongId();
 
-    public static final long FEE_CONTRACT_TESTNET = BurstCrypto.getInstance().rsDecode("G4XE-MB8T-WWZC-E4GFU").getSignedLongId();
+    public static final long FEE_CONTRACT_TESTNET = SignumCrypto.getInstance().rsDecode("G4XE-MB8T-WWZC-E4GFU").getSignedLongId();
     
-    public static final long TRT_DIVIDENDS = BurstID.fromLong("14893248166511032525").getSignedLongId();
+    public static final long TRT_DIVIDENDS = SignumID.fromLong("14893248166511032525").getSignedLongId();
 
     public static final String BURST_SYMBOL = "\uA7A8";
 

@@ -64,10 +64,10 @@ import btdex.locale.Translation;
 import btdex.sc.SellContract;
 import btdex.ui.orderbook.MarketPanel;
 import btdex.ui.orderbook.TokenMarketPanel;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.response.Account;
-import burst.kit.entity.response.Block;
-import burst.kit.entity.response.http.BRSError;
+import signumj.entity.SignumAddress;
+import signumj.entity.response.Account;
+import signumj.entity.response.Block;
+import signumj.entity.response.http.BRSError;
 import dorkbox.systemTray.MenuItem;
 import dorkbox.systemTray.SystemTray;
 import dorkbox.util.OS;
@@ -607,7 +607,7 @@ public class Main extends JFrame implements ActionListener {
 		return langButton;
 	}
 	
-	public static String printAddress(BurstAddress address) {
+	public static String printAddress(SignumAddress address) {
 		String fullAddress = address.getFullAddress();
 		return fullAddress;
 		//return fullAddress.substring(0, 4) + "..." + fullAddress.substring(19);

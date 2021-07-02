@@ -16,12 +16,11 @@ import bt.BT;
 import btdex.api.Server;
 import btdex.markets.MarketBurstToken;
 import btdex.ui.ExplorerWrapper;
-import burst.kit.crypto.BurstCrypto;
-import burst.kit.entity.BurstAddress;
-import burst.kit.service.BurstNodeService;
-import burst.kit.service.impl.HttpBurstNodeService;
-import burst.kit.service.impl.UseBestNodeService;
-import burst.kit.util.BurstKitUtils;
+import signumj.crypto.SignumCrypto;
+import signumj.entity.SignumAddress;
+import signumj.service.NodeService;
+import signumj.service.impl.UseBestNodeService;
+import signumj.util.SignumUtils;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -36,8 +35,8 @@ import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 
 public class Globals {
 
-	private BurstNodeService NS;
-	public static final BurstCrypto BC = BurstCrypto.getInstance();
+	private NodeService NS;
+	public static final SignumCrypto BC = SignumCrypto.getInstance();
 
 	static String confFile = Constants.DEF_CONF_FILE;
 	private Properties conf = new Properties();
@@ -48,7 +47,7 @@ public class Globals {
 
 	private boolean ledgerEnabled = false;
 	private boolean testnet = false;
-	private BurstAddress address;
+	private SignumAddress address;
 	private int ledgerIndex;
 	private String version = "dev";
 
@@ -101,9 +100,9 @@ public class Globals {
 			setNodeList(nodeList);
 			BT.activateCIP20(true);
 			
-			BurstKitUtils.setAddressPrefix(isTestnet() ? "TS" : "S");
-			BurstKitUtils.addAddressPrefix("BURST");
-			BurstKitUtils.setValueSuffix("SIGNA");
+			SignumUtils.setAddressPrefix(isTestnet() ? "TS" : "S");
+			SignumUtils.addAddressPrefix("BURST");
+			SignumUtils.setValueSuffix("SIGNA");
 			
 			// Read the version
 			Properties versionProp = new Properties();
@@ -172,7 +171,7 @@ public class Globals {
 		}
 		else {
 			byte[] publicKey = BC.parseHexString(publicKeyStr);
-			address = BC.getBurstAddressFromPublic(publicKey);
+			address = BC.getAddressFromPublic(publicKey);
 			logger.debug("checkPublicKey() sets address to {}", address.getFullAddress());
 		}
 	}
@@ -206,7 +205,7 @@ public class Globals {
 		conf.setProperty(Constants.PROP_LEDGER, Integer.toString(index));
 		this.ledgerIndex = index;
 
-		address = BC.getBurstAddressFromPublic(pubKey);
+		address = BC.getAddressFromPublic(pubKey);
 		logger.debug("Ledger keys set. Address from pubKey {}", address.getFullAddress());
 	}
 
@@ -217,7 +216,7 @@ public class Globals {
 		conf.setProperty(Constants.PROP_PUBKEY, Globals.BC.toHexString(pubKey));
 		conf.setProperty(Constants.PROP_ENC_PRIVKEY, Globals.BC.toHexString(encPrivKey));
 
-		address = BC.getBurstAddressFromPublic(pubKey);
+		address = BC.getAddressFromPublic(pubKey);
 		logger.debug("Ledger keys set. Address from pubKey {}", address.getFullAddress());
 	}
 
@@ -385,7 +384,7 @@ public class Globals {
 		saveAccounts();
 	}
 
-	public BurstAddress getAddress() {
+	public SignumAddress getAddress() {
 		return address;
 	}
 
@@ -393,7 +392,7 @@ public class Globals {
 		return BC.parseHexString(conf.getProperty(Constants.PROP_PUBKEY));
 	}
 
-	public BurstNodeService getNS() {
+	public NodeService getNS() {
 		return NS;
 	}
 
@@ -406,9 +405,9 @@ public class Globals {
 	}
 
 	public void setNodeList(List<String> nodeList) {
-		List<BurstNodeService> nsList = new ArrayList<BurstNodeService>();
+		List<NodeService> nsList = new ArrayList<NodeService>();
 		for (String nodeAddress : nodeList) {
-			nsList.add(new HttpBurstNodeService(nodeAddress, "btdex-" + version));
+			nsList.add(NodeService.getInstance(nodeAddress, "btdex-" + version));
 		}
 		NS = new UseBestNodeService(true, nsList);
 	}

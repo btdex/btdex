@@ -7,18 +7,18 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
 
 import btdex.markets.MarketTRT;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstID;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.Account;
-import burst.kit.entity.response.AssetBalance;
-import burst.kit.entity.response.AssetOrder;
-import burst.kit.entity.response.AssetTrade;
-import burst.kit.entity.response.Block;
-import burst.kit.entity.response.FeeSuggestion;
-import burst.kit.entity.response.MiningInfo;
-import burst.kit.entity.response.Transaction;
-import burst.kit.service.BurstNodeService;
+import signumj.entity.SignumAddress;
+import signumj.entity.SignumID;
+import signumj.entity.SignumValue;
+import signumj.entity.response.Account;
+import signumj.entity.response.AssetBalance;
+import signumj.entity.response.AssetOrder;
+import signumj.entity.response.AssetTrade;
+import signumj.entity.response.Block;
+import signumj.entity.response.FeeSuggestion;
+import signumj.entity.response.MiningInfo;
+import signumj.entity.response.Transaction;
+import signumj.service.NodeService;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,11 +44,11 @@ public class BurstNode {
 	private HashMap<Market, AssetOrder[]> askOrders = new HashMap<>();
 	private HashMap<Market, AssetOrder[]> bidOrders = new HashMap<>();
 	
-	private HashMap<Market, BurstValue> baseVolume24h = new HashMap<>();
-	private HashMap<Market, BurstValue> quoteVolume24h = new HashMap<>();
+	private HashMap<Market, SignumValue> baseVolume24h = new HashMap<>();
+	private HashMap<Market, SignumValue> quoteVolume24h = new HashMap<>();
 	private HashMap<Market, Double> priceChangePerc24h = new HashMap<>();
-	private HashMap<Market, BurstValue> highestPrice24h = new HashMap<>();
-	private HashMap<Market, BurstValue> lowestPrice24h = new HashMap<>();	
+	private HashMap<Market, SignumValue> highestPrice24h = new HashMap<>();
+	private HashMap<Market, SignumValue> lowestPrice24h = new HashMap<>();	
 	
 	private Transaction[] txs;
 	private Transaction[] utxs;
@@ -56,9 +56,9 @@ public class BurstNode {
 	private Exception nodeError;
 	private AtomicReference<MiningInfo> miningInfo = new AtomicReference<>();
 	private AtomicReference<Account> account = new AtomicReference<>();
-	private AtomicReference<BurstAddress> rewardRecipient = new AtomicReference<>();
+	private AtomicReference<SignumAddress> rewardRecipient = new AtomicReference<>();
 	private FeeSuggestion suggestedFee;
-	private BurstID lastBlock;
+	private SignumID lastBlock;
 	private Block latestBlock;
 
 	private static Logger logger = LogManager.getLogger();
@@ -102,11 +102,11 @@ public class BurstNode {
 		return askOrders.get(m);
 	}
 	
-	public BurstValue getBaseVolume24h(Market m) {
+	public SignumValue getBaseVolume24h(Market m) {
 		return baseVolume24h.get(m);
 	}
 
-	public BurstValue getQuoteVolume24h(Market m) {
+	public SignumValue getQuoteVolume24h(Market m) {
 		return quoteVolume24h.get(m);
 	}
 
@@ -114,11 +114,11 @@ public class BurstNode {
 		return priceChangePerc24h.get(m);
 	}
 	
-	public BurstValue getHighestPrice24h(Market m) {
+	public SignumValue getHighestPrice24h(Market m) {
 		return highestPrice24h.get(m);
 	}
 	
-	public BurstValue getLowestPrice24h(Market m) {
+	public SignumValue getLowestPrice24h(Market m) {
 		return lowestPrice24h.get(m);
 	}
 
@@ -138,7 +138,7 @@ public class BurstNode {
 		return miningInfo.get();
 	}
 
-	public BurstAddress getRewardRecipient() {
+	public SignumAddress getRewardRecipient() {
 		return rewardRecipient.get();
 	}
 
@@ -171,7 +171,7 @@ public class BurstNode {
 		@Override
 		public void run() {
 			Globals g = Globals.getInstance();
-			BurstNodeService NS = g.getNS();
+			NodeService NS = g.getNS();
 
 			try {
 				// we always check the unconf. transactions to get any updates
@@ -210,8 +210,8 @@ public class BurstNode {
 
 								if(m.getTokenID().equals(TRT.getTokenID())) {
 									for (int i = 0; i < mediators.getMediators().length; i++) {
-										BurstID mediator = mediators.getMediators()[i];
-										if(b.getAccountAddress().getBurstID().equals(mediator)) {
+										SignumID mediator = mediators.getMediators()[i];
+										if(b.getAccountAddress().getSignumID().equals(mediator)) {
 											mediators.setMediatorBalance(i, b.getBalance());
 										}
 									}
@@ -231,11 +231,11 @@ public class BurstNode {
 						
 						// If we don't have any trades, there is no trade history
 						if(trades!=null && trades.length>0) {
-							BurstValue lowestPrice = null;
-							BurstValue highestPrice = null;
+							SignumValue lowestPrice = null;
+							SignumValue highestPrice = null;
 							Date past24h = new Date(System.currentTimeMillis() - 24 * 3600_000);
-							BurstValue baseVolume = BurstValue.fromPlanck(0L);
-							BurstValue quoteVolume = BurstValue.fromPlanck(0L);
+							SignumValue baseVolume = SignumValue.fromNQT(0L);
+							SignumValue quoteVolume = SignumValue.fromNQT(0L);
 							double priceChangePerc = 0.0;
 							for(AssetTrade t : trades) {
 								if(t.getTimestamp().getAsDate().before(past24h)) {

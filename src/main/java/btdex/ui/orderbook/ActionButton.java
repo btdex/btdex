@@ -6,7 +6,7 @@ import btdex.core.Market;
 import btdex.ui.CancelOrderDialog;
 import btdex.ui.PlaceOrderDialog;
 import btdex.ui.PlaceTokenOrderDialog;
-import burst.kit.entity.response.AssetOrder;
+import signumj.entity.response.AssetOrder;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

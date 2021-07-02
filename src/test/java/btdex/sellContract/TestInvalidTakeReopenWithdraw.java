@@ -13,10 +13,10 @@ import org.junit.jupiter.api.TestMethodOrder;
 import bt.BT;
 import btdex.CreateSC;
 import btdex.sc.SellContract2;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.AT;
-import burst.kit.service.BurstNodeService;
+import signumj.entity.SignumAddress;
+import signumj.entity.SignumValue;
+import signumj.entity.response.AT;
+import signumj.service.NodeService;
 
 /**
  * We assume a localhost testnet with 0 seconds mock mining is available for the
@@ -40,8 +40,8 @@ public class TestInvalidTakeReopenWithdraw extends BT {
     private static long security_chain;
     private static long balance;
     private static String takerPass;
-    private static BurstAddress taker;
-    private static BurstNodeService bns = BT.getNode();
+    private static SignumAddress taker;
+    private static NodeService bns = BT.getNode();
     private static CreateSC sc;
 
     @Test
@@ -51,7 +51,7 @@ public class TestInvalidTakeReopenWithdraw extends BT {
         makerPass = Long.toString(System.currentTimeMillis());
         String name = sc.registerSC(makerPass);
 
-        BurstAddress maker = BT.getBurstAddressFromPassphrase(makerPass);
+        SignumAddress maker = BT.getAddressFromPassphrase(makerPass);
         contract = BT.findContract(maker, name);
         System.out.println("Created contract id " + contract.getId().getID());
 
@@ -82,7 +82,7 @@ public class TestInvalidTakeReopenWithdraw extends BT {
     }
 
     private long accBalance(String pass) {
-        return (bns.getAccount(BT.getBurstAddressFromPassphrase(pass)).blockingGet()).getBalance().longValue();
+        return (bns.getAccount(BT.getAddressFromPassphrase(pass)).blockingGet()).getBalance().longValue();
     }
 
     @Test
@@ -93,7 +93,7 @@ public class TestInvalidTakeReopenWithdraw extends BT {
             BT.forgeBlock(makerPass);
         }
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                BurstValue.fromPlanck(sent), BurstValue.fromBurst(0.1), 1000,
+                SignumValue.fromNQT(sent), SignumValue.fromSigna(0.1), 1000,
                 security).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
@@ -118,7 +118,7 @@ public class TestInvalidTakeReopenWithdraw extends BT {
     @Order(5)
     public void initTaker() {
         takerPass = Long.toString(System.currentTimeMillis());
-        taker = BT.getBurstAddressFromPassphrase(takerPass);
+        taker = BT.getAddressFromPassphrase(takerPass);
         //register taker in chain
         BT.forgeBlock(takerPass);
         //fund taker if needed
@@ -132,10 +132,10 @@ public class TestInvalidTakeReopenWithdraw extends BT {
     public void testInvalidTake() {
         // Invalid take, not enough security
         BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
-                BurstValue.fromPlanck(SellContract2.ACTIVATION_FEE*2), BurstValue.fromBurst(0.1), 100,
+                SignumValue.fromNQT(SellContract2.ACTIVATION_FEE*2), SignumValue.fromSigna(0.1), 100,
                 security, amount_chain).blockingGet();
         balance = BT.getContractBalance(contract).longValue();
-        System.out.println("Contract fees for failed take: " + BurstValue.fromPlanck(sent-balance-SellContract2.ACTIVATION_FEE));
+        System.out.println("Contract fees for failed take: " + SignumValue.fromNQT(sent-balance-SellContract2.ACTIVATION_FEE));
 
         // order should not be taken
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
@@ -153,7 +153,7 @@ public class TestInvalidTakeReopenWithdraw extends BT {
     public void testOfferTake() {
         // Take the offer
         BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
-                BurstValue.fromPlanck(security + SellContract2.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
+                SignumValue.fromNQT(security + SellContract2.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100,
                 security, amount_chain).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
@@ -173,7 +173,7 @@ public class TestInvalidTakeReopenWithdraw extends BT {
     public void testContractsBalanceAfterOfferTake() {
         balance = BT.getContractBalance(contract).longValue();
         assertTrue(balance > amount + security * 2, "not enough balance");
-        System.out.println("Contract fees to take: " + BurstValue.fromPlanck(sent - balance));
+        System.out.println("Contract fees to take: " + SignumValue.fromNQT(sent - balance));
     }
 
     @Test
@@ -181,7 +181,7 @@ public class TestInvalidTakeReopenWithdraw extends BT {
     public void testMakerSignal() {
         // Maker signals the payment was received (off-chain)
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("reportComplete"),
-                BurstValue.fromPlanck(SellContract2.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100).blockingGet();
+                SignumValue.fromNQT(SellContract2.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100).blockingGet();
         BT.forgeBlock(makerPass);
         BT.forgeBlock(makerPass);
 
@@ -203,7 +203,7 @@ public class TestInvalidTakeReopenWithdraw extends BT {
         }
         // Reopen the offer
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                BurstValue.fromPlanck(amount + security + SellContract2.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
+                SignumValue.fromNQT(amount + security + SellContract2.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100,
                 security).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
@@ -223,7 +223,7 @@ public class TestInvalidTakeReopenWithdraw extends BT {
     @Order(12)
     public void testCancelAndWithdrawOffer() {
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                BurstValue.fromPlanck(SellContract2.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
+                SignumValue.fromNQT(SellContract2.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100,
                 0).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
@@ -246,7 +246,7 @@ public class TestInvalidTakeReopenWithdraw extends BT {
         }
         // Reopen the offer
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                BurstValue.fromPlanck(amount + security + SellContract2.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
+                SignumValue.fromNQT(amount + security + SellContract2.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100,
                 security).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
@@ -267,7 +267,7 @@ public class TestInvalidTakeReopenWithdraw extends BT {
     public void testOfferTake2() {
         // Take the offer
         BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
-                BurstValue.fromPlanck(security + SellContract2.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
+                SignumValue.fromNQT(security + SellContract2.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100,
                 security, amount_chain).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
@@ -287,7 +287,7 @@ public class TestInvalidTakeReopenWithdraw extends BT {
     public void testContractsBalanceAfterOfferTake2() {
         balance = BT.getContractBalance(contract).longValue();
         assertTrue(balance > amount + security * 2, "not enough balance");
-        System.out.println("Contract fees to take: " + BurstValue.fromPlanck(sent - balance));
+        System.out.println("Contract fees to take: " + SignumValue.fromNQT(sent - balance));
     }
 
     @Test
@@ -295,7 +295,7 @@ public class TestInvalidTakeReopenWithdraw extends BT {
     public void testMakerSignal2() {
         // Maker signals the payment was received (off-chain)
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("reportComplete"),
-                BurstValue.fromPlanck(SellContract2.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100).blockingGet();
+                SignumValue.fromNQT(SellContract2.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100).blockingGet();
         BT.forgeBlock(makerPass);
         BT.forgeBlock(makerPass);
 

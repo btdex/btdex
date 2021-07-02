@@ -37,9 +37,9 @@ import btdex.core.NumberFormatting;
 import btdex.ledger.BurstLedger;
 import btdex.ledger.LedgerService;
 import btdex.ledger.LedgerService.SignCallBack;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.AssetOrder;
-import burst.kit.entity.response.TransactionBroadcast;
+import signumj.entity.SignumValue;
+import signumj.entity.response.AssetOrder;
+import signumj.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
 public class PlaceTokenOrderDialog extends JDialog implements ActionListener, DocumentListener, SignCallBack {
@@ -59,9 +59,9 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 	private JButton okButton;
 	private JButton cancelButton;
 
-	private BurstValue suggestedFee;
+	private SignumValue suggestedFee;
 
-	private BurstValue amountValue, priceValue;
+	private SignumValue amountValue, priceValue;
 
 	private boolean isAsk;
 
@@ -259,8 +259,8 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			Number amountN = NumberFormatting.parse(amountField.getText());
 
 			long pricePlanck = (long) (priceN.doubleValue()*(Contract.ONE_BURST/market.getFactor()));
-			priceValue = BurstValue.fromPlanck(pricePlanck);
-			amountValue = BurstValue.fromPlanck((long)(amountN.doubleValue()*market.getFactor()));
+			priceValue = SignumValue.fromNQT(pricePlanck);
+			amountValue = SignumValue.fromNQT((long)(amountN.doubleValue()*market.getFactor()));
 
 			double totalValue = priceN.doubleValue()*amountN.doubleValue();
 			totalField.setText(NumberFormatting.BURST.format(totalValue));

@@ -51,14 +51,14 @@ import btdex.ui.RotatingIcon;
 import btdex.ui.SendDialog;
 import btdex.ui.SocialButton;
 import btdex.ui.Toast;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.AssetBalance;
-import burst.kit.entity.response.AssetOrder;
-import burst.kit.entity.response.Transaction;
-import burst.kit.entity.response.attachment.AskOrderCancellationAttachment;
-import burst.kit.entity.response.attachment.AskOrderPlacementAttachment;
-import burst.kit.entity.response.attachment.BidOrderCancellationAttachment;
-import burst.kit.entity.response.attachment.BidOrderPlacementAttachment;
+import signumj.entity.SignumValue;
+import signumj.entity.response.AssetBalance;
+import signumj.entity.response.AssetOrder;
+import signumj.entity.response.Transaction;
+import signumj.response.attachment.AskOrderCancellationAttachment;
+import signumj.response.attachment.AskOrderPlacementAttachment;
+import signumj.response.attachment.BidOrderCancellationAttachment;
+import signumj.response.attachment.BidOrderPlacementAttachment;
 
 public class TokenMarketPanel extends JPanel implements ActionListener {
 
@@ -370,7 +370,7 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 						AskOrderPlacementAttachment order = (AskOrderPlacementAttachment) tx.getAttachment();
 						if(order.getAsset().equals(market.getTokenID().getID()))
 							askOrders.add(new AssetOrder(null, null, g.getAddress(),
-									BurstValue.fromPlanck(order.getQuantityQNT()), BurstValue.fromPlanck(order.getPriceNQT()),
+									SignumValue.fromNQT(order.getQuantityQNT()), SignumValue.fromNQT(order.getPriceNQT()),
 									tx.getBlockHeight(), AssetOrder.OrderType.ASK));
 					}
 					break;
@@ -379,7 +379,7 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 						BidOrderPlacementAttachment order = (BidOrderPlacementAttachment) tx.getAttachment();
 						if(order.getAsset().equals(market.getTokenID().getID()))
 							bidOrders.add(new AssetOrder(null, null, g.getAddress(),
-								BurstValue.fromPlanck(order.getQuantityQNT()), BurstValue.fromPlanck(order.getPriceNQT()),
+								SignumValue.fromNQT(order.getQuantityQNT()), SignumValue.fromNQT(order.getPriceNQT()),
 								tx.getBlockHeight(), AssetOrder.OrderType.BID));
 					}
 					break;

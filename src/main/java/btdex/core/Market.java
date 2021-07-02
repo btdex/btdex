@@ -8,7 +8,7 @@ import javax.swing.JTextField;
 
 import com.google.gson.JsonObject;
 
-import burst.kit.entity.BurstID;
+import signumj.entity.SignumID;
 
 
 public abstract class Market {
@@ -55,7 +55,7 @@ public abstract class Market {
 	 *
 	 * @return the BURST token ID or null if not a token.
 	 */
-	public BurstID getTokenID() {
+	public SignumID getTokenID() {
 		return null;
 	}
 

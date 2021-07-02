@@ -1,7 +1,7 @@
 package btdex.markets;
 
 import btdex.core.Globals;
-import burst.kit.entity.BurstID;
+import signumj.entity.SignumID;
 
 public class MarketNDST extends MarketTRT {
 	
@@ -10,10 +10,10 @@ public class MarketNDST extends MarketTRT {
 	}
 	
 	@Override
-	public BurstID getTokenID() {
+	public SignumID getTokenID() {
 		if(Globals.getInstance().isTestnet())
-			return BurstID.fromLong("13826409704036227858");
+			return SignumID.fromLong("13826409704036227858");
 		
-		return BurstID.fromLong("");
+		return SignumID.fromLong("");
 	}	
 }

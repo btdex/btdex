@@ -4,9 +4,9 @@ import bt.BT;
 import bt.Contract;
 import btdex.core.Mediators;
 import btdex.sc.SellContract;
-import burst.kit.entity.BurstID;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.AT;
+import signumj.entity.SignumID;
+import signumj.entity.SignumValue;
+import signumj.entity.response.AT;
 
 
 /**
@@ -25,10 +25,10 @@ public class PopulateMarket extends BT {
 
 		long security = 100 * Contract.ONE_BURST;
 
-		BurstID feeContract = BT.getBurstAddressFromPassphrase(BT.PASSPHRASE).getBurstID();
+		SignumID feeContract = BT.getAddressFromPassphrase(BT.PASSPHRASE).getSignumID();
 		Mediators mediators = new Mediators(true);
-		BurstID mediator1 = mediators.getMediators()[0];
-		BurstID mediator2 = mediators.getMediators()[1];
+		SignumID mediator1 = mediators.getMediators()[0];
+		SignumID mediator2 = mediators.getMediators()[1];
 
 		long data[] = {
 				feeContract.getSignedLongId(),
@@ -41,11 +41,11 @@ public class PopulateMarket extends BT {
 			String name = SellContract.class.getSimpleName() + System.currentTimeMillis();
 			System.out.println("Contracts name: "+ name);
 			BT.registerContract(BT.PASSPHRASE2, compiled.getCode(), compiled.getDataPages(), name, name, data,
-					BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BT.getMinRegisteringFee(compiled), 1000).blockingGet();
+					SignumValue.fromNQT(SellContract.ACTIVATION_FEE), BT.getMinRegisteringFee(compiled), 1000).blockingGet();
 			System.out.println("Contract registered");
 			BT.forgeBlock(BT.PASSPHRASE2);
 
-			AT contract = BT.findContract(BT.getBurstAddressFromPassphrase(BT.PASSPHRASE2), name);
+			AT contract = BT.findContract(BT.getAddressFromPassphrase(BT.PASSPHRASE2), name);
 			System.out.println("Contract found on chain! It's id " + contract.getId().getID());
 
 			// Initialize the offer
@@ -53,8 +53,8 @@ public class PopulateMarket extends BT {
 					BT.PASSPHRASE2,
 					contract.getId(),
 					compiled.getMethod("update"),
-					BurstValue.fromPlanck(amount + security + SellContract.ACTIVATION_FEE),
-					BurstValue.fromBurst(0.1),
+					SignumValue.fromNQT(amount + security + SellContract.ACTIVATION_FEE),
+					SignumValue.fromSigna(0.1),
 					100,
 					security
 					).blockingGet();

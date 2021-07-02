@@ -23,17 +23,17 @@ import btdex.core.Market;
 import btdex.core.Markets;
 import btdex.core.NumberFormatting;
 import btdex.ui.orderbook.BookTable;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.response.Block;
-import burst.kit.entity.response.Transaction;
-import burst.kit.entity.response.attachment.AskOrderPlacementAttachment;
-import burst.kit.entity.response.attachment.AssetTransferAttachment;
-import burst.kit.entity.response.attachment.BidOrderPlacementAttachment;
-import burst.kit.entity.response.attachment.CommitmentAddAttachment;
-import burst.kit.entity.response.attachment.CommitmentRemoveAttachment;
-import burst.kit.entity.response.attachment.MultiOutAttachment;
-import burst.kit.entity.response.attachment.MultiOutSameAttachment;
-import burst.kit.entity.response.http.BRSError;
+import signumj.entity.SignumAddress;
+import signumj.entity.response.Block;
+import signumj.entity.response.Transaction;
+import signumj.entity.response.http.BRSError;
+import signumj.response.attachment.AskOrderPlacementAttachment;
+import signumj.response.attachment.AssetTransferAttachment;
+import signumj.response.attachment.BidOrderPlacementAttachment;
+import signumj.response.attachment.CommitmentAddAttachment;
+import signumj.response.attachment.CommitmentRemoveAttachment;
+import signumj.response.attachment.MultiOutAttachment;
+import signumj.response.attachment.MultiOutSameAttachment;
 import jiconfont.swing.IconFontSwing;
 
 public class TransactionsPanel extends JPanel {
@@ -169,7 +169,7 @@ public class TransactionsPanel extends JPanel {
 		// Update the contents
 		for (int row = 0; row < maxLines; row++) {
 			Transaction tx = txs.get(row);
-			BurstAddress account = null;
+			SignumAddress account = null;
 			long amount = tx.getAmount().longValue();
 
 			String amountFormatted = NumberFormatting.BURST.format(amount) + " " + Constants.BURST_TICKER;
@@ -181,7 +181,7 @@ public class TransactionsPanel extends JPanel {
 			switch (tx.getType()) {
 			case 0: // PAYMENT
 				if(!tx.getSender().equals(g.getAddress())) {
-					if(tx.getSender().getBurstID().getSignedLongId() == Constants.TRT_DIVIDENDS)
+					if(tx.getSender().getSignumID().getSignedLongId() == Constants.TRT_DIVIDENDS)
 						type = tr("txs_fees_distribution");
 					switch (tx.getSubtype()) {
 					case 1: // MULTI-OUT

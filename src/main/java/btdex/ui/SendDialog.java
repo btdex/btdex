@@ -31,11 +31,11 @@ import btdex.core.Market;
 import btdex.core.NumberFormatting;
 import btdex.ledger.LedgerService;
 import btdex.ledger.LedgerService.SignCallBack;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.Account;
-import burst.kit.entity.response.FeeSuggestion;
-import burst.kit.entity.response.TransactionBroadcast;
+import signumj.entity.SignumAddress;
+import signumj.entity.SignumValue;
+import signumj.entity.response.Account;
+import signumj.entity.response.FeeSuggestion;
+import signumj.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
 public class SendDialog extends JDialog implements ActionListener, SignCallBack {
@@ -48,7 +48,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 	private byte[] unsigned;
 	private JPasswordField pin;
 	private JSlider feeSlider;
-	private BurstValue selectedFee;
+	private SignumValue selectedFee;
 
 	private JButton okButton;
 
@@ -66,7 +66,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 		this(owner, token, TYPE_SEND, null);
 	}
 	
-	public SendDialog(JFrame owner, Market token, int type, BurstAddress pool) {
+	public SendDialog(JFrame owner, Market token, int type, SignumAddress pool) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
@@ -131,7 +131,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 				switch (feeSlider.getValue()) {
 				case 1:
 					feeType = tr("fee_minimum");
-					selectedFee = BurstValue.fromPlanck(Constants.FEE_QUANT);
+					selectedFee = SignumValue.fromNQT(Constants.FEE_QUANT);
 					break;
 				case 2:
 					feeType = tr("fee_cheap");
@@ -197,9 +197,9 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 
 			String error = null;
 			String sadd = recipient.getText();
-			BurstAddress recAddress = null;
+			SignumAddress recAddress = null;
 			if(type == TYPE_SEND || type == TYPE_JOIN_POOL) {
-				recAddress = BurstAddress.fromEither(sadd);
+				recAddress = SignumAddress.fromEither(sadd);
 				if(recAddress == null && type == TYPE_SEND)
 					error = tr("send_invalid_recipient");
 			}
@@ -235,14 +235,14 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 				pin.setEnabled(false);
 				okButton.setEnabled(false);
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				BurstValue amountToSend = BurstValue.fromBurst(amountNumber.doubleValue());
+				SignumValue amountToSend = SignumValue.fromSigna(amountNumber.doubleValue());
 
 				try {
 					// all set, lets make the transfer
 					Single<byte[]> utx = null;
 					if(token!=null) {
 						utx = g.getNS().generateTransferAssetTransactionWithMessage(g.getPubKey(), recAddress,
-								token.getTokenID(), BurstValue.fromPlanck((long)(amountNumber.doubleValue()*token.getFactor())),
+								token.getTokenID(), SignumValue.fromNQT((long)(amountNumber.doubleValue()*token.getFactor())),
 								selectedFee, Constants.BURST_SEND_DEADLINE, msg);
 					}
 					else if(type == TYPE_JOIN_POOL){

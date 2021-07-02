@@ -13,9 +13,9 @@ import org.junit.jupiter.api.TestMethodOrder;
 import bt.BT;
 import btdex.sc.SellContract;
 import btdex.sc.SellNoDepositContract;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.AT;
+import signumj.entity.SignumAddress;
+import signumj.entity.SignumValue;
+import signumj.entity.response.AT;
 
 //This is long test, about 5 min
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -36,18 +36,18 @@ public class TestTimeLock {
         makerPass = Long.toString(System.currentTimeMillis());
         sc.registerSC(makerPass);
 
-        BurstAddress maker = BT.getBurstAddressFromPassphrase(makerPass);
+        SignumAddress maker = BT.getAddressFromPassphrase(makerPass);
         BT.forgeBlock();
         compiled = sc.getCompiled();
         contract = BT.findContract(maker, sc.getName());
 
-        BurstValue send = BurstValue.fromBurst(100);
-        BT.sendAmount(makerPass, contract.getId(), send, BurstValue.fromBurst(0.1)).blockingGet();
+        SignumValue send = SignumValue.fromSigna(100);
+        BT.sendAmount(makerPass, contract.getId(), send, SignumValue.fromSigna(0.1)).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000).blockingGet();
         BT.forgeBlock(); //1
         BT.forgeBlock(); //2
 
@@ -61,7 +61,7 @@ public class TestTimeLock {
     public void withdrawSignalToEarly() {
         long SCbalanceBefore = BT.getContractBalance(contract).longValue();
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000).blockingGet();
         BT.forgeBlock(); //3
         BT.forgeBlock(); //4
 
@@ -80,7 +80,7 @@ public class TestTimeLock {
         }
         long SCbalanceBefore = BT.getContractBalance(contract).longValue();
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 
@@ -99,7 +99,7 @@ public class TestTimeLock {
         }
 
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 

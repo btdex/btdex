@@ -25,10 +25,10 @@ import bt.BT;
 import btdex.core.*;
 import btdex.ledger.LedgerService;
 import btdex.ledger.LedgerService.SignCallBack;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.AssetOrder;
-import burst.kit.entity.response.FeeSuggestion;
-import burst.kit.entity.response.TransactionBroadcast;
+import signumj.entity.SignumValue;
+import signumj.entity.response.AssetOrder;
+import signumj.entity.response.FeeSuggestion;
+import signumj.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
 public class CancelOrderDialog extends JDialog implements ActionListener, SignCallBack {
@@ -183,7 +183,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener, SignCa
 					// update the security to zero to withdraw all funds
 					byte[] message = BT.callMethodMessage(state.getMethod("update"), 0L);
 					
-					BurstValue amountToSend = BurstValue.fromPlanck(state.getActivationFee());
+					SignumValue amountToSend = SignumValue.fromNQT(state.getActivationFee());
 
 					utx = g.getNS().generateTransactionWithMessage(state.getAddress(), g.getPubKey(),
 							amountToSend, suggestedFee.getPriorityFee(),

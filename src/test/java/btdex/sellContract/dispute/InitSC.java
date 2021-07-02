@@ -3,24 +3,24 @@ package btdex.sellContract.dispute;
 import bt.BT;
 import btdex.CreateSC;
 import btdex.sc.SellContract;
-import burst.kit.crypto.BurstCrypto;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.AT;
-import burst.kit.service.BurstNodeService;
+import signumj.crypto.SignumCrypto;
+import signumj.entity.SignumAddress;
+import signumj.entity.SignumValue;
+import signumj.entity.response.AT;
+import signumj.service.NodeService;
 
 
 public class InitSC{
     private String name;
-    private BurstAddress maker;
+    private SignumAddress maker;
     private String makerPass;
-    private BurstAddress taker;
+    private SignumAddress taker;
     private String takerPass;
     private bt.compiler.Compiler compiled;
     private AT contract;
 
-    private BurstAddress mediatorOne;
-    private BurstAddress mediatorTwo;
+    private SignumAddress mediatorOne;
+    private SignumAddress mediatorTwo;
 
     private String mediatorOnePass;
     private String mediatorTwoPass;
@@ -30,7 +30,7 @@ public class InitSC{
 
     private long security;
     private long sent;
-    private static BurstNodeService bns = BT.getNode();
+    private static NodeService bns = BT.getNode();
 
     public InitSC() {
         try {
@@ -43,13 +43,13 @@ public class InitSC{
             compiled = sc.getCompiled();
             mediatorOnePass = BT.PASSPHRASE;
             mediatorTwoPass = BT.PASSPHRASE2;
-            mediatorOne = BurstCrypto.getInstance().getBurstAddressFromPassphrase(mediatorOnePass);
-            mediatorOne = BurstCrypto.getInstance().getBurstAddressFromPassphrase(mediatorTwoPass);
+            mediatorOne = SignumCrypto.getInstance().getAddressFromPassphrase(mediatorOnePass);
+            mediatorOne = SignumCrypto.getInstance().getAddressFromPassphrase(mediatorTwoPass);
             feeContract = sc.getFeeContract();
             initOffer();
             //init taker
             takerPass = Long.toString(System.currentTimeMillis());
-            taker = BT.getBurstAddressFromPassphrase(takerPass);
+            taker = BT.getAddressFromPassphrase(takerPass);
             //register taker in chain
             BT.forgeBlock(takerPass);
             takeOffer();
@@ -59,7 +59,7 @@ public class InitSC{
         }
     }
     private long accBalance(String pass) {
-        return (bns.getAccount(BT.getBurstAddressFromPassphrase(pass)).blockingGet()).getBalance().longValue();
+        return (bns.getAccount(BT.getAddressFromPassphrase(pass)).blockingGet()).getBalance().longValue();
     }
 
     public void initOffer(){
@@ -67,11 +67,11 @@ public class InitSC{
         while(accBalance(makerPass) < sent){
             BT.forgeBlock(makerPass);
         }
-        maker = BT.getBurstAddressFromPassphrase(makerPass);
+        maker = BT.getAddressFromPassphrase(makerPass);
         contract = BT.findContract(maker, name);
         //init offer
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                BurstValue.fromPlanck(sent), BurstValue.fromBurst(0.1), 1000,
+                SignumValue.fromNQT(sent), SignumValue.fromSigna(0.1), 1000,
                 security).blockingGet();
         BT.forgeBlock();
     }
@@ -84,7 +84,7 @@ public class InitSC{
         // Take the offer
         long amount_chain = BT.getContractFieldValue(contract, compiled.getField("amount").getAddress());
         BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
-                BurstValue.fromPlanck(security + SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
+                SignumValue.fromNQT(security + SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100,
                 security, amount_chain).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
@@ -100,23 +100,23 @@ public class InitSC{
         return BT.getContractFieldValue(contract, addr);
     }
 
-    public void dispute(BurstAddress who, long amountToMaker, long amountToTaker) {
+    public void dispute(SignumAddress who, long amountToMaker, long amountToTaker) {
         BT.callMethod(who == maker ? makerPass : who == taker ? takerPass : who == mediatorOne ? mediatorOnePass : mediatorTwoPass,
                 contract.getId(), compiled.getMethod("dispute"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100,
                 amountToMaker, amountToTaker).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
     }
 
-    public void complete(BurstAddress who) {
+    public void complete(SignumAddress who) {
         BT.callMethod(who == maker? makerPass : takerPass, contract.getId(), compiled.getMethod("reportComplete"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100).blockingGet();
     }
 
     public void withdraw() {
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000,
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000,
                 0).blockingGet();
     }
 
@@ -124,11 +124,11 @@ public class InitSC{
         return amount;
     }
 
-    public BurstAddress getMaker() {
+    public SignumAddress getMaker() {
         return maker;
     }
 
-    public BurstAddress getTaker() {
+    public SignumAddress getTaker() {
         return taker;
     }
 
@@ -145,14 +145,14 @@ public class InitSC{
     }
 
     public long getFeeContractBalance() {
-        return bns.getAccount(BurstAddress.fromId(feeContract)).blockingGet().getBalance().longValue();
+        return bns.getAccount(SignumAddress.fromId(feeContract)).blockingGet().getBalance().longValue();
     }
 
-    public BurstAddress getMediatorOne() {
+    public SignumAddress getMediatorOne() {
         return mediatorOne;
     }
 
-    public BurstAddress getMediatorTwo() {
+    public SignumAddress getMediatorTwo() {
         return mediatorTwo;
     }
 

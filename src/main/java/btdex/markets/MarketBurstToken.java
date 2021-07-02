@@ -5,9 +5,9 @@ import java.util.HashMap;
 
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
-import burst.kit.entity.BurstID;
-import burst.kit.entity.response.Asset;
-import burst.kit.service.BurstNodeService;
+import signumj.entity.SignumID;
+import signumj.entity.response.Asset;
+import signumj.service.NodeService;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,15 +16,15 @@ public class MarketBurstToken extends Market {
 
 	private String ticker;
 	private long factor;
-	private BurstID tokenID;
+	private SignumID tokenID;
 	private int decimals;
 	private NumberFormatting NF;
 
 	private static Logger logger = LogManager.getLogger();
 
-	public MarketBurstToken(String id, BurstNodeService NS) {
+	public MarketBurstToken(String id, NodeService NS) {
 		try {
-			tokenID = BurstID.fromLong(id);
+			tokenID = SignumID.fromLong(id);
 			Asset asset = NS.getAsset(tokenID).blockingGet();
 			ticker = asset.getName().toUpperCase();
 			decimals = asset.getDecimals();
@@ -41,7 +41,7 @@ public class MarketBurstToken extends Market {
 		this.NF = NumberFormatting.NF(Math.min(1, decimals), decimals);
 	}
 
-	public MarketBurstToken(BurstID id, String ticker, int decimals) {
+	public MarketBurstToken(SignumID id, String ticker, int decimals) {
 		tokenID = id;
 		this.ticker = ticker;
 		this.decimals = decimals;
@@ -63,7 +63,7 @@ public class MarketBurstToken extends Market {
 	}
 
 	@Override
-	public BurstID getTokenID() {
+	public SignumID getTokenID() {
 		return tokenID;
 	}
 

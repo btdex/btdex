@@ -38,8 +38,8 @@ import bt.BT;
 import btdex.core.*;
 import btdex.markets.MarketCrypto;
 import btdex.sc.SellContract;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.TransactionBroadcast;
+import signumj.entity.SignumValue;
+import signumj.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
 public class DisputeDialog extends JDialog implements ActionListener, ChangeListener {
@@ -81,7 +81,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 	private boolean isBuy, isCreator, isMediator, isMediating;
 	private boolean hasOtherSuggestion, hasYourSuggestion;
 
-	private BurstValue suggestedFee;
+	private SignumValue suggestedFee;
 
 	private StringBuilder terms;
 
@@ -421,7 +421,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 
 				// we are sending the dispute message with our amounts
 				byte[] message = BT.callMethodMessage(contract.getMethod("dispute"), amountToCreator, amountToTaker);
-				BurstValue amountToSend = BurstValue.fromPlanck(contract.getActivationFee());
+				SignumValue amountToSend = SignumValue.fromNQT(contract.getActivationFee());
 
 				Single<byte[]> utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 						amountToSend, suggestedFee,
@@ -507,9 +507,9 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 				NumberFormatting.BURST.format(isCreator ? amountToCreator : amountToTaker),
 				NumberFormatting.BURST.format(isCreator ? amountToTaker : amountToCreator)
 				));
-		append(tr("disp_dispute_terms", suggestedFee.add(BurstValue.fromPlanck(contract.getActivationFee())).toUnformattedString()));
+		append(tr("disp_dispute_terms", suggestedFee.add(SignumValue.fromNQT(contract.getActivationFee())).toUnformattedString()));
 		if(!isMediator)
-			append(tr("disp_mediating", suggestedFee.add(BurstValue.fromPlanck(contract.getActivationFee())).toUnformattedString()));
+			append(tr("disp_mediating", suggestedFee.add(SignumValue.fromNQT(contract.getActivationFee())).toUnformattedString()));
 
 		// checking it has the balance before requesting the deposit
 		if(unexpectedState) {
