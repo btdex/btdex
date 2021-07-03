@@ -694,10 +694,12 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	public void stop() {
 		if(mining && minerProcess!=null && minerProcess.isAlive()) {
 			mining = false;
+	    	logger.info("destroying miner process");
 			minerProcess.destroyForcibly();
 		}
 		if(plotting && plotterProcess!=null && plotterProcess.isAlive()) {
 			plotting = false;
+	    	logger.info("destroying plotter process");
 			plotterProcess.destroyForcibly();
 		}
 	}
@@ -1059,10 +1061,14 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		String plotterName = "signum-plotter";
 		if(OS.isWindows())
 			plotterName += ".exe";
+		else if(OS.isMacOsX())
+			plotterName += ".app";
+		
 		plotterFile = new File(TMP_DIR, plotterName);
 		if (!plotterFile.exists() || plotterFile.length() == 0) {
 		     InputStream link = (getClass().getResourceAsStream("/plotter/" + plotterName));
 		     try {
+		    	logger.info("Copying ploter to {}", plotterFile.getAbsolutePath());
 				Files.copy(link, plotterFile.getAbsoluteFile().toPath());
 				if(!OS.isWindows())
 					plotterFile.setExecutable(true);
@@ -1274,6 +1280,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		String minerName = "signum-miner";
 		if(OS.isWindows())
 			minerName += ".exe";
+		else if(OS.isMacOsX())
+			minerName += ".app";
+		
 		minerFile = new File(TMP_DIR, minerName);
 		InputStream minerStream = (getClass().getResourceAsStream("/miner/" + minerName));
 		InputStream minerConfigStream = (getClass().getResourceAsStream("/miner/config.yaml"));
@@ -1281,11 +1290,13 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			if(minerFile.exists() && minerFile.isFile())
 				minerFile.delete();
 				
+			logger.info("Copying miner to {}", minerFile.getAbsolutePath());
 			Files.copy(minerStream, minerFile.getAbsoluteFile().toPath());
 			if(!OS.isWindows())
 				minerFile.setExecutable(true);
 
-			FileWriter minerConfig = new FileWriter(minerFile.getParent() + "/" + MINER_CONFIG_FILE);
+			File minerConfigFile = new File(minerFile.getParent(), MINER_CONFIG_FILE);
+			FileWriter minerConfig = new FileWriter(minerConfigFile);
 			minerConfig.append("plot_dirs:\n");
 			for (File path : pathList) {
 				if(path == null)
@@ -1299,6 +1310,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			minerConfig.append("cpu_threads: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
 			minerConfig.append("cpu_worker_task_count: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
 			
+			logger.info("Copying miner config to {}", minerConfigFile.getAbsolutePath());
+
 			IOUtils.copy(minerConfigStream, minerConfig);
 			minerConfig.close();
 		} catch (IOException ex) {
@@ -1336,6 +1349,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	};
 
 	private void addToConsole(String app, String line) {
+    	logger.info("{} {}", app, line);
+
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				// lets have a limit of 400 lines
