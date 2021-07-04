@@ -60,6 +60,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import bt.BT;
 import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.Globals;
@@ -191,6 +192,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	private Icons icons;
 
 	private JPanel disksPanel;
+
+	private String soloNode;
 
 	public MiningPanel() {
 		super(new BorderLayout());
@@ -412,6 +415,14 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			if(poolURL.equals(selectedPool))
 				poolComboBox.setSelectedIndex(poolComboBox.getItemCount()-1);
 		}
+		soloNode = g.isTestnet() ? BT.NODE_LOCAL_TESTNET : BT.NODE_LOCAL;
+		poolComboBox.addItem(soloNode);
+		if(soloNode.equals(selectedPool))
+			poolComboBox.setSelectedIndex(poolComboBox.getItemCount()-1);
+		// Solo mining should have its own address
+		poolAddresses.put(soloNode, g.getAddress());
+		poolMaxDeadlines.put(soloNode, "100000000");
+		actionPerformed(new ActionEvent(poolComboBox, 0, ""));
 		
 		checkResumeFiles();
 		stateChanged(null);
@@ -430,7 +441,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			            public void run() {
 			                startMining();
 			            }
-			        }, 3000);
+			        }, 5000);
 		}
 	}
 	
@@ -683,8 +694,14 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		
 		if(!mining && poolComboBox.getSelectedItem() != null) {
+			if(poolAddresses.get(soloNode) == null)
+				poolAddresses.put(soloNode, Globals.getInstance().getAddress());
+			
 			SignumAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedItem().toString());
-			startMiningButton.setEnabled(poolAddress != null && poolAddress.equals(BN.getRewardRecipient()) && totalCapacity > 0);
+			startMiningButton.setEnabled(poolAddress != null
+					&& (poolAddress.equals(BN.getRewardRecipient()) || 
+							(poolComboBox.getSelectedIndex() == poolComboBox.getItemCount()-1 && BN.getRewardRecipient()==null))
+					&& totalCapacity > 0);
 		}
 		
 		lowPriorityCheck.setEnabled(!plotting);
@@ -869,7 +886,11 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		
 		if(poolComboBox == e.getSource()) {
+			joinPoolButton.setText(poolComboBox.getSelectedIndex()==poolComboBox.getItemCount()-1 ?
+					tr("send_go_solo") : tr("send_join_pool"));
+			
 			g.setProperty(PROP_MINER_POOL, poolComboBox.getSelectedItem().toString());
+			
 			saveConfs(g);
 		}
 		
@@ -915,8 +936,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			Transaction[] txs = BN.getAccountTransactions();
 			Transaction[] utx = BN.getUnconfirmedTransactions();
 			ArrayList<Transaction> allTxs = new ArrayList<>();
-			Collections.addAll(allTxs, txs);
-			Collections.addAll(allTxs, utx);
+			if(txs != null)
+				Collections.addAll(allTxs, txs);
+			if(utx != null)
+				Collections.addAll(allTxs, utx);
 			
 			for(Transaction tx : allTxs) {
 				if(tx.getSender().equals(g.getAddress()) && tx.getType() == 20 && tx.getSubtype() == 0 && tx.getConfirmations() < 4) {
@@ -927,17 +950,21 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			if(info == null && poolAddress == null) {
 				info = tr("mine_invalid_pool");				
 			}
-			if(info == null && poolAddress.equals(BN.getRewardRecipient())) {
+			boolean isSolo = poolComboBox.getSelectedIndex() == poolComboBox.getItemCount() -1;
+			if(info == null && !isSolo && poolAddress.equals(BN.getRewardRecipient())) {
 				info = tr("mine_already_joined");
+			}
+			if(info == null && isSolo && (BN.getRewardRecipient()==null || poolAddress.equals(BN.getRewardRecipient()))) {
+				info = tr("mine_already_solo");
 			}
 			
 			if(info != null) {
-				JOptionPane.showMessageDialog(getParent(), info, tr("send_join_pool"), JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(getParent(), info, tr(isSolo ? "send_go_solo" : "send_join_pool"), JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
 			
 			SendDialog dlg = new SendDialog((JFrame) SwingUtilities.getWindowAncestor(this),
-					null, SendDialog.TYPE_JOIN_POOL, poolAddress);
+					null, isSolo ? SendDialog.TYPE_GO_SOLO : SendDialog.TYPE_JOIN_POOL, poolAddress);
 
 			dlg.setLocationRelativeTo(this);
 			dlg.setVisible(true);
@@ -1329,6 +1356,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		public void run() {
 			try {
 				String cmd = minerFile.getAbsolutePath() + " -c " + MINER_CONFIG_FILE;
+				logger.info("Running miner with '{}'", cmd);
 				minerProcess = Runtime.getRuntime().exec(cmd, null, minerFile.getParentFile());
 				
 				InputStream stdIn = minerProcess.getInputStream();

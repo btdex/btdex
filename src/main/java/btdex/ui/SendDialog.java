@@ -59,8 +59,9 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 	private int type;
 	public static final int TYPE_SEND = 0;
 	public static final int TYPE_JOIN_POOL = 1;
-	public static final int TYPE_ADD_COMMITMENT = 2;
-	public static final int TYPE_REMOVE_COMMITMENT = 3;
+	public static final int TYPE_GO_SOLO = 2;
+	public static final int TYPE_ADD_COMMITMENT = 3;
+	public static final int TYPE_REMOVE_COMMITMENT = 4;
 
 	public SendDialog(JFrame owner, Market token) {
 		this(owner, token, TYPE_SEND, null);
@@ -75,6 +76,9 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 
 		if(type == TYPE_JOIN_POOL) {
 			setTitle(tr("send_join_pool"));
+		}
+		else if(type == TYPE_GO_SOLO) {
+			setTitle(tr("send_go_solo"));
 		}
 		else if(type == TYPE_ADD_COMMITMENT) {
 			setTitle(tr("send_add_commitment"));
@@ -98,9 +102,9 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 		amount = new JFormattedTextField(token==null ? NumberFormatting.BURST.getFormat() : token.getNumberFormat().getFormat());
 		feeSlider = new JSlider(1, 4);
 
-		if(type == TYPE_SEND || type == TYPE_JOIN_POOL) {
-			topPanel.add(new Desc(tr(type == TYPE_JOIN_POOL ? "send_pool_address" : "send_recipient"), recipient));
-			if(type == TYPE_JOIN_POOL) {
+		if(type == TYPE_SEND || type == TYPE_JOIN_POOL || type == TYPE_GO_SOLO) {
+			topPanel.add(new Desc(tr(type != TYPE_SEND ? "send_pool_address" : "send_recipient"), recipient));
+			if(type != TYPE_SEND) {
 				recipient.setEditable(false);
 				recipient.setText(pool.getFullAddress());
 			}
@@ -110,15 +114,15 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 			message.setToolTipText(tr("send_empty_for_no_message"));
 		}
 
-		if(type != TYPE_JOIN_POOL) {
+		if(type != TYPE_JOIN_POOL && type != TYPE_GO_SOLO) {
 			panel.add(new Desc(tr("send_amount", token==null ? Constants.BURST_TICKER : token), amount));
 		}
-		if(type == TYPE_JOIN_POOL) {
+		if(type == TYPE_JOIN_POOL || type == TYPE_GO_SOLO) {
 			panel.add(new Desc(" ", new JLabel(" ")));
 			amount.setText("0");
 		}
 		Desc feeDesc = new Desc("", feeSlider);
-		if(type == TYPE_JOIN_POOL) {
+		if(type == TYPE_JOIN_POOL || type == TYPE_GO_SOLO) {
 			// Avoid cropping the slider ball
 			feeSlider.setPreferredSize(new Dimension(20, 40));
 		}
@@ -198,7 +202,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 			String error = null;
 			String sadd = recipient.getText();
 			SignumAddress recAddress = null;
-			if(type == TYPE_SEND || type == TYPE_JOIN_POOL) {
+			if(type == TYPE_SEND || type == TYPE_JOIN_POOL || type == TYPE_GO_SOLO) {
 				recAddress = SignumAddress.fromEither(sadd);
 				if(recAddress == null && type == TYPE_SEND)
 					error = tr("send_invalid_recipient");
@@ -245,7 +249,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 								token.getTokenID(), SignumValue.fromNQT((long)(amountNumber.doubleValue()*token.getFactor())),
 								selectedFee, Constants.BURST_SEND_DEADLINE, msg);
 					}
-					else if(type == TYPE_JOIN_POOL){
+					else if(type == TYPE_JOIN_POOL  || type == TYPE_GO_SOLO){
 						utx = g.getNS().generateTransactionSetRewardRecipient(recAddress, g.getPubKey(),
 								selectedFee, Constants.BURST_SEND_DEADLINE);
 					}
