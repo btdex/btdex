@@ -107,6 +107,14 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 	};
 	
+	private static final FileFilter PLOT_FILE_FILTER_ANY = new FileFilter() {
+		@Override
+		public boolean accept(File pathname) {
+			return pathname.isFile() && Globals.getInstance().getAddress() != null &&
+					pathname.getName().split("_").length == 3;
+		}
+	};
+	
 	private static final String[] POOL_LIST = {
 			"https://pool.signumcoin.ro",
 			"http://burst.voiplanparty.com:8124",
@@ -424,7 +432,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		poolMaxDeadlines.put(soloNode, "100000000");
 		actionPerformed(new ActionEvent(poolComboBox, 0, ""));
 		
-		checkResumeFiles();
+		checkForPlotProblems();
 		stateChanged(null);
 		
 		// Query pool API for their info
@@ -730,7 +738,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 	}
 	
-	private void checkResumeFiles() {
+	private void checkForPlotProblems() {
 		resumePlotFiles.clear();
 		
 		for (int i = 0; i < pathList.size(); i++) {
@@ -740,9 +748,15 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				continue;
 
 			// check if there are pending files to resume
-			File[] plotFiles = pathFile.listFiles(PLOT_FILE_FILTER);
+			File[] plotFiles = pathFile.listFiles(PLOT_FILE_FILTER_ANY);
 			if(plotFiles != null) {
 				for(File plot : plotFiles) {
+					
+					if(!plot.getName().startsWith(Globals.getInstance().getAddress().getID())) {
+						addToConsole(PLOT_APP, "Plot '" + plot.getAbsolutePath() + "' is for a different account and will generate mining errors");
+						continue;
+					}
+					
 					int progress = getPlotProgress(plot);
 					if(progress >= 0) {
 						resumePlotFiles.add(plot);
@@ -787,6 +801,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			    	addDiskPath(pos+1);
 			    	this.revalidate();
 			    }
+			    
+				checkForPlotProblems();
 			}
 			return;
 		}
@@ -846,7 +862,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		if(stopPlotButton == e.getSource()) {
 			plotting = false;
 			stopPlotButton.setEnabled(false);
-			checkResumeFiles();
+			checkForPlotProblems();
 			update();
 			return;
 		}
