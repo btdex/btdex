@@ -4,28 +4,33 @@ import com.google.gson.Gson;
 
 import bt.BT;
 import bt.Contract;
-import burst.kit.crypto.BurstCrypto;
-import burst.kit.entity.BurstID;
+import signumj.crypto.SignumCrypto;
+import signumj.entity.SignumID;
 import okhttp3.MediaType;
 
 public class Constants {
-    public static final String NODE_LOCALHOST = "http://localhost:8125";
-    public static final String NODE_TESTNET = "https://testnetwallet.burstcoin.ro";
     
-    public static final String NODE_DEFAULT = "https://europe.signum.network";
+    public static final String NODE_LIST_TESTNET[] = {
+    		"https://testnetwallet.burstcoin.ro",
+    		"http://localhost:6876",
+    };
     
     public static final String NODE_LIST[] = {
-    		NODE_DEFAULT,
-    		"https://australia.signum.network",
+    		"https://europe2.signum.network",
+    		"https://europe.signum.network",
+    		"https://europe1.signum.network",
+    		"https://europe3.signum.network",
     		"https://brazil.signum.network",
-    		"https://canada.signum.network",
     		"https://uk.signum.network:8125",
     		BT.NODE_BURSTCOIN_RO,
-    		Constants.NODE_LOCALHOST
+    		"https://canada.signum.network",
+    		"https://australia.signum.network",
+    		"http://localhost:8125",
     };
 
     public static final String PROP_LANG = "lang";
     public static final String PROP_NODE = "node";
+    public static final String PROP_NODE_AUTO = "nodeAutomatic";
     public static final String PROP_LOGGER = "logger";
     public static final String PROP_TESTNET = "testnet";
     public static final String PROP_LEDGER_ENABLED = "ledgerEnabled";
@@ -58,15 +63,15 @@ public class Constants {
     
     public static final String[] MEDIATORS_TESTNET = {"6ET8-WUKM-3HS8-CN4KM", "D3S9-8L56-UMLL-6EDFX", "E9UA-FX37-CHPE-568RD"};
 
-    public static final long FEE_CONTRACT = BurstCrypto.getInstance().rsDecode("BNR6-GMFS-S6CF-8XFGU").getSignedLongId();
+    public static final long FEE_CONTRACT = SignumCrypto.getInstance().rsDecode("BNR6-GMFS-S6CF-8XFGU").getSignedLongId();
 
-    public static final long FEE_CONTRACT_TESTNET = BurstCrypto.getInstance().rsDecode("G4XE-MB8T-WWZC-E4GFU").getSignedLongId();
+    public static final long FEE_CONTRACT_TESTNET = SignumCrypto.getInstance().rsDecode("G4XE-MB8T-WWZC-E4GFU").getSignedLongId();
     
-    public static final long TRT_DIVIDENDS = BurstID.fromLong("14893248166511032525").getSignedLongId();
+    public static final long TRT_DIVIDENDS = SignumID.fromLong("14893248166511032525").getSignedLongId();
 
-    public static final String BURST_SYMBOL = "\u0243";
+    public static final String BURST_SYMBOL = "\uA7A8";
 
-    public static final String BURST_TICKER = "BURST";
+    public static final String BURST_TICKER = "SIGNA";
 
     // Number of confirmations needed for SC update to be taken into account
     public static final int PRICE_NCONF = 1;

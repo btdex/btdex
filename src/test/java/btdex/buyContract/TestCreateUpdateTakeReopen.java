@@ -14,10 +14,10 @@ import bt.BT;
 import bt.Contract;
 import btdex.CreateSC;
 import btdex.sc.BuyContract;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.AT;
-import burst.kit.service.BurstNodeService;
+import signumj.entity.SignumAddress;
+import signumj.entity.SignumValue;
+import signumj.entity.response.AT;
+import signumj.service.NodeService;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class TestCreateUpdateTakeReopen {
@@ -33,8 +33,8 @@ public class TestCreateUpdateTakeReopen {
     private static long balance;
     private static long wantsToBuyInPlanks;
     private static String takerPass;
-    private static BurstAddress taker;
-    private static BurstNodeService bns = BT.getNode();
+    private static SignumAddress taker;
+    private static NodeService bns = BT.getNode();
     private static CreateSC sc;
     private static long paidFeeForSCstep = BuyContract.LAST_STEP_FEE;
 
@@ -45,7 +45,7 @@ public class TestCreateUpdateTakeReopen {
         makerPass = Long.toString(System.currentTimeMillis());
         String name = sc.registerSC(makerPass);
 
-        BurstAddress maker = BT.getBurstAddressFromPassphrase(makerPass);
+        SignumAddress maker = BT.getAddressFromPassphrase(makerPass);
         contract = BT.findContract(maker, name);
         System.out.println("Created contract id " + contract.getId().getID());
 
@@ -73,7 +73,7 @@ public class TestCreateUpdateTakeReopen {
     }
 
     private long accBalance(String pass) {
-        return (bns.getAccount(BT.getBurstAddressFromPassphrase(pass)).blockingGet()).getBalance().longValue();
+        return (bns.getAccount(BT.getAddressFromPassphrase(pass)).blockingGet()).getBalance().longValue();
     }
 
     @Test
@@ -83,7 +83,7 @@ public class TestCreateUpdateTakeReopen {
         wantsToBuyInPlanks = Contract.ONE_BURST * 100L; //100 Burst
         security = Contract.ONE_BURST * 10L; //10 Burst
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                BurstValue.fromPlanck(security + BuyContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000, wantsToBuyInPlanks).blockingGet();
+                SignumValue.fromNQT(security + BuyContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000, wantsToBuyInPlanks).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
         // should now be open
@@ -105,7 +105,7 @@ public class TestCreateUpdateTakeReopen {
     @Order(5)
     public void initTaker() {
         takerPass = Long.toString(System.currentTimeMillis());
-        taker = BT.getBurstAddressFromPassphrase(takerPass);
+        taker = BT.getAddressFromPassphrase(takerPass);
         //register taker in chain
         BT.forgeBlock(takerPass);
         //fund taker if needed
@@ -119,7 +119,7 @@ public class TestCreateUpdateTakeReopen {
     public void testOfferTake() {
         // Take the offer
         BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
-                BurstValue.fromPlanck(security_chain + BuyContract.ACTIVATION_FEE + wantsToBuyInPlanks), BurstValue.fromBurst(0.1), 100,
+                SignumValue.fromNQT(security_chain + BuyContract.ACTIVATION_FEE + wantsToBuyInPlanks), SignumValue.fromSigna(0.1), 100,
                 security_chain, amount_chain).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
@@ -138,7 +138,7 @@ public class TestCreateUpdateTakeReopen {
     public void testTakerSignal() {
         // Taker signals the payment was received (off-chain)
         BT.callMethod(takerPass, contract.getId(), compiled.getMethod("reportComplete"),
-                BurstValue.fromPlanck(BuyContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100).blockingGet();
+                SignumValue.fromNQT(BuyContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 
@@ -157,7 +157,7 @@ public class TestCreateUpdateTakeReopen {
         wantsToBuyInPlanks = 100_000_000L * 1000L; //1000 Burst
         security = 100_000_000L * 150L; //10 Burst
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                BurstValue.fromPlanck(security + BuyContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000, wantsToBuyInPlanks).blockingGet();
+                SignumValue.fromNQT(security + BuyContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000, wantsToBuyInPlanks).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
         // should now be open

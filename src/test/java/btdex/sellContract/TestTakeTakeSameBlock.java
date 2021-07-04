@@ -12,10 +12,10 @@ import org.junit.jupiter.api.TestMethodOrder;
 import bt.BT;
 import btdex.CreateSC;
 import btdex.sc.SellContract;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.AT;
-import burst.kit.service.BurstNodeService;
+import signumj.entity.SignumAddress;
+import signumj.entity.SignumValue;
+import signumj.entity.response.AT;
+import signumj.service.NodeService;
 
 /* This test checks who has priority then taking offer in same time (same block */
 
@@ -34,9 +34,9 @@ public class TestTakeTakeSameBlock {
     private static long security_chain;
     private static String takerPassOne;
     private static String takerPassTwo;
-    private static BurstAddress takerOne;
-    private static BurstAddress takerTwo;
-    private static BurstNodeService bns = BT.getNode();
+    private static SignumAddress takerOne;
+    private static SignumAddress takerTwo;
+    private static NodeService bns = BT.getNode();
     private static CreateSC sc;
 
     @Test
@@ -46,7 +46,7 @@ public class TestTakeTakeSameBlock {
         makerPass = Long.toString(System.currentTimeMillis());
         String name = sc.registerSC(makerPass);
 
-        BurstAddress maker = BT.getBurstAddressFromPassphrase(makerPass);
+        SignumAddress maker = BT.getAddressFromPassphrase(makerPass);
         contract = BT.findContract(maker, name);
         System.out.println("Created contract id " + contract.getId().getID());
 
@@ -59,7 +59,7 @@ public class TestTakeTakeSameBlock {
             BT.forgeBlock(makerPass);
         }
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                BurstValue.fromPlanck(sent), BurstValue.fromBurst(0.1), 1000,
+                SignumValue.fromNQT(sent), SignumValue.fromSigna(0.1), 1000,
                 security).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
@@ -71,14 +71,14 @@ public class TestTakeTakeSameBlock {
     }
 
     private long accBalance(String pass) {
-        return (bns.getAccount(BT.getBurstAddressFromPassphrase(pass)).blockingGet()).getBalance().longValue();
+        return (bns.getAccount(BT.getAddressFromPassphrase(pass)).blockingGet()).getBalance().longValue();
     }
 
     @Test
     @Order(2)
     public void initTakerOne() {
         takerPassOne = Long.toString(System.currentTimeMillis());
-        takerOne = BT.getBurstAddressFromPassphrase(takerPassOne);
+        takerOne = BT.getAddressFromPassphrase(takerPassOne);
         //register taker in chain
         BT.forgeBlock(takerPassOne);
         //fund taker if needed
@@ -91,7 +91,7 @@ public class TestTakeTakeSameBlock {
     @Order(3)
     public void initTakerTwo() {
         takerPassTwo = Long.toString(System.currentTimeMillis());
-        takerTwo = BT.getBurstAddressFromPassphrase(takerPassTwo);
+        takerTwo = BT.getAddressFromPassphrase(takerPassTwo);
         //register taker in chain
         BT.forgeBlock(takerPassTwo);
         //fund taker if needed
@@ -104,10 +104,10 @@ public class TestTakeTakeSameBlock {
     public void testOfferTake() {
         // Take the offer
         BT.callMethod(takerPassOne, contract.getId(), compiled.getMethod("take"),
-                BurstValue.fromPlanck(security + SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
+                SignumValue.fromNQT(security + SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100,
                 security, amount_chain).blockingGet();
         BT.callMethod(takerPassTwo, contract.getId(), compiled.getMethod("take"),
-                BurstValue.fromPlanck(security + SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 100,
+                SignumValue.fromNQT(security + SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100,
                 security, amount_chain).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();

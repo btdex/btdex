@@ -32,7 +32,7 @@ import btdex.core.NumberFormatting;
 import btdex.sc.SellContract;
 import btdex.ui.orderbook.ActionButton;
 import btdex.ui.orderbook.BookTable;
-import burst.kit.entity.BurstAddress;
+import signumj.entity.SignumAddress;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
 
@@ -181,16 +181,16 @@ public class MediationPanel extends JPanel {
 			String type = tr(s.getType() == ContractType.BUY ? "offer_buy_burst_with" : "offer_sell_burst_for", market.toString());
 			model.setValueAt(type, row, COL_MARKET);
 			
-			BurstAddress maker = s.getCreator();
-			BurstAddress taker = BurstAddress.fromId(s.getTaker());
+			SignumAddress maker = s.getCreator();
+			SignumAddress taker = SignumAddress.fromId(s.getTaker());
 
-			model.setValueAt(new ExplorerButton(maker.getRawAddress(), copyIcon, expIcon,
+			model.setValueAt(new ExplorerButton(maker.getFullAddress(), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, maker.getID(), maker.getFullAddress()), row, COL_MAKER);
-			model.setValueAt(new ExplorerButton(taker.getRawAddress(), copyIcon, expIcon,
+			model.setValueAt(new ExplorerButton(taker.getFullAddress(), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, taker.getID(), taker.getFullAddress()), row, COL_TAKER);
 
 			model.setValueAt(new ExplorerButton(
-					s.getAddress().getRawAddress(), copyIcon, expIcon,
+					s.getAddress().getFullAddress(), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, s.getAddress().getID(),
 							s.getAddress().getFullAddress()), row, COL_CONTRACT);
 

@@ -31,11 +31,11 @@ import btdex.core.Market;
 import btdex.core.NumberFormatting;
 import btdex.ledger.LedgerService;
 import btdex.ledger.LedgerService.SignCallBack;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.Account;
-import burst.kit.entity.response.FeeSuggestion;
-import burst.kit.entity.response.TransactionBroadcast;
+import signumj.entity.SignumAddress;
+import signumj.entity.SignumValue;
+import signumj.entity.response.Account;
+import signumj.entity.response.FeeSuggestion;
+import signumj.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
 public class SendDialog extends JDialog implements ActionListener, SignCallBack {
@@ -48,7 +48,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 	private byte[] unsigned;
 	private JPasswordField pin;
 	private JSlider feeSlider;
-	private BurstValue selectedFee;
+	private SignumValue selectedFee;
 
 	private JButton okButton;
 
@@ -59,14 +59,15 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 	private int type;
 	public static final int TYPE_SEND = 0;
 	public static final int TYPE_JOIN_POOL = 1;
-	public static final int TYPE_ADD_COMMITMENT = 2;
-	public static final int TYPE_REMOVE_COMMITMENT = 3;
+	public static final int TYPE_GO_SOLO = 2;
+	public static final int TYPE_ADD_COMMITMENT = 3;
+	public static final int TYPE_REMOVE_COMMITMENT = 4;
 
 	public SendDialog(JFrame owner, Market token) {
 		this(owner, token, TYPE_SEND, null);
 	}
 	
-	public SendDialog(JFrame owner, Market token, int type, BurstAddress pool) {
+	public SendDialog(JFrame owner, Market token, int type, SignumAddress pool) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
@@ -76,6 +77,9 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 		if(type == TYPE_JOIN_POOL) {
 			setTitle(tr("send_join_pool"));
 		}
+		else if(type == TYPE_GO_SOLO) {
+			setTitle(tr("send_go_solo"));
+		}
 		else if(type == TYPE_ADD_COMMITMENT) {
 			setTitle(tr("send_add_commitment"));
 		}
@@ -83,7 +87,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 			setTitle(tr("send_remove_commitment"));
 		}
 		else
-			setTitle(tr("main_send", token==null ? "BURST" : token));
+			setTitle(tr("main_send", token==null ? Constants.BURST_TICKER : token));
 
 		JPanel topPanel = new JPanel(new GridLayout(0, 1, 4, 4));
 
@@ -98,9 +102,9 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 		amount = new JFormattedTextField(token==null ? NumberFormatting.BURST.getFormat() : token.getNumberFormat().getFormat());
 		feeSlider = new JSlider(1, 4);
 
-		if(type == TYPE_SEND || type == TYPE_JOIN_POOL) {
-			topPanel.add(new Desc(tr(type == TYPE_JOIN_POOL ? "send_pool_address" : "send_recipient"), recipient));
-			if(type == TYPE_JOIN_POOL) {
+		if(type == TYPE_SEND || type == TYPE_JOIN_POOL || type == TYPE_GO_SOLO) {
+			topPanel.add(new Desc(tr(type != TYPE_SEND ? "send_pool_address" : "send_recipient"), recipient));
+			if(type != TYPE_SEND) {
 				recipient.setEditable(false);
 				recipient.setText(pool.getFullAddress());
 			}
@@ -110,15 +114,15 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 			message.setToolTipText(tr("send_empty_for_no_message"));
 		}
 
-		if(type != TYPE_JOIN_POOL) {
-			panel.add(new Desc(tr("send_amount", token==null ? "BURST" : token), amount));
+		if(type != TYPE_JOIN_POOL && type != TYPE_GO_SOLO) {
+			panel.add(new Desc(tr("send_amount", token==null ? Constants.BURST_TICKER : token), amount));
 		}
-		if(type == TYPE_JOIN_POOL) {
+		if(type == TYPE_JOIN_POOL || type == TYPE_GO_SOLO) {
 			panel.add(new Desc(" ", new JLabel(" ")));
 			amount.setText("0");
 		}
 		Desc feeDesc = new Desc("", feeSlider);
-		if(type == TYPE_JOIN_POOL) {
+		if(type == TYPE_JOIN_POOL || type == TYPE_GO_SOLO) {
 			// Avoid cropping the slider ball
 			feeSlider.setPreferredSize(new Dimension(20, 40));
 		}
@@ -131,7 +135,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 				switch (feeSlider.getValue()) {
 				case 1:
 					feeType = tr("fee_minimum");
-					selectedFee = BurstValue.fromPlanck(Constants.FEE_QUANT);
+					selectedFee = SignumValue.fromNQT(Constants.FEE_QUANT);
 					break;
 				case 2:
 					feeType = tr("fee_cheap");
@@ -197,9 +201,9 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 
 			String error = null;
 			String sadd = recipient.getText();
-			BurstAddress recAddress = null;
-			if(type == TYPE_SEND || type == TYPE_JOIN_POOL) {
-				recAddress = BurstAddress.fromEither(sadd);
+			SignumAddress recAddress = null;
+			if(type == TYPE_SEND || type == TYPE_JOIN_POOL || type == TYPE_GO_SOLO) {
+				recAddress = SignumAddress.fromEither(sadd);
 				if(recAddress == null && type == TYPE_SEND)
 					error = tr("send_invalid_recipient");
 			}
@@ -235,17 +239,17 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 				pin.setEnabled(false);
 				okButton.setEnabled(false);
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				BurstValue amountToSend = BurstValue.fromBurst(amountNumber.doubleValue());
+				SignumValue amountToSend = SignumValue.fromSigna(amountNumber.doubleValue());
 
 				try {
 					// all set, lets make the transfer
 					Single<byte[]> utx = null;
 					if(token!=null) {
 						utx = g.getNS().generateTransferAssetTransactionWithMessage(g.getPubKey(), recAddress,
-								token.getTokenID(), BurstValue.fromPlanck((long)(amountNumber.doubleValue()*token.getFactor())),
+								token.getTokenID(), SignumValue.fromNQT((long)(amountNumber.doubleValue()*token.getFactor())),
 								selectedFee, Constants.BURST_SEND_DEADLINE, msg);
 					}
-					else if(type == TYPE_JOIN_POOL){
+					else if(type == TYPE_JOIN_POOL  || type == TYPE_GO_SOLO){
 						utx = g.getNS().generateTransactionSetRewardRecipient(recAddress, g.getPubKey(),
 								selectedFee, Constants.BURST_SEND_DEADLINE);
 					}

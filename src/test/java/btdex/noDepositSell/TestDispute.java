@@ -12,9 +12,9 @@ import org.junit.jupiter.api.TestMethodOrder;
 import bt.BT;
 import btdex.sc.SellContract;
 import btdex.sc.SellNoDepositContract;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.AT;
+import signumj.entity.SignumAddress;
+import signumj.entity.SignumValue;
+import signumj.entity.response.AT;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class TestDispute {
@@ -33,13 +33,13 @@ public class TestDispute {
         makerPass = Long.toString(System.currentTimeMillis());
         sc.registerSC(makerPass);
 
-        BurstAddress maker = BT.getBurstAddressFromPassphrase(makerPass);
+        SignumAddress maker = BT.getAddressFromPassphrase(makerPass);
         BT.forgeBlock();
         compiled = sc.getCompiled();
         contract = BT.findContract(maker, sc.getName());
 
-        BurstValue send = BurstValue.fromBurst(100);
-        BT.sendAmount(makerPass, contract.getId(), send, BurstValue.fromBurst(0.1)).blockingGet();
+        SignumValue send = SignumValue.fromSigna(100);
+        BT.sendAmount(makerPass, contract.getId(), send, SignumValue.fromSigna(0.1)).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 
@@ -52,7 +52,7 @@ public class TestDispute {
     @Order(2)
     public void invalidDispute() {
         BT.callMethod(BT.PASSPHRASE3, contract.getId(), compiled.getMethod("dispute"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000, true, 1000000).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000, true, 1000000).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
@@ -64,7 +64,7 @@ public class TestDispute {
     @Order(3)
     public void dispute() {
         BT.callMethod(sc.getMediatorOnePassword(), contract.getId(), compiled.getMethod("dispute"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000, true, 0).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000, true, 0).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 
@@ -78,7 +78,7 @@ public class TestDispute {
     public void disputeAgain() {
         long balanceBefore = sc.getFeeContractBalance();
         BT.callMethod(sc.getMediatorTwoPassword(), contract.getId(), compiled.getMethod("dispute"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000, false, 20000000).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000, false, 20000000).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 

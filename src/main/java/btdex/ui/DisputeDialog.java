@@ -38,8 +38,8 @@ import bt.BT;
 import btdex.core.*;
 import btdex.markets.MarketCrypto;
 import btdex.sc.SellContract;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.TransactionBroadcast;
+import signumj.entity.SignumValue;
+import signumj.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
 public class DisputeDialog extends JDialog implements ActionListener, ChangeListener {
@@ -81,7 +81,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 	private boolean isBuy, isCreator, isMediator, isMediating;
 	private boolean hasOtherSuggestion, hasYourSuggestion;
 
-	private BurstValue suggestedFee;
+	private SignumValue suggestedFee;
 
 	private StringBuilder terms;
 
@@ -136,7 +136,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		fieldPanel.setBorder(BorderFactory.createTitledBorder(tr("disp_original_offer")));
 
 		fieldPanel.add(new Desc(tr("offer_price", market), priceField));
-		fieldPanel.add(new Desc(tr("offer_size", "BURST"), amountField));
+		fieldPanel.add(new Desc(tr("offer_size", Constants.BURST_TICKER), amountField));
 		fieldPanel.add(new Desc(tr("offer_total", market), totalField));
 
 		addressButton = new ClipboardAndQRButton(this, 18, amountField.getForeground());
@@ -181,8 +181,8 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		otherPanel.add(otherAmountOtherDesc = new Desc("", otherAmountOtherSlider = new JSlider(0, 100)));
 		otherAmountOtherSlider.setValue((int)(contract.getDisputeAmount(!isCreator, !isCreator)*100 / amount));
 		otherAmountYouSlider.setValue((int)(contract.getDisputeAmount(!isCreator, isCreator)*100 / amount));
-		otherAmountOtherDesc.setDesc(NumberFormatting.BURST.format(amount*otherAmountOtherSlider.getValue() / 100) + " BURST");
-		otherAmountYouDesc.setDesc(NumberFormatting.BURST.format(amount*otherAmountYouSlider.getValue() / 100) + " BURST");
+		otherAmountOtherDesc.setDesc(NumberFormatting.BURST.format(amount*otherAmountOtherSlider.getValue() / 100) + " " + Constants.BURST_TICKER);
+		otherAmountYouDesc.setDesc(NumberFormatting.BURST.format(amount*otherAmountYouSlider.getValue() / 100) + " " + Constants.BURST_TICKER);
 
 		otherAmountOtherSlider.setEnabled(false);
 		otherAmountYouSlider.setEnabled(false);
@@ -421,7 +421,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 
 				// we are sending the dispute message with our amounts
 				byte[] message = BT.callMethodMessage(contract.getMethod("dispute"), amountToCreator, amountToTaker);
-				BurstValue amountToSend = BurstValue.fromPlanck(contract.getActivationFee());
+				SignumValue amountToSend = SignumValue.fromNQT(contract.getActivationFee());
 
 				Single<byte[]> utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 						amountToSend, suggestedFee,
@@ -507,9 +507,9 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 				NumberFormatting.BURST.format(isCreator ? amountToCreator : amountToTaker),
 				NumberFormatting.BURST.format(isCreator ? amountToTaker : amountToCreator)
 				));
-		append(tr("disp_dispute_terms", suggestedFee.add(BurstValue.fromPlanck(contract.getActivationFee())).toUnformattedString()));
+		append(tr("disp_dispute_terms", suggestedFee.add(SignumValue.fromNQT(contract.getActivationFee())).toUnformattedString()));
 		if(!isMediator)
-			append(tr("disp_mediating", suggestedFee.add(BurstValue.fromPlanck(contract.getActivationFee())).toUnformattedString()));
+			append(tr("disp_mediating", suggestedFee.add(SignumValue.fromNQT(contract.getActivationFee())).toUnformattedString()));
 
 		// checking it has the balance before requesting the deposit
 		if(unexpectedState) {
@@ -536,23 +536,23 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 	@Override
 	public void stateChanged(ChangeEvent e) {
 		if(e.getSource() == yourAmountYouSlider) {
-			yourAmountYouDesc.setDesc(NumberFormatting.BURST.format(amount*yourAmountYouSlider.getValue() / 100) + " BURST");
+			yourAmountYouDesc.setDesc(NumberFormatting.BURST.format(amount*yourAmountYouSlider.getValue() / 100) + " " + Constants.BURST_TICKER);
 			yourAmountOtherSlider.setValue(100-yourAmountYouSlider.getValue());
 		}
 		if(e.getSource() == yourAmountOtherSlider) {
-			yourAmountOtherDesc.setDesc(NumberFormatting.BURST.format(amount*yourAmountOtherSlider.getValue() / 100) + " BURST");
+			yourAmountOtherDesc.setDesc(NumberFormatting.BURST.format(amount*yourAmountOtherSlider.getValue() / 100) + " " + Constants.BURST_TICKER);
 			yourAmountYouSlider.setValue(100-yourAmountOtherSlider.getValue());
 		}
 		if(e.getSource() == mediatorAmountMakerSlider) {
-			mediatorAmountMakerDesc.setDesc(NumberFormatting.BURST.format(amount*mediatorAmountMakerSlider.getValue() / 100) + " BURST");
+			mediatorAmountMakerDesc.setDesc(NumberFormatting.BURST.format(amount*mediatorAmountMakerSlider.getValue() / 100) + " " + Constants.BURST_TICKER);
 		}
 		if(e.getSource() == mediatorAmountTakerSlider) {
-			mediatorAmountTakerDesc.setDesc(NumberFormatting.BURST.format(amount*mediatorAmountTakerSlider.getValue() / 100) + " BURST");
+			mediatorAmountTakerDesc.setDesc(NumberFormatting.BURST.format(amount*mediatorAmountTakerSlider.getValue() / 100) + " " + Constants.BURST_TICKER);
 		}
 		if(e.getSource() == mediatorAmountMakerSlider || e.getSource() == mediatorAmountTakerSlider) {
 			int amountToSides = mediatorAmountMakerSlider.getValue() + mediatorAmountTakerSlider.getValue();
 			amountToFeeContract = (100-amountToSides)*amount / 100;
-			amountToFeeContractLabel.setText(NumberFormatting.BURST.format(amountToFeeContract) + " BURST");
+			amountToFeeContractLabel.setText(NumberFormatting.BURST.format(amountToFeeContract) + " " + Constants.BURST_TICKER);
 			amountToFeeContractLabel.setForeground(amountToSides > 100 ? Color.RED : mediatorAmountTakerSlider.getForeground());
 		}
 	}

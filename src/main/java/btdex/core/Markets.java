@@ -16,7 +16,7 @@ import btdex.markets.MarketXMR;
 import btdex.markets.MarketXLA;
 import btdex.markets.MarketB1MT;
 import btdex.markets.MarketOK;
-import burst.kit.service.BurstNodeService;
+import signumj.service.NodeService;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,7 +28,7 @@ public class Markets {
 
     private static Logger logger = LogManager.getLogger();
 
-    public static void loadStandardMarkets(Boolean testnet, BurstNodeService NS) {
+    public static void loadStandardMarkets(Boolean testnet, NodeService NS) {
         markets.add(token = new MarketTRT());
         
 //        markets.add(new MarketEUR());

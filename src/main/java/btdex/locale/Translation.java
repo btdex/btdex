@@ -9,6 +9,8 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.Properties;
 
+import javax.swing.JOptionPane;
+
 public class Translation {
 
 	private static final String RESOURCE_FILE = "/locale/i18n.btdex";
@@ -23,13 +25,14 @@ public class Translation {
 	private static final Locale[] languages = {
 		Locale.ENGLISH,
 		Locale.GERMAN,
-		// Locale.forLanguageTag("es"),
+		Locale.forLanguageTag("es"),
 		Locale.forLanguageTag("pt"),
 		Locale.forLanguageTag("it"),
 		Locale.forLanguageTag("da"),
 		Locale.forLanguageTag("lt"),
 		Locale.forLanguageTag("ru"),
 		Locale.forLanguageTag("zh"),
+		Locale.forLanguageTag("zh-TW"),
 		Locale.forLanguageTag("ms"),
 	};
 
@@ -58,8 +61,9 @@ public class Translation {
 			logger.debug("Machine language: {}", language);
 		}
 		locale = Locale.forLanguageTag(language);
+		JOptionPane.setDefaultLocale(locale);
 		try {
-			InputStream stream = Translation.class.getResourceAsStream(RESOURCE_TR_FILE + "_" + language + ".properties");
+			InputStream stream = Translation.class.getResourceAsStream(RESOURCE_TR_FILE + "_" + language.replace('-', '_') + ".properties");
 			if(stream != null) {
 				resource = new Properties();
 				resource.load(stream);

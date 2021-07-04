@@ -15,19 +15,19 @@ public class ExplorerWrapper {
 	private String baseURL, key;
 	private String accountPath, transactionPath, tokenPath;
 
-	public static final String BURSTCOIN_NETWORK = "burstcoin.network";
-	public static final String BURSTCOIN_RO = "burstcoin.ro";
+	public static final String SIGNUM_NETWORK = "signum.network";
+	public static final String SIGNUMCOIN_RO = "signumcoin.ro";
 //	public static final String BURSTSCAN_NET = "burstscan.net";
 
 	public static ExplorerWrapper getExplorer(String exp) {
 		if(exp!=null) {
 			switch (exp) {
-			case BURSTCOIN_RO:
+			case SIGNUMCOIN_RO:
 				if(!Globals.getInstance().isTestnet())
 					return burstcoinRo();
 //			case BURSTSCAN_NET:
 //				return burstScanNet();
-			case BURSTCOIN_NETWORK:
+			case SIGNUM_NETWORK:
 				return burstcoinNetwork();
 			}
 		}
@@ -36,13 +36,13 @@ public class ExplorerWrapper {
 
 	public static ExplorerWrapper burstcoinNetwork() {
 		String baseURL = Globals.getInstance().isTestnet() ?
-				"https://testnet.explorer.burstcoin.network" : "https://explorer.burstcoin.network";
-		return new ExplorerWrapper(BURSTCOIN_NETWORK, baseURL,
+				"https://testnet.explorer.burstcoin.network" : "https://explorer.signum.network";
+		return new ExplorerWrapper(SIGNUM_NETWORK, baseURL,
 				"/?action=account&account=", "/?action=transaction&id=", "/?action=token_inspect&id=");
 	}
 
 	public static ExplorerWrapper burstcoinRo() {
-		return new ExplorerWrapper(BURSTCOIN_RO, "https://explore.burstcoin.ro",
+		return new ExplorerWrapper(SIGNUMCOIN_RO, "https://explorer.signumcoin.ro",
 				"/account/", "/transaction/", "/asset/");
 	}
 

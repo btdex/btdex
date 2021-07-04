@@ -1,5 +1,6 @@
 package btdex.ui.orderbook;
 
+import btdex.core.Constants;
 import btdex.locale.Translation;
 
 import javax.swing.table.DefaultTableModel;
@@ -26,14 +27,14 @@ class TableModelToken extends DefaultTableModel {
 
         String colName = OrderBookSettings.columnNames[COLS[col]];
         if(col == COLS[OrderBookSettings.COL_PRICE])
-            colName = tr("book_price", isToken ? "BURST" : orderBook.getMarket());
+            colName = tr("book_price", isToken ? Constants.BURST_TICKER : orderBook.getMarket());
         else if(col == COLS[OrderBookSettings.COL_TOTAL])
-            colName = tr("book_total", isToken ? "BURST" : orderBook.getMarket());
+            colName = tr("book_total", isToken ? Constants.BURST_TICKER : orderBook.getMarket());
         else if(col == COLS[OrderBookSettings.COL_SIZE]) {
             if(isToken)
                 colName = Translation.tr("book_size", orderBook.getMarket());
             else
-                colName = tr("book_size", "BURST") + " (" + tr("book_deposit") + ")";
+                colName = tr("book_size", Constants.BURST_TICKER) + " (" + tr("book_deposit") + ")";
         }
         else if((col == COLS[OrderBookSettings.COL_CONTRACT]) && isToken)
             colName = tr("book_order");

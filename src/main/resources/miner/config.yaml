@@ -1,0 +1,29 @@
+
+hdd_reader_thread_count: 0            # default 0 (=auto: number of disks)
+hdd_use_direct_io: true               # default true
+hdd_wakeup_after: 120                 # default 240s
+
+cpu_nonces_per_cache: 65536           # default 65536
+cpu_thread_pinning: false             # default false
+
+gpu_threads: 0                        # default 0 (=GPU off)
+gpu_platform: 0                       # default 0
+gpu_device: 0                         # default 0
+gpu_worker_task_count: 0              # default 0 (=CPU only)
+gpu_nonces_per_cache: 262144          # default 262144
+gpu_mem_mapping: false                # default false
+gpu_async: false                      # default false
+
+console_log_level: 'info'             # default Info, options (off, error, warn, info, debug, trace)
+logfile_log_level: 'off'              # default Warn, options (off, error, warn, info, debug, trace)
+logfile_max_count: 10                 # maximum number of log files to keep
+logfile_max_size : 20                 # maximum size per logfile in MiB
+
+get_mining_info_interval: 10000       # default 3000ms
+timeout: 20000                        # default 5000ms
+
+show_progress: false                  # default true  
+
+# Low noise log patterns
+console_log_pattern: "{([{l}]):10.10} {m}{n}"
+logfile_log_pattern: "{({d(%Y-%m-%d %H:%M:%S)} [{l}]):26.26} {m}{n}"

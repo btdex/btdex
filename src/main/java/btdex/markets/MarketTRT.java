@@ -6,7 +6,7 @@ import java.util.HashMap;
 import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
-import burst.kit.entity.BurstID;
+import signumj.entity.SignumID;
 
 public class MarketTRT extends Market {
 	
@@ -21,11 +21,11 @@ public class MarketTRT extends Market {
 	}
 	
 	@Override
-	public BurstID getTokenID() {
+	public SignumID getTokenID() {
 		if(Globals.getInstance().isTestnet())
-			return BurstID.fromLong("13868324881938171674");
+			return SignumID.fromLong("13868324881938171674");
 		
-		return BurstID.fromLong("12402415494995249540");
+		return SignumID.fromLong("12402415494995249540");
 	}
 	
 	@Override

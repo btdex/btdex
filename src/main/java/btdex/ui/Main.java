@@ -40,6 +40,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.UIManager;
@@ -52,7 +53,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.bulenkov.darcula.DarculaLaf;
 
-import bt.BT;
 import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.ContractState;
@@ -64,9 +64,10 @@ import btdex.locale.Translation;
 import btdex.sc.SellContract;
 import btdex.ui.orderbook.MarketPanel;
 import btdex.ui.orderbook.TokenMarketPanel;
-import burst.kit.entity.response.Account;
-import burst.kit.entity.response.Block;
-import burst.kit.entity.response.http.BRSError;
+import signumj.entity.SignumAddress;
+import signumj.entity.response.Account;
+import signumj.entity.response.Block;
+import signumj.entity.response.http.BRSError;
 import dorkbox.systemTray.MenuItem;
 import dorkbox.systemTray.SystemTray;
 import dorkbox.util.OS;
@@ -159,8 +160,6 @@ public class Main extends JFrame implements ActionListener {
 		readLocalResources();
 		setUIManager();
 
-		addSystemTray();
-		
 		IconFontSwing.register(FontAwesome.getIconFont());
 		IconFontSwing.register(FontAwesomeBrands.getIconFont());
 		setBackground(Color.BLACK);
@@ -169,6 +168,8 @@ public class Main extends JFrame implements ActionListener {
 
 		Translation.setLanguage(g.getLanguage());
 
+		addSystemTray();
+		
 		tabbedPane = new JTabbedPane();
 		tabbedPane.setOpaque(true);
 		tabbedPane.addChangeListener(new ChangeListener() {
@@ -236,7 +237,7 @@ public class Main extends JFrame implements ActionListener {
 		copyAddButton.getMainButton().setFont(largeFont);
 
 		sendButton = new JButton(i.get(Icons.SEND));
-		sendButton.setToolTipText(tr("main_send", "BURST"));
+		sendButton.setToolTipText(tr("main_send", Constants.BURST_TICKER));
 		sendButton.addActionListener(this);
 
 		content.add(tabbedPane, BorderLayout.CENTER);
@@ -244,8 +245,7 @@ public class Main extends JFrame implements ActionListener {
 
 		tabbedPane.addTab(tr("main_swaps"), i.get(Icons.SWAPS), orderBookToken);
 		tabbedPane.addTab(tr("main_contracts"), i.get(Icons.CROSS_CHAIN), orderBook);
-		if(!OS.isMacOsX())
-			tabbedPane.addTab(tr("main_mining"), i.get(Icons.MINING), miningPanel = new MiningPanel());
+		tabbedPane.addTab(tr("main_mining"), i.get(Icons.MINING), miningPanel = new MiningPanel());
 
 		boolean isMediator = g.getAddress()!=null && g.getMediators().isMediator(g.getAddress().getSignedLongId());
 
@@ -263,7 +263,7 @@ public class Main extends JFrame implements ActionListener {
 		balanceLabel.setFont(largeFont);
 		lockedBalanceLabel = new JLabel(tr("main_plus_locked", NumberFormatting.BURST.format(0)));
 		lockedBalanceLabel.setToolTipText(tr("main_amount_locked"));
-		top.add(new Desc(tr("main_balance", "BURST"), balanceLabel, lockedBalanceLabel));
+		top.add(new Desc(tr("main_balance", Constants.BURST_TICKER), balanceLabel, lockedBalanceLabel));
 		top.add(new Desc("  ", sendButton));
 
 		topRight.add(new Desc("  ", createSettingsButton(largeFont)));
@@ -309,7 +309,7 @@ public class Main extends JFrame implements ActionListener {
 
 			resetPinButton.setVisible(!g.usingLedger());
 		}
-		copyAddButton.getMainButton().setText(g.getAddress().getRawAddress());
+		copyAddButton.getMainButton().setText(printAddress(g.getAddress()));
 		copyAddButton.setAddress(g.getAddress().getID(), g.getAddress().getFullAddress());
 
 		// check if this is a known account
@@ -415,6 +415,7 @@ public class Main extends JFrame implements ActionListener {
 	
 	@SuppressWarnings("serial")
 	private void addSystemTray() {
+		logger.debug("adding to system tray");
 		Action showHideAction = new AbstractAction(tr("tray_show_hide")) {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -577,12 +578,15 @@ public class Main extends JFrame implements ActionListener {
 				logger.debug("Lang Button clicked");
 				JPopupMenu menu = new JPopupMenu();
 				for(Locale l : Translation.getSupportedLanguages()) {
-					JMenuItem item = new JMenuItem(l.getDisplayLanguage(Translation.getCurrentLocale()));
+					String country = l.getDisplayCountry(Translation.getCurrentLocale());
+					JMenuItem item = new JMenuItem(l.getDisplayLanguage(Translation.getCurrentLocale())
+							+ (country.length() > 0 ? "-" + country : ""));
 					item.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
 							logger.debug("Language selected");
-							g.setLanguage(l.getLanguage());
+							String country = l.getCountry();
+							g.setLanguage(l.getLanguage() + (country.length() > 0 ? "-" + country : ""));
 							try {
 								g.saveConfs();
 							} catch (Exception e1) {
@@ -600,6 +604,13 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 		return langButton;
+	}
+	
+	public static String printAddress(SignumAddress address) {
+		String fullAddress = address.getFullAddress();
+		return fullAddress;
+		//return fullAddress.substring(0, 4) + "..." + fullAddress.substring(19);
+		//return fullAddress.substring(0, 6) + "..." + fullAddress.substring(17);
 	}
 	
 	private void doQuit() {
@@ -659,6 +670,19 @@ public class Main extends JFrame implements ActionListener {
 
 			nodeSelector.setIcon(g.isTestnet() ? ICON_TESTNET : ICON_CONNECTED);
 			nodeSelector.setBackground(explorerSelector.getBackground());
+
+			String nodeAddress = g.getNS().getAddress();
+			if(!nodeSelector.getText().equals(nodeAddress)) {
+				// if the best node changed
+				nodeSelector.setText(nodeAddress);
+				g.setNode(true, nodeAddress);
+				try {
+					g.saveConfs();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					Toast.makeText(this, ex.getMessage(), Toast.Style.ERROR).display();
+				}
+			}
 
 			Exception nodeException = bn.getNodeException();
 			if(nodeException != null) {
@@ -777,10 +801,10 @@ public class Main extends JFrame implements ActionListener {
 		if(e.getSource() == signoutButton) {
 			Globals g = Globals.getInstance();
 			String response = JOptionPane.showInputDialog(this,
-					tr(g.usingLedger() ? "main_exit_message_ledger" : "main_exit_message", g.getAddress().getRawAddress()),
+					tr(g.usingLedger() ? "main_exit_message_ledger" : "main_exit_message", g.getAddress().getFullAddress()),
 					tr("main_exit"), JOptionPane.OK_CANCEL_OPTION);
 			if(response != null) {
-				String strAddress = g.getAddress().getRawAddress();
+				String strAddress = g.getAddress().getFullAddress();
 				if(!response.equalsIgnoreCase(strAddress.substring(strAddress.length()-5))) {
 					Toast.makeText(this, tr("main_exit_error"), Toast.Style.ERROR).display();
 					return;
@@ -803,18 +827,27 @@ public class Main extends JFrame implements ActionListener {
 		else if (e.getSource() == nodeSelector) {
 
 			Globals g = Globals.getInstance();
+			String customNode = "";
+			if(!g.isNodeAutomatic())
+				customNode = g.getNode();
 
-			String[] list = Constants.NODE_LIST;
-			if(g.isTestnet()){
-				list = new String[]{Constants.NODE_TESTNET, BT.NODE_LOCAL_TESTNET };
-			}
-
-			JComboBox<String> nodeComboBox = new JComboBox<String>(list);
-			nodeComboBox.setEditable(true);
-			int ret = JOptionPane.showConfirmDialog(this, nodeComboBox, tr("main_select_node"), JOptionPane.OK_CANCEL_OPTION);
+			JTextField customNodeField = new JTextField(20);
+			customNodeField.setText(customNode);
+			JPanel customNodePanel = new JPanel(new BorderLayout());
+			customNodePanel.add(new JLabel(tr("main_select_node_text")), BorderLayout.PAGE_START);
+			customNodePanel.add(customNodeField, BorderLayout.PAGE_END);
+			int ret = JOptionPane.showConfirmDialog(this, customNodePanel, tr("main_select_node"), JOptionPane.OK_CANCEL_OPTION);
 
 			if(ret == JOptionPane.OK_OPTION) {
-				g.setNode(nodeComboBox.getSelectedItem().toString());
+				customNode = customNodeField.getText().trim();
+				if(customNode.length() > 0) {
+					g.setNode(false, customNode);
+				}
+				else {
+					if(g.isNodeAutomatic())
+						return;
+					g.setNode(true, g.getNS().getAddress());
+				}
 				try {
 					g.saveConfs();
 				} catch (Exception ex) {
@@ -822,9 +855,9 @@ public class Main extends JFrame implements ActionListener {
 					Toast.makeText(this, ex.getMessage(), Toast.Style.ERROR).display();
 				}
 
-				nodeSelector.setText(g.getNode());
-				statusLabel.setText("");
-				update();
+				JOptionPane.showMessageDialog(Main.this,
+						tr("main_restart_to_apply_changes"), tr("main_select_node"),
+						JOptionPane.OK_OPTION);
 			}
 		}
 

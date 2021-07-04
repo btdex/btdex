@@ -21,9 +21,9 @@ import btdex.core.Contracts;
 import btdex.core.Market;
 import btdex.core.Markets;
 import btdex.sc.SellContract;
-import burst.kit.entity.response.AssetOrder;
-import burst.kit.entity.response.AssetTrade;
-import burst.kit.entity.response.AssetTrade.TradeType;
+import signumj.entity.response.AssetOrder;
+import signumj.entity.response.AssetTrade;
+import signumj.entity.response.AssetTrade.TradeType;
 import fi.iki.elonen.NanoHTTPD;
 
 /**

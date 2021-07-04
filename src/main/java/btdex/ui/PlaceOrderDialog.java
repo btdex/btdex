@@ -40,9 +40,9 @@ import com.google.gson.JsonObject;
 import bt.BT;
 import btdex.markets.MarketCrypto;
 import btdex.sc.SellContract;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.Account;
-import burst.kit.entity.response.TransactionBroadcast;
+import signumj.entity.SignumValue;
+import signumj.entity.response.Account;
+import signumj.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
 public class PlaceOrderDialog extends JDialog implements ActionListener, DocumentListener {
@@ -72,9 +72,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 	private boolean isUpdate, isTake, isTaken, isBuy, isSignal, isDeposit, isMediator;
 
-	private BurstValue suggestedFee;
+	private SignumValue suggestedFee;
 
-	private BurstValue amountValue, priceValue;
+	private SignumValue amountValue, priceValue;
 
 	private Desc pinDesc;
 
@@ -137,7 +137,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		fieldPanel.setBorder(BorderFactory.createTitledBorder(tr("offer_offer_details")));
 
 		fieldPanel.add(new Desc(tr("offer_price", market), priceField));
-		fieldPanel.add(new Desc(tr("offer_size", "BURST"), amountField));
+		fieldPanel.add(new Desc(tr("offer_size", Constants.BURST_TICKER), amountField));
 		fieldPanel.add(new Desc(tr("offer_total", market), totalField));
 		
 		addressButton = new ClipboardAndQRButton(this, 18, amountField.getForeground());
@@ -417,12 +417,12 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					Toast.makeText((JFrame) this.getOwner(), tr("dlg_not_enough_balance"), Toast.Style.ERROR).display(okButton);
 					return;
 				}
-				BurstValue balance = ac.getUnconfirmedBalance();
+				SignumValue balance = ac.getUnconfirmedBalance();
 
 				Single<byte[]> utx = null;
 				Single<TransactionBroadcast> updateTx = null;
 
-				BurstValue configureFee = suggestedFee;
+				SignumValue configureFee = suggestedFee;
 				if(!isUpdate && !isTake && !isTaken) {
 					// configure a new contract and place the deposit
 					contract = isBuy ? Contracts.getFreeBuyContract() : Contracts.getFreeContract();
@@ -437,13 +437,13 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					long securityAmount = amountValue.longValue() * security.getValue() / 100L;
 					byte[] message = BT.callMethodMessage(contract.getMethod("update"), isBuy? amountValue.longValue() : securityAmount);
 
-					BurstValue amountToSend = BurstValue.fromPlanck(securityAmount + contract.getNewOfferFee());
+					SignumValue amountToSend = SignumValue.fromNQT(securityAmount + contract.getNewOfferFee());
 					if(!isBuy)
 						amountToSend = amountToSend.add(amountValue);
 					
 					// Checking if we will have balance for all transactions needed
-					BurstValue balanceNeeded = amountToSend.add(suggestedFee.multiply(2))
-							.add(BurstValue.fromPlanck(Constants.FEE_QUANT));
+					SignumValue balanceNeeded = amountToSend.add(suggestedFee.multiply(2))
+							.add(SignumValue.fromNQT(Constants.FEE_QUANT));
 					if(balance.compareTo(balanceNeeded) < 0) {
 						Toast.makeText((JFrame) this.getOwner(), tr("dlg_not_enough_balance"), Toast.Style.ERROR).display(okButton);
 						setCursor(Cursor.getDefaultCursor());
@@ -460,13 +460,13 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					});
 
 					// make sure the price setting goes first setting an extra priority for it
-					configureFee = suggestedFee.add(BurstValue.fromPlanck(Constants.FEE_QUANT));
+					configureFee = suggestedFee.add(SignumValue.fromNQT(Constants.FEE_QUANT));
 				}
 
 				if(isTaken && isSignal) {
 					// we are signaling that we have received
 					byte[] message = BT.callMethodMessage(contract.getMethod("reportComplete"));
-					BurstValue amountToSend = BurstValue.fromPlanck(contract.getActivationFee());
+					SignumValue amountToSend = SignumValue.fromNQT(contract.getActivationFee());
 
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 							amountToSend, suggestedFee,
@@ -474,13 +474,13 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				}
 				else if(isTake) {
 					// send the take transaction with the security deposit (+ amount if a buy order)
-					BurstValue amountToSend = BurstValue.fromPlanck(contract.getSecurityNQT() + contract.getActivationFee());
+					SignumValue amountToSend = SignumValue.fromNQT(contract.getSecurityNQT() + contract.getActivationFee());
 					if(isBuy) {
-						amountToSend = amountToSend.add(BurstValue.fromPlanck(contract.getAmountNQT()));
+						amountToSend = amountToSend.add(SignumValue.fromNQT(contract.getAmountNQT()));
 						
 						// Checking if we will have balance for all transactions needed
-						BurstValue balanceNeeded = amountToSend.add(configureFee.multiply(2))
-								.add(BurstValue.fromPlanck(Constants.FEE_QUANT));
+						SignumValue balanceNeeded = amountToSend.add(configureFee.multiply(2))
+								.add(SignumValue.fromNQT(Constants.FEE_QUANT));
 						if(balance.compareTo(balanceNeeded) < 0) {
 							Toast.makeText((JFrame) this.getOwner(), tr("dlg_not_enough_balance"), Toast.Style.ERROR).display(okButton);
 							setCursor(Cursor.getDefaultCursor());
@@ -501,7 +501,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 							return g.getNS().broadcastTransaction(signedTransactionBytes);
 						}).blockingGet();
 						// increase the fee to make sure the "take" will go first than this one
-						configureFee = configureFee.add(BurstValue.fromPlanck(Constants.FEE_QUANT));
+						configureFee = configureFee.add(SignumValue.fromNQT(Constants.FEE_QUANT));
 					}
 
 					byte[] message = BT.callMethodMessage(contract.getMethod("take"),
@@ -585,8 +585,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			Number priceN = NumberFormatting.parse(priceField.getText());
 			Number amountN = NumberFormatting.parse(amountField.getText());
 
-			priceValue = BurstValue.fromBurst(priceN.doubleValue());
-			amountValue = BurstValue.fromBurst(amountN.doubleValue());
+			priceValue = SignumValue.fromSigna(priceN.doubleValue());
+			amountValue = SignumValue.fromSigna(amountN.doubleValue());
 
 			double totalValue = priceN.doubleValue()*amountN.doubleValue()*market.getFactor();
 			totalField.setText(market.format(Math.round(totalValue)));

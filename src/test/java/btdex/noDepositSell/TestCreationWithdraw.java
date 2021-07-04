@@ -13,10 +13,10 @@ import org.junit.jupiter.api.TestMethodOrder;
 import bt.BT;
 import btdex.sc.SellContract;
 import btdex.sc.SellNoDepositContract;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstID;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.AT;
+import signumj.entity.SignumAddress;
+import signumj.entity.SignumID;
+import signumj.entity.SignumValue;
+import signumj.entity.response.AT;
 
 /**
  * We assume a localhost testnet with 0 seconds mock mining is available for the
@@ -42,7 +42,7 @@ public class TestCreationWithdraw {
         makerPass = Long.toString(System.currentTimeMillis());
         sc.registerSC(makerPass);
 
-        BurstAddress maker = BT.getBurstAddressFromPassphrase(makerPass);
+        SignumAddress maker = BT.getAddressFromPassphrase(makerPass);
         BT.forgeBlock();
         compiled = sc.getCompiled();
         contract = BT.findContract(maker, sc.getName());
@@ -51,8 +51,8 @@ public class TestCreationWithdraw {
     @Test
     @Order(2)
     public void testMediators() {
-        BurstID mediator1 = sc.getMediator1();
-        BurstID mediator2 = sc.getMediator2();
+        SignumID mediator1 = sc.getMediator1();
+        SignumID mediator2 = sc.getMediator2();
         long med1_chain = BT.getContractFieldValue(contract, compiled.getField("mediator1").getAddress());
         long med2_chain = BT.getContractFieldValue(contract, compiled.getField("mediator2").getAddress());
 
@@ -71,9 +71,9 @@ public class TestCreationWithdraw {
     @Test
     @Order(4)
     public void sendInvalidCoin(){
-        BurstValue send = BurstValue.fromBurst(200);
+        SignumValue send = SignumValue.fromSigna(200);
         //sender is not a contract creator
-        BT.sendAmount(BT.PASSPHRASE, contract.getId(), send, BurstValue.fromBurst(0.1)).blockingGet();
+        BT.sendAmount(BT.PASSPHRASE, contract.getId(), send, SignumValue.fromSigna(0.1)).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 
@@ -86,8 +86,8 @@ public class TestCreationWithdraw {
     @Order(5)
     public void sendCoin(){
         long SCbalanceBefore = BT.getContractBalance(contract).longValue();
-        BurstValue send = BurstValue.fromBurst(100);
-        BT.sendAmount(makerPass, contract.getId(), send, BurstValue.fromBurst(0.1)).blockingGet();
+        SignumValue send = SignumValue.fromSigna(100);
+        BT.sendAmount(makerPass, contract.getId(), send, SignumValue.fromSigna(0.1)).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 
@@ -107,7 +107,7 @@ public class TestCreationWithdraw {
     @Order(7)
     public void withdrawSignal() {
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 
@@ -122,7 +122,7 @@ public class TestCreationWithdraw {
         //two blocks passed
         long SCbalanceBefore = BT.getContractBalance(contract).longValue();
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 
@@ -137,7 +137,7 @@ public class TestCreationWithdraw {
     @Order(9)
     public void withdrawSignalValid() {
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
-                BurstValue.fromPlanck(SellContract.ACTIVATION_FEE), BurstValue.fromBurst(0.1), 1000).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000).blockingGet();
         BT.forgeBlock();
         BT.forgeBlock();
 

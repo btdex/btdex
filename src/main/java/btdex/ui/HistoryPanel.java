@@ -46,8 +46,8 @@ import btdex.core.Globals;
 import btdex.core.Market;
 import btdex.core.NumberFormatting;
 import btdex.ui.orderbook.BookTable;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.response.AssetTrade;
+import signumj.entity.SignumAddress;
+import signumj.entity.response.AssetTrade;
 import jiconfont.icons.font_awesome.FontAwesome;
 import jiconfont.swing.IconFontSwing;
 
@@ -108,9 +108,9 @@ public class HistoryPanel extends JPanel {
 			
 			boolean isToken = market.getTokenID()!=null;
 			if(col == COL_PRICE)
-				colName = tr(colName, isToken ? "BURST" : market);
+				colName = tr(colName, isToken ? Constants.BURST_TICKER : market);
 			else if(col == COL_AMOUNT)
-				colName = tr(colName, isToken ? market : "BURST");
+				colName = tr(colName, isToken ? market : Constants.BURST_TICKER);
 			else if(col == COL_CONTRACT)
 				colName = tr(isToken ? "book_order" : colName);				
 			else
@@ -279,7 +279,7 @@ public class HistoryPanel extends JPanel {
 
 		if(lastTrade != null) {
 			// set the last price label
-			String priceText = NumberFormatting.BURST.format(lastTrade.getPrice().longValue()*market.getFactor()) + " BURST";
+			String priceText = NumberFormatting.BURST.format(lastTrade.getPrice().longValue()*market.getFactor()) + " " + Constants.BURST_TICKER;
 			JLabel priceLabel = (JLabel) lastPrice.getChild();
 			lastPrice.setVisible(true);
 			priceLabel.setText(priceText);
@@ -302,8 +302,8 @@ public class HistoryPanel extends JPanel {
 		for (int i = 0; i < maxLines; i++) {
 			AssetTrade tr = trs[i];
 			if(onlyMine &&
-					tr.getBuyerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
-					tr.getSellerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
+					tr.getBuyerAddress().getSignumID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
+					tr.getSellerAddress().getSignumID().getSignedLongId()!=g.getAddress().getSignedLongId())
 				continue;
 			nLines++;
 		}
@@ -314,18 +314,18 @@ public class HistoryPanel extends JPanel {
 		for (int row = 0, i=0; i < maxLines; i++) {
 			AssetTrade tr = trs[i];
 			if(onlyMine &&
-					tr.getBuyerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
-					tr.getSellerAddress().getBurstID().getSignedLongId()!=g.getAddress().getSignedLongId())
+					tr.getBuyerAddress().getSignumID().getSignedLongId()!=g.getAddress().getSignedLongId() &&
+					tr.getSellerAddress().getSignumID().getSignedLongId()!=g.getAddress().getSignedLongId())
 				continue;
 
 			long amount = tr.getQuantity().longValue();
 			long price = tr.getPrice().longValue();
 			
 			model.setValueAt(new ExplorerButton(
-					tr.getBuyerAddress().equals(g.getAddress()) ? tr("hist_you") : tr.getBuyerAddress().getRawAddress(), copyIcon, expIcon,
+					tr.getBuyerAddress().equals(g.getAddress()) ? tr("hist_you") : Main.printAddress(tr.getBuyerAddress()), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, tr.getBuyerAddress().getID(), tr.getBuyerAddress().getFullAddress()), row, COL_BUYER);
 			model.setValueAt(new ExplorerButton(
-					tr.getSellerAddress().equals(g.getAddress()) ? tr("hist_you") : tr.getSellerAddress().getRawAddress(), copyIcon, expIcon,
+					tr.getSellerAddress().equals(g.getAddress()) ? tr("hist_you") : Main.printAddress(tr.getSellerAddress()), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, tr.getSellerAddress().getID(), tr.getSellerAddress().getFullAddress()), row, COL_SELLER);
 			
 			// TODO: check if ask or bid was more recent to add one here (missing burstkit4j function for this)
@@ -453,18 +453,18 @@ public class HistoryPanel extends JPanel {
 			long amount = tr.getAmount();
 			double price = (double)tr.getRate() / market.getFactor();
 			
-			BurstAddress buyer = tr.getContract().getType() == ContractType.BUY ? tr.getCreator() : tr.getTaker();
-			BurstAddress seller = tr.getContract().getType() == ContractType.BUY ? tr.getTaker() : tr.getCreator();
+			SignumAddress buyer = tr.getContract().getType() == ContractType.BUY ? tr.getCreator() : tr.getTaker();
+			SignumAddress seller = tr.getContract().getType() == ContractType.BUY ? tr.getTaker() : tr.getCreator();
 
 			model.setValueAt(new ExplorerButton(
-					buyer.equals(g.getAddress()) ? tr("hist_you") : buyer.getRawAddress(), copyIcon, expIcon,
+					buyer.equals(g.getAddress()) ? tr("hist_you") : Main.printAddress(buyer), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, buyer.getID(), buyer.getFullAddress()), row, COL_BUYER);
 			model.setValueAt(new ExplorerButton(
-					seller.equals(g.getAddress()) ? tr("hist_you") : seller.getRawAddress(), copyIcon, expIcon,
+					seller.equals(g.getAddress()) ? tr("hist_you") : Main.printAddress(seller), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, seller.getID(), seller.getFullAddress()), row, COL_SELLER);
 
 			model.setValueAt(new ExplorerButton(
-					tr.getContract().getAddress().getRawAddress(), copyIcon, expIcon,
+					Main.printAddress(tr.getContract().getAddress()), copyIcon, expIcon,
 							ExplorerButton.TYPE_ADDRESS, tr.getContract().getAddress().getID(),
 							tr.getContract().getAddress().getFullAddress()), row, COL_CONTRACT);
 

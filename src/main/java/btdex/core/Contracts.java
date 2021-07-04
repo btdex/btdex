@@ -6,7 +6,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,21 +18,21 @@ import btdex.sc.BuyContract2;
 import btdex.sc.SellContract;
 import btdex.sc.SellContract2;
 import btdex.sc.SellNoDepositContract;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstID;
-import burst.kit.entity.response.AT;
-import burst.kit.entity.response.Block;
-import burst.kit.entity.response.Transaction;
+import signumj.entity.SignumAddress;
+import signumj.entity.SignumID;
+import signumj.entity.response.AT;
+import signumj.entity.response.Block;
+import signumj.entity.response.Transaction;
 
 public class Contracts {
     private static Compiler compilerSell[], compilerNoDeposit, compilerBuy[];
 
     private static String contractTakeHash[], contractBuyTakeHash[];
 
-	private static HashMap<BurstAddress, ContractState> contractsMap = new HashMap<>();
+	private static ConcurrentHashMap<SignumAddress, ContractState> contractsMap = new ConcurrentHashMap<>();
 	private static boolean loading = true;
-	private static BurstID mostRecentID;
-	private static BurstID lastBlock;
+	private static SignumID mostRecentID;
+	private static SignumID lastBlock;
 	private static ContractState freeContract, freeNoDepositContract, freeBuyContract;
 	private static boolean registering;
 	
@@ -268,7 +268,7 @@ public class Contracts {
 
 	public static long[] getNewContractData() {
 		Mediators mediators = Globals.getInstance().getMediators();
-		BurstID[] med = mediators.getTwoRandomMediators();
+		SignumID[] med = mediators.getTwoRandomMediators();
 
 		long data[] = new long[3];
 		data[0] = Globals.getInstance().getFeeContract();

@@ -3,6 +3,7 @@ package btdex.ui;
 import static btdex.locale.Translation.tr;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -25,7 +26,10 @@ import java.nio.file.StandardCopyOption;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.BorderFactory;
@@ -56,16 +60,17 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import bt.BT;
 import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.Globals;
 import btdex.core.NumberFormatting;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.Account;
-import burst.kit.entity.response.Block;
-import burst.kit.entity.response.MiningInfo;
-import burst.kit.entity.response.Transaction;
+import signumj.entity.SignumAddress;
+import signumj.entity.SignumValue;
+import signumj.entity.response.Account;
+import signumj.entity.response.Block;
+import signumj.entity.response.MiningInfo;
+import signumj.entity.response.Transaction;
 import dorkbox.util.OS;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -74,7 +79,7 @@ import okhttp3.Response;
 public class MiningPanel extends JPanel implements ActionListener, ChangeListener {
 	private static final long serialVersionUID = 1L;
 	
-	private static final int N_PATHS_MIN = 4;
+	private static final int N_PATHS_MIN = 3;
 	private static final long ONE_GIB = 1073741824L;
 	private static final long BYTES_OF_A_NONCE = 262144L;
 	
@@ -103,19 +108,23 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	};
 	
 	private static final String[] POOL_LIST = {
-			"http://pool.burstcoin.ro:8080",
+			"https://pool.signumcoin.ro",
 			"http://burst.voiplanparty.com:8124",
 			"http://openburstpool.ddns.net:8126",
-			"http://burstpool.de:8080"
+			"http://signumpool.de:8080",
+			"https://signumpool.com",
+			"https://signapool.notallmine.net",
+			"http://signum.land",
 	};
 	
 	private static final String[] POOL_LIST_TESTNET = {
 			"http://nivbox.co.uk:9000",
 			"https://testpool.burstcoin.ro",
+			"http://localhost:8000"
 	};
 	
-	private ArrayList<BurstAddress> poolAddresses = new ArrayList<>();
-	private ArrayList<String> poolMaxDeadlines = new ArrayList<>();
+	private LinkedHashMap<String, SignumAddress> poolAddresses = new LinkedHashMap<>();
+	private HashMap<String, String> poolMaxDeadlines = new HashMap<>();
 	
 	private ArrayList<JButton> pathCancelButtons = new ArrayList<>();
 	private ArrayList<JButton> openFolderButtons = new ArrayList<>();
@@ -184,6 +193,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 
 	private JPanel disksPanel;
 
+	private String soloNode;
+
 	public MiningPanel() {
 		super(new BorderLayout());
 		
@@ -201,6 +212,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		plottingPanel.setBorder(BorderFactory.createTitledBorder(tr("mine_plot_disks")));
 		plottingPanel.add(plottingBottomPanel, BorderLayout.PAGE_END);
 		JScrollPane disksScrollPane = new JScrollPane(disksPanel);
+		plottingPanel.setPreferredSize(new Dimension(200, 300));
 		plottingPanel.add(disksScrollPane, BorderLayout.CENTER);
 		
 		Globals g = Globals.getInstance();
@@ -234,8 +246,6 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		
 		ssdPanel.add(ssdCancelButton, BorderLayout.LINE_START);
 		plottingBottomPanel.add(ssdPanel);
-		
-		checkResumeFiles();
 		
 		// CPU cores
 		int coresAvailable = Runtime.getRuntime().availableProcessors();
@@ -279,7 +289,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
         }
         */
 				
-		JPanel plotButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		JPanel plotButtonsPanelLine1 = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		JPanel plotButtonsPanelLine2 = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
 		iconPlot = icons.get(Icons.PLOTTING);
 		startPlotButton = new JButton(tr("mine_plot"), iconPlot);
@@ -290,12 +301,14 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		stopPlotButton.addActionListener(this);
 		stopPlotButton.setEnabled(false);
 		
-		plotButtonsPanel.add(new JLabel(tr("mine_cpus")));
-		plotButtonsPanel.add(cpusToPlotComboBox);
-		plotButtonsPanel.add(lowPriorityCheck = new JCheckBox(tr("mine_run_low_prio")));
-		plotButtonsPanel.add(stopPlotButton);
-		plotButtonsPanel.add(startPlotButton);
-		plottingBottomPanel.add(plotButtonsPanel);
+		plotButtonsPanelLine2.add(new JLabel(tr("mine_cpus")));
+		plotButtonsPanelLine2.add(cpusToPlotComboBox);
+		plotButtonsPanelLine2.add(lowPriorityCheck = new JCheckBox(tr("mine_run_low_prio")));
+		plotButtonsPanelLine1.add(stopPlotButton);
+		plotButtonsPanelLine1.add(startPlotButton);
+		
+		plottingBottomPanel.add(plotButtonsPanelLine1);
+		plottingBottomPanel.add(plotButtonsPanelLine2);
 		
 		lowPriorityCheck.setSelected(Boolean.parseBoolean(g.getProperty(PROP_PLOT_LOW_PRIO)));
 		lowPriorityCheck.addActionListener(this);
@@ -305,16 +318,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		poolPanel.setBorder(BorderFactory.createTitledBorder(tr("mine_join_pool")));
 		poolPanel.add(new JLabel(tr("mine_select_pool")));
 		
-		String selectedPool = g.getProperty(PROP_MINER_POOL);
 		poolComboBox = new JComboBox<String>();
-		for (String poolURL : (g.isTestnet() ? POOL_LIST_TESTNET : POOL_LIST)) {
-			poolComboBox.addItem(poolURL);
-			poolAddresses.add(null);
-			poolMaxDeadlines.add("1000000000");
-			
-			if(poolURL.equals(selectedPool))
-				poolComboBox.setSelectedIndex(poolComboBox.getItemCount()-1);			
-		}
 		poolPanel.add(poolComboBox);
 		poolComboBox.addActionListener(this);
 		
@@ -404,13 +408,40 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		add(topPanel, BorderLayout.PAGE_START);
 		add(consolePanel, BorderLayout.CENTER);
 		
+		String []poolList = Globals.getInstance().isTestnet() ? POOL_LIST_TESTNET : POOL_LIST;
+		String selectedPool = Globals.getInstance().getProperty(PROP_MINER_POOL);
+		for(String poolURL : poolList) {
+			poolComboBox.addItem(poolURL);
+			if(poolURL.equals(selectedPool))
+				poolComboBox.setSelectedIndex(poolComboBox.getItemCount()-1);
+		}
+		soloNode = g.isTestnet() ? BT.NODE_LOCAL_TESTNET : BT.NODE_LOCAL;
+		poolComboBox.addItem(soloNode);
+		if(soloNode.equals(selectedPool))
+			poolComboBox.setSelectedIndex(poolComboBox.getItemCount()-1);
+		// Solo mining should have its own address
+		poolAddresses.put(soloNode, g.getAddress());
+		poolMaxDeadlines.put(soloNode, "100000000");
+		actionPerformed(new ActionEvent(poolComboBox, 0, ""));
+		
+		checkResumeFiles();
+		stateChanged(null);
+		
+		// Query pool API for their info
+		Thread thread = new Thread(){
+			public void run(){
+				updatePoolInfo(poolList);
+			}
+		};
+		thread.start();
+		
 		if(minerAutoStartCheck.isSelected()) {
 			new java.util.Timer().schedule( 
 			        new java.util.TimerTask() {
 			            public void run() {
 			                startMining();
 			            }
-			        }, 3000);
+			        }, 5000);
 		}
 	}
 	
@@ -467,14 +498,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	
 	private static final OkHttpClient CLIENT = new OkHttpClient();
 	
-	private void updatePoolInfo() {
+	private void updatePoolInfo(String []urlList) {
 		
-		for (int i = 0; i < poolComboBox.getItemCount(); i++) {
-			BurstAddress poolAddress = poolAddresses.get(i);
-			if(poolAddress != null)
-				continue;
-		
-			String poolURL = poolComboBox.getItemAt(i);
+		for (int i = 0; i < urlList.length; i++) {
+			String poolURL = urlList[i];
 			String poolURLgetConfig = poolURL + "/api/getConfig";
 			try {
 				Request request = new Request.Builder().url(poolURLgetConfig).build();
@@ -482,12 +509,13 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				String jsonData = responses.body().string();
 				JsonObject json = JsonParser.parseString(jsonData).getAsJsonObject();
 
-				poolAddress = BurstAddress.fromEither(json.get("poolAccount").getAsString());
-				poolAddresses.set(i, poolAddress);
+				SignumAddress poolAddress = SignumAddress.fromEither(json.get("poolAccount").getAsString());
+				poolAddresses.put(poolURL, poolAddress);
+				poolMaxDeadlines.put(poolURL, "100000000");
 				
 				JsonElement jsonMaxDeadline = json.get("maxDeadline");
 				if(jsonMaxDeadline != null) {
-					poolMaxDeadlines.set(i, jsonMaxDeadline.getAsString());
+					poolMaxDeadlines.put(poolURL, jsonMaxDeadline.getAsString());
 				}
 			}
 			catch (Exception e) {
@@ -621,49 +649,59 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		Block latestBlock = BN.getLatestBlock();
 		if(miningInfo != null && latestBlock != null) {
 			double networkTbs = 18325193796.0/(miningInfo.getBaseTarget()*1.83);
-			BurstValue burstPerTbPerDay = BurstValue.fromBurst(360.0/networkTbs * latestBlock.getBlockReward().doubleValue());
+			SignumValue burstPerTbPerDay = SignumValue.fromSigna(360.0/networkTbs * latestBlock.getBlockReward().doubleValue());
 
 			String rewards = tr("mine_reward_estimation_old", NumberFormatting.BURST_2.format(burstPerTbPerDay.longValue()),
 					formatSpace(networkTbs*1024L*ONE_GIB));
 			rewards += "\n" + tr("mine_reward_poc_plus_activation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(8).longValue()));
-			BurstValue avgCommitment = null;
+			SignumValue avgCommitment = null;
 			int pocPlusBlock = Globals.getInstance().isTestnet() ? 269_700 : 878_000;
 			if(miningInfo.getAverageCommitmentNQT() > 0 && miningInfo.getHeight() > pocPlusBlock) {
-				avgCommitment = BurstValue.fromPlanck(miningInfo.getAverageCommitmentNQT());
-				rewards = tr("mine_reward_estimation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(8).longValue()),
+				avgCommitment = SignumValue.fromNQT(miningInfo.getAverageCommitmentNQT());
+//				rewards = tr("mine_reward_estimation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(8).longValue()),
+//						NumberFormatting.BURST_2.format(avgCommitment.multiply(100*8).longValue()));
+				rewards = tr("mine_reward_estimation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(4.18).longValue()),
 						NumberFormatting.BURST_2.format(avgCommitment.multiply(100).longValue()));
+				rewards += "\n" + tr("mine_reward_estimation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(2.04).longValue()),
+						NumberFormatting.BURST_2.format(avgCommitment.multiply(10).longValue()));
 				rewards += "\n" + tr("mine_reward_estimation", NumberFormatting.BURST_2.format(burstPerTbPerDay.longValue()),
 						NumberFormatting.BURST_2.format(avgCommitment.longValue()));
 				rewards += "\n" + tr("mine_reward_estimation_nothing", NumberFormatting.BURST_2.format(burstPerTbPerDay.divide(8).longValue()));
 			}
 			
-			if(totalCapacity > 0) {
-				double capacityTib = (double)totalCapacity/ ONE_GIB /1024.0;
-				
-				String capacity = formatSpace(totalCapacity);
-				double commitmentFactor = 1;
-				if(avgCommitment != null && account.getCommitment() != null) {
-					capacity += "+" + NumberFormatting.BURST_2.format(account.getCommitment().longValue()) + " BURST/TiB";
-					
-					double ratio = account.getCommitment().doubleValue()/avgCommitment.doubleValue();
-			        commitmentFactor = Math.pow(ratio, 0.4515449935);
-			        commitmentFactor = Math.min(8.0, commitmentFactor);
-			        commitmentFactor = Math.max(0.125, commitmentFactor);
-				}
-				
-				rewards += "\n\n" + tr("mine_your_rewards", capacity, NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(capacityTib*commitmentFactor).longValue()));
-				if(avgCommitment == null || account.getCommitment() == null) {
-					rewards += "\n" + tr("mine_reward_poc_plus_activation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(capacityTib*8).longValue()));
-				}
-			}
+			// TODO: leaving this out for now
+//			if(totalCapacity > 0) {
+//				double capacityTib = (double)totalCapacity/ ONE_GIB /1024.0;
+//				
+//				String capacity = formatSpace(totalCapacity);
+//				double commitmentFactor = 1;
+//				if(avgCommitment != null && account.getCommitment() != null) {
+//					capacity += "+" + NumberFormatting.BURST_2.format(account.getCommitment().longValue()) + " BURST/TiB";
+//					
+//					double ratio = account.getCommitment().doubleValue()/avgCommitment.doubleValue();
+//			        commitmentFactor = Math.pow(ratio, 0.4515449935);
+//			        commitmentFactor = Math.min(8.0, commitmentFactor);
+//			        commitmentFactor = Math.max(0.125, commitmentFactor);
+//				}
+//				
+//				rewards += "\n\n" + tr("mine_your_rewards", capacity, NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(capacityTib*commitmentFactor).longValue()));
+//				if(avgCommitment == null || account.getCommitment() == null) {
+//					rewards += "\n" + tr("mine_reward_poc_plus_activation", NumberFormatting.BURST_2.format(burstPerTbPerDay.multiply(capacityTib*8).longValue()));
+//				}
+//			}
 			
 			rewardsEstimationArea.setText(rewards);
 		}
 		
-		if(!mining) {
-			updatePoolInfo();
-			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedIndex());
-			startMiningButton.setEnabled(poolAddress != null && poolAddress.equals(BN.getRewardRecipient()) && totalCapacity > 0);
+		if(!mining && poolComboBox.getSelectedItem() != null) {
+			if(poolAddresses.get(soloNode) == null)
+				poolAddresses.put(soloNode, Globals.getInstance().getAddress());
+			
+			SignumAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedItem().toString());
+			startMiningButton.setEnabled(poolAddress != null
+					&& (poolAddress.equals(BN.getRewardRecipient()) || 
+							(poolComboBox.getSelectedIndex() == poolComboBox.getItemCount()-1 && BN.getRewardRecipient()==null))
+					&& totalCapacity > 0);
 		}
 		
 		lowPriorityCheck.setEnabled(!plotting);
@@ -673,10 +711,12 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	public void stop() {
 		if(mining && minerProcess!=null && minerProcess.isAlive()) {
 			mining = false;
+	    	logger.info("destroying miner process");
 			minerProcess.destroyForcibly();
 		}
 		if(plotting && plotterProcess!=null && plotterProcess.isAlive()) {
 			plotting = false;
+	    	logger.info("destroying plotter process");
 			plotterProcess.destroyForcibly();
 		}
 	}
@@ -706,7 +746,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 					int progress = getPlotProgress(plot);
 					if(progress >= 0) {
 						resumePlotFiles.add(plot);
-						addToConsole(PLOT_APP, "Plotting of '" + plot.getAbsolutePath() + "' will be resumed when you start plotting again");
+						addToConsole(PLOT_APP, "Plot '" + plot.getName() + "' is incomplete, start plotting again to resume it");
 					}
 				}
 			}
@@ -846,7 +886,11 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		
 		if(poolComboBox == e.getSource()) {
+			joinPoolButton.setText(poolComboBox.getSelectedIndex()==poolComboBox.getItemCount()-1 ?
+					tr("send_go_solo") : tr("send_join_pool"));
+			
 			g.setProperty(PROP_MINER_POOL, poolComboBox.getSelectedItem().toString());
+			
 			saveConfs(g);
 		}
 		
@@ -888,31 +932,39 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			BurstNode BN = BurstNode.getInstance();
 			
 			String info = null;
-			BurstAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedIndex());
+			SignumAddress poolAddress = poolAddresses.get(poolComboBox.getSelectedItem().toString());
 			Transaction[] txs = BN.getAccountTransactions();
+			Transaction[] utx = BN.getUnconfirmedTransactions();
+			ArrayList<Transaction> allTxs = new ArrayList<>();
+			if(txs != null)
+				Collections.addAll(allTxs, txs);
+			if(utx != null)
+				Collections.addAll(allTxs, utx);
 			
-			if(info == null && txs != null) {
-				for(Transaction tx : txs) {
-					if(tx.getType() == 20 && tx.getSubtype() == 0 && tx.getConfirmations() < 4) {
-						info = tr("mine_wait_join");
-						break;
-					}
+			for(Transaction tx : allTxs) {
+				if(tx.getSender().equals(g.getAddress()) && tx.getType() == 20 && tx.getSubtype() == 0 && tx.getConfirmations() < 4) {
+					info = tr("mine_wait_join");
+					break;
 				}
 			}
 			if(info == null && poolAddress == null) {
 				info = tr("mine_invalid_pool");				
 			}
-			if(info == null && poolAddress.equals(BN.getRewardRecipient())) {
+			boolean isSolo = poolComboBox.getSelectedIndex() == poolComboBox.getItemCount() -1;
+			if(info == null && !isSolo && poolAddress.equals(BN.getRewardRecipient())) {
 				info = tr("mine_already_joined");
+			}
+			if(info == null && isSolo && (BN.getRewardRecipient()==null || poolAddress.equals(BN.getRewardRecipient()))) {
+				info = tr("mine_already_solo");
 			}
 			
 			if(info != null) {
-				JOptionPane.showMessageDialog(getParent(), info, tr("send_join_pool"), JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(getParent(), info, tr(isSolo ? "send_go_solo" : "send_join_pool"), JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
 			
 			SendDialog dlg = new SendDialog((JFrame) SwingUtilities.getWindowAncestor(this),
-					null, SendDialog.TYPE_JOIN_POOL, poolAddress);
+					null, isSolo ? SendDialog.TYPE_GO_SOLO : SendDialog.TYPE_JOIN_POOL, poolAddress);
 
 			dlg.setLocationRelativeTo(this);
 			dlg.setVisible(true);
@@ -951,6 +1003,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			}
 			
 		    sliderListDesc.get(i).setDesc(desc);
+		}
+		// Add the files to be resumed to the total
+		for(File fr : resumePlotFiles) {
+			totalToPlot += fr.length();
 		}
 		
 		if(!plotting)
@@ -1023,19 +1079,23 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			startNonce += noncesToAdd + 1;
 		}
 		
-		if(newPlotFiles.size() == 0) {
+		if(newPlotFiles.size() == 0 && resumePlotFiles.size()==0) {
 			plotting = false;
 			return;
 		}
 		
 		
-		String engraverName = "engraver_cpu";
+		String plotterName = "signum-plotter";
 		if(OS.isWindows())
-			engraverName += ".exe";
-		plotterFile = new File(TMP_DIR, engraverName);
+			plotterName += ".exe";
+		else if(OS.isMacOsX())
+			plotterName += ".app";
+		
+		plotterFile = new File(TMP_DIR, plotterName);
 		if (!plotterFile.exists() || plotterFile.length() == 0) {
-		     InputStream link = (getClass().getResourceAsStream("/engraver/" + engraverName));
+		     InputStream link = (getClass().getResourceAsStream("/plotter/" + plotterName));
 		     try {
+		    	logger.info("Copying ploter to {}", plotterFile.getAbsolutePath());
 				Files.copy(link, plotterFile.getAbsoluteFile().toPath());
 				if(!OS.isWindows())
 					plotterFile.setExecutable(true);
@@ -1060,6 +1120,15 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			// Cache will use 45% of the free space, so we can have 2 (one moving and one plotting) and do not get a disk full
 			long noncesCache = 0;
 			if(ssdPath != null) {
+				// clear possibly forgotten or killed plots on the cache folder
+				File[] lostCacheFiles = ssdPath.listFiles(PLOT_FILE_FILTER);
+				if(lostCacheFiles != null) {
+					for(File plot : lostCacheFiles) {
+						addToConsole(PLOT_APP, "Deleting plot on cache '" + plot.getName() + "'");
+						plot.delete();
+					}
+				}
+				
 				noncesCache = ssdPath.getUsableSpace() * 45 / (100 * BYTES_OF_A_NONCE);
 			}
 			
@@ -1068,6 +1137,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			filesToPlot.addAll(newPlotFiles);
 			
 			for (File plot : filesToPlot) {
+				if(resumePlotFiles.contains(plot)) {
+					addToConsole(PLOT_APP, "Resuming plot file '" + plot.getName() + "'");
+				}
 				String[] sections = plot.getName().split("_");
 				
 				long noncesInThisPlot = Long.parseLong(sections[2]);
@@ -1078,13 +1150,13 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 				
 				File fileBeingPlot = plot;
 				
-				if(ssdPath != null) {
+				if(ssdPath != null && !resumePlotFiles.contains(plot)) {
 					noncesBeingPlot = Math.min(noncesCache, noncesInThisPlot);
 				}
 				
 				while(noncesAlreadyPlotted < noncesInThisPlot) {
 					noncesBeingPlot = Math.min(noncesInThisPlot - noncesAlreadyPlotted, noncesBeingPlot);
-					if(ssdPath != null) {
+					if(ssdPath != null && !resumePlotFiles.contains(plot)) {
 						fileBeingPlot = new File(ssdPath, sections[0] + "_" + nonceStart + "_" + noncesBeingPlot);
 						
 						long freeCacheSpaceNow = ssdPath.getUsableSpace()/BYTES_OF_A_NONCE;
@@ -1232,21 +1304,26 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		startMiningButton.setEnabled(false);
 		stopMiningButton.setEnabled(true);
 				
-		String minerName = "scavenger";
+		String minerName = "signum-miner";
 		if(OS.isWindows())
 			minerName += ".exe";
+		else if(OS.isMacOsX())
+			minerName += ".app";
+		
 		minerFile = new File(TMP_DIR, minerName);
-		InputStream minerStream = (getClass().getResourceAsStream("/scavenger/" + minerName));
-		InputStream minerConfigStream = (getClass().getResourceAsStream("/scavenger/config.yaml"));
+		InputStream minerStream = (getClass().getResourceAsStream("/miner/" + minerName));
+		InputStream minerConfigStream = (getClass().getResourceAsStream("/miner/config.yaml"));
 		try {
 			if(minerFile.exists() && minerFile.isFile())
 				minerFile.delete();
 				
+			logger.info("Copying miner to {}", minerFile.getAbsolutePath());
 			Files.copy(minerStream, minerFile.getAbsoluteFile().toPath());
 			if(!OS.isWindows())
 				minerFile.setExecutable(true);
 
-			FileWriter minerConfig = new FileWriter(minerFile.getParent() + "/" + MINER_CONFIG_FILE);
+			File minerConfigFile = new File(minerFile.getParent(), MINER_CONFIG_FILE);
+			FileWriter minerConfig = new FileWriter(minerConfigFile);
 			minerConfig.append("plot_dirs:\n");
 			for (File path : pathList) {
 				if(path == null)
@@ -1255,11 +1332,13 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			}
 			minerConfig.append("url: '" + poolComboBox.getSelectedItem().toString() + "'\n");
 			
-			minerConfig.append("target_deadline: " + poolMaxDeadlines.get(poolComboBox.getSelectedIndex()) + "\n");
+			minerConfig.append("target_deadline: " + poolMaxDeadlines.get(poolComboBox.getSelectedItem().toString()) + "\n");
 
 			minerConfig.append("cpu_threads: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
 			minerConfig.append("cpu_worker_task_count: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
 			
+			logger.info("Copying miner config to {}", minerConfigFile.getAbsolutePath());
+
 			IOUtils.copy(minerConfigStream, minerConfig);
 			minerConfig.close();
 		} catch (IOException ex) {
@@ -1277,6 +1356,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		public void run() {
 			try {
 				String cmd = minerFile.getAbsolutePath() + " -c " + MINER_CONFIG_FILE;
+				logger.info("Running miner with '{}'", cmd);
 				minerProcess = Runtime.getRuntime().exec(cmd, null, minerFile.getParentFile());
 				
 				InputStream stdIn = minerProcess.getInputStream();
@@ -1297,6 +1377,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	};
 
 	private void addToConsole(String app, String line) {
+    	logger.info("{} {}", app, line);
+
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				// lets have a limit of 400 lines

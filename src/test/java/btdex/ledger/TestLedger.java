@@ -10,11 +10,11 @@ import org.bouncycastle.util.encoders.Hex;
 import org.junit.jupiter.api.Test;
 
 import bt.BT;
-import burst.kit.crypto.BurstCrypto;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.Account;
-import burst.kit.service.BurstNodeService;
+import signumj.crypto.SignumCrypto;
+import signumj.entity.SignumAddress;
+import signumj.entity.SignumValue;
+import signumj.entity.response.Account;
+import signumj.service.NodeService;
 
 /**
  * Check the Ledger implementation
@@ -45,20 +45,20 @@ public class TestLedger {
 		
 		byte index = 1;
 		
-		BurstNodeService NS = BurstNodeService.getInstance("https://testnet-2.burst-alliance.org:6876/");
-		BurstCrypto BC = BurstCrypto.getInstance();
+		NodeService NS = NodeService.getInstance("https://testnet-2.burst-alliance.org:6876/");
+		SignumCrypto BC = SignumCrypto.getInstance();
 		
 		byte[] pubKey = BurstLedger.getPublicKey(index);
 		
-		BurstAddress yourAddress = BC.getBurstAddressFromPublic(pubKey);
+		SignumAddress yourAddress = BC.getAddressFromPublic(pubKey);
 		Account account = NS.getAccount(yourAddress).blockingGet();
 		
-		assertTrue(account.getBalance().longValue() > BurstValue.fromBurst(1).longValue(),
+		assertTrue(account.getBalance().longValue() > SignumValue.fromSigna(1).longValue(),
 				"Account " + yourAddress.getFullAddress() + " has no balace for testing");
 
-		BurstAddress rec = BurstAddress.fromRs("BURST-JJQS-MMA4-GHB4-4ZNZU");
+		SignumAddress rec = SignumAddress.fromRs("BURST-JJQS-MMA4-GHB4-4ZNZU");
 		
-		byte []utx = NS.generateTransaction(rec, pubKey, BurstValue.fromBurst(0.1), BurstValue.fromBurst(0.01), 1000, null).blockingGet();
+		byte []utx = NS.generateTransaction(rec, pubKey, SignumValue.fromSigna(0.1), SignumValue.fromSigna(0.01), 1000, null).blockingGet();
 		byte [] signed = BurstLedger.sign(utx, index);
 				
 		byte[] messageSha256 = BC.getSha256().digest(utx);
@@ -78,20 +78,20 @@ public class TestLedger {
 	public void testMessage() throws Exception {
 		byte index = 2;
 		
-		BurstNodeService NS = BurstNodeService.getInstance(BT.NODE_TESTNET);
-		BurstCrypto BC = BurstCrypto.getInstance();
+		NodeService NS = NodeService.getInstance(BT.NODE_TESTNET);
+		SignumCrypto BC = SignumCrypto.getInstance();
 		
 		byte[] pubKey = BurstLedger.getPublicKey(index);
 		
-		BurstAddress yourAddress = BC.getBurstAddressFromPublic(pubKey);
+		SignumAddress yourAddress = BC.getAddressFromPublic(pubKey);
 		Account account = NS.getAccount(yourAddress).blockingGet();
 		
-		assertTrue(account.getBalance().longValue() > BurstValue.fromBurst(1).longValue(),
+		assertTrue(account.getBalance().longValue() > SignumValue.fromSigna(1).longValue(),
 				"Account " + yourAddress.getFullAddress() + " has no balace for testing");
 
-		BurstAddress rec = BurstAddress.fromRs("BURST-JJQS-MMA4-GHB4-4ZNZU");
+		SignumAddress rec = SignumAddress.fromRs("BURST-JJQS-MMA4-GHB4-4ZNZU");
 		
-		byte []utx = NS.generateTransactionWithMessage(rec, pubKey, BurstValue.fromBurst(0.1), 1000, 
+		byte []utx = NS.generateTransactionWithMessage(rec, pubKey, SignumValue.fromSigna(0.1), 1000, 
 				"test message", null).blockingGet();
 		byte [] signed = BurstLedger.sign(utx, index);
 				
@@ -112,20 +112,20 @@ public class TestLedger {
 	public void testLongMessage() throws Exception {
 		byte index = 1;
 		
-		BurstNodeService NS = BurstNodeService.getInstance(BT.NODE_TESTNET);
-		BurstCrypto BC = BurstCrypto.getInstance();
+		NodeService NS = NodeService.getInstance(BT.NODE_TESTNET);
+		SignumCrypto BC = SignumCrypto.getInstance();
 		
 		byte[] pubKey = BurstLedger.getPublicKey(index);
 		
-		BurstAddress yourAddress = BC.getBurstAddressFromPublic(pubKey);
+		SignumAddress yourAddress = BC.getAddressFromPublic(pubKey);
 		Account account = NS.getAccount(yourAddress).blockingGet();
 		
-		assertTrue(account.getBalance().longValue() > BurstValue.fromBurst(1).longValue(),
+		assertTrue(account.getBalance().longValue() > SignumValue.fromSigna(1).longValue(),
 				"Account " + yourAddress.getFullAddress() + " has no balace for testing");
 
-		BurstAddress rec = BurstAddress.fromRs("BURST-JJQS-MMA4-GHB4-4ZNZU");
+		SignumAddress rec = SignumAddress.fromRs("BURST-JJQS-MMA4-GHB4-4ZNZU");
 		
-		byte []utx = NS.generateTransactionWithMessage(rec, pubKey, BurstValue.fromBurst(0.1), 1000, 
+		byte []utx = NS.generateTransactionWithMessage(rec, pubKey, SignumValue.fromSigna(0.1), 1000, 
 				"test message with a lot of byyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyytttttttttttttttttttttttttttttttttttttteeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeessssssssssssssssssssssssssssssssssssssss", null)
 				.blockingGet();
 		byte [] signed = BurstLedger.sign(utx, index);
@@ -148,24 +148,24 @@ public class TestLedger {
 	public void testMultiOut() throws Exception {
 		byte index = 2;
 		
-		BurstNodeService NS = BurstNodeService.getInstance(BT.NODE_TESTNET);
-		BurstCrypto BC = BurstCrypto.getInstance();
+		NodeService NS = NodeService.getInstance(BT.NODE_TESTNET);
+		SignumCrypto BC = SignumCrypto.getInstance();
 		
 		byte[] pubKey = BurstLedger.getPublicKey(index);
 		
-		BurstAddress yourAddress = BC.getBurstAddressFromPublic(pubKey);
+		SignumAddress yourAddress = BC.getAddressFromPublic(pubKey);
 		Account account = NS.getAccount(yourAddress).blockingGet();
 		
-		assertTrue(account.getBalance().longValue() > BurstValue.fromBurst(1).longValue(),
+		assertTrue(account.getBalance().longValue() > SignumValue.fromSigna(1).longValue(),
 				"Account " + yourAddress.getFullAddress() + " has no balace for testing");
 
-		HashMap<BurstAddress, BurstValue> recipients = new HashMap<BurstAddress, BurstValue>();
-		recipients.put(BC.getBurstAddressFromPassphrase(BT.PASSPHRASE), BurstValue.fromBurst(0.01));
-		recipients.put(BC.getBurstAddressFromPassphrase(BT.PASSPHRASE2), BurstValue.fromBurst(0.01));
-		recipients.put(BC.getBurstAddressFromPassphrase(BT.PASSPHRASE3), BurstValue.fromBurst(0.01));
-		recipients.put(BC.getBurstAddressFromPassphrase(BT.PASSPHRASE4), BurstValue.fromBurst(0.01));
+		HashMap<SignumAddress, SignumValue> recipients = new HashMap<SignumAddress, SignumValue>();
+		recipients.put(BC.getAddressFromPassphrase(BT.PASSPHRASE), SignumValue.fromSigna(0.01));
+		recipients.put(BC.getAddressFromPassphrase(BT.PASSPHRASE2), SignumValue.fromSigna(0.01));
+		recipients.put(BC.getAddressFromPassphrase(BT.PASSPHRASE3), SignumValue.fromSigna(0.01));
+		recipients.put(BC.getAddressFromPassphrase(BT.PASSPHRASE4), SignumValue.fromSigna(0.01));
 		
-		byte []utx = NS.generateMultiOutTransaction(pubKey, BurstValue.fromBurst(0.01), 1000, recipients).blockingGet();
+		byte []utx = NS.generateMultiOutTransaction(pubKey, SignumValue.fromSigna(0.01), 1000, recipients).blockingGet();
 		byte [] signed = BurstLedger.sign(utx, index);
 				
 		byte[] messageSha256 = BC.getSha256().digest(utx);
@@ -185,24 +185,24 @@ public class TestLedger {
 	public void testMultiOutSame() throws Exception {
 		byte index = 1;
 		
-		BurstNodeService NS = BurstNodeService.getInstance(BT.NODE_TESTNET);
-		BurstCrypto BC = BurstCrypto.getInstance();
+		NodeService NS = NodeService.getInstance(BT.NODE_TESTNET);
+		SignumCrypto BC = SignumCrypto.getInstance();
 		
 		byte[] pubKey = BurstLedger.getPublicKey(index);
 		
-		BurstAddress yourAddress = BC.getBurstAddressFromPublic(pubKey);
+		SignumAddress yourAddress = BC.getAddressFromPublic(pubKey);
 		Account account = NS.getAccount(yourAddress).blockingGet();
 		
-		assertTrue(account.getBalance().longValue() > BurstValue.fromBurst(1).longValue(),
+		assertTrue(account.getBalance().longValue() > SignumValue.fromSigna(1).longValue(),
 				"Account " + yourAddress.getFullAddress() + " has no balace for testing");
 
-		HashSet<BurstAddress> recipients = new HashSet<>();
-		recipients.add(BC.getBurstAddressFromPassphrase(BT.PASSPHRASE));
-		recipients.add(BC.getBurstAddressFromPassphrase(BT.PASSPHRASE2));
-		recipients.add(BC.getBurstAddressFromPassphrase(BT.PASSPHRASE3));
-		recipients.add(BC.getBurstAddressFromPassphrase(BT.PASSPHRASE4));
+		HashSet<SignumAddress> recipients = new HashSet<>();
+		recipients.add(BC.getAddressFromPassphrase(BT.PASSPHRASE));
+		recipients.add(BC.getAddressFromPassphrase(BT.PASSPHRASE2));
+		recipients.add(BC.getAddressFromPassphrase(BT.PASSPHRASE3));
+		recipients.add(BC.getAddressFromPassphrase(BT.PASSPHRASE4));
 		
-		byte []utx = NS.generateMultiOutSameTransaction(pubKey, BurstValue.fromBurst(0.1), BurstValue.fromBurst(0.01), 1000, recipients).blockingGet();
+		byte []utx = NS.generateMultiOutSameTransaction(pubKey, SignumValue.fromSigna(0.1), SignumValue.fromSigna(0.01), 1000, recipients).blockingGet();
 		byte [] signed = BurstLedger.sign(utx, index);
 				
 		byte[] messageSha256 = BC.getSha256().digest(utx);

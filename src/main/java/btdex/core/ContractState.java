@@ -3,7 +3,7 @@ package btdex.core;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bouncycastle.util.encoders.Hex;
 
@@ -17,30 +17,31 @@ import bt.compiler.Compiler;
 import bt.compiler.Method;
 import btdex.sc.BuyContract;
 import btdex.sc.SellContract;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.BurstID;
-import burst.kit.entity.BurstTimestamp;
-import burst.kit.entity.BurstValue;
-import burst.kit.entity.response.AT;
-import burst.kit.entity.response.Transaction;
-import burst.kit.entity.response.TransactionAppendix;
-import burst.kit.entity.response.appendix.PlaintextMessageAppendix;
+import signumj.entity.SignumAddress;
+import signumj.entity.SignumID;
+import signumj.entity.SignumTimestamp;
+import signumj.entity.SignumValue;
+import signumj.entity.response.AT;
+import signumj.entity.response.Transaction;
+import signumj.entity.response.TransactionAppendix;
+import signumj.response.appendix.PlaintextMessageAppendix;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class ContractState {
 
-	private BurstAddress address;
+	private SignumAddress address;
 	private ContractType type;
 	private int version;
 	private AT at;
-	private BurstValue balance;
+	private SignumValue balance;
 
 	private long mediator1;
 	private long mediator2;
 	private long offerType;
 	private long feeContract;
+	private long activationFee;
 	private Compiler compiler;
 
 	private long state;
@@ -56,7 +57,7 @@ public class ContractState {
 	private long rate;
 	private int market;
 	private int takeBlock;
-	private BurstTimestamp takeTimestamp;
+	private SignumTimestamp takeTimestamp;
 	private String marketAccount;
 
 	private long lastTxId;
@@ -64,6 +65,7 @@ public class ContractState {
 	private long rateHistory;
 	private long marketHistory;
 	private int blockHistory;
+	private SignumAddress creator;
 
 	private static Logger logger = LogManager.getLogger();
 
@@ -83,6 +85,9 @@ public class ContractState {
 		mediator1 = getContractFieldValue("mediator1");
 		mediator2 = getContractFieldValue("mediator2");
 		feeContract = getContractFieldValue("feeContract");
+		creator = at.getCreator();
+		this.address = at.getId();
+		this.activationFee = at.getMinimumActivation().longValue();
 	}
 	
 	public int getVersion() {
@@ -93,7 +98,7 @@ public class ContractState {
 		return (state & flag) == flag;
 	}
 
-	public BurstTimestamp getTakeTimestamp() {
+	public SignumTimestamp getTakeTimestamp() {
 		return takeTimestamp;
 	}
 	
@@ -140,24 +145,24 @@ public class ContractState {
 	 *
 	 * @return the most recent ID visited
 	 */
-	public static BurstID addContracts(HashMap<BurstAddress, ContractState> map, BurstID mostRecent) {
+	public static SignumID addContracts(ConcurrentHashMap<SignumAddress, ContractState> map, SignumID mostRecent) {
 		Globals g = Globals.getInstance();
 		BT.setNodeInstance(g.getNS());
 
-		BurstAddress[] atIDs = g.getNS().getAtIds().blockingGet();
+		SignumAddress[] atIDs = g.getNS().getAtIds().blockingGet();
 
-		BurstID first = null;
+		SignumID first = null;
 		int heightLimit = g.isTestnet() ? 223438 : 767945;
 		
 		// reverse order to get the more recent ones first
 		for (int i = atIDs.length - 1; i >= 0; i--) {
-			BurstAddress ad = atIDs[i];
+			SignumAddress ad = atIDs[i];
 
 			if (first == null)
-				first = ad.getBurstID();
+				first = ad.getSignumID();
 
 			// already visited, no need to continue
-			if (mostRecent != null && ad.getBurstID().getSignedLongId() == mostRecent.getSignedLongId())
+			if (mostRecent != null && ad.getSignumID().getSignedLongId() == mostRecent.getSignedLongId())
 				break;
 
 			// If the map already have this one stop, since they come in order
@@ -203,11 +208,12 @@ public class ContractState {
 	private void updateState(AT at, Transaction[] utxs, boolean onlyUnconf) {
 		Globals g = Globals.getInstance();
 
-		if(at == null)
-			at = g.getNS().getAt(address).blockingGet();
+		if(at == null) {
+			// now we get only the volatile information
+			at = g.getNS().getAt(address /* : enable this when nodes have support for it, false */).blockingGet();
+		}
 
 		this.at = at;
-		this.address = at.getId();
 		this.balance = at.getBalance();
 
 		if(at.isDead())
@@ -241,7 +247,7 @@ public class ContractState {
 
 	private void findCurrentTakeBlock(Transaction[] txs) {
 		int takeBlock = 0;
-		BurstTimestamp takeTimestamp = null;
+		SignumTimestamp takeTimestamp = null;
 		if(this.state > SellContract.STATE_TAKEN) {
 			// We need to find out what is the block of the take transaction (price definition should be after that)
 			for(Transaction tx : txs) {
@@ -324,7 +330,7 @@ public class ContractState {
 			}
 
 			// order configurations should be set by the creator (or the taker of a buy is sending his address)
-			if(!tx.getSender().equals(at.getCreator()))
+			if(!tx.getSender().equals(creator))
 				continue;
 
 			if(tx.getType() == 1 /* TYPE_MESSAGING */
@@ -407,7 +413,7 @@ public class ContractState {
 
 				PlaintextMessageAppendix appendMessage = (PlaintextMessageAppendix) tx.getAppendages()[0];
 				String messageString = appendMessage.getMessage();
-				if(tx.getSender().equals(at.getCreator()) && messageString.startsWith("{")) {
+				if(tx.getSender().equals(creator) && messageString.startsWith("{")) {
 					// price update
 					try {
 						JsonObject json = JsonParser.parseString(messageString).getAsJsonObject();
@@ -475,7 +481,7 @@ public class ContractState {
 	}
 
 	public long getActivationFee() {
-		return at.getMinimumActivation().longValue();
+		return activationFee;
 	}
 
 	public ContractType getType() {
@@ -490,15 +496,15 @@ public class ContractState {
 		return marketAccount;
 	}
 
-	public BurstAddress getAddress() {
+	public SignumAddress getAddress() {
 		return address;
 	}
 
-	public BurstAddress getCreator() {
-		return at.getCreator();
+	public SignumAddress getCreator() {
+		return creator;
 	}
 
-	public BurstValue getBalance() {
+	public SignumValue getBalance() {
 		return balance;
 	}
 

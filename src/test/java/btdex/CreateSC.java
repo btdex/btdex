@@ -6,11 +6,11 @@ import bt.BT;
 import bt.Contract;
 import bt.compiler.Compiler;
 import btdex.sc.SellContract;
-import burst.kit.crypto.BurstCrypto;
-import burst.kit.entity.BurstValue;
+import signumj.crypto.SignumCrypto;
+import signumj.entity.SignumValue;
 
 public class CreateSC {
-    private long feeContract = BT.getBurstAddressFromPassphrase(BT.PASSPHRASE3).getBurstID().getSignedLongId();
+    private long feeContract = BT.getAddressFromPassphrase(BT.PASSPHRASE3).getSignumID().getSignedLongId();
 
     private long mediator1;
     private long mediator2;
@@ -18,11 +18,11 @@ public class CreateSC {
     private String mediatorOnePassword;
     private String mediatorTwoPassword;
 
-    private BurstValue amount;
+    private SignumValue amount;
 
     private Class<? extends Contract> sc;
 
-    private BurstValue security;
+    private SignumValue security;
 
     private long accountHash = 0;
     private bt.compiler.Compiler compiled;
@@ -36,11 +36,11 @@ public class CreateSC {
 
     	mediatorOnePassword = BT.PASSPHRASE;
         mediatorTwoPassword = BT.PASSPHRASE2;
-        mediator1 = BurstCrypto.getInstance().getBurstAddressFromPassphrase(mediatorOnePassword).getSignedLongId();
-        mediator2 = BurstCrypto.getInstance().getBurstAddressFromPassphrase(mediatorTwoPassword).getSignedLongId();
+        mediator1 = SignumCrypto.getInstance().getAddressFromPassphrase(mediatorOnePassword).getSignedLongId();
+        mediator2 = SignumCrypto.getInstance().getAddressFromPassphrase(mediatorTwoPassword).getSignedLongId();
 
-        this.amount = BurstValue.fromBurst(amount);
-        this.security = BurstValue.fromBurst(security);
+        this.amount = SignumValue.fromSigna(amount);
+        this.security = SignumValue.fromSigna(security);
         this.compiled = BT.compileContract(sc);
         this.sc = sc;
     }
@@ -58,7 +58,7 @@ public class CreateSC {
 
         String name = sc.getSimpleName() + System.currentTimeMillis();
         BT.registerContract(passphrase, compiled.getCode(), compiled.getDataPages(),
-                name, name, data, BurstValue.fromPlanck(SellContract.ACTIVATION_FEE),
+                name, name, data, SignumValue.fromNQT(SellContract.ACTIVATION_FEE),
                 BT.getMinRegisteringFee(compiled), 1000).blockingGet();
         return name;
     }

@@ -2,8 +2,8 @@ package btdex;
 
 import bt.BT;
 import btdex.core.NumberFormatting;
-import burst.kit.entity.BurstID;
-import burst.kit.entity.response.AssetTrade;
+import signumj.entity.SignumID;
+import signumj.entity.response.AssetTrade;
 
 /**
  * Accounts for all TRT transactions so far.
@@ -21,7 +21,7 @@ public class TotalVolume {
 		long quantity = 0;
 		long volume = 0;
 		while (true) {
-			AssetTrade[] trades = BT.getNode().getAssetTrades(BurstID.fromLong("12402415494995249540"), null, start, start+N).blockingGet();
+			AssetTrade[] trades = BT.getNode().getAssetTrades(SignumID.fromLong("12402415494995249540"), null, start, start+N).blockingGet();
 			if(trades.length == 0)
 				break;
 			

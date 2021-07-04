@@ -1,15 +1,15 @@
 package btdex;
 
 import bt.BT;
-import burst.kit.entity.BurstAddress;
-import burst.kit.entity.response.Account;
+import signumj.entity.SignumAddress;
+import signumj.entity.response.Account;
 
 public class Balances {
 	
 	public static void main(String[] args) {
 		BT.setNodeAddress(BT.NODE_BURSTCOIN_RO);
 
-		BurstAddress ad = BurstAddress.fromEither("BURST-BTKF-8WT9-L98N-98JH2");
+		SignumAddress ad = SignumAddress.fromEither("S-BTKF-8WT9-L98N-98JH2");
 		
 		Account ac = BT.getNode().getAccount(ad).blockingGet();
 		
