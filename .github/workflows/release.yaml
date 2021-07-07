@@ -57,27 +57,48 @@ jobs:
           asset_name: btdex-${{ steps.get_version.outputs.VERSION }}-all.jar.sha256
           asset_content_type: text/plain
           
-      - name: Upload Release Asset - Windows Zip
+      - name: Upload Release Asset - Windows Exe
         id: upload-release-asset-windows
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/distributions/btdex-win_x64.zip
-          asset_name: btdex-${{ steps.get_version.outputs.VERSION }}-win_x64.exe
-          asset_content_type: application/zip
-      - name: Upload Release Asset - Windows zip checksum
+          asset_path: ./build/launch4j/btdex.exe
+          asset_name: btdex-${{ steps.get_version.outputs.VERSION }}-win.exe
+          asset_content_type: application/vnd.microsoft.portable-executable
+      - name: Upload Release Asset - Windows exe checksum
         id: upload-release-asset-win-checksum
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./build/checksums/btdex-win_x64.zip.sha256
-          asset_name: btdex-${{ steps.get_version.outputs.VERSION }}-win_x64.zip.sha256
+          asset_path: ./build/checksums/btdex.exe.sha256
+          asset_name: btdex-${{ steps.get_version.outputs.VERSION }}-win.exe.sha256
           asset_content_type: text/plain
           
+      - name: Upload Release Asset - Windows Installer
+        id: upload-release-asset-windows-installer
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/btdex-installer-win_x64.exe
+          asset_name: btdex-installer-${{ steps.get_version.outputs.VERSION }}-win_x64.exe
+          asset_content_type: application/vnd.microsoft.portable-executable
+      - name: Upload Release Asset - Windows installer checksum
+        id: upload-release-asset-win-installer-checksum
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./build/checksums/btdex-intaller-win_x64.exe.sha256
+          asset_name: btdex-installer=${{ steps.get_version.outputs.VERSION }}-win_x64.exe.sha256
+          asset_content_type: text/plain
+
       - name: Upload Release Asset - App
         id: upload-release-asset-app
         uses: actions/upload-release-asset@v1.0.1
@@ -96,7 +117,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
           asset_path: ./build/checksums/btdex-macosx_x64.zip.sha256
-          asset_name: btdex-${{ steps.get_version.outputs.VERSION }}macosx_x64.zip.sha256
+          asset_name: btdex-${{ steps.get_version.outputs.VERSION }}-macosx_x64.zip.sha256
           asset_content_type: text/plain
 
       - name: Extract version number

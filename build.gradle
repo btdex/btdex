@@ -151,6 +151,14 @@ task windowsZip(type: Zip) {
    archiveName "${baseName}-win_x64.zip"
 }
 
+task createInstaller(type:Exec) {
+   dependsOn createExe
+   dependsOn unzipWindowsJDK
+   workingDir "${project.buildDir}/distributions"
+
+   commandLine 'makensis', "${projectDir}/dist/installer.nsi"
+}
+
 task downloadMacJDK(type: Download) {
     src "https://cdn.azul.com/zulu/bin/${jdkVersion}-macosx_x64.zip"
     dest "dist/jdk/${jdkVersion}-macosx_x64.zip"
@@ -223,7 +231,8 @@ import org.gradle.crypto.checksum.Checksum
 
 task makeDebChecksum(type: Checksum, dependsOn: [makeDeb]) {
 }
-task release(type: Checksum, dependsOn: [shadowJar, windowsZip, createAppZip, makeDeb]) {
+task release(type: Checksum, dependsOn: [shadowJar, windowsZip, createAppZip, makeDeb, createInstaller]) {
     files = project.tasks.shadowJar.outputs.files.plus(files(['build/distributions/btdex-win_x64.zip',
-    	'build/distributions/btdex-macosx_x64.zip'])).plus(project.tasks.makeDeb.outputs.files)
+    	'build/launch4j/btdex.exe',
+    	'build/distributions/btdex-macosx_x64.zip', 'dist/btdex-installer-win_x64.exe'])).plus(project.tasks.makeDeb.outputs.files)
 }
