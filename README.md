@@ -28,27 +28,26 @@ Additionally, any Signum-based token can be listed instantly and traded.
 Check the [releases](https://github.com/btdex/btdex/releases) and get the latest one.
 
 ### Running on Windows
-Just download the `btdex-version.exe` [latest release](https://github.com/btdex/btdex/releases) and copy it
-to a folder you have write rights (it will create a file named `config.properties` with your account details).
-Double click on `btdex-version.exe` to start the application.
+Just download the `btdex-version-win_x64.zip` [latest release](https://github.com/btdex/btdex/releases) and extract it
+to a folder you have write rights.
+Double click on `btdex.exe` to start the application (it will create a file named `config.properties` on the same folder with your account details).
 
 ### Running on Linux
 
 #### Ubuntu and other Debian-based distributions
-Just download the `btdex_version_all.deb` [latest release](https://github.com/btdex/btdex/releases) and install it.
+Just download the `btdex_version_amd64.deb` [latest release](https://github.com/btdex/btdex/releases) and install it.
 The application `BTDEX` will be available on the system (config file will go to `.config/btdex/` inside your home folder).
 
 ### Running on MacOS
-Make sure you have an up-to-date Java JRE on your machine.
 Just download the `btdex-mac-version.zip` [latest release](https://github.com/btdex/btdex/releases) and uncompress the app.
-You can now run the app as usual (it will create a file named `config.properties` inside your home folder `~/`).
+You can now run the app as usual (config file will go to `.config/btdex/` inside your home folder).
 
 ### General method without installing
-Just download the `btdex-all-version.jar` [latest release](https://github.com/btdex/btdex/releases) and copy it
+Just download the `btdex-version-all.jar` [latest release](https://github.com/btdex/btdex/releases) and copy it
 to a folder you have write rights (it will create a file named `config.properties` with your account details).
-Run this jar file with Java 8 or more recent (the `xdg-utils` package is required to open your browser when necessary):
+Run this jar file with Java 8 or 11 (the `xdg-utils` package is required to open your browser when necessary):
 
-`java -jar btdex-all-version.jar`
+`java -jar btdex-version-all.jar`
 
 ## Translations
 If you want to see BTDEX on your own language or have suggestions on how to improve a translation, please join us at https://www.transifex.com/btdex/.
@@ -67,9 +66,9 @@ The many resulting files will be found inside the `build` folder, like:
 
 `build/libs/btdex-all.jar`
 
-The Windows executable will be found at:
+The Windows package will be found at:
 
-`build/launch4j/btdex.exe`
+`build/distributions/btdex-win_x64.zip`
 
 ## Running on testnet
 
