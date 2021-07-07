@@ -15,3 +15,4 @@ bin
 .project
 .classpath
 /log/
+/dist/jdk

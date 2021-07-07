@@ -8,6 +8,8 @@ plugins {
     id 'org.gradle.crypto.checksum' version '1.2.0'
     id 'com.palantir.git-version' version '0.12.2'
 	id 'io.spring.dependency-management' version '1.0.1.RELEASE' //for logging - log4j
+	
+	id "de.undercouch.download" version "1.2"
 }
 
 java {
@@ -45,8 +47,8 @@ dependencies {
     //implementation 'net.java.dev.jna:jna:5.7.0'
 
 	//implementation 'com.github.weisj:darklaf-core:2.5.5'
-    //implementation 'com.bulenkov:darcula:2018.2'
-    implementation 'com.github.jjos2372:Darcula:3b47831130' // this one is compatible with Java16
+    implementation 'com.bulenkov:darcula:2018.2'
+    //implementation 'com.github.jjos2372:Darcula:3b47831130' // this one is compatible with Java16
     //implementation 'com.formdev:flatlaf-intellij-themes:1.0'
     
     implementation 'com.dorkbox:SystemTray:3.17'
@@ -110,19 +112,53 @@ shadowJar{
 }
 shadowJar.dependsOn versionProp
 
+
+def jdkVersion = 'zulu8.54.0.21-ca-jdk8.0.292'
+import de.undercouch.gradle.tasks.download.Download
+
+task downloadWindowsJDK(type: Download) {
+    src "https://cdn.azul.com/zulu/bin/${jdkVersion}-win_x64.zip"
+    dest "dist/jdk/${jdkVersion}-win_x64.zip"
+}
+task unzipWindowsJDK(type: Copy, dependsOn: downloadWindowsJDK) {
+    from(zipTree("dist/jdk/${jdkVersion}-win_x64.zip"))
+    into "dist/jdk/"
+}
+
 createExe {
-    outfile = 'btdex.exe'
+    outfile = '${baseName}.exe'
     icon = "${projectDir}/dist/btdex.ico"
     jreMinVersion = '1.8.0'
     copyright = 'BTDEX'
     companyName = 'https://btdex.trade'
     textVersion = details.lastTag
+    
+    bundledJrePath = "./jre"
+    bundledJre64Bit = true
 
     mainClassName = project.mainClassName
     copyConfigurable = project.tasks.shadowJar.outputs.files
     jar = "lib/${project.tasks.shadowJar.archiveName}"
 }
 
+task windowsZip(type: Zip) {
+   dependsOn createExe
+   dependsOn unzipWindowsJDK
+   from "${project.buildDir}/launch4j/${baseName}.exe"
+   into('jre'){
+   	from "dist/jdk/${jdkVersion}-win_x64/jre"
+   }
+   archiveName "${baseName}-win_x64.zip"
+}
+
+task downloadMacJDK(type: Download) {
+    src "https://cdn.azul.com/zulu/bin/${jdkVersion}-macosx_x64.zip"
+    dest "dist/jdk/${jdkVersion}-macosx_x64.zip"
+}
+task unzipMacJDK(type: Copy, dependsOn: downloadMacJDK) {
+    from(zipTree("dist/jdk/${jdkVersion}-macosx_x64.zip"))
+    into "dist/jdk/"
+}
 createDmg.enabled = false
 macAppBundle {
     mainClassName = project.mainClassName
@@ -130,24 +166,43 @@ macAppBundle {
     icon = "${projectDir}/dist/btdex.icns"
     appStyle = 'Oracle'
     appName = project.applicationName
-    dmgName = "${->project.name}-mac"
+    dmgName = "${->project.name}-macosx_x64"
     runtimeConfigurationName = 'shadow'
     jarTask = 'shadowJar'
     jvmVersion = "1.8+"
+    bundleJRE = true
+    jreHome = "${projectDir}/dist/jdk/${jdkVersion}-macosx_x64/zulu-8.jdk/Contents/Home"
 }
+createAppZip.dependsOn unzipMacJDK
 
-task makeDeb(type: Deb, dependsOn: shadowJar) {
+
+task downloadLinuxJDK(type: Download) {
+    src "https://cdn.azul.com/zulu/bin/${jdkVersion}-linux_x64.zip"
+    dest "dist/jdk/${jdkVersion}-linux_x64.zip"
+}
+task unzipLinuxJDK(type: Copy) {
+    from(zipTree("dist/jdk/${jdkVersion}-linux_x64.zip"))
+    into "dist/jdk/"
+}
+unzipLinuxJDK.dependsOn downloadLinuxJDK
+task makeDeb(type: Deb) {
+	dependsOn shadowJar
+	dependsOn unzipLinuxJDK
+	
     maintainer 'btdex.trade'
     license	'GPL-3+'
     version details.lastTag.substring(1)
     release '1'
-    arch 'all'
+    arch 'amd64'
 
-    requires('java8-runtime').or('java9-runtime')
     requires('xdg-utils')
 
     from('dist/copyright'){
         into '/usr/share/doc/btdex'
+    }
+    
+    from("dist/jdk/${jdkVersion}-linux_x64/jre"){
+        into '/opt/btdex/jre'
     }
 
     into '/opt/btdex'
@@ -167,7 +222,7 @@ import org.gradle.crypto.checksum.Checksum
 
 task makeDebChecksum(type: Checksum, dependsOn: [makeDeb]) {
 }
-task release(type: Checksum, dependsOn: [shadowJar, createExe, createAppZip, makeDeb]) {
-    files = project.tasks.shadowJar.outputs.files.plus(files(['build/launch4j/btdex.exe',
-    	'build/distributions/btdex-mac.zip'])).plus(project.tasks.makeDeb.outputs.files)
+task release(type: Checksum, dependsOn: [shadowJar, windowsZip, createAppZip, makeDeb]) {
+    files = project.tasks.shadowJar.outputs.files.plus(files(['build/distributions/btdex-win_x64.zip',
+    	'build/distributions/btdex-macosx_x64.zip'])).plus(project.tasks.makeDeb.outputs.files)
 }

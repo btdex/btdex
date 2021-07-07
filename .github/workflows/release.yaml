@@ -32,6 +32,9 @@ jobs:
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: Get the version number
+        id: get_version_number
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
         
       - name: Upload Release Asset - Jar
         id: upload-release-asset-jar
@@ -41,7 +44,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
           asset_path: ./build/libs/btdex-all.jar
-          asset_name: btdex-all-${{ steps.get_version.outputs.VERSION }}.jar
+          asset_name: btdex-${{ steps.get_version.outputs.VERSION }}-all.jar
           asset_content_type: application/java-archive
       - name: Upload Release Asset - Jar checksum
         id: upload-release-asset-jar-checksum
@@ -51,28 +54,28 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
           asset_path: ./build/checksums/btdex-all.jar.sha256
-          asset_name: btdex-all-${{ steps.get_version.outputs.VERSION }}.jar.sha256
+          asset_name: btdex-${{ steps.get_version.outputs.VERSION }}-all.jar.sha256
           asset_content_type: text/plain
           
-      - name: Upload Release Asset - Exe
-        id: upload-release-asset-exe
+      - name: Upload Release Asset - Windows Zip
+        id: upload-release-asset-windows
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/launch4j/btdex.exe
-          asset_name: btdex-win-${{ steps.get_version.outputs.VERSION }}.exe
-          asset_content_type: application/vnd.microsoft.portable-executable
-      - name: Upload Release Asset - Exe checksum
-        id: upload-release-asset-exe-checksum
+          asset_path: ./build/distributions/btdex-win_x64.zip
+          asset_name: btdex-${{ steps.get_version.outputs.VERSION }}-win_x64.exe
+          asset_content_type: application/zip
+      - name: Upload Release Asset - Windows zip checksum
+        id: upload-release-asset-win-checksum
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./build/checksums/btdex.exe.sha256
-          asset_name: btdex-win-${{ steps.get_version.outputs.VERSION }}.exe.sha256
+          asset_path: ./build/checksums/btdex-win_x64.zip.sha256
+          asset_name: btdex-${{ steps.get_version.outputs.VERSION }}-win_x64.zip.sha256
           asset_content_type: text/plain
           
       - name: Upload Release Asset - App
@@ -82,8 +85,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/distributions/btdex-mac.zip
-          asset_name: btdex-mac-${{ steps.get_version.outputs.VERSION }}.zip
+          asset_path: ./build/distributions/btdex-macosx_x64.zip
+          asset_name: btdex-${{ steps.get_version.outputs.VERSION }}-macosx_x64.zip
           asset_content_type: application/zip
       - name: Upload Release Asset - App checksum
         id: upload-release-asset-app-checksum
@@ -92,19 +95,23 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./build/checksums/btdex-mac.zip.sha256
-          asset_name: btdex-mac-${{ steps.get_version.outputs.VERSION }}.zip.sha256
+          asset_path: ./build/checksums/btdex-macosx_x64.zip.sha256
+          asset_name: btdex-${{ steps.get_version.outputs.VERSION }}macosx_x64.zip.sha256
           asset_content_type: text/plain
 
-# FIXME: how to cut the 'v' from v0.1.X for the deb package name (should not have the 'v')
-#      - name: Upload Release Asset - Deb
-#        id: upload-release-asset-deb
-#        uses: actions/upload-release-asset@v1.0.1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          upload_url: ${{ steps.create_release.outputs.upload_url }}
-#          asset_path: ./build/distributions/btdex_${{ echo ${{ steps.get_version.outputs.VERSION }} | cut -c 2- }}_all.deb
-#          asset_name: btdex_${{ echo ${{ steps.get_version.outputs.VERSION }} | cut -c 2- }}_all.deb
-#          asset_content_type: application/vnd.debian.binary-package
-          
+      - name: Extract version number
+        id: get-version-num
+        run: |
+          id=$(echo ${{ steps.get_version.outputs.VERSION }} | cut -c2-)
+          echo "::set-output name=id::$id"
+
+      - name: Upload Release Asset - Deb
+        id: upload-release-asset-deb
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/distributions/btdex_${{steps.get-version-num.outputs.id}}-1_amd64.deb
+          asset_name: btdex_${{steps.get-version-num.outputs.id}}-1_amd64.deb
+          asset_content_type: application/vnd.debian.binary-package
