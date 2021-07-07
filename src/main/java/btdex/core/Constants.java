@@ -21,7 +21,7 @@ public class Constants {
     		"https://europe1.signum.network",
     		"https://europe3.signum.network",
     		"https://brazil.signum.network",
-    		"https://uk.signum.network:8125",
+    		"https://uk.signum.network",
     		BT.NODE_BURSTCOIN_RO,
     		"https://canada.signum.network",
     		"https://australia.signum.network",
