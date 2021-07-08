@@ -16,6 +16,7 @@ import bt.BT;
 import btdex.api.Server;
 import btdex.markets.MarketBurstToken;
 import btdex.ui.ExplorerWrapper;
+import dorkbox.util.OS;
 import signumj.crypto.SignumCrypto;
 import signumj.entity.SignumAddress;
 import signumj.service.NodeService;
@@ -68,8 +69,18 @@ public class Globals {
 		try {
 			// Read properties from file
 			File f = new File(confFile);
+			if(confFile == Constants.DEF_CONF_FILE && (!f.exists() || !f.isFile())) {
+				// the default config file does not exist on the same folder, let's go to a user-wide location
+				String confFolder = System.getProperty("user.home") + File.separatorChar + ".config";
+				if(OS.isWindows())
+					confFolder = System.getenv("APPDATA");
+				f = new File(confFolder + File.separatorChar + "btdex" , Constants.DEF_CONF_FILE);
+				setConfFile(f.getAbsolutePath());
+			}
+			System.out.println("Using config file " + f.getAbsolutePath());
 			if (f.exists() && f.isFile()) {
 				try {
+					System.out.println("Loading config file contents");
 					FileInputStream input = new FileInputStream(confFile);
 					conf.load(input);
 				}

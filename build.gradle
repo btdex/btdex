@@ -179,7 +179,6 @@ macAppBundle {
     jarTask = 'shadowJar'
     jvmVersion = "1.8+"
     bundleJRE = true
-    arguments = ['-f', '.config/btdex/config.properties']
     jreHome = "${projectDir}/dist/jdk/${jdkVersion}-macosx_x64/zulu-8.jdk/Contents/Home"
 }
 createAppZip.dependsOn unzipMacJDK

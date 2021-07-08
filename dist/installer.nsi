@@ -45,7 +45,8 @@ Section "Uninstall"
 
 Delete $INSTDIR\uninstall.exe
 Delete $INSTDIR\btdex.exe
-RMDir $INSTDIR
+RMDir /R $INSTDIR\jre
+;RMDir /R $INSTDIR
 
 SectionEnd
 
