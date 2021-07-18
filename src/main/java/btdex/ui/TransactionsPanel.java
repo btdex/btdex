@@ -295,6 +295,8 @@ public class TransactionsPanel extends JPanel {
 					break;
 				default:
 					type = tr("txs_set_reward");
+					if(tx.getRecipient().getSignedLongId() == g.getAddress().getSignedLongId())
+						type = tr("txs_set_reward_solo");
 				}
 				break;
 			case 22: // TYPE_AUTOMATED_TRANSACTIONS
