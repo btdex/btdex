@@ -1,6 +1,8 @@
 package btdex.core;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 
 import bt.compiler.Compiler;
+import bt.compiler.Method;
 import btdex.sc.BuyContract;
 import btdex.sc.BuyContract2;
 import btdex.sc.SellContract;
@@ -23,6 +26,8 @@ import signumj.entity.SignumID;
 import signumj.entity.response.AT;
 import signumj.entity.response.Block;
 import signumj.entity.response.Transaction;
+import signumj.response.appendix.PlaintextMessageAppendix;
+import signumj.service.NodeService;
 
 public class Contracts {
     private static Compiler compilerSell[], compilerNoDeposit, compilerBuy[];
@@ -293,5 +298,56 @@ public class Contracts {
 
 	public static ContractState getFreeNoDepositContract() {
 		return freeNoDepositContract;
+	}
+	
+	public static String transactionHistory(SignumAddress ad, NodeService ns) {
+		AT at = ns.getAt(ad).blockingGet();
+
+		ContractType type = Contracts.getContractType(at);
+
+		ContractState s = new ContractState(type, at);
+		
+		bt.compiler.Compiler comp = getCompiler(type);
+		
+		StringWriter writer = new StringWriter();
+		PrintWriter out = new PrintWriter(writer);
+
+		out.println("Contract type: " + s.getType());
+
+		Transaction[] txs = ns.getAccountTransactions(ad, null, null, false).blockingGet();
+
+		for (Transaction tx : txs) {
+			out.println("\ntxid: " + tx.getId().getID() + " height:" + tx.getBlockHeight() + " time:" + tx.getTimestamp().getAsDate().toString());
+			out.println("from : " + tx.getSender().getFullAddress());
+			if(tx.getSender().getSignedLongId() == at.getCreator().getSignedLongId())
+				out.println("is creator");
+			else if(tx.getSender().getSignedLongId() == ad.getSignedLongId()) {
+				out.println("contract sends to " + tx.getRecipient().getFullAddress());
+			}
+			out.println("amount : " + tx.getAmount().toFormattedString());
+
+			if(tx.getAppendages()!=null && tx.getAppendages().length==1 &&
+					tx.getAppendages()[0] instanceof PlaintextMessageAppendix) {
+				PlaintextMessageAppendix msg = (PlaintextMessageAppendix) tx.getAppendages()[0];
+				String msgContent = msg.getMessage();
+				if(!msg.isText()) {
+					for(Method m : comp.getMethods()) {
+						
+		            	ByteBuffer b = ByteBuffer.allocate(8);
+		                b.order(ByteOrder.LITTLE_ENDIAN);
+		                b.putLong(m.getHash());
+		                String hash = Hex.toHexString(b.array());
+						if(msgContent.startsWith(hash)) {
+							out.println("calls: " + m.getName());
+						}
+					}
+				}
+				else {
+					out.println(msgContent);
+				}
+			}
+		}
+		
+		return writer.toString();
 	}
 }

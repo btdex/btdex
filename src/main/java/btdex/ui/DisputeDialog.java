@@ -27,6 +27,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ScrollPaneConstants;
@@ -76,6 +77,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 
 	private JButton okButton;
 	private JButton cancelButton;
+	private JButton contractHistoryButton;
 	private JButton supportDiscord, supportReddit;
 
 	private boolean isBuy, isCreator, isMediator, isMediating;
@@ -248,6 +250,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		supportReddit = new JButton(tr("dlg_support"), i.get(Icons.REDDIT));
 		supportReddit.setToolTipText(tr("dlg_support_reddit"));
 		cancelButton = new JButton(tr("dlg_cancel"));
+		contractHistoryButton = new JButton(tr("disp_contract_history"));
 		okButton = new JButton(tr("disp_open_dispute"));
 		if(contract.getState() > SellContract.STATE_DISPUTE)
 			okButton.setText(tr("disp_update_dispute"));
@@ -259,6 +262,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		supportDiscord.addActionListener(this);
 		supportReddit.addActionListener(this);
 		cancelButton.addActionListener(this);
+		contractHistoryButton.addActionListener(this);
 		okButton.addActionListener(this);
 
 		if(!isMediator) {
@@ -269,6 +273,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 			buttonPane.add(new Desc(tr("dlg_pin"), pinField));
 			buttonPane.add(new Desc(" ", okButton));
 		}
+		buttonPane.add(new Desc(" ", contractHistoryButton));
 		buttonPane.add(new Desc(" ", cancelButton));
 
 		JPanel content = (JPanel)getContentPane();
@@ -333,6 +338,14 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == cancelButton) {
 			setVisible(false);
+			return;
+		}
+		if(e.getSource() == contractHistoryButton) {
+			String history = Contracts.transactionHistory(contract.getAddress(), Globals.getInstance().getNS());
+			JTextArea textArea = new JTextArea(20, 50);
+			textArea.append(history);
+			textArea.setCaretPosition(0);
+			JOptionPane.showMessageDialog(this, new JScrollPane(textArea), tr("disp_contract_history"), JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 		
