@@ -1,9 +1,11 @@
 package btdex.core;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -72,8 +74,24 @@ public class Globals {
 			if(confFile == Constants.DEF_CONF_FILE && (!f.exists() || !f.isFile())) {
 				// the default config file does not exist on the same folder, let's go to a user-wide location
 				String confFolder = System.getProperty("user.home") + File.separatorChar + ".config";
-				if(OS.isWindows())
+				if(OS.isWindows()) {
 					confFolder = System.getenv("APPDATA");
+					ProcessBuilder builder = new ProcessBuilder(new String[]{"cmd", "/C echo %APPDATA%"});
+
+				    BufferedReader br = null;
+				    try {
+				        Process start = builder.start();
+				        br = new BufferedReader(new InputStreamReader(start.getInputStream()));
+				        String path = br.readLine();
+				        // In case we get a trailing "
+				        if(path.endsWith("\"")){
+				            path = path.substring(0, path.length()-1);
+				        }
+				        confFolder = path.trim();
+				    } catch (Exception ex) {
+				        logger.log(Level.ERROR, "Could not get the Application Data Folder", ex);
+				    }
+				}
 				f = new File(confFolder + File.separatorChar + "btdex" , Constants.DEF_CONF_FILE);
 				setConfFile(f.getAbsolutePath());
 			}

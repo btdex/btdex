@@ -23,9 +23,9 @@ InstallDir "$PROGRAMFILES64\btdex"
 !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchApplication"
 
 Function LaunchApplication
-    ExecShell "" "$INSTDIR\btdex.exe"
+	Exec '"$WINDIR\explorer.exe" "$INSTDIR\btdex.exe"'
+;	ExecShell "" "$INSTDIR\btdex.exe"
 FunctionEnd
-
 
 ;Languages
 ;!insertmacro MUI_LANGUAGE "English"
@@ -38,6 +38,9 @@ Section "" SecExample
   FILE /r ../dist/jdk/zulu8.54.0.21-ca-jdk8.0.292-win_x64/jre
 
   WriteUninstaller $INSTDIR\uninstall.exe
+  
+  CreateDirectory '$SMPROGRAMS\BTDEX\'
+  CreateShortCut '$SMPROGRAMS\BTDEX\btdex.lnk' '$INSTDIR\btdex.exe' "" '$INSTDIR\btdex.exe' 0
 SectionEnd
 
 ; The uninstall section
