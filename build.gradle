@@ -126,7 +126,7 @@ task unzipWindowsJDK(type: Copy, dependsOn: downloadWindowsJDK) {
 }
 
 createExe {
-    outfile = '${baseName}.exe'
+    outfile = 'btdex.exe'
     icon = "${projectDir}/dist/btdex.ico"
     jreMinVersion = '1.8.0'
     copyright = 'BTDEX'
