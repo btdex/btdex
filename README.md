@@ -30,7 +30,7 @@ Check the [releases](https://github.com/btdex/btdex/releases) and get the latest
 ### Running on Windows
 Just download the `btdex-version-win_x64.zip` [latest release](https://github.com/btdex/btdex/releases) and extract it
 to a folder you have write rights.
-Double click on `btdex.exe` to start the application (it will create a file named `config.properties` on the same folder with your account details).
+Double click on `btdex.exe` to start the application (it will create a file named `config.properties` inside the user [AppData](https://www.howtogeek.com/318177/what-is-the-appdata-folder-in-windows/)`/btdex` folder or use a file with that name if available on the same folder).
 
 ### Running on Linux
 
@@ -44,7 +44,7 @@ You can now run the app as usual (config file will go to `.config/btdex/` inside
 
 ### General method without installing
 Just download the `btdex-version-all.jar` [latest release](https://github.com/btdex/btdex/releases) and copy it
-to a folder you have write rights (it will create a file named `config.properties` with your account details).
+to a folder you have write rights (it will create a file named `config.properties` with your account details as described for different operating systems above).
 Run this jar file with Java 8 or 11 (the `xdg-utils` package is required to open your browser when necessary):
 
 `java -jar btdex-version-all.jar`
