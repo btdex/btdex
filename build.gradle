@@ -90,7 +90,7 @@ configurations.all {
 // Define the main class for the application
 mainClassName = 'BTDEX'
 
-description = 'A decentralized exchange system running on the Burst blockchain.'
+description = 'A decentralized exchange system running on the Signum blockchain.'
 
 def details = versionDetails()
 
