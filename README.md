@@ -30,7 +30,7 @@ Check the [releases](https://github.com/btdex/btdex/releases) and get the latest
 ### Running on Windows
 Just download the `btdex-version-win_x64.zip` [latest release](https://github.com/btdex/btdex/releases) and extract it
 to a folder you have write rights.
-Double click on `btdex.exe` to start the application (it will create a file named `config.properties` inside a `btdex` folder in the [user %APPDATA%](https://www.howtogeek.com/318177/what-is-the-appdata-folder-in-windows/) or use a file with that name if available on the same folder).
+Double click on `btdex.exe` to start the application (it will create a file named `config.properties` inside the user [AppData](https://www.howtogeek.com/318177/what-is-the-appdata-folder-in-windows/)`/btdex` folder or use a file with that name if available on the same folder).
 
 ### Running on Linux
 
