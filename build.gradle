@@ -230,8 +230,12 @@ import org.gradle.crypto.checksum.Checksum
 
 task makeDebChecksum(type: Checksum, dependsOn: [makeDeb]) {
 }
-task release(type: Checksum, dependsOn: [shadowJar, windowsZip, createAppZip, makeDeb, createInstaller]) {
+task release(type: Checksum, dependsOn: [shadowJar, windowsZip, createAppZip, makeDeb,
+	//createInstaller
+	]) {
     files = project.tasks.shadowJar.outputs.files.plus(files(['build/distributions/btdex-win_x64.zip',
     	'build/launch4j/btdex.exe',
-    	'build/distributions/btdex-macosx_x64.zip', 'dist/btdex-installer-win_x64.exe'])).plus(project.tasks.makeDeb.outputs.files)
+    	'build/distributions/btdex-macosx_x64.zip',
+    	// 'dist/btdex-installer-win_x64.exe'
+    	])).plus(project.tasks.makeDeb.outputs.files)
 }
