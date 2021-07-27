@@ -134,7 +134,7 @@ createExe {
     textVersion = details.lastTag
     
     bundledJrePath = "./jre"
-    bundledJre64Bit = true
+    bundledJre64Bit = false
 
     mainClassName = project.mainClassName
     copyConfigurable = project.tasks.shadowJar.outputs.files
