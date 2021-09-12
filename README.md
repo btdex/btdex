@@ -8,7 +8,7 @@ It implements a unique non-custodial exchange method for cryptocurrencies and co
 The exchange method is serverless and fees are distributed among [Trade Token (TRT)](https://explore.burstcoin.ro/asset/12402415494995249540) holders.
 
 You will also find more details at [https://btdex.trade](https://btdex.trade).
-Currently the following pairs are available with BURST:
+Currently the following pairs are available with SIGNA:
  - BTC
  - ARRR
  - BCH
@@ -77,6 +77,15 @@ Edit your `config.properties` file and add the following lines:
 ```
 testnet=True
 node=http\://nivbox.co.uk\:6876
+```
+
+## Minimum offer sizes
+
+If you want to change the default minimum offer sizes, edit your `config.properties` for specific markets:
+
+```
+minOfferBTC=10000
+minOfferETH=80000
 ```
 
 ## API
