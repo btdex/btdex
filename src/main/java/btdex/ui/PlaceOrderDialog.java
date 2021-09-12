@@ -75,6 +75,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	private SignumValue suggestedFee;
 
 	private SignumValue amountValue, priceValue;
+	private long totalMarketValue;
 
 	private Desc pinDesc;
 
@@ -356,6 +357,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			String error = null;
 			Globals g = Globals.getInstance();
 			
+			long minMarketOffer = g.getMinOffer(market.getID());
+			
 			if(!pinDesc.isVisible()) {
 				// nothing to do, as this is only showing information
 				setVisible(false);
@@ -377,6 +380,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			}
 			if(error == null && amountValue.longValue() < Constants.MIN_OFFER) {
 				error = tr("offer_too_small", NumberFormatting.BURST.format(Constants.MIN_OFFER));
+			}
+			if(error == null && totalMarketValue < minMarketOffer) {
+				error = tr("offer_too_small_market", market.format(Constants.MIN_OFFER), market.getTicker());
 			}
 			if(error == null && amountValue.longValue() > Constants.MAX_OFFER) {
 				error = tr("offer_too_large", NumberFormatting.BURST.format(Constants.MAX_OFFER));
@@ -588,8 +594,8 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			priceValue = SignumValue.fromSigna(priceN.doubleValue());
 			amountValue = SignumValue.fromSigna(amountN.doubleValue());
 
-			double totalValue = priceN.doubleValue()*amountN.doubleValue()*market.getFactor();
-			totalField.setText(market.format(Math.round(totalValue)));
+			totalMarketValue = (long)(priceN.doubleValue()*amountN.doubleValue()*market.getFactor());
+			totalField.setText(market.format(totalMarketValue));
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
