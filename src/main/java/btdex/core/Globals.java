@@ -407,6 +407,16 @@ public class Globals {
 		accounts.add(ac);
 		saveAccounts();
 	}
+	
+	public long getMinOffer(long id) {
+		Market m = Markets.findMarket(id);
+		long minOffer = Long.parseLong(conf.getProperty(Constants.PROP_MIN_OFFER + m.getTicker(), "0"));
+		
+		if(minOffer==0) {
+			return m.getDefaultMinOffer();
+		}
+		return minOffer;
+	}
 
 	public void removeAccount(int index) {
 		accounts.remove(index);

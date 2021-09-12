@@ -7,8 +7,14 @@ import btdex.locale.Translation;
 
 public class MarketBTC extends MarketCrypto {
 	
+	public static final String TICKER = "BTC";
+	
+	public long getDefaultMinOffer() {
+		return 10000;
+	}
+	
 	public String getTicker() {
-		return "BTC";
+		return TICKER;
 	}
 	
 	@Override

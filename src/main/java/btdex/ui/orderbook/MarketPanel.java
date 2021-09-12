@@ -278,7 +278,14 @@ public class MarketPanel extends JPanel implements ActionListener {
 				continue;
 			}
 
+			long minOfferMarket = g.getMinOffer(market.getID());
+			// Price is on the selected market
+			long price = s.getRate();
+			long amount = s.getAmountNQT();
+			long amountMarket = (price * amount)/market.getFactor();
+					
 			if(!s.getCreator().equals(g.getAddress()) && (s.getAmountNQT() < Constants.MIN_OFFER
+					|| amountMarket < minOfferMarket
 					|| s.getAmountNQT() > Constants.MAX_OFFER
 					|| (s.getVersion() < 2 && s.getAmountNQT() > Constants.MAX_OFFER_OLD) ))
 				continue;

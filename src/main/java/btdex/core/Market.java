@@ -101,6 +101,10 @@ public abstract class Market {
 	public long getFactor() {
 		return BTC_TO_SAT;
 	}
+	
+	public long getDefaultMinOffer() {
+		return 0;
+	}
 
 	/**
 	 * @return the number of hours a taker has to make the crypto/fiat payment.
