@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.BorderFactory;
@@ -421,10 +422,17 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		
 		String []poolList = Globals.getInstance().isTestnet() ? POOL_LIST_TESTNET : POOL_LIST;
 		String selectedPool = Globals.getInstance().getProperty(PROP_MINER_POOL);
+		boolean userHasPool = false;
 		for(String poolURL : poolList) {
 			poolComboBox.addItem(poolURL);
-			if(poolURL.equals(selectedPool))
+			if(poolURL.equals(selectedPool)) {
 				poolComboBox.setSelectedIndex(poolComboBox.getItemCount()-1);
+				userHasPool = true;
+			}
+		}
+		if(!userHasPool) {
+			Random r = new Random();
+			poolComboBox.setSelectedIndex(r.nextInt(poolComboBox.getItemCount()));
 		}
 		soloNode = g.isTestnet() ? BT.NODE_LOCAL_TESTNET : BT.NODE_LOCAL;
 		poolComboBox.addItem(soloNode);
