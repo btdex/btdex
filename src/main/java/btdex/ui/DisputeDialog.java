@@ -110,14 +110,15 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 
 		// This makes sure we do not violate the limitation on the amount being requested by the parties
 		amount = contract.getAmountNQT() + 2 * (contract.getSecurityNQT() - contract.getFeeNQT());
-		// Start with the *standard* value
+		// Get the *standard* value
 		amountToCreator = contract.getSecurityNQT();
 		if(isBuy)
 			amountToCreator += contract.getAmountNQT();
 		amountToTaker = amount - amountToCreator;
 
-		suggestToYou = isCreator ? amountToCreator : amountToTaker;
-		suggestToOther = isCreator ? amountToTaker : amountToCreator;
+		// Start by asking the entire amount
+		suggestToYou = isCreator ? contract.getAmountNQT() : contract.getSecurityNQT();
+		suggestToOther = isCreator ? contract.getSecurityNQT() : contract.getAmountNQT();
 		
 		if(hasYourSuggestion) {
 			// Get the value from the contract if there is a previous one
