@@ -43,6 +43,7 @@ import btdex.markets.MarketBTC;
 import btdex.markets.MarketBurstToken;
 import btdex.ui.CreateTokenDialog;
 import btdex.ui.Desc;
+import btdex.ui.DistributionToHoldersDialog;
 import btdex.ui.ExplorerButton;
 import btdex.ui.HistoryPanel;
 import btdex.ui.Icons;
@@ -85,6 +86,7 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 	private JLabel balanceLabelToken;
 	private JLabel balanceLabelTokenPending;
 	private JButton sendButtonToken;
+	private JButton distributeButton;
 
 	private Market market = null, newMarket;
 	
@@ -223,8 +225,13 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 				
 		tokenIdButton = new ExplorerButton("", icons.get(Icons.COPY), icons.get(Icons.EXPLORER));
 
+		distributeButton = new JButton(icons.get(Icons.DISTRIBUTE));
+		distributeButton.setToolTipText(tr("token_distribution", token.toString()));
+		distributeButton.addActionListener(this);
+		
 		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		top.add(topRight, BorderLayout.LINE_END);
+		topRight.add(new Desc(tr(" "), distributeButton));
 		topRight.add(new Desc(tr("main_token_id"), tokenIdButton));
 		topRight.add(new Desc(" ", new SocialButton(SocialButton.Type.TWITTER, tableBid.getForeground())));
 //		topRight.add(new SocialButton(SocialButton.Type.INSTAGRAM, table.getForeground()));
@@ -546,6 +553,12 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 
 			setMarket(m);
 			update();
+		}
+		else if (e.getSource() == distributeButton) {
+			DistributionToHoldersDialog dlg = new DistributionToHoldersDialog((JFrame) SwingUtilities.getWindowAncestor(this), m);
+			
+			dlg.setLocationRelativeTo(this);
+			dlg.setVisible(true);
 		}
 		else if (e.getSource() == sendButtonToken) {
 			SendDialog dlg = new SendDialog((JFrame) SwingUtilities.getWindowAncestor(this),

@@ -131,8 +131,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	
 	private static final String[] POOL_LIST_TESTNET = {
 			"http://nivbox.co.uk:9000",
-			"https://testpool.burstcoin.ro",
-			"http://localhost:8000"
+//			"http://localhost:8000"
 	};
 	
 	private LinkedHashMap<String, SignumAddress> poolAddresses = new LinkedHashMap<>();

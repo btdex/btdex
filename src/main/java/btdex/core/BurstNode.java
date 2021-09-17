@@ -1,7 +1,9 @@
 package btdex.core;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
@@ -41,6 +43,7 @@ public class BurstNode {
 
 	private HashMap<Market, AssetTrade[]> assetTrades = new HashMap<>();
 	private HashMap<Market, AssetBalance> assetBalances = new HashMap<>();
+	private HashMap<Market, List<AssetBalance>> assetBalanceAllAccounts = new HashMap<>();
 	private HashMap<Market, AssetOrder[]> askOrders = new HashMap<>();
 	private HashMap<Market, AssetOrder[]> bidOrders = new HashMap<>();
 	
@@ -92,6 +95,10 @@ public class BurstNode {
 
 	public AssetBalance getAssetBalances(Market m) {
 		return assetBalances.get(m);
+	}
+
+	public List<AssetBalance> getAssetBalanceAllAccounts(Market m) {
+		return assetBalanceAllAccounts.get(m);
 	}
 
 	public AssetOrder[] getAssetBids(Market m) {
@@ -194,6 +201,7 @@ public class BurstNode {
 						continue;
 					logger.trace("Starting to update {} market", m.getID());
 					try{
+						List<AssetBalance> allBalances = new ArrayList<>();
 						AssetBalance balance = null;
 
 						Integer first = 0;
@@ -202,6 +210,9 @@ public class BurstNode {
 							AssetBalance[] accounts = NS.getAssetBalances(m.getTokenID(), first, first+delta).blockingGet();
 							if(accounts == null || accounts.length == 0)
 								break;
+							for(AssetBalance a : accounts) {
+								allBalances.add(a);
+							}
 
 							for(AssetBalance b : accounts) {
 								if(b.getAccountAddress().equals(g.getAddress())) {
@@ -225,6 +236,7 @@ public class BurstNode {
 						AssetOrder[] bids = NS.getBidOrders(m.getTokenID()).blockingGet();
 						
 						assetBalances.put(m, balance);
+						assetBalanceAllAccounts.put(m, allBalances);
 						assetTrades.put(m, trades);
 						askOrders.put(m, asks);
 						bidOrders.put(m, bids);
