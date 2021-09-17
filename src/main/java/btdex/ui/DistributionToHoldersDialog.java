@@ -42,6 +42,7 @@ import btdex.ledger.LedgerService;
 import btdex.ledger.LedgerService.SignCallBack;
 import signumj.entity.SignumAddress;
 import signumj.entity.SignumValue;
+import signumj.entity.response.Asset;
 import signumj.entity.response.AssetBalance;
 import signumj.entity.response.TransactionBroadcast;
 
@@ -83,6 +84,9 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 		amountField.getDocument().addDocumentListener(this);
 		ignoredAccounts = new JTextField(20);
 		ignoredAccounts.getDocument().addDocumentListener(this);
+		
+		Asset asset = Globals.getInstance().getNS().getAsset(market.getTokenID()).blockingGet();
+		ignoredAccounts.setText(asset.getAssetAddress().getFullAddress());
 
 		fieldPanel.setBorder(BorderFactory.createTitledBorder(tr("token_distribution_config")));
 
@@ -249,6 +253,12 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 		
 		String ignored = ignoredAccounts.getText().toUpperCase();
 		String holdersText = "<table>";
+
+		holdersText += "<tr><th>" + tr("main_accounts") + "</th>";
+		holdersText += "<th>" + tr("token_distribution_holdings", market.getTicker()) + "</th>";
+		holdersText += "<th>%</th>";
+		holdersText += "<th>" + Constants.BURST_TICKER + "</th>";
+		holdersText += "</tr>";
 		
         recipients = new LinkedHashMap<SignumAddress, SignumValue>();
 		
@@ -266,14 +276,16 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 			for(AssetBalance h : holders) {
 				String address = h.getAccountAddress().getFullAddress();
 				holdersText += "<tr>";
-				holdersText += "<td>" + address + "</td><td>" + market.format(h.getBalance().longValue()) + " " + market.getTicker() + "</td><td>";
+				holdersText += "<td>" + address + "</td><td>" + market.format(h.getBalance().longValue()) + "</td><td>";
 				if(ignored.contains(address)) {
-					holdersText += " IGNORED";
+					holdersText += "--</td><td>--";
 				}
 				else {
-					holdersText += " " + PERC_FORMAT.format(h.getBalance().longValue() / (double)circulatingTokens * 100D) + " %";
+					SignumValue value = SignumValue.fromSigna(amountN.doubleValue()*h.getBalance().longValue()/circulatingTokens);
+					holdersText += " " + PERC_FORMAT.format(h.getBalance().longValue() / (double)circulatingTokens * 100D)
+					+ "</td><td>" + NumberFormatting.BURST.format(value.longValue());
 					
-					recipients.put(h.getAccountAddress(), SignumValue.fromSigna(amountN.doubleValue()*h.getBalance().longValue()/circulatingTokens));
+					recipients.put(h.getAccountAddress(), value);
 				}
 				holdersText += "</td></tr>";
 			}
