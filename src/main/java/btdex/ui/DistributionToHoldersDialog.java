@@ -71,6 +71,8 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 
 	private LinkedHashMap<SignumAddress, SignumValue> recipients;
 
+	private int nPaid;
+
 	public DistributionToHoldersDialog(JFrame owner, Market market) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -203,10 +205,12 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				pinField.setEnabled(false);
 				okButton.setEnabled(false);
+				nPaid = 0;
 
 				LinkedHashMap<SignumAddress, SignumValue> batch = new LinkedHashMap<>();
 				for(SignumAddress a : recipients.keySet()) {
 					batch.put(a, recipients.get(a));
+					nPaid++;
 					if(batch.size()==64) {
 						byte[] utx = g.getNS().generateMultiOutTransaction(g.getPubKey(), suggestedFee.multiply(BigInteger.valueOf(5)), Constants.BURST_EXCHANGE_DEADLINE, batch).blockingGet();
 						byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), utx);
@@ -231,7 +235,6 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 				}
 			}
 			catch (Exception ex) {
-				ex.printStackTrace();
 				Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
 			}
 			setCursor(Cursor.getDefaultCursor());
@@ -351,7 +354,8 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 			return;
 		}
 		TransactionBroadcast tb = Globals.getInstance().getNS().broadcastTransaction(signed).blockingGet();
-		setVisible(false);
+		if(nPaid == recipients.size())
+			setVisible(false);
 
 		Toast.makeText((JFrame) this.getOwner(),
 				tr("send_tx_broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
