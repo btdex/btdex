@@ -9,6 +9,7 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -42,6 +43,7 @@ import btdex.ledger.LedgerService;
 import btdex.ledger.LedgerService.SignCallBack;
 import signumj.entity.SignumAddress;
 import signumj.entity.SignumValue;
+import signumj.entity.response.Account;
 import signumj.entity.response.Asset;
 import signumj.entity.response.AssetBalance;
 import signumj.entity.response.TransactionBroadcast;
@@ -64,7 +66,7 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 	private JButton okButton;
 	private JButton cancelButton;
 
-	private SignumValue suggestedFee;
+	private SignumValue suggestedFee, totalFees;
 	private SignumValue amountValue;
 	
 	List<AssetBalance> holders;
@@ -175,12 +177,17 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 			if(error == null && (amountValue == null || amountValue.longValue() <= 0)) {
 				error = tr("send_invalid_amount");
 			}
+			
+			Account ac = BurstNode.getInstance().getAccount();
+			if(error == null && (ac == null || ac.getBalance().compareTo(amountValue.add(totalFees)) < 0)) {
+				error = tr("dlg_not_enough_balance");
+			}
 
 			if(error == null && !acceptBox.isSelected()) {
 				error = tr("dlg_accept_first");
 				acceptBox.requestFocus();
 			}
-
+			
 			if(error == null && !g.usingLedger() && !g.checkPIN(pinField.getPassword())) {
 				error = tr("dlg_invalid_pin");
 				pinField.requestFocus();
@@ -299,14 +306,16 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 			e.printStackTrace();
 		}
 
+		int nTransactions = recipients.size()/64 + (recipients.size() % 64 == 0 ? 0 : 1);
+		totalFees = suggestedFee.multiply(BigDecimal.valueOf(nTransactions*5));
+		
 		StringBuilder terms = new StringBuilder();
 		terms.append(PlaceOrderDialog.HTML_STYLE);
 		
-		int nTransactions = recipients.size()/64 + (recipients.size() % 64 == 0 ? 0 : 1);
 		terms.append("<h3>").append(tr("token_distribution_brief", amountField.getText(), Constants.BURST_TICKER, recipients.size(), market.getTicker())).append("</h3>");
 		terms.append("<p>").append(tr("token_distribution_details",
 				nTransactions,
-				NumberFormatting.BURST.format(suggestedFee.longValue()*nTransactions*5), Constants.BURST_TICKER)).append("</p>");
+				NumberFormatting.BURST.format(totalFees.longValue()), Constants.BURST_TICKER)).append("</p>");
 		
 		terms.append(holdersText);
 
