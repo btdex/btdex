@@ -51,8 +51,8 @@ public class Constants {
     public static final Gson GSON = new Gson();
 
     public static final String FAUCET_TESTNET =
-            "https://signum-account-activator-ohager.vercel.app/";
-    public static final String FAUCET = "https://www.activator.signum.network/";
+            "https://signum-account-activator-ohager.vercel.app/api/activate";
+    public static final String FAUCET = "https://www.activator.signum.network/api/activate";
 
     public static final String CHECK_BLOCK_TESTNET = "12645549025663958301";
     public static final String CHECK_BLOCK = "8868708821622932189";

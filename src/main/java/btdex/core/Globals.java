@@ -480,7 +480,7 @@ public class Globals {
 		OkHttpClient client = new OkHttpClient();
 
 		JsonObject params = new JsonObject();
-		params.addProperty("account", getAddress().getID());
+		params.addProperty("account", getAddress().getFullAddress());
 		params.addProperty("publickey", BC.toHexString(getPubKey()));
 		params.addProperty("ref", ref);
 		
