@@ -1370,7 +1370,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		} catch (IOException ex) {
 			ex.printStackTrace();
 			Toast.makeText((JFrame) SwingUtilities.getWindowAncestor(this), ex.getMessage(), Toast.Style.ERROR).display();
-			plotting = false;
+			mining = false;
 			return;
 		}
 		MineThread mineThread = new MineThread();
