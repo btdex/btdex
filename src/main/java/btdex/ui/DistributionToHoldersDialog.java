@@ -85,6 +85,7 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 		JPanel fieldPanel = new JPanel(new GridLayout(0, 1, 4, 4));
 
 		amountField = new JFormattedTextField(NumberFormatting.BURST.getFormat());
+		amountField.setText("10");
 		amountField.getDocument().addDocumentListener(this);
 		ignoredAccounts = new JTextField(20);
 		ignoredAccounts.getDocument().addDocumentListener(this);
