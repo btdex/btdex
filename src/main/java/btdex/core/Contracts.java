@@ -30,13 +30,16 @@ import signumj.response.appendix.PlaintextMessageAppendix;
 import signumj.service.NodeService;
 
 public class Contracts {
+	
+	public static SignumID BUY_CONTRACT_CODE_ID = SignumID.fromLong("3165125369946393353");
+	public static SignumID SELL_CONTRACT_CODE_ID = SignumID.fromLong("13778372370427035975");
+	
     private static Compiler compilerSell[], compilerNoDeposit, compilerBuy[];
 
     private static String contractTakeHash[], contractBuyTakeHash[];
 
 	private static ConcurrentHashMap<SignumAddress, ContractState> contractsMap = new ConcurrentHashMap<>();
 	private static boolean loading = true;
-	private static SignumID mostRecentID;
 	private static SignumID lastBlock;
 	private static ContractState freeContract, freeNoDepositContract, freeBuyContract;
 	private static boolean registering;
@@ -196,7 +199,7 @@ public class Contracts {
 	private static void updateContracts() {
 		try {
 			// check for new contracts and add them to the list
-			mostRecentID = ContractState.addContracts(contractsMap, mostRecentID);
+			ContractState.addContracts(contractsMap);
 
 			Globals g = Globals.getInstance();
 

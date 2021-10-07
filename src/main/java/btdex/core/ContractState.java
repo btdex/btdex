@@ -145,11 +145,21 @@ public class ContractState {
 	 *
 	 * @return the most recent ID visited
 	 */
-	public static SignumID addContracts(ConcurrentHashMap<SignumAddress, ContractState> map, SignumID mostRecent) {
+	public static void addContracts(ConcurrentHashMap<SignumAddress, ContractState> map) {
 		Globals g = Globals.getInstance();
 		BT.setNodeInstance(g.getNS());
-
-		SignumAddress[] atIDs = g.getNS().getAtIds().blockingGet();
+		
+		SignumAddress[] atIDs = g.getNS().getAtIds(Contracts.BUY_CONTRACT_CODE_ID).blockingGet();
+		addContracts(map, atIDs);
+		
+		atIDs = g.getNS().getAtIds(Contracts.SELL_CONTRACT_CODE_ID).blockingGet();
+		addContracts(map, atIDs);
+	}
+	
+	private static SignumID addContracts(ConcurrentHashMap<SignumAddress, ContractState> map, SignumAddress[] atIDs) {
+		
+		Globals g = Globals.getInstance();
+		BT.setNodeInstance(g.getNS());
 
 		SignumID first = null;
 		int heightLimit = g.isTestnet() ? 223438 : 767945;
@@ -160,10 +170,6 @@ public class ContractState {
 
 			if (first == null)
 				first = ad.getSignumID();
-
-			// already visited, no need to continue
-			if (mostRecent != null && ad.getSignumID().getSignedLongId() == mostRecent.getSignedLongId())
-				break;
 
 			// If the map already have this one stop, since they come in order
 			if (map.containsKey(ad))
@@ -210,7 +216,7 @@ public class ContractState {
 
 		if(at == null) {
 			// now we get only the volatile information
-			at = g.getNS().getAt(address /* : enable this when nodes have support for it, false */).blockingGet();
+			at = g.getNS().getAt(address, false).blockingGet();
 		}
 
 		this.at = at;
