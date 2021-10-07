@@ -41,6 +41,8 @@ public class Constants {
     public static final String PROP_API_PORT = "apiPort";    
     public static final String PROP_API_CORS_ALLOW_ORIGIN = "apiCORSAllowOrigin";    
     public static final String PROP_MIN_OFFER = "minOffer";
+    
+	public static final String PROP_PLOT_PATH = "plotPath";
 
     public static final String PROP_USER_TOKEN_ID = "userTokenID";
 

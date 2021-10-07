@@ -8,14 +8,12 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
+import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -26,11 +24,15 @@ import java.nio.file.StandardCopyOption;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.BorderFactory;
@@ -53,9 +55,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -66,18 +68,24 @@ import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.Globals;
 import btdex.core.NumberFormatting;
+import btdex.miner.MinerEventPublisher;
+import btdex.miner.Reader;
+import btdex.miner.event.CheckerResultEvent;
+import dorkbox.util.OS;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import signumj.crypto.SignumCrypto;
+import signumj.crypto.plot.impl.MiningPlot;
 import signumj.entity.SignumAddress;
 import signumj.entity.SignumValue;
 import signumj.entity.response.Account;
 import signumj.entity.response.Block;
 import signumj.entity.response.MiningInfo;
 import signumj.entity.response.Transaction;
-import dorkbox.util.OS;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import signumj.service.impl.HttpBurstNodeService;
 
-public class MiningPanel extends JPanel implements ActionListener, ChangeListener {
+public class MiningPanel extends JPanel implements ActionListener, ChangeListener, MinerEventPublisher {
 	private static final long serialVersionUID = 1L;
 	
 	private static final int N_PATHS_MIN = 3;
@@ -86,12 +94,11 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	
 	private static String TMP_DIR = System.getProperty("java.io.tmpdir");
 	
-	private static final String PROP_PLOT_PATH = "plotPath";
 	private static final String PROP_PLOT_CACHE = "plotPathCache";
 	private static final String PROP_PLOT_LOW_PRIO = "plotLowPrio";
 	private static final String PROP_PLOT_CPU_CORES = "plotCpuCores";
-	private static final String PROP_MINE_CPU_CORES = "mineCpuCores";
-	private static final String PROP_MINER_POOL = "minerPool";
+	public static final String PROP_MINE_CPU_CORES = "mineCpuCores";
+	public static final String PROP_MINER_POOL = "minerPool";
 	private static final String PROP_MINER_AUTO_START = "minerAutoStart";
 	
 	private static final String PLOT_APP = "[PLOTTER]";
@@ -99,7 +106,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	
 	private static SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
 	
-	private static final FileFilter PLOT_FILE_FILTER = new FileFilter() {
+	public static final FileFilter PLOT_FILE_FILTER = new FileFilter() {
 		@Override
 		public boolean accept(File pathname) {
 			return pathname.isFile() && Globals.getInstance().getAddress() != null &&
@@ -127,6 +134,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			"https://signum.space",
 			"http://signum.land",
 			"https://spacepool.sh",
+			"http://eu.e4pool.com:8005",
 	};
 	
 	private static final String[] POOL_LIST_TESTNET = {
@@ -174,7 +182,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 
 	private JButton startMiningButton, stopMiningButton;
 	
-	private Process minerProcess, plotterProcess;
+	private Process plotterProcess;
 
 	private JCheckBox lowPriorityCheck;
 
@@ -187,7 +195,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 
 	private Logger logger;
 
-	private File minerFile, plotterFile;
+	private File plotterFile;
 
 	private RotatingIcon pendingIconRotating;
 
@@ -205,6 +213,19 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	private JPanel disksPanel;
 
 	private String soloNode;
+
+	private Reader reader;
+
+	private HttpBurstNodeService poolService;
+
+	private AtomicLong baseTarget = new AtomicLong();
+
+	private AtomicLong lowestDeadline = new AtomicLong();
+	private AtomicLong lowestNonce = new AtomicLong();
+
+	private long targetDeadline;
+	
+	private Set<BigInteger> runningChunkPartStartNonces;
 
 	public MiningPanel() {
 		super(new BorderLayout());
@@ -490,7 +511,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		fractionToPlotSliders.add(fractionToPlotSlider);
 		sliderListDesc.add(sliderDesc);
 		
-		String path = g.getProperty(PROP_PLOT_PATH + (i+1));
+		String path = g.getProperty(Constants.PROP_PLOT_PATH + (i+1));
 		if(path == null || path.length() == 0) {
 			pathList.add(null);
 		}
@@ -727,10 +748,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	}
 	
 	public void stop() {
-		if(mining && minerProcess!=null && minerProcess.isAlive()) {
+		if(mining) {
 			mining = false;
-	    	logger.info("destroying miner process");
-			minerProcess.destroyForcibly();
+	    	logger.info("stopping miner process");
 		}
 		if(plotting && plotterProcess!=null && plotterProcess.isAlive()) {
 			plotting = false;
@@ -796,7 +816,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			    File selectedPath = fileChooser.getSelectedFile();
 			    
 			    pathList.set(pos, selectedPath);
-			    g.setProperty(PROP_PLOT_PATH + (pos+1), selectedPath.getAbsolutePath());
+			    g.setProperty(Constants.PROP_PLOT_PATH + (pos+1), selectedPath.getAbsolutePath());
 			    saveConfs(g);
 			    selectFolderButtons.get(pos).setText(selectedPath.getAbsolutePath());
 			    pathCancelButtons.get(pos).setEnabled(true);
@@ -827,7 +847,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		    fractionToPlotSliders.get(pos).setValue(0);
 		    sliderListDesc.get(pos).setDesc(" ");
 
-		    g.setProperty(PROP_PLOT_PATH + (pos+1), "");
+		    g.setProperty(Constants.PROP_PLOT_PATH + (pos+1), "");
 		    saveConfs(g);
 		    return;
 		}
@@ -883,10 +903,11 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		}
 		if(stopMiningButton == e.getSource()) {
 			addToConsole(MINER_APP, "Stopping miner");
-			minerProcess.destroyForcibly();
 			mining = false;
-
+			
 			stopMiningButton.setEnabled(false);
+			
+			update();
 			return;
 		}
 
@@ -1318,61 +1339,28 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		return progress;
 	}
 	
-	private static final String MINER_CONFIG_FILE = "btdex-miner.yaml";
-	
 	private void startMining() {
 		if(mining)
 			return;
-		
+
 		logger.info("Starded mining");
 		mining = true;
 		
+	    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+	    executor.setThreadPriority(Thread.MIN_PRIORITY);
+	    // false-> triggers interrupt exception at shutdown
+	    executor.setWaitForTasksToCompleteOnShutdown(true);
+	    executor.initialize();
+	    reader = new Reader(this, executor);
+	    
 		startMiningButton.setEnabled(false);
 		stopMiningButton.setEnabled(true);
-				
-		String minerName = "signum-miner";
-		if(OS.isWindows())
-			minerName += ".exe";
-		else if(OS.isMacOsX())
-			minerName += ".app";
 		
-		minerFile = new File(TMP_DIR, minerName);
-		InputStream minerStream = (getClass().getResourceAsStream("/miner/" + minerName));
-		InputStream minerConfigStream = (getClass().getResourceAsStream("/miner/config.yaml"));
-		try {
-			if(minerFile.exists() && minerFile.isFile())
-				minerFile.delete();
-				
-			logger.info("Copying miner to {}", minerFile.getAbsolutePath());
-			Files.copy(minerStream, minerFile.getAbsoluteFile().toPath());
-			if(!OS.isWindows())
-				minerFile.setExecutable(true);
-
-			File minerConfigFile = new File(minerFile.getParent(), MINER_CONFIG_FILE);
-			FileWriter minerConfig = new FileWriter(minerConfigFile);
-			minerConfig.append("plot_dirs:\n");
-			for (File path : pathList) {
-				if(path == null)
-					continue;
-				minerConfig.append(" - '" + path.getAbsolutePath() + "'\n");
-			}
-			minerConfig.append("url: '" + poolComboBox.getSelectedItem().toString() + "'\n");
-			
-			minerConfig.append("target_deadline: " + poolMaxDeadlines.get(poolComboBox.getSelectedItem().toString()) + "\n");
-
-			minerConfig.append("cpu_threads: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
-			minerConfig.append("cpu_worker_task_count: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
-			
-			logger.info("Copying miner config to {}", minerConfigFile.getAbsolutePath());
-
-			IOUtils.copy(minerConfigStream, minerConfig);
-			minerConfig.close();
-		} catch (IOException ex) {
-			ex.printStackTrace();
-			Toast.makeText((JFrame) SwingUtilities.getWindowAncestor(this), ex.getMessage(), Toast.Style.ERROR).display();
-			mining = false;
-			return;
-		}
+		targetDeadline = Long.parseLong(poolMaxDeadlines.get(poolComboBox.getSelectedItem().toString()));
+		
+		poolService = new HttpBurstNodeService(poolComboBox.getSelectedItem().toString(),
+				"btdex-" + Globals.getInstance().getVersion());
+		
 		MineThread mineThread = new MineThread();
 		mineThread.start();
 	}
@@ -1380,27 +1368,42 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	class MineThread extends Thread {
 
 		public void run() {
-			try {
-				String cmd = minerFile.getAbsolutePath() + " -c " + MINER_CONFIG_FILE;
-				logger.info("Running miner with '{}'", cmd);
-				minerProcess = Runtime.getRuntime().exec(cmd, null, minerFile.getParentFile());
-				
-				InputStream stdIn = minerProcess.getInputStream();
-				InputStreamReader isr = new InputStreamReader(stdIn);
-				BufferedReader br = new BufferedReader(isr);
-
-				while (minerProcess.isAlive()) {
-					String line = br.readLine();
-					if(line != null)
-						addToConsole(MINER_APP, line);
+			while(true) {
+				if(!mining) {
+					return;
 				}
-				mining = false;
-				minerFile.delete();
-			} catch (Exception e) {
-				e.printStackTrace();
+				try {
+					MiningInfo info = poolService.getMiningInfo().blockingFirst();
+					if(Reader.blockNumber.get() == info.getHeight()
+							&& Arrays.equals(Reader.generationSignature.get(), info.getGenerationSignature())) {
+						// still the same
+						Thread.sleep(3000);
+						continue;
+					}
+					runningChunkPartStartNonces = new HashSet<>(reader.getPlots().getChunkPartStartNonces().keySet());
+					baseTarget.set(info.getBaseTarget());
+					lowestDeadline.set(targetDeadline);
+
+					int scoopArray[] = new int[1];
+					SignumCrypto crypto = SignumCrypto.getInstance();
+					scoopArray[0] = crypto.calculateScoop(info.getGenerationSignature(), info.getHeight());
+					for (int i = 1; i < 1; i++) {
+						scoopArray[i] = crypto.calculateScoop(info.getGenerationSignature(), scoopArray[i-1]);
+					}
+
+					addToConsole(MINER_APP, "round started, gensig: "
+							+ SignumCrypto.getInstance().toHexString(info.getGenerationSignature()).substring(0, 10)
+							+ ", height: " + info.getHeight());
+
+					reader.read(info.getHeight()-1, info.getHeight(), info.getGenerationSignature(),
+							scoopArray, 0);
+				}
+				catch (Exception e) {
+					addToConsole(MINER_APP, e.getMessage());
+				}
 			}
 		}
-	};
+	}
 
 	private void addToConsole(String app, String line) {
     	logger.info("{} {}", app, line);
@@ -1431,5 +1434,53 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			}
 		});
 	}
-	
+
+	private static BigInteger calculateHit(byte[] scoops, byte[] generationSignature, int nonce) {
+		byte[] scoopData = Arrays.copyOfRange(scoops, nonce * MiningPlot.SCOOP_SIZE, (nonce+1) * MiningPlot.SCOOP_SIZE);
+		return SignumCrypto.getInstance().calculateHit(generationSignature, scoopData);
+	}
+
+	@Override
+	public void publishEvent(Object evt) {
+		logger.info(evt.getClass().getName());
+		
+		if(evt instanceof CheckerResultEvent) {
+			CheckerResultEvent event = (CheckerResultEvent) evt;
+			
+	        runningChunkPartStartNonces.remove(event.getChunkPartStartNonce());
+	        
+	        BigInteger hit = calculateHit(event.getScoops(), event.getGenerationSignature(), event.getLowestNonce());
+			event.setResult(hit);
+
+			BigInteger deadline = hit.divide(BigInteger.valueOf(baseTarget.get()));
+			long calculatedDeadline = deadline.longValue();
+			
+			if(calculatedDeadline > targetDeadline || calculatedDeadline > lowestDeadline.get()) {
+				return;
+			}
+			
+			long nonce = event.getChunkPartStartNonce().longValue() + event.getLowestNonce();
+			lowestDeadline.set(calculatedDeadline);
+			lowestNonce.set(nonce);
+
+	        if(runningChunkPartStartNonces.isEmpty()) {
+				nonce = lowestNonce.get();
+	        	try {
+	        		long accepted = this.poolService.submitNonce(null, Long.toString(nonce),
+	        				Globals.getInstance().getAddress().getSignumID()).blockingGet();
+
+	        		if(accepted != lowestDeadline.get()) {
+	        			addToConsole(MINER_APP, "deadline mismatch, nonce: " + nonce + ", expected: " + lowestNonce.get() + ", deadline:" + accepted);					
+	        		}
+	        		else {
+	        			addToConsole(MINER_APP, "deadline accepted, nonce: " + nonce + ", deadline: " + accepted);
+	        		}
+	        	}
+	        	catch (Exception e) {
+	        		addToConsole(MINER_APP, "error: " + e.getMessage());
+	        	}
+	        	addToConsole(MINER_APP, "finished reading plots");
+	        }
+		}
+	}
 }
