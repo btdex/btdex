@@ -8,7 +8,7 @@ public class MarketBSV extends MarketBCH {
 	
 	@Override
 	public String getChainDetails() {
-		return "Bitcoin SV";
+		return "Bitcoin SV native chain";
 	}
 	
 	@Override

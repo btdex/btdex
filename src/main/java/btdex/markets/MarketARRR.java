@@ -14,7 +14,7 @@ public class MarketARRR extends MarketCrypto {
 	
 	@Override
 	public String getChainDetails() {
-		return "Pirate Chain";
+		return "Pirate native chain";
 	}
 	
 	@Override

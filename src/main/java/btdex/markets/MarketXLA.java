@@ -14,7 +14,7 @@ public class MarketXLA extends MarketCrypto {
 	
 	@Override
 	public String getChainDetails() {
-		return "Scala";
+		return "Scala native chain";
 	}
 	
 	@Override

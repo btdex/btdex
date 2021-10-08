@@ -16,7 +16,7 @@ public class MarketXMR extends MarketCrypto {
 	
 	@Override
 	public String getChainDetails() {
-		return "Monero";
+		return "Monero native chain";
 	}
 	
 	@Override

@@ -632,7 +632,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				    
 					// Signaling that we have received the market amount
 					header(tr("offer_terms_signaling",
-							totalField.getText(), market,
+							totalField.getText(), market + " (" + market.getChainDetails() + ")",
 							BUTTON_TEXT));
 					append(tr("offer_terms_signaling_details",
 							amountField.getText(), contract.getSecurity(),
@@ -650,7 +650,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					    deadline.setTime(contract.getTakeTimestamp().getAsDate());
 					    deadline.add(Calendar.HOUR_OF_DAY, 24);
 						header(tr("offer_terms_buy_deposit",
-								totalField.getText(), market,
+								totalField.getText(), market + " (" + market.getChainDetails() + ")",
 								HistoryPanel.DATE_FORMAT.format(deadline.getTime()),
 								BUTTON_TEXT));
 					}
@@ -659,7 +659,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					    deadline.setTime(contract.getTakeTimestamp().getAsDate());
 					    deadline.add(Calendar.HOUR_OF_DAY, market.getPaymentTimeout(account.getFields()));
 						header(tr("offer_terms_need_transfer",
-								totalField.getText(), market,
+								totalField.getText(), market + " (" + market.getChainDetails() + ")",
 								HistoryPanel.DATE_FORMAT.format(deadline.getTime()),
 								BUTTON_TEXT));
 					}
@@ -677,7 +677,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			else if(isTake) {
 				if(isBuy) {
 					header(tr("offer_terms_take_buy",
-							amountField.getText(), priceField.getText(), market));
+							amountField.getText(), priceField.getText(), market + " (" + market.getChainDetails() + ")"));
 					append(tr("offer_terms_take_buy_details",
 							contract.getSecurity(),
 							amountField.getText(),
@@ -689,7 +689,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				}
 				else {
 					header(tr("offer_terms_take_sell",
-							amountField.getText(), priceField.getText(), market));
+							amountField.getText(), priceField.getText(), market + " (" + market.getChainDetails() + ")"));
 					append(tr("offer_terms_take_sell_details",
 							amountField.getText(), contract.getSecurity(),
 							NumberFormatting.BURST.format(suggestedFee.longValue() +
@@ -705,7 +705,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					contract = Contracts.getFreeBuyContract();
 
 				header(tr(isUpdate ? "offer_terms_update_buy" : "offer_terms_buy",
-						amountField.getText(), priceField.getText(), market));
+						amountField.getText(), priceField.getText(), market + " (" + market.getChainDetails() + ")"));
 				
 				append(tr(isUpdate ? "offer_terms_update_buy_details" : "offer_terms_buy_details",
 						NumberFormatting.BURST.format(isUpdate ? suggestedFee.longValue() :
@@ -714,7 +714,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 							NumberFormatting.BURST.format(security.getValue()*amountValue.longValue()/100) ));
 				append(tr("offer_terms_buy_taker",
 						amountField.getText(),
-						totalField.getText(), market, market));
+						totalField.getText(),
+						market,
+						market));
 				append(tr("offer_terms_protocol"));				
 			}
 			else {
@@ -723,7 +725,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					contract = Contracts.getFreeContract();
 
 				header(tr(isUpdate ? "offer_terms_update_sell" : "offer_terms_sell",
-						amountField.getText(), priceField.getText(), market,
+						amountField.getText(), priceField.getText(), market + " (" + market.getChainDetails() + ")",
 						accountDetails.getText()));
 				
 				append(tr(isUpdate ? "offer_terms_update_sell_details" : "offer_terms_sell_details",
