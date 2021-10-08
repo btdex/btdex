@@ -1368,12 +1368,20 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	class MineThread extends Thread {
 
 		public void run() {
+			boolean connected = true;
+			
 			while(true) {
 				if(!mining) {
 					return;
 				}
 				try {
 					MiningInfo info = poolService.getMiningInfo().blockingFirst();
+					
+					if(!connected) {
+						addToConsole(MINER_APP, "pool outage resolved");
+						connected = true;
+					}
+
 					if(Reader.blockNumber.get() == info.getHeight()
 							&& Arrays.equals(Reader.generationSignature.get(), info.getGenerationSignature())) {
 						// still the same
@@ -1399,7 +1407,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 							scoopArray, 0);
 				}
 				catch (Exception e) {
-					addToConsole(MINER_APP, e.getMessage());
+					logger.debug(e.getMessage());
+					if(connected) {
+						addToConsole(MINER_APP, "connectivity issues with the pool");
+					}
 				}
 			}
 		}
@@ -1464,22 +1475,33 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			lowestNonce.set(nonce);
 
 	        if(runningChunkPartStartNonces.isEmpty()) {
-				nonce = lowestNonce.get();
-	        	try {
-	        		long accepted = this.poolService.submitNonce(null, Long.toString(nonce),
-	        				Globals.getInstance().getAddress().getSignumID()).blockingGet();
-
-	        		if(accepted != lowestDeadline.get()) {
-	        			addToConsole(MINER_APP, "deadline mismatch, nonce: " + nonce + ", expected: " + lowestNonce.get() + ", deadline:" + accepted);					
-	        		}
-	        		else {
-	        			addToConsole(MINER_APP, "deadline accepted, nonce: " + nonce + ", deadline: " + accepted);
-	        		}
-	        	}
-	        	catch (Exception e) {
-	        		addToConsole(MINER_APP, "error: " + e.getMessage());
-	        	}
 	        	addToConsole(MINER_APP, "finished reading plots");
+				nonce = lowestNonce.get();
+				
+				for (int i = 0; i < 4; i++) {
+					// retry if failed
+					try {
+						long accepted = this.poolService.submitNonce(null, Long.toString(nonce),
+								Globals.getInstance().getAddress().getSignumID()).blockingGet();
+
+						if(accepted != lowestDeadline.get()) {
+							addToConsole(MINER_APP, "deadline mismatch, nonce: " + nonce + ", expected: " + lowestNonce.get() + ", deadline:" + accepted);					
+						}
+						else {
+							addToConsole(MINER_APP, "deadline accepted, nonce: " + nonce + ", deadline: " + accepted);
+						}
+						break;
+					}
+					catch (Exception e) {
+						addToConsole(MINER_APP, "error: " + e.getMessage());
+						addToConsole(MINER_APP, "retrying in 5 seconds...");
+						try {
+							Thread.sleep(5000);
+						} catch (InterruptedException e1) {
+							break;
+						}
+					}
+				}
 	        }
 		}
 	}
