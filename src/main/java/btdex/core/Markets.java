@@ -11,6 +11,7 @@ import btdex.markets.MarketDOGE;
 import btdex.markets.MarketETH;
 import btdex.markets.MarketLTC;
 import btdex.markets.MarketTRT;
+import btdex.markets.MarketWSIGNA;
 import btdex.markets.MarketXCH;
 import btdex.markets.MarketXMR;
 import btdex.markets.MarketXLA;
@@ -43,6 +44,7 @@ public class Markets {
         markets.add(new MarketXCH());
         markets.add(new MarketXMR());
         markets.add(new MarketXLA());
+        markets.add(new MarketWSIGNA());
     }
 
     public static void addUserMarket(Market m) {
