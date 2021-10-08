@@ -63,6 +63,16 @@ public abstract class Market {
 	 * @return the ticker for this market, e.g. BTC, BURST.
 	 */
 	public abstract String getTicker();
+	
+	/**
+	 * @return the chain details, e.g. Bitcoin native chain.
+	 */
+	public abstract String getChainDetails();
+	
+	/**
+	 * @return the chain details, e.g. https://explorer.signum.network/
+	 */
+	public abstract String getExplorerLink();
 
 	/**
 	 * @return true if this market is for a conventional fiat currency.

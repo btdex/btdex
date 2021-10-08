@@ -13,6 +13,16 @@ public class MarketXLA extends MarketCrypto {
 	}
 	
 	@Override
+	public String getChainDetails() {
+		return "Scala";
+	}
+	
+	@Override
+	public String getExplorerLink() {
+		return "https://explorer.scalaproject.io/";
+	}
+	
+	@Override
 	public long getID() {
 		return MARKET_XLA;
 	}

@@ -14,6 +14,16 @@ public class MarketLTC extends MarketCrypto {
 	}
 	
 	@Override
+	public String getChainDetails() {
+		return "Litecoin native chain";
+	}
+	
+	@Override
+	public String getExplorerLink() {
+		return "https://blockchair.com/litecoin";
+	}
+	
+	@Override
 	public long getID() {
 		return MARKET_LTC;
 	}

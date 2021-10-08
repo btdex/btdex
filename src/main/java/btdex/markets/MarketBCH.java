@@ -13,6 +13,16 @@ public class MarketBCH extends MarketBTC {
 	}
 	
 	@Override
+	public String getChainDetails() {
+		return "Bitcoin Cash native chain";
+	}
+	
+	@Override
+	public String getExplorerLink() {
+		return "https://blockchair.com/bitcoin-cash";
+	}
+	
+	@Override
 	public long getID() {
 		return MARKET_BCH;
 	}

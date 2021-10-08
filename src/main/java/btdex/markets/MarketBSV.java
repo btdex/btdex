@@ -7,6 +7,16 @@ public class MarketBSV extends MarketBCH {
 	}
 	
 	@Override
+	public String getChainDetails() {
+		return "Bitcoin SV";
+	}
+	
+	@Override
+	public String getExplorerLink() {
+		return "https://blockchair.com/bitcoin-sv";
+	}
+	
+	@Override
 	public long getID() {
 		return MARKET_BSV;
 	}

@@ -17,6 +17,16 @@ public class MarketXCH extends MarketCrypto {
 	}
 	
 	@Override
+	public String getChainDetails() {
+		return "Chia Network";
+	}
+	
+	@Override
+	public String getExplorerLink() {
+		return "https://www.chiaexplorer.com/";
+	}
+	
+	@Override
 	public int getUCA_ID() {
 		// TODO: Fix this when they get an actual UCA ID
 		return 666666;

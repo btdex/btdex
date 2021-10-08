@@ -17,6 +17,7 @@ import signumj.entity.response.AssetBalance;
 import signumj.entity.response.AssetOrder;
 import signumj.entity.response.AssetTrade;
 import signumj.entity.response.Block;
+import signumj.entity.response.Constants.TransactionType;
 import signumj.entity.response.FeeSuggestion;
 import signumj.entity.response.MiningInfo;
 import signumj.entity.response.Transaction;
@@ -61,6 +62,7 @@ public class BurstNode {
 	private AtomicReference<Account> account = new AtomicReference<>();
 	private AtomicReference<SignumAddress> rewardRecipient = new AtomicReference<>();
 	private FeeSuggestion suggestedFee;
+	private signumj.entity.response.Constants constants;
 	private SignumID lastBlock;
 	private Block latestBlock;
 
@@ -91,6 +93,12 @@ public class BurstNode {
 
 	public FeeSuggestion getSuggestedFee() {
 		return suggestedFee;
+	}
+	
+	public TransactionType[] getTransactionTypes() {
+		if(constants == null)
+			return null;
+		return constants.getTransactionTypes();
 	}
 
 	public AssetBalance getAssetBalances(Market m) {
@@ -193,7 +201,8 @@ public class BurstNode {
 				lastBlock = null;
 
 				suggestedFee = NS.suggestFee().blockingGet();
-
+				constants = NS.getConstants().blockingGet();
+				
 				Mediators mediators = g.getMediators();
 
 				for(Market m : Markets.getMarkets()) {

@@ -14,6 +14,16 @@ public class MarketBNB extends MarketCrypto {
 	}
 	
 	@Override
+	public String getChainDetails() {
+		return "Binance Chain";
+	}
+	
+	@Override
+	public String getExplorerLink() {
+		return "https://explorer.binance.org/";
+	}
+	
+	@Override
 	public long getID() {
 		return MARKET_BNB;
 	}

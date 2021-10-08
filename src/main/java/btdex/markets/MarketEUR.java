@@ -24,6 +24,16 @@ public class MarketEUR extends Market {
 	}
 	
 	@Override
+	public String getChainDetails() {
+		return "Euro";
+	}
+	
+	@Override
+	public String getExplorerLink() {
+		return "https://tradingeconomics.com/euro-area/currency";
+	}
+	
+	@Override
 	public long getID() {
 		return MARKET_EUR;
 	}

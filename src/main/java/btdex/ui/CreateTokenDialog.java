@@ -33,11 +33,14 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import btdex.core.BurstNode;
 import btdex.core.Globals;
 import btdex.core.NumberFormatting;
 import btdex.markets.MarketBurstToken;
 import btdex.ui.orderbook.TokenMarketPanel;
 import signumj.entity.SignumValue;
+import signumj.entity.response.Constants.TransactionType;
+import signumj.entity.response.Constants.TransactionType.Subtype;
 import signumj.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
@@ -66,6 +69,8 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 	private int returnValue = JOptionPane.OK_OPTION;
 
 	private TokenMarketPanel orderBook;
+
+	private SignumValue fee;
 
 	public CreateTokenDialog(TokenMarketPanel orderBook) {
 		super((JFrame) SwingUtilities.getWindowAncestor(orderBook), ModalityType.APPLICATION_MODAL);
@@ -113,6 +118,20 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 
 		cancelButton.addActionListener(this);
 		okButton.addActionListener(this);
+		
+		fee = SignumValue.fromSigna(1000);
+		TransactionType[] txtypes = BurstNode.getInstance().getTransactionTypes();
+		if(txtypes != null) {
+			for(TransactionType type : txtypes) {
+				if(type.getType() == 2) {
+					for(Subtype subtype : type.getSubtypes()) {
+						if(subtype.getSubtype() == 0) {
+							fee = subtype.getMinimumFeeConstant();
+						}
+					}
+				}
+			}
+		}
 
 		buttonPane.add(new Desc(tr("dlg_pin"), pin));
 		buttonPane.add(new Desc(" ", okButton));
@@ -184,13 +203,13 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(okButton);
 				return;
 			}
-
+			
 			// all set, lets register the contract
 			try {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				
 				Single<TransactionBroadcast> tx = g.getNS().generateIssueAssetTransaction(g.getPubKey(), ticker,
-						descriptionField.getText(), SignumValue.fromNQT(totalSupplyLong), ndecimals, SignumValue.fromSigna(1000), 1000)
+						descriptionField.getText(), SignumValue.fromNQT(totalSupplyLong), ndecimals, fee, 1000)
 						.flatMap(unsignedTransactionBytes -> {
 							byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
 							return g.getNS().broadcastTransaction(signedTransactionBytes);
@@ -235,7 +254,7 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 			StringBuilder terms = new StringBuilder();
 			terms.append(tr("token_terms",
 					ticker,
-					1000,
+					fee.toUnformattedString(),
 					totalSupply,
 					ndecimals));
 			conditions.setText(terms.toString());

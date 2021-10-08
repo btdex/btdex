@@ -107,4 +107,14 @@ public class MarketBurstToken extends Market {
 	public String simpleFormat(HashMap<String, String> fields) {
 		return getTokenID().getID();
 	}
+
+	@Override
+	public String getChainDetails() {
+		return getTicker() + " on Signum chain";
+	}
+
+	@Override
+	public String getExplorerLink() {
+		return "https://explorer.signum.network/?action=token_inspect&id=" + getID();
+	}
 }

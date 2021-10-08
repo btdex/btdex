@@ -15,6 +15,16 @@ public class MarketTRT extends Market {
 	}
 	
 	@Override
+	public String getChainDetails() {
+		return "TRT on signum chain";
+	}
+	
+	@Override
+	public String getExplorerLink() {
+		return "https://explorer.signum.network/?action=token_inspect&id=12402415494995249540";
+	}
+	
+	@Override
 	public String toString() {
 		return // Constants.BURST_TICKER + "-" + 
 				getTicker();

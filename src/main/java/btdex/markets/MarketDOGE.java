@@ -12,6 +12,16 @@ public class MarketDOGE extends MarketCrypto {
 	}
 	
 	@Override
+	public String getChainDetails() {
+		return "Dogecoin native chain";
+	}
+	
+	@Override
+	public String getExplorerLink() {
+		return "https://dogechain.info/chain/Dogecoin";
+	}
+	
+	@Override
 	public long getID() {
 		return MARKET_DOGE;
 	}

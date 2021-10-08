@@ -19,6 +19,16 @@ public class MarketETH extends MarketCrypto {
 	}
 	
 	@Override
+	public String getChainDetails() {
+		return "Ethereum native chain";
+	}
+	
+	@Override
+	public String getExplorerLink() {
+		return "https://etherscan.io/";
+	}
+	
+	@Override
 	public long getID() {
 		return MARKET_ETH;
 	}

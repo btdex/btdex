@@ -15,6 +15,16 @@ public class MarketXMR extends MarketCrypto {
 	}
 	
 	@Override
+	public String getChainDetails() {
+		return "Monero";
+	}
+	
+	@Override
+	public String getExplorerLink() {
+		return "https://localmonero.co/blocks";
+	}
+	
+	@Override
 	public long getID() {
 		return MARKET_XMR;
 	}

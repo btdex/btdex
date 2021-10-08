@@ -40,6 +40,16 @@ public class MarketBRL extends Market {
 	public String getTicker() {
 		return "BRL";
 	}
+	
+	@Override
+	public String getChainDetails() {
+		return "Brazilian Real";
+	}
+	
+	@Override
+	public String getExplorerLink() {
+		return "https://tradingeconomics.com/brazil/currency";
+	}
 
 	@Override
 	public long getID() {

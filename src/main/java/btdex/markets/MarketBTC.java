@@ -18,6 +18,16 @@ public class MarketBTC extends MarketCrypto {
 	}
 	
 	@Override
+	public String getChainDetails() {
+		return "Bitcoin native chain";
+	}
+	
+	@Override
+	public String getExplorerLink() {
+		return "https://www.blockchain.com/explorer";
+	}
+	
+	@Override
 	public long getID() {
 		return MARKET_BTC;
 	}

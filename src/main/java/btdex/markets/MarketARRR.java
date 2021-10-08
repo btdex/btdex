@@ -11,6 +11,16 @@ public class MarketARRR extends MarketCrypto {
 	public String getTicker() {
 		return "ARRR";
 	}
+	
+	@Override
+	public String getChainDetails() {
+		return "Pirate Chain";
+	}
+	
+	@Override
+	public String getExplorerLink() {
+		return "https://explorer.pirate.black/";
+	}
 
 	@Override
 	public long getID() {

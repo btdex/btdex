@@ -1,6 +1,5 @@
 package btdex;
 
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import btdex.core.ContractState;
@@ -12,7 +11,7 @@ public class ListAll {
 	public static void main(String[] args) {
 		ConcurrentHashMap<SignumAddress, ContractState> map = new ConcurrentHashMap<>();
 		
-		ContractState.addContracts(map, null);
+		ContractState.addContracts(map);
 		
 		for (ContractState s : map.values()) {
 			if(s.getMarket() == Market.MARKET_BTC)

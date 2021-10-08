@@ -8,6 +8,8 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -42,6 +44,7 @@ import btdex.core.Markets;
 import btdex.sc.SellContract;
 import btdex.ui.AccountsPanel;
 import btdex.ui.Desc;
+import btdex.ui.DesktopApi;
 import btdex.ui.ExplorerButton;
 import btdex.ui.HistoryPanel;
 import btdex.ui.Icons;
@@ -56,10 +59,12 @@ public class MarketPanel extends JPanel implements ActionListener {
 	private JTable tableBid, tableAsk;
 	private DefaultTableModel modelBid, modelAsk;
 	private Icon copyIcon, expIcon, cancelIcon, pendingIcon, editIcon, warnIcon;
+	private Icon chainIcon;
 	private RotatingIcon pendingIconRotating;
 	private boolean registering;
 
 	private JComboBox<Market> marketComboBox;
+	private JButton chainButton;
 	private JCheckBox listOnlyMine;
 	private JLabel lastPrice;
 	
@@ -123,6 +128,7 @@ public class MarketPanel extends JPanel implements ActionListener {
 		Icons iconsSmall = new Icons(tableBid.getForeground(), Constants.ICON_SIZE_SMALL);
 		copyIcon = iconsSmall.get(Icons.COPY);
 		expIcon = iconsSmall.get(Icons.EXPLORER);
+		chainIcon = icons.get(Icons.EXPLORER);
 		cancelIcon = iconsSmall.get(Icons.CANCEL);
 		pendingIcon = iconsSmall.get(Icons.SPINNER);
 		pendingIconRotating = new RotatingIcon(pendingIcon);
@@ -163,6 +169,18 @@ public class MarketPanel extends JPanel implements ActionListener {
 		top.add(topLeft, BorderLayout.LINE_START);
 		
 		topLeft.add(new Desc(tr("main_market"), marketComboBox));
+		chainButton = new JButton(chainIcon);
+		chainButton.setFont(largeFont);
+		topLeft.add(new Desc(tr("main_chain"), chainButton));
+		chainButton.addActionListener(evt -> {
+			try {
+				URI uri = new URI(newMarket.getExplorerLink());
+				DesktopApi.browse(uri);
+			} catch (URISyntaxException e1) {
+				logger.error(e1.getMessage());
+			}
+		}
+		);
 		
 		topLeft.add(priceDesc);
 		
@@ -223,6 +241,8 @@ public class MarketPanel extends JPanel implements ActionListener {
 		logger.debug("Market {} set", m.toString());
 		newMarket = m;
 		historyPanel.setMarket(m);
+		
+		chainButton.setText(newMarket.getChainDetails());
 	}
 
 	public void update() {
