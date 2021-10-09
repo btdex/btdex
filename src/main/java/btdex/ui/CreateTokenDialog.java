@@ -38,11 +38,10 @@ import btdex.core.Globals;
 import btdex.core.NumberFormatting;
 import btdex.markets.MarketBurstToken;
 import btdex.ui.orderbook.TokenMarketPanel;
+import io.reactivex.Single;
 import signumj.entity.SignumValue;
-import signumj.entity.response.Constants.TransactionType;
 import signumj.entity.response.Constants.TransactionType.Subtype;
 import signumj.entity.response.TransactionBroadcast;
-import io.reactivex.Single;
 
 public class CreateTokenDialog extends JDialog implements ActionListener, ChangeListener, DocumentListener {
 	private static final long serialVersionUID = 1L;
@@ -120,17 +119,9 @@ public class CreateTokenDialog extends JDialog implements ActionListener, Change
 		okButton.addActionListener(this);
 		
 		fee = SignumValue.fromSigna(1000);
-		TransactionType[] txtypes = BurstNode.getInstance().getTransactionTypes();
-		if(txtypes != null) {
-			for(TransactionType type : txtypes) {
-				if(type.getType() == 2) {
-					for(Subtype subtype : type.getSubtypes()) {
-						if(subtype.getSubtype() == 0) {
-							fee = subtype.getMinimumFeeConstant();
-						}
-					}
-				}
-			}
+		Subtype subtype = BurstNode.getInstance().getTransactionSubtype(2, 0);
+		if(subtype != null) {
+			fee = subtype.getMinimumFeeConstant();
 		}
 
 		buttonPane.add(new Desc(tr("dlg_pin"), pin));

@@ -18,6 +18,7 @@ import signumj.entity.response.AssetOrder;
 import signumj.entity.response.AssetTrade;
 import signumj.entity.response.Block;
 import signumj.entity.response.Constants.TransactionType;
+import signumj.entity.response.Constants.TransactionType.Subtype;
 import signumj.entity.response.FeeSuggestion;
 import signumj.entity.response.MiningInfo;
 import signumj.entity.response.Transaction;
@@ -95,10 +96,20 @@ public class BurstNode {
 		return suggestedFee;
 	}
 	
-	public TransactionType[] getTransactionTypes() {
-		if(constants == null)
-			return null;
-		return constants.getTransactionTypes();
+	public Subtype getTransactionSubtype(int type, int subtype) {
+		TransactionType[] txtypes = constants != null ? constants.getTransactionTypes() : null;
+		if(txtypes != null) {
+			for(TransactionType t : txtypes) {
+				if(t.getType() == type) {
+					for(Subtype s : t.getSubtypes()) {
+						if(s.getSubtype() == subtype) {
+							return s;
+						}
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	public AssetBalance getAssetBalances(Market m) {
