@@ -21,7 +21,7 @@ public class MarketWSIGNA extends MarketCrypto {
 	
 	@Override
 	public String getExplorerLink() {
-		return "https://bscscan.com/";
+		return "https://bscscan.com/address/0x7b0e7e40ee4672599f7095d1ddd730b0805195ba";
 	}
 	
 	@Override
