@@ -26,6 +26,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'com.github.signum-network:signumj:f2522b5480'
     implementation 'com.github.signum-network:signum-smartj:9c4be2e766'
 
     implementation 'com.google.code.gson:gson:2.8.6'
