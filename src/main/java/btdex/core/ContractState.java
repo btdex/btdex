@@ -66,12 +66,14 @@ public class ContractState {
 	private long marketHistory;
 	private int blockHistory;
 	private SignumAddress creator;
+	private int atVersion;
 
 	private static Logger logger = LogManager.getLogger();
 
 	public ContractState(ContractType type, AT at) {
 		this.type = type;
 		compiler = Contracts.getCompiler(type);
+		this.atVersion = at.getVersion();
 		this.at = at;
 		version = 1;
 		if(type == ContractType.SELL || type == ContractType.BUY)
@@ -535,7 +537,7 @@ public class ContractState {
 	}
 
 	public int getATVersion() {
-		return at.getVersion();
+		return atVersion;
 	}
 	
 	public long getDisputeAmount(boolean fromCreator, boolean toCreator) {
