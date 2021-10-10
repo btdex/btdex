@@ -8,6 +8,7 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -300,9 +301,9 @@ public class MarketPanel extends JPanel implements ActionListener {
 
 			long minOfferMarket = g.getMinOffer(market.getID());
 			// Price is on the selected market
-			long price = s.getRate();
-			long amount = s.getAmountNQT();
-			long amountMarket = (price * amount)/market.getFactor();
+			BigInteger price = BigInteger.valueOf(s.getRate());
+			BigInteger amount = BigInteger.valueOf(s.getAmountNQT());
+			long amountMarket = price.multiply(amount).divide(BigInteger.valueOf(market.getFactor())).longValue();
 					
 			if(!s.getCreator().equals(g.getAddress()) && (s.getAmountNQT() < Constants.MIN_OFFER
 					|| amountMarket < minOfferMarket
