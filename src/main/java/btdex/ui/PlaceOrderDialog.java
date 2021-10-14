@@ -382,7 +382,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				error = tr("offer_too_small", NumberFormatting.BURST.format(Constants.MIN_OFFER));
 			}
 			if(error == null && totalMarketValue < minMarketOffer) {
-				error = tr("offer_too_small_market", market.format(totalMarketValue), market.getTicker());
+				error = tr("offer_too_small_market", market.format(minMarketOffer), market.getTicker());
 			}
 			if(error == null && amountValue.longValue() > Constants.MAX_OFFER) {
 				error = tr("offer_too_large", NumberFormatting.BURST.format(Constants.MAX_OFFER));
