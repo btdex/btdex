@@ -345,8 +345,11 @@ public class MarketPanel extends JPanel implements ActionListener {
 			@Override
 			public int compare(ContractState o1, ContractState o2) {
 				int cmp = (int)(o1.getRate() - o2.getRate());
-				if(cmp == 0)
-					cmp = (int)(o1.getSecurityNQT() - o2.getSecurityNQT());
+				if(cmp == 0) {
+					// cmp = (int)(o1.getSecurityNQT() - o2.getSecurityNQT());
+					// order by the latest
+					cmp = o2.getNextBlockHeight() - o1.getNextBlockHeight(); 
+				}
 				return cmp;
 			}
 		});
@@ -354,8 +357,11 @@ public class MarketPanel extends JPanel implements ActionListener {
 			@Override
 			public int compare(ContractState o1, ContractState o2) {
 				int cmp = (int)(o2.getRate() - o1.getRate());
-				if(cmp == 0)
-					cmp = (int)(o1.getSecurityNQT() - o2.getSecurityNQT());
+				if(cmp == 0) {
+					// cmp = (int)(o1.getSecurityNQT() - o2.getSecurityNQT());
+					// order by the latest
+					cmp = o2.getNextBlockHeight() - o1.getNextBlockHeight(); 
+				}
 				return cmp;
 			}
 		});

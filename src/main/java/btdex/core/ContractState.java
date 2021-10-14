@@ -61,6 +61,7 @@ public class ContractState {
 	private String marketAccount;
 
 	private long lastTxId;
+	private int nextBlockHeight;
 	private ArrayList<ContractTrade> trades = new ArrayList<>();
 	private long rateHistory;
 	private long marketHistory;
@@ -223,6 +224,7 @@ public class ContractState {
 
 		this.at = at;
 		this.balance = at.getBalance();
+		this.nextBlockHeight = at.getNextBlockHeight();
 
 		if(at.isDead())
 			type = ContractType.INVALID;
@@ -530,6 +532,10 @@ public class ContractState {
 
 	public long getState() {
 		return state;
+	}
+	
+	public int getNextBlockHeight() {
+		return nextBlockHeight;
 	}
 
 	public long getLockMinutes() {
