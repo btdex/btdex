@@ -32,7 +32,6 @@ import btdex.core.*;
 
 import static btdex.locale.Translation.tr;
 import btdex.sc.SellContract;
-import signumj.crypto.SignumCrypto;
 import signumj.entity.SignumValue;
 import signumj.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
@@ -155,13 +154,13 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 						dataBuffer.putLong(data[i]);
 					}
 
-					byte[] creationBytes = SignumCrypto.getInstance().getATCreationBytes((short)2,
-							contract.getCode(), dataBuffer.array(), (short)contract.getDataPages(), (short)1, (short)1,
-							SignumValue.fromNQT(SellContract.ACTIVATION_FEE));
-
 					Single<TransactionBroadcast> tx = g.getNS().generateCreateATTransaction(g.getPubKey(),
-							BT.getMinRegisteringFee(contract),
-							Constants.BURST_EXCHANGE_DEADLINE, "BTDEX" + (isBuy ? "buy" : "sell"), "BTDEX contract " + System.currentTimeMillis(), creationBytes, null)
+							BT.getMinRegisteringFee(contract, false), SignumValue.fromNQT(SellContract.ACTIVATION_FEE),
+							Constants.BURST_EXCHANGE_DEADLINE, "BTDEX" + (isBuy ? "buy" : "sell"),
+							"BTDEX contract " + System.currentTimeMillis(), null,
+							dataBuffer.array(), contract.getDataPages(), 1, 1,
+							isBuy ? (g.isTestnet()? Contracts.BUY_CONTRACT_REFERENCE_TX_TESNET : Contracts.BUY_CONTRACT_REFERENCE_TX)
+									: (g.isTestnet()? Contracts.SELL_CONTRACT_REFERENCE_TX_TESTNET : Contracts.SELL_CONTRACT_REFERENCE_TX))
 							.flatMap(unsignedTransactionBytes -> {
 								byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsignedTransactionBytes);
 								return g.getNS().broadcastTransaction(signedTransactionBytes);
@@ -191,7 +190,7 @@ public class RegisterContractDialog extends JDialog implements ActionListener, C
 		StringBuilder terms = new StringBuilder();
 		terms.append(tr("reg_terms", ncontracts,
 				tr(isBuy ? "reg_buying" : "reg_selling"),
-				NumberFormatting.BURST.format(BT.getMinRegisteringFee(contract).longValue())));
+				NumberFormatting.BURST.format(BT.getMinRegisteringFee(contract, false).longValue())));
 		terms.append("\n\n").append(tr("reg_terms_closing",
 				tr(isBuy ? "reg_buying" : "reg_selling") ));
 		conditions.setText(terms.toString());
