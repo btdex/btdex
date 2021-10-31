@@ -2,6 +2,7 @@ package btdex.markets;
 
 import java.util.HashMap;
 
+import bt.Contract;
 import btdex.locale.Translation;
 
 public class MarketWSIGNA extends MarketCrypto {
@@ -12,6 +13,10 @@ public class MarketWSIGNA extends MarketCrypto {
 
 	public String getTicker() {
 		return TICKER;
+	}
+	
+	public long getDefaultMinOffer() {
+		return 1000*Contract.ONE_BURST;
 	}
 	
 	@Override
