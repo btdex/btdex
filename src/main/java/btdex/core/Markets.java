@@ -7,10 +7,12 @@ import btdex.markets.MarketBCH;
 import btdex.markets.MarketBNB;
 import btdex.markets.MarketBSV;
 import btdex.markets.MarketBTC;
+import btdex.markets.MarketBUSDT;
 import btdex.markets.MarketDOGE;
 import btdex.markets.MarketETH;
 import btdex.markets.MarketLTC;
 import btdex.markets.MarketTRT;
+import btdex.markets.MarketWBNB;
 import btdex.markets.MarketWSIGNA;
 import btdex.markets.MarketXCH;
 import btdex.markets.MarketXMR;
@@ -38,12 +40,14 @@ public class Markets {
         markets.add(new MarketBCH());
         markets.add(new MarketBNB());
         markets.add(new MarketBSV());
+        markets.add(new MarketBUSDT());
         markets.add(new MarketDOGE());
         markets.add(new MarketETH());
         markets.add(new MarketLTC());
         markets.add(new MarketXCH());
         markets.add(new MarketXMR());
         markets.add(new MarketXLA());
+        markets.add(new MarketWBNB());
         markets.add(new MarketWSIGNA());
     }
 
