@@ -34,6 +34,12 @@ public class Contracts {
 	public static SignumID BUY_CONTRACT_CODE_ID = SignumID.fromLong("3165125369946393353");
 	public static SignumID SELL_CONTRACT_CODE_ID = SignumID.fromLong("13778372370427035975");
 	
+	public static String BUY_CONTRACT_REFERENCE_TX = "2375e1aa66e84279dae87d386f3a8a660bd8ea2e8fd9842b64786b8bca1647f4";
+	public static String SELL_CONTRACT_REFERENCE_TX = "2c57ac7f2a2876f70adb764e282128c159f7233c48d5147597ce7660ee26ca50";
+
+	public static String BUY_CONTRACT_REFERENCE_TX_TESNET = "d2692cc82ce30417f8482b33a1544aad6b1e2420193b837b67ffac3489575288";
+	public static String SELL_CONTRACT_REFERENCE_TX_TESTNET = "87668cd9ddbf5e7f8fbf400ba12cd9fc0e331e644ce42218d44c23ff52fa05eb";
+	
     private static Compiler compilerSell[], compilerNoDeposit, compilerBuy[];
 
     private static String contractTakeHash[], contractBuyTakeHash[];
