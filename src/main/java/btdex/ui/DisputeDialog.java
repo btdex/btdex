@@ -312,7 +312,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 		content.add(centerPanel, BorderLayout.CENTER);
 		content.add(bottomPanel, BorderLayout.PAGE_END);
 
-		suggestedFee = BurstNode.getInstance().getSuggestedFee().getPriorityFee();
+		suggestedFee = BurstNode.getInstance().getSuggestedFee().getCheapFee();
 
 		somethingChanged();
 		pack();

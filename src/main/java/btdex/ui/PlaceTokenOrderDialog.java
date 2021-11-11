@@ -143,7 +143,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		content.add(centerPanel, BorderLayout.CENTER);
 		content.add(buttonPane, BorderLayout.PAGE_END);
 
-		suggestedFee = BurstNode.getInstance().getSuggestedFee().getPriorityFee();
+		suggestedFee = BurstNode.getInstance().getSuggestedFee().getCheapFee();
 
 		if(order != null) {
 			// taking this order

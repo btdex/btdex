@@ -33,7 +33,6 @@ import btdex.ledger.LedgerService;
 import btdex.ledger.LedgerService.SignCallBack;
 import signumj.entity.SignumAddress;
 import signumj.entity.SignumValue;
-import signumj.entity.response.Account;
 import signumj.entity.response.FeeSuggestion;
 import signumj.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
@@ -185,10 +184,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 
 		pack();
 
-		feeSlider.getModel().setValue(4);
-		Account account = BurstNode.getInstance().getAccount();
-		if(account == null || account.getBalance().compareTo(suggestedFee.getPriorityFee()) < 0)
-			feeSlider.getModel().setValue(2);
+		feeSlider.getModel().setValue(2);
 	}
 
 	@Override
