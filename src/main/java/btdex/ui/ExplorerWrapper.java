@@ -28,15 +28,15 @@ public class ExplorerWrapper {
 //			case BURSTSCAN_NET:
 //				return burstScanNet();
 			case SIGNUM_NETWORK:
-				return burstcoinNetwork();
+				return signumNetwork();
 			}
 		}
-		return burstcoinNetwork();
+		return signumNetwork();
 	}
 
-	public static ExplorerWrapper burstcoinNetwork() {
+	public static ExplorerWrapper signumNetwork() {
 		String baseURL = Globals.getInstance().isTestnet() ?
-				"https://testnet.explorer.burstcoin.network" : "https://explorer.signum.network";
+				"https://t-chain.signum.network" : "https://explorer.signum.network";
 		return new ExplorerWrapper(SIGNUM_NETWORK, baseURL,
 				"/?action=account&account=", "/?action=transaction&id=", "/?action=token_inspect&id=");
 	}
