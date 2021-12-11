@@ -134,7 +134,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	
 	private static final String[] POOL_LIST_TESTNET = {
 			"http://nivbox.co.uk:9000",
-//			"http://localhost:8000"
+			"http://localhost:8000"
 	};
 	
 	private LinkedHashMap<String, SignumAddress> poolAddresses = new LinkedHashMap<>();
@@ -1365,7 +1365,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 
 			minerConfig.append("cpu_threads: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
 			minerConfig.append("cpu_worker_task_count: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
-			
+
+			minerConfig.append("additional_headers: \n");
+			minerConfig.append("  \"x-miner\" : \"btdex-" + Globals.getInstance().getVersion() + "\" \n");
+
 			logger.info("Copying miner config to {}", minerConfigFile.getAbsolutePath());
 
 			IOUtils.copy(minerConfigStream, minerConfig);
