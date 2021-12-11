@@ -78,7 +78,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class MiningPanel extends JPanel implements ActionListener, ChangeListener {
-	private static final long serialVersionUID = 1L;
 	
 	private static final int N_PATHS_MIN = 3;
 	private static final long ONE_GIB = 1073741824L;
@@ -91,6 +90,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	private static final String PROP_PLOT_LOW_PRIO = "plotLowPrio";
 	private static final String PROP_PLOT_CPU_CORES = "plotCpuCores";
 	private static final String PROP_MINE_CPU_CORES = "mineCpuCores";
+	private static final String PROP_MINE_ONLY_BEST = "mineOnlyBest";
 	private static final String PROP_MINER_POOL = "minerPool";
 	private static final String PROP_MINER_AUTO_START = "minerAutoStart";
 	
@@ -164,6 +164,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	private JComboBox<String> cpusToMineComboBox;
 
 	private JComboBox<String> poolComboBox;
+	
+	private JCheckBox mineSubmitOnlyBest;
 
 	private JButton joinPoolButton, openPoolButton;
 
@@ -370,9 +372,19 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		commitmentPanel.add(removeCommitmentButton);
 		removeCommitmentButton.addActionListener(this);
 		
+
+		JPanel minerPanelMain = new JPanel(new GridLayout(0, 1));
+		minerPanelMain.setBorder(BorderFactory.createTitledBorder(tr("mine_run_miner")));
+
+		JPanel minerPanel1 = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		JPanel minerPanel2 = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		minerPanelMain.add(minerPanel1);
+		minerPanelMain.add(minerPanel2);
 		
-		JPanel minerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-		minerPanel.setBorder(BorderFactory.createTitledBorder(tr("mine_run_miner")));
+		mineSubmitOnlyBest = new JCheckBox(tr("mine_only_best"));
+		mineSubmitOnlyBest.setToolTipText(tr("mine_only_best_details"));
+		mineSubmitOnlyBest.setSelected(!"false".equals(g.getProperty(PROP_MINE_ONLY_BEST)));
+		mineSubmitOnlyBest.addActionListener(this);
 		
 		cpusToMineComboBox = new JComboBox<String>();
 		for (int i = 1; i <= coresAvailable; i++) {
@@ -387,25 +399,27 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			cpusToMineComboBox.setSelectedIndex(coresToMine);
 		
 		cpusToMineComboBox.addActionListener(this);
-		minerPanel.add(new JLabel(tr("mine_cpus")));
-		minerPanel.add(cpusToMineComboBox);
 		
-		minerPanel.add(minerAutoStartCheck = new JCheckBox(tr("mine_start_auto")));
+		minerPanel2.add(new JLabel(tr("mine_cpus")));
+		minerPanel2.add(cpusToMineComboBox);
+		minerPanel2.add(mineSubmitOnlyBest);
+		
+		minerPanel1.add(minerAutoStartCheck = new JCheckBox(tr("mine_start_auto")));
 		minerAutoStartCheck.setSelected(Boolean.parseBoolean(g.getProperty(PROP_MINER_AUTO_START)));
 		minerAutoStartCheck.addActionListener(this);
 
 		stopMiningButton = new JButton(tr("mine_stop_mining"), icons.get(Icons.CANCEL));
 		stopMiningButton.addActionListener(this);
 		stopMiningButton.setEnabled(false);
-		minerPanel.add(stopMiningButton);
+		minerPanel1.add(stopMiningButton);
 		startMiningButton = new JButton(tr("mine_start_mining"), icons.get(Icons.MINING));
 		startMiningButton.addActionListener(this);
-		minerPanel.add(startMiningButton);
+		minerPanel1.add(startMiningButton);
 
 		JPanel rightPanel = new JPanel();
 		rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
 		rightPanel.add(poolPanel);
-		rightPanel.add(minerPanel);
+		rightPanel.add(minerPanelMain);
 		rightPanel.add(rewardsPanel);
 		
 		JPanel topPanel = new JPanel(new BorderLayout());
@@ -903,6 +917,11 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			saveConfs(g);
 			return;
 		}
+		if(mineSubmitOnlyBest == e.getSource()) {
+			g.setProperty(PROP_MINE_ONLY_BEST, Boolean.toString(mineSubmitOnlyBest.isSelected()));
+			saveConfs(g);
+			return;
+		}
 		if(cpusToPlotComboBox == e.getSource()) {
 			g.setProperty(PROP_PLOT_CPU_CORES, Integer.toString(cpusToPlotComboBox.getSelectedIndex()+1));
 			saveConfs(g);
@@ -1362,7 +1381,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			minerConfig.append("url: '" + poolComboBox.getSelectedItem().toString() + "'\n");
 			
 			minerConfig.append("target_deadline: " + poolMaxDeadlines.get(poolComboBox.getSelectedItem().toString()) + "\n");
-
+			if(!mineSubmitOnlyBest.isSelected())
+				minerConfig.append("submit_only_best: false\n");
+			
 			minerConfig.append("cpu_threads: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
 			minerConfig.append("cpu_worker_task_count: " + (cpusToMineComboBox.getSelectedIndex()+1) + "\n");
 
