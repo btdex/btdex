@@ -865,10 +865,10 @@ public class Main extends JFrame implements ActionListener {
 			Globals g = Globals.getInstance();
 
 			JComboBox<ExplorerWrapper> explorerCombo = new JComboBox<ExplorerWrapper>();
-			explorerCombo.addItem(ExplorerWrapper.burstcoinNetwork());
+			explorerCombo.addItem(ExplorerWrapper.signumNetwork());
 			if(!g.isTestnet())
 				explorerCombo.addItem(ExplorerWrapper.burstcoinRo());
-			explorerCombo.addItem(ExplorerWrapper.burstcoinNetwork());
+			explorerCombo.addItem(ExplorerWrapper.signumNetwork());
 
 			for (int i = 0; i < explorerCombo.getItemCount(); i++) {
 				if(explorerCombo.getItemAt(i).toString().equals(g.getExplorer()))
