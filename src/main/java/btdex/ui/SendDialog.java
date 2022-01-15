@@ -99,7 +99,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 		pin.addActionListener(this);
 
 		amount = new JFormattedTextField(token==null ? NumberFormatting.BURST.getFormat() : token.getNumberFormat().getFormat());
-		feeSlider = new JSlider(1, 4);
+		feeSlider = new JSlider(1, 4, 4);
 
 		if(type == TYPE_SEND || type == TYPE_JOIN_POOL || type == TYPE_GO_SOLO) {
 			topPanel.add(new Desc(tr(type != TYPE_SEND ? "send_pool_address" : "send_recipient"), recipient));
@@ -184,7 +184,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 
 		pack();
 
-		feeSlider.getModel().setValue(2);
+		feeSlider.setValue(2);
 	}
 
 	@Override
