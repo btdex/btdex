@@ -111,10 +111,10 @@ public class Globals {
 			logger = LogManager.getLogger();
 			logger.debug("Logger configured");
 			logger.debug("System properties: " + System.getProperties());
-			
+
 			logger.info("Using properties file {}", confFile);
 			testnet = Boolean.parseBoolean(conf.getProperty(Constants.PROP_TESTNET, "false"));
-			
+
 			String nodeAutomatic = conf.getProperty(Constants.PROP_NODE_AUTO, "true");
 			String nodeAddress = conf.getProperty(Constants.PROP_NODE, "");
 			ArrayList<String> nodeList = new ArrayList<>();
@@ -125,14 +125,14 @@ public class Globals {
 			if("true".equals(nodeAutomatic)) {
 				nodeList.addAll(Arrays.asList(isTestnet() ? Constants.NODE_LIST_TESTNET : Constants.NODE_LIST));
 			}
-			
+
 			setNodeList(nodeList);
 			BT.activateCIP20(true);
-			
+
 			SignumUtils.setAddressPrefix(isTestnet() ? "TS" : "S");
 			SignumUtils.addAddressPrefix("BURST");
 			SignumUtils.setValueSuffix("SIGNA");
-			
+
 			// Read the version
 			Properties versionProp = new Properties();
 			versionProp.load(Globals.class.getResourceAsStream("/version.properties"));
@@ -154,7 +154,7 @@ public class Globals {
 			checkPublicKey();
 
 			loadAccounts();
-			
+
 			int apiPort = Integer.parseInt(conf.getProperty(Constants.PROP_API_PORT, "-1"));
 			String allowOrign = conf.getProperty(Constants.PROP_API_CORS_ALLOW_ORIGIN, "*");
 			if(apiPort > 0) {
@@ -165,7 +165,7 @@ public class Globals {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public String getVersion() {
 		return version;
 	}
@@ -407,11 +407,11 @@ public class Globals {
 		accounts.add(ac);
 		saveAccounts();
 	}
-	
+
 	public long getMinOffer(long id) {
 		Market m = Markets.findMarket(id);
 		long minOffer = Long.parseLong(conf.getProperty(Constants.PROP_MIN_OFFER + m.getTicker(), "0"));
-		
+
 		if(minOffer==0) {
 			return m.getDefaultMinOffer();
 		}
@@ -446,20 +446,25 @@ public class Globals {
 	public void setNodeList(List<String> nodeList) {
 		List<NodeService> nsList = new ArrayList<NodeService>();
 		for (String nodeAddress : nodeList) {
-			nsList.add(NodeService.getInstance(nodeAddress, "btdex-" + version));
+			try {
+				nsList.add(NodeService.getInstance(nodeAddress, "btdex-" + version));
+			}
+			catch (IllegalArgumentException e){
+				logger.error(e.getMessage());
+			}
 		}
 		NS = new UseBestNodeService(true, nsList);
 	}
-	
+
 	public void setNode(boolean automatic, String node) {
-		conf.setProperty(Constants.PROP_NODE, node);		
+		conf.setProperty(Constants.PROP_NODE, node);
 		conf.setProperty(Constants.PROP_NODE_AUTO, Boolean.toString(automatic));
 	}
-	
+
 	public boolean isNodeAutomatic() {
 		return "true".equals(conf.getProperty(Constants.PROP_NODE_AUTO, "true"));
 	}
-	
+
 	public void setProperty(String key, String value) {
 		conf.setProperty(key, value);
 	}
@@ -483,7 +488,7 @@ public class Globals {
 		params.addProperty("account", getAddress().getFullAddress());
 		params.addProperty("publickey", BC.toHexString(getPubKey()));
 		params.addProperty("ref", ref);
-		
+
 		RequestBody body = RequestBody.create(params.toString(), Constants.JSON);
 
 		String faucet = isTestnet() ? Constants.FAUCET_TESTNET : Constants.FAUCET;
