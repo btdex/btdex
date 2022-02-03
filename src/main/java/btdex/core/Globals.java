@@ -453,6 +453,15 @@ public class Globals {
 				logger.error(e.getMessage());
 			}
 		}
+		if (nsList.size() == 0){
+			// add default nodes as fall back
+			logger.info("no valid node found, adding the featured nodes");
+			nodeList.clear();
+			nodeList.addAll(Arrays.asList(isTestnet() ? Constants.NODE_LIST_TESTNET : Constants.NODE_LIST));
+			for (String nodeAddress : nodeList) {
+				nsList.add(NodeService.getInstance(nodeAddress, "btdex-" + version));
+			}
+		}
 		NS = new UseBestNodeService(true, nsList);
 	}
 
