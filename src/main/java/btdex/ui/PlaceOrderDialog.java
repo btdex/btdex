@@ -47,7 +47,7 @@ import io.reactivex.Single;
 
 public class PlaceOrderDialog extends JDialog implements ActionListener, DocumentListener {
 	private static final long serialVersionUID = 1L;
-	
+
 	private static final String BUTTON_TEXT = "[B]";
 	public static final String HTML_STYLE = "<style>body {font: Dialog, Arial, sans-serif;} </style>";
 
@@ -89,7 +89,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 		this.contract = contract;
 		Globals g = Globals.getInstance();
-		
+
 		this.isBuy = buy;
 		if(contract !=null && contract.getType() == ContractType.BUY)
 			this.isBuy = true;
@@ -140,7 +140,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		fieldPanel.add(new Desc(tr("offer_price", market), priceField));
 		fieldPanel.add(new Desc(tr("offer_size", Constants.BURST_TICKER), amountField));
 		fieldPanel.add(new Desc(tr("offer_total", market), totalField));
-		
+
 		addressButton = new ClipboardAndQRButton(this, 18, amountField.getForeground());
 
 		ArrayList<MarketAccount> acs = Globals.getInstance().getMarketAccounts();
@@ -172,7 +172,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		});
 		security.setValue(15);
 		securityDesc.setDesc(tr("offer_security_deposit_percent", security.getValue()));
-		
+
 
 		if(isUpdate || isTake) {
 			// These cannot be changed
@@ -270,9 +270,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 	public void setVisible(boolean b) {
 		if(b == true) {
 			Globals g = Globals.getInstance();
-			
+
 			isMediator = g.getMediators().isMediator(g.getAddress().getSignedLongId());
-			
+
 			if(g.usingLedger()) {
 				JOptionPane.showMessageDialog(getParent(), tr("ledger_no_offer"),
 						tr("dlg_error"), JOptionPane.ERROR_MESSAGE);
@@ -309,7 +309,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 				return;
 			}
-			
+
 			if(g.isTestnet())
 				Toast.makeText((JFrame) this.getOwner(), tr("offer_testnet_warning"), Toast.Style.NORMAL).display();
 
@@ -345,7 +345,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			dispute.setVisible(true);
 			return;
 		}
-		
+
 		if(e.getSource() == accountComboBox) {
 			MarketAccount ac = (MarketAccount) accountComboBox.getSelectedItem();
 			String details = market.simpleFormat(ac.getFields());
@@ -356,9 +356,9 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		if(e.getSource() == okButton || e.getSource() == pinField) {
 			String error = null;
 			Globals g = Globals.getInstance();
-			
+
 			long minMarketOffer = g.getMinOffer(market.getID());
-			
+
 			if(!pinDesc.isVisible()) {
 				// nothing to do, as this is only showing information
 				setVisible(false);
@@ -392,11 +392,11 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				error = tr("dlg_accept_first");
 				acceptBox.requestFocus();
 			}
-			
+
 			if(error == null && isUpdate) {
 				// check if something changed
 				if(priceValue.longValue() == contract.getRate() &&
-						(accountDetails.getText().length()==0 || 
+						(accountDetails.getText().length()==0 ||
 						accountDetails.getText().equals(contract.getMarketAccount()))
 						)
 					error = tr("offer_no_changes");
@@ -411,13 +411,13 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(okButton);
 				return;
 			}
-			
+
 			// all set, lets place the order
 			try {
 				pinField.setEnabled(false);
 				okButton.setEnabled(false);
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				
+
 				Account ac = BurstNode.getInstance().getAccount();
 				if(ac == null) {
 					Toast.makeText((JFrame) this.getOwner(), tr("dlg_not_enough_balance"), Toast.Style.ERROR).display(okButton);
@@ -446,7 +446,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					SignumValue amountToSend = SignumValue.fromNQT(securityAmount + contract.getNewOfferFee());
 					if(!isBuy)
 						amountToSend = amountToSend.add(amountValue);
-					
+
 					// Checking if we will have balance for all transactions needed
 					SignumValue balanceNeeded = amountToSend.add(suggestedFee.multiply(2))
 							.add(SignumValue.fromNQT(Constants.FEE_QUANT));
@@ -476,14 +476,14 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 							amountToSend, suggestedFee,
-							Constants.BURST_EXCHANGE_DEADLINE, message, null);						
+							Constants.BURST_EXCHANGE_DEADLINE, message, null);
 				}
 				else if(isTake) {
 					// send the take transaction with the security deposit (+ amount if a buy order)
 					SignumValue amountToSend = SignumValue.fromNQT(contract.getSecurityNQT() + contract.getActivationFee());
 					if(isBuy) {
 						amountToSend = amountToSend.add(SignumValue.fromNQT(contract.getAmountNQT()));
-						
+
 						// Checking if we will have balance for all transactions needed
 						SignumValue balanceNeeded = amountToSend.add(configureFee.multiply(2))
 								.add(SignumValue.fromNQT(Constants.FEE_QUANT));
@@ -492,7 +492,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 							setCursor(Cursor.getDefaultCursor());
 							return;
 						}
-						
+
 						// also send the address we want to receive the amount
 						JsonObject messageJson = new JsonObject();
 						messageJson.addProperty("account", accountDetails.getText());
@@ -501,7 +501,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 								configureFee,
 								Constants.BURST_EXCHANGE_DEADLINE, messageString, null);
-						
+
 						utx.flatMap(unsignedTransactionBytes -> {
 							byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
 							return g.getNS().broadcastTransaction(signedTransactionBytes);
@@ -529,7 +529,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
 							configureFee,
 							Constants.BURST_EXCHANGE_DEADLINE, messageString, null);
-				}					
+				}
 
 				Single<TransactionBroadcast> tx = utx.flatMap(unsignedTransactionBytes -> {
 					byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsignedTransactionBytes);
@@ -544,6 +544,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				}
 
 				setVisible(false);
+				pinField.setText("");
 				Toast.makeText((JFrame) this.getOwner(),
 						tr("send_tx_broadcast", tb.getTransactionId().toString()), Toast.Style.SUCCESS).display();
 			}
@@ -556,13 +557,13 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 			setCursor(Cursor.getDefaultCursor());
 		}
 	}
-	
+
 	private void header(String header) {
 		terms = new StringBuilder();
 		terms.append(HTML_STYLE);
 		terms.append("<h3>").append(header).append("</h3>");
 	}
-	
+
 	private void append(String text) {
 		terms.append("<p>").append(text).append("</p>");
 	}
@@ -577,10 +578,10 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		priceValue = null;
 
 		MarketAccount account = isTake && !isBuy ? market.parseAccount(contract.getMarketAccount()) : (MarketAccount) accountComboBox.getSelectedItem();
-		
+
 		if(priceField.getText().length()==0 || amountField.getText().length()==0)
 			return;
-		
+
 		if(account != null && account.getFields().get(MarketCrypto.ADDRESS) != null)
 			addressButton.setURI(account.getFields().get(MarketCrypto.ADDRESS));
 		if(contract != null && isTaken && contract.getMarketAccount() != null)
@@ -629,7 +630,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 					Calendar deadline2 = Calendar.getInstance();
 				    deadline2.setTime(contract.getTakeTimestamp().getAsDate());
 				    deadline2.add(Calendar.HOUR_OF_DAY, isBuy ? 24 : market.getPaymentTimeout(account.getFields()));
-				    
+
 					// Signaling that we have received the market amount
 					header(tr("offer_terms_signaling",
 							totalField.getText(), market + " (" + market.getChainDetails() + ")",
@@ -698,7 +699,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 							market
 							));
 				}
-				append(tr("offer_terms_protocol"));				
+				append(tr("offer_terms_protocol"));
 			}
 			else if (isBuy){
 				if(!isUpdate)
@@ -706,7 +707,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 				header(tr(isUpdate ? "offer_terms_update_buy" : "offer_terms_buy",
 						amountField.getText(), priceField.getText(), market + " (" + market.getChainDetails() + ")"));
-				
+
 				append(tr(isUpdate ? "offer_terms_update_buy_details" : "offer_terms_buy_details",
 						NumberFormatting.BURST.format(isUpdate ? suggestedFee.longValue() :
 									contract.getNewOfferFee() + 2*suggestedFee.longValue() + Constants.FEE_QUANT),
@@ -717,7 +718,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						totalField.getText(),
 						market,
 						market));
-				append(tr("offer_terms_protocol"));				
+				append(tr("offer_terms_protocol"));
 			}
 			else {
 				// sell contract (new or update)
@@ -727,7 +728,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				header(tr(isUpdate ? "offer_terms_update_sell" : "offer_terms_sell",
 						amountField.getText(), priceField.getText(), market + " (" + market.getChainDetails() + ")",
 						accountDetails.getText()));
-				
+
 				append(tr(isUpdate ? "offer_terms_update_sell_details" : "offer_terms_sell_details",
 						NumberFormatting.BURST.format(isUpdate ? suggestedFee.longValue() :
 									contract.getNewOfferFee() + 2*suggestedFee.longValue() + Constants.FEE_QUANT),
@@ -742,7 +743,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 				append(tr("offer_terms_protocol"));
 			}
 		}
-		
+
 		// checking it has the balance before requesting the deposit
 		if(unexpectedState) {
 			// the contract seems to be invalid, this should not happen
@@ -752,14 +753,14 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 		String termsText = terms.toString();
 		if(!conditions.getText().equals(termsText)) {
 			conditions.setText(termsText);
-			
+
 			// TODO: Apparently tags are not counted so we need to subtract 3
 			int pos = termsText.indexOf(BUTTON_TEXT) - HTML_STYLE.length() - 3;
 			if(pos > 0) {
 				conditions.select(pos, pos + BUTTON_TEXT.length());
 				conditions.insertComponent(addressButton);
 			}
-			
+
 			conditions.setCaretPosition(0);
 		}
 	}

@@ -54,7 +54,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 	private JButton calcelButton;
 
 	private Market token;
-	
+
 	private int type;
 	public static final int TYPE_SEND = 0;
 	public static final int TYPE_JOIN_POOL = 1;
@@ -65,11 +65,11 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 	public SendDialog(JFrame owner, Market token) {
 		this(owner, token, TYPE_SEND, null);
 	}
-	
+
 	public SendDialog(JFrame owner, Market token, int type, SignumAddress pool) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		
+
 		this.type = type;
 		this.token = token;
 
@@ -127,7 +127,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 		}
 		panel.add(feeDesc);
 		FeeSuggestion suggestedFee = BurstNode.getInstance().getSuggestedFee();
-		
+
 		feeSlider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent evt) {
 				String feeType;
@@ -208,7 +208,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 				error = tr("dlg_invalid_pin");
 				pin.requestFocus();
 			}
-			
+
 			String msg = null;
 			if(message.getText().length()>0) {
 				msg = message.getText();
@@ -265,7 +265,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 						utx = g.getNS().generateTransactionWithMessage(recAddress, g.getPubKey(),
 							amountToSend, selectedFee, Constants.BURST_SEND_DEADLINE, msg, null);
 					}
-					
+
 					unsigned = utx.blockingGet();
 					if(g.usingLedger()) {
 						LedgerService.getInstance().requestSign(unsigned, null, g.getLedgerIndex());
@@ -274,12 +274,13 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 						message.setEnabled(false);
 						amount.setEnabled(false);
 						feeSlider.setEnabled(false);
-						
+
 						Toast.makeText((JFrame) this.getOwner(), tr("ledger_authorize"), Toast.Style.NORMAL).display(okButton);
-						
+
 						return;
 					}
 					byte[] signedTransactionBytes = g.signTransaction(pin.getPassword(), unsigned);
+					pin.setText("");
 					reportSigned(signedTransactionBytes, null);
 				}
 				catch (Exception ex) {
@@ -302,7 +303,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 	public void reportSigned(byte[] signed, byte[] signed2) {
 		if(!isVisible())
 			return; // already closed by cancel, so we will not broadcast anyway
-		
+
 		if(signed == null) {
 			// when coming from the hardware wallet
 			okButton.setEnabled(true);
@@ -312,9 +313,9 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 			feeSlider.setEnabled(true);
 
 			setCursor(Cursor.getDefaultCursor());
-			
+
 			Toast.makeText((JFrame) this.getOwner(), tr("ledger_denied"), Toast.Style.ERROR).display(okButton);
-			
+
 			return;
 		}
 		TransactionBroadcast tb = Globals.getInstance().getNS().broadcastTransaction(signed).blockingGet();

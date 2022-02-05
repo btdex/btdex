@@ -68,7 +68,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 	public PlaceTokenOrderDialog(JFrame owner, Market market, AssetOrder order, boolean isAsk) {
 		super(owner, ModalityType.APPLICATION_MODAL);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		
+
 		this.isAsk = isAsk;
 
 		setTitle(tr(isAsk ? "token_sell_for_burst" : "token_buy_with_burst", market));
@@ -153,7 +153,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		somethingChanged();
 		pack();
 
-		SwingUtilities.invokeLater(new Runnable() {  
+		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				priceField.requestFocusInWindow();
 			}
@@ -169,7 +169,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 		if(e.getSource() == okButton || e.getSource() == pinField) {
 			String error = null;
 			Globals g = Globals.getInstance();
-			
+
 			if(error == null && (priceValue == null || priceValue.longValue() <= 0)) {
 				error = tr("offer_invalid_price");
 			}
@@ -191,7 +191,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 				Toast.makeText((JFrame) this.getOwner(), error, Toast.Style.ERROR).display(okButton);
 				return;
 			}
-			
+
 			if(g.usingLedger()) {
 				if(BurstLedger.isAppAvailable())
 					Toast.makeText((JFrame) this.getOwner(), tr("ledger_auth"), Toast.Style.NORMAL).display(okButton);
@@ -222,12 +222,12 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 					okButton.setEnabled(false);
 					priceField.setEnabled(false);
 					amountField.setEnabled(false);
-					
+
 					Toast.makeText((JFrame) this.getOwner(), tr("ledger_authorize"), Toast.Style.NORMAL).display(okButton);
-					
+
 					return;
 				}
-				
+
 				byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), unsigned);
 				reportSigned(signedTransactionBytes, null);
 			}
@@ -236,6 +236,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 				Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
 			}
 			setCursor(Cursor.getDefaultCursor());
+			pinField.setText("");
 			pinField.setEnabled(true);
 			okButton.setEnabled(true);
 		}
@@ -309,7 +310,7 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 	public void reportSigned(byte[] signed, byte[] signed2) {
 		if(!isVisible())
 			return; // already closed by cancel, so we will not broadcast anyway
-		
+
 		if(signed == null) {
 			// when coming from the hardware wallet
 			okButton.setEnabled(true);
@@ -317,9 +318,9 @@ public class PlaceTokenOrderDialog extends JDialog implements ActionListener, Do
 			amountField.setEnabled(true);
 
 			setCursor(Cursor.getDefaultCursor());
-			
+
 			Toast.makeText((JFrame) this.getOwner(), tr("ledger_denied"), Toast.Style.ERROR).display(okButton);
-			
+
 			return;
 		}
 		TransactionBroadcast tb = Globals.getInstance().getNS().broadcastTransaction(signed).blockingGet();
