@@ -33,6 +33,9 @@ public abstract class Market {
 	public static long MARKET_WSIGNA         = 0x000000011;
 	public static long MARKET_WBNB           = 0x000000012;
 	public static long MARKET_BUSDT          = 0x000000013;
+	
+	public static long MARKET_HIVE    	     = 0x000000014;
+	public static long MARKET_SSIGNA         = 0x000000015;
 
 	public static long MARKET_XCH            = 0x000000060;
 
