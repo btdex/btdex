@@ -14,11 +14,17 @@ Currently the following pairs are available with SIGNA:
  - BCH
  - BNB
  - BSV
+ - BUSDT
  - DOGE
  - ETH
+ - HIVE
  - LTC
+ - SSIGNA
+ - XCH
  - XMR
  - XLA
+ - WBNB
+ - WSIGNA
 
  
 Additionally, any Signum-based token can be listed instantly and traded.
