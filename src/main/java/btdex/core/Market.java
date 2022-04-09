@@ -25,7 +25,7 @@ public abstract class Market {
 	public static long MARKET_XMR            = 0x000000004;
 	public static long MARKET_DOGE           = 0x000000005;
 	public static long MARKET_ARRR           = 0x000000006;
-	public static long MARKET_XLA            = 0x000000007;
+	public static long MARKET_XLA            = 0x000000007
 	public static long MARKET_BCH            = 0x000000008;
 	public static long MARKET_BSV            = 0x000000009;
 	public static long MARKET_BNB            = 0x000000010;
