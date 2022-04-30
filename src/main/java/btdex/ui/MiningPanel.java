@@ -121,10 +121,10 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			"https://signapool.notallmine.net",
 			"https://signumpool.com",
 			"http://signa.voiplanparty.com:8124",
-			// "http://signumpool.de:8080",
+			"http://signumpool.de:8080",
 			"http://spacepool.lmsi.club",
-			"http://burst.e4pool.com",
 			"https://fomplopool.com",
+			"http://burst.e4pool.com",
 			"http://signum.land",
 			"http://opensignumpool.ddns.net:8126",
 	};
