@@ -1,11 +1,6 @@
 package btdex.markets;
 
-import java.util.HashMap;
-
-import btdex.core.Globals;
-import btdex.locale.Translation;
-
-public class MarketSSIGNA extends MarketCrypto {
+public class MarketSSIGNA extends MarketHIVE {
 
 	public String getTicker() {
 		return "SWAP.SIGNA";

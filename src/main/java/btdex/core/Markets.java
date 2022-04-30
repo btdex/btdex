@@ -17,6 +17,7 @@ import btdex.markets.MarketWSIGNA;
 import btdex.markets.MarketXCH;
 import btdex.markets.MarketXMR;
 import btdex.markets.MarketXLA;
+import btdex.markets.MarketXLM;
 import btdex.markets.MarketHIVE;
 import btdex.markets.MarketSSIGNA;
 import signumj.service.NodeService;
@@ -45,14 +46,15 @@ public class Markets {
         markets.add(new MarketBUSDT());
         markets.add(new MarketDOGE());
         markets.add(new MarketETH());
+		markets.add(new MarketHIVE());
         markets.add(new MarketLTC());
+		markets.add(new MarketSSIGNA());
         markets.add(new MarketXCH());
         markets.add(new MarketXMR());
         markets.add(new MarketXLA());
+        markets.add(new MarketXLM());
         markets.add(new MarketWBNB());
         markets.add(new MarketWSIGNA());
-		markets.add(new MarketHIVE());
-		markets.add(new MarketSSIGNA());
     }
 
     public static void addUserMarket(Market m) {
