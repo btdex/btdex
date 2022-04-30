@@ -7,6 +7,7 @@ import signumj.crypto.SignumCrypto;
 import signumj.entity.SignumAddress;
 import signumj.entity.SignumValue;
 import signumj.entity.response.AT;
+import signumj.entity.response.TransactionBroadcast;
 import signumj.service.NodeService;
 
 
@@ -70,10 +71,10 @@ public class InitSC{
         maker = BT.getAddressFromPassphrase(makerPass);
         contract = BT.findContract(maker, name);
         //init offer
-        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
+        TransactionBroadcast tb = BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
                 SignumValue.fromNQT(sent), SignumValue.fromSigna(0.1), 1000,
-                security).blockingGet();
-        BT.forgeBlock();
+                security);
+        BT.forgeBlock(tb);
     }
 
     public void takeOffer() {
@@ -83,10 +84,10 @@ public class InitSC{
         }
         // Take the offer
         long amount_chain = BT.getContractFieldValue(contract, compiled.getField("amount").getAddress());
-        BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
+        TransactionBroadcast tb = BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
                 SignumValue.fromNQT(security + SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100,
-                security, amount_chain).blockingGet();
-        BT.forgeBlock();
+                security, amount_chain);
+        BT.forgeBlock(tb);
         BT.forgeBlock();
     }
 
@@ -101,23 +102,23 @@ public class InitSC{
     }
 
     public void dispute(SignumAddress who, long amountToMaker, long amountToTaker) {
-        BT.callMethod(who == maker ? makerPass : who == taker ? takerPass : who == mediatorOne ? mediatorOnePass : mediatorTwoPass,
+    	TransactionBroadcast tb = BT.callMethod(who == maker ? makerPass : who == taker ? takerPass : who == mediatorOne ? mediatorOnePass : mediatorTwoPass,
                 contract.getId(), compiled.getMethod("dispute"),
                 SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100,
-                amountToMaker, amountToTaker).blockingGet();
-        BT.forgeBlock();
+                amountToMaker, amountToTaker);
+        BT.forgeBlock(tb);
         BT.forgeBlock();
     }
 
     public void complete(SignumAddress who) {
         BT.callMethod(who == maker? makerPass : takerPass, contract.getId(), compiled.getMethod("reportComplete"),
-                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100);
     }
 
     public void withdraw() {
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
                 SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000,
-                0).blockingGet();
+                0);
     }
 
     public long getAmount() {

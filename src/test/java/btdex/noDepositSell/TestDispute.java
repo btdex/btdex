@@ -15,6 +15,7 @@ import btdex.sc.SellNoDepositContract;
 import signumj.entity.SignumAddress;
 import signumj.entity.SignumValue;
 import signumj.entity.response.AT;
+import signumj.entity.response.TransactionBroadcast;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class TestDispute {
@@ -39,8 +40,8 @@ public class TestDispute {
         contract = BT.findContract(maker, sc.getName());
 
         SignumValue send = SignumValue.fromSigna(100);
-        BT.sendAmount(makerPass, contract.getId(), send, SignumValue.fromSigna(0.1)).blockingGet();
-        BT.forgeBlock();
+        TransactionBroadcast tb = BT.sendAmount(makerPass, contract.getId(), send, SignumValue.fromSigna(0.1));
+        BT.forgeBlock(tb);
         BT.forgeBlock();
 
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
@@ -51,9 +52,9 @@ public class TestDispute {
     @Test
     @Order(2)
     public void invalidDispute() {
-        BT.callMethod(BT.PASSPHRASE3, contract.getId(), compiled.getMethod("dispute"),
-                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000, true, 1000000).blockingGet();
-        BT.forgeBlock();
+    	TransactionBroadcast tb = BT.callMethod(BT.PASSPHRASE3, contract.getId(), compiled.getMethod("dispute"),
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000, true, 1000000);
+        BT.forgeBlock(tb);
         BT.forgeBlock();
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
         state = SellNoDepositContract.STATE_OPEN;
@@ -63,9 +64,9 @@ public class TestDispute {
     @Test
     @Order(3)
     public void dispute() {
-        BT.callMethod(sc.getMediatorOnePassword(), contract.getId(), compiled.getMethod("dispute"),
-                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000, true, 0).blockingGet();
-        BT.forgeBlock();
+    	TransactionBroadcast tb = BT.callMethod(sc.getMediatorOnePassword(), contract.getId(), compiled.getMethod("dispute"),
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000, true, 0);
+        BT.forgeBlock(tb);
         BT.forgeBlock();
 
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
@@ -77,9 +78,9 @@ public class TestDispute {
     @Order(4)
     public void disputeAgain() {
         long balanceBefore = sc.getFeeContractBalance();
-        BT.callMethod(sc.getMediatorTwoPassword(), contract.getId(), compiled.getMethod("dispute"),
-                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000, false, 20000000).blockingGet();
-        BT.forgeBlock();
+        TransactionBroadcast tb = BT.callMethod(sc.getMediatorTwoPassword(), contract.getId(), compiled.getMethod("dispute"),
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000, false, 20000000);
+        BT.forgeBlock(tb);
         BT.forgeBlock();
 
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());

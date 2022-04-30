@@ -17,6 +17,7 @@ import signumj.entity.SignumAddress;
 import signumj.entity.SignumID;
 import signumj.entity.SignumValue;
 import signumj.entity.response.AT;
+import signumj.entity.response.TransactionBroadcast;
 
 /**
  * We assume a localhost testnet with 0 seconds mock mining is available for the
@@ -73,8 +74,8 @@ public class TestCreationWithdraw {
     public void sendInvalidCoin(){
         SignumValue send = SignumValue.fromSigna(200);
         //sender is not a contract creator
-        BT.sendAmount(BT.PASSPHRASE, contract.getId(), send, SignumValue.fromSigna(0.1)).blockingGet();
-        BT.forgeBlock();
+        TransactionBroadcast tb = BT.sendAmount(BT.PASSPHRASE, contract.getId(), send, SignumValue.fromSigna(0.1));
+        BT.forgeBlock(tb);
         BT.forgeBlock();
 
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
@@ -87,8 +88,8 @@ public class TestCreationWithdraw {
     public void sendCoin(){
         long SCbalanceBefore = BT.getContractBalance(contract).longValue();
         SignumValue send = SignumValue.fromSigna(100);
-        BT.sendAmount(makerPass, contract.getId(), send, SignumValue.fromSigna(0.1)).blockingGet();
-        BT.forgeBlock();
+        TransactionBroadcast tb = BT.sendAmount(makerPass, contract.getId(), send, SignumValue.fromSigna(0.1));
+        BT.forgeBlock(tb);
         BT.forgeBlock();
 
         long SCbalance = BT.getContractBalance(contract).longValue();
@@ -106,9 +107,9 @@ public class TestCreationWithdraw {
     @Test
     @Order(7)
     public void withdrawSignal() {
-        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
-                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000).blockingGet();
-        BT.forgeBlock();
+    	TransactionBroadcast tb = BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000);
+        BT.forgeBlock(tb);
         BT.forgeBlock();
 
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
@@ -121,9 +122,9 @@ public class TestCreationWithdraw {
     public void withdrawSignalToEarly() {
         //two blocks passed
         long SCbalanceBefore = BT.getContractBalance(contract).longValue();
-        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
-                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000).blockingGet();
-        BT.forgeBlock();
+        TransactionBroadcast tb = BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000);
+        BT.forgeBlock(tb);
         BT.forgeBlock();
 
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());
@@ -136,9 +137,9 @@ public class TestCreationWithdraw {
     @Test
     @Order(9)
     public void withdrawSignalValid() {
-        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
-                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000).blockingGet();
-        BT.forgeBlock();
+    	TransactionBroadcast tb = BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000);
+        BT.forgeBlock(tb);
         BT.forgeBlock();
 
         state_chain = BT.getContractFieldValue(contract, compiled.getField("state").getAddress());

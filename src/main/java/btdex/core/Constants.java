@@ -9,12 +9,12 @@ import signumj.entity.SignumID;
 import okhttp3.MediaType;
 
 public class Constants {
-    
+
     public static final String NODE_LIST_TESTNET[] = {
-    		"https://testnetwallet.burstcoin.ro",
+    		"http://lmsi.club:6876",
     		"http://localhost:6876",
     };
-    
+
     public static final String NODE_LIST[] = {
     		"https://us-east.signum.network",
     		"https://europe.signum.network",
@@ -41,8 +41,8 @@ public class Constants {
     public static final String PROP_ENC_PRIVKEY = "encPrivKey";
     public static final String PROP_PUBKEY = "pubKey";
     public static final String PROP_LEDGER = "ledger";
-    public static final String PROP_API_PORT = "apiPort";    
-    public static final String PROP_API_CORS_ALLOW_ORIGIN = "apiCORSAllowOrigin";    
+    public static final String PROP_API_PORT = "apiPort";
+    public static final String PROP_API_CORS_ALLOW_ORIGIN = "apiCORSAllowOrigin";
     public static final String PROP_MIN_OFFER = "minOffer";
 
     public static final String PROP_USER_TOKEN_ID = "userTokenID";
@@ -64,13 +64,13 @@ public class Constants {
     public static final String DEF_CONF_FILE = "config.properties";
 
     public static final String[] MEDIATORS = {"93N4-8RFU-KSWJ-3GYXA", "TLYF-7EBX-FBLY-DFX86", "K9DB-72JS-2PLL-9U9JF", "T7MP-XCSN-RAPA-6VFBC"};
-    
+
     public static final String[] MEDIATORS_TESTNET = {"6ET8-WUKM-3HS8-CN4KM", "D3S9-8L56-UMLL-6EDFX", "E9UA-FX37-CHPE-568RD"};
 
     public static final long FEE_CONTRACT = SignumCrypto.getInstance().rsDecode("BNR6-GMFS-S6CF-8XFGU").getSignedLongId();
 
     public static final long FEE_CONTRACT_TESTNET = SignumCrypto.getInstance().rsDecode("G4XE-MB8T-WWZC-E4GFU").getSignedLongId();
-    
+
     public static final long TRT_DIVIDENDS = SignumID.fromLong("14893248166511032525").getSignedLongId();
 
     public static final String BURST_SYMBOL = "\uA7A8";
@@ -84,7 +84,7 @@ public class Constants {
 
 	// Deadline in minutes to be used on transactions
 	public static final int BURST_SEND_DEADLINE = 1440;
-	
+
 	// Deadline in minutes to be used on exchange transactions
 	public static final int BURST_EXCHANGE_DEADLINE = 20;
 
@@ -99,7 +99,7 @@ public class Constants {
     public static final int ICON_SIZE_SMALL = 12;
 
     public static final int UI_UPDATE_INTERVAL = 10000;
-    
+
     public static final long MIN_OFFER = 10 * Contract.ONE_BURST;
     public static final long MAX_OFFER_OLD = 50_000 * Contract.ONE_BURST;
     public static final long MAX_OFFER = 1_000_000 * Contract.ONE_BURST;

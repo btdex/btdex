@@ -118,18 +118,15 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	
 	private static final String[] POOL_LIST = {
 			"https://pool.signumcoin.ro",
-			"http://signa.voiplanparty.com:8124",
-			"http://opensignumpool.ddns.net:8126",
-			"http://signumpool.de:8080",
-			"https://signumpool.com",
 			"https://signapool.notallmine.net",
-			"https://fomplopool.com",
-			"https://signum.space",
-			"http://signum.land",
+			"https://signumpool.com",
+			"http://signa.voiplanparty.com:8124",
+			// "http://signumpool.de:8080",
 			"http://spacepool.lmsi.club",
 			"http://burst.e4pool.com",
-			"http://signum.mainpool.ru",
-			"https://signum.darkfibermines.com",
+			"https://fomplopool.com",
+			"http://signum.land",
+			"http://opensignumpool.ddns.net:8126",
 	};
 	
 	private static final String[] POOL_LIST_TESTNET = {

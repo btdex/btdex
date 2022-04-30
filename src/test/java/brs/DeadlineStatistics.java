@@ -3,6 +3,7 @@ package brs;
 import java.util.ArrayList;
 
 import bt.BT;
+import bt.Contract;
 import signumj.entity.response.Block;
 
 /**
@@ -16,15 +17,16 @@ public class DeadlineStatistics {
 	public static void main(String[] args) {
 
 		// Select the node: mainnet or testnet
-		BT.setNodeAddress(BT.NODE_BURSTCOIN_RO);
+//		BT.setNodeAddress(BT.NODE_BURSTCOIN_RO);
 //		BT.setNodeAddress(BT.NODE_TESTNET);
 //		BT.setNodeAddress(BT.NODE_LOCAL_TESTNET);
+		BT.setNodeAddress(BT.NODE_LOCAL);
 		
 		// How many blocks in the past should the analysis start:
 		int start = 0;
 		
 		int PAGE_SIZE = 90;
-		int NBLOCKS = 360;
+		int NBLOCKS = 360*20;
 		
 		int smallestDeadline = Integer.MAX_VALUE;
 		int largestDeadline = 0;
@@ -45,10 +47,13 @@ public class DeadlineStatistics {
 			}
 		}
 		
-		System.out.println("height\tdeadline\ttarget\tEC");
+		System.out.println("height\tdeadline\ttarget\tEC\tavg.com.");
 		for(int i = 1; i<blockList.size(); i++) {
 			Block next = blockList.get(i);
 			Block b = blockList.get(i-1);
+			
+			if(b.getHeight() % 10 != 0)
+				continue;
 
 			int deadline = b.getTimestamp().getTimestamp() - next.getTimestamp().getTimestamp();
 
@@ -58,7 +63,7 @@ public class DeadlineStatistics {
 			avDeadline += deadline;
 			float EC = 18325193796f/b.getBaseTarget();
 			avEC += EC;
-			System.out.println(b.getHeight() + "\t" + deadline + "\t" + b.getBaseTarget() + "\t" + EC);
+			System.out.println(b.getHeight() + "\t" + deadline + "\t" + b.getBaseTarget() + "\t" + EC + "\t" + b.getAverageCommitmentNQT()/Contract.ONE_BURST);
 		}
         avDeadline /= counter;
         avEC /= counter;

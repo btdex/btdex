@@ -95,7 +95,7 @@ public class TestInvalidTakeTake extends BT {
         }
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
                 SignumValue.fromNQT(sent), SignumValue.fromSigna(0.1), 1000,
-                security).blockingGet();
+                security);
         BT.forgeBlock();
         BT.forgeBlock();
 
@@ -134,7 +134,7 @@ public class TestInvalidTakeTake extends BT {
         // Invalid take, not enough security
         BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
                 SignumValue.fromNQT(SellContract.ACTIVATION_FEE*2), SignumValue.fromSigna(0.1), 100,
-                security, amount_chain).blockingGet();
+                security, amount_chain);
         balance = BT.getContractBalance(contract).longValue();
         System.out.println("Contract fees for failed take: " + SignumValue.fromNQT(sent-balance-SellContract.ACTIVATION_FEE));
 
@@ -153,7 +153,7 @@ public class TestInvalidTakeTake extends BT {
         // Take the offer
         BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
                 SignumValue.fromNQT(security + SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100,
-                security, amount_chain).blockingGet();
+                security, amount_chain);
         BT.forgeBlock();
         BT.forgeBlock();
         System.out.println("balance " + BT.getContractBalance(contract).longValue());
@@ -180,7 +180,7 @@ public class TestInvalidTakeTake extends BT {
     public void testMakerSignal() {
         // Maker signals the payment was received (off-chain)
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("reportComplete"),
-                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100);
         BT.forgeBlock(makerPass);
         BT.forgeBlock(makerPass);
 
@@ -203,7 +203,7 @@ public class TestInvalidTakeTake extends BT {
         // Reopen the offer
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
                 SignumValue.fromNQT(amount + security + SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100,
-                security).blockingGet();
+                security);
         BT.forgeBlock();
         BT.forgeBlock();
 
@@ -224,7 +224,7 @@ public class TestInvalidTakeTake extends BT {
         // Take the offer again
         BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
                 SignumValue.fromNQT(security + SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100,
-                security, amount_chain).blockingGet();
+                security, amount_chain);
         BT.forgeBlock();
         BT.forgeBlock();
 
@@ -241,7 +241,7 @@ public class TestInvalidTakeTake extends BT {
     public void testPaymentReceived() {
         // Maker signals the payment was received (off-chain)
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("reportComplete"),
-                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100);
         BT.forgeBlock();
         BT.forgeBlock();
 

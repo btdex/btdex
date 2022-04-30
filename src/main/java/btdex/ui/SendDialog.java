@@ -243,7 +243,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 					if(token!=null) {
 						utx = g.getNS().generateTransferAssetTransactionWithMessage(g.getPubKey(), recAddress,
 								token.getTokenID(), SignumValue.fromNQT((long)(amountNumber.doubleValue()*token.getFactor())),
-								selectedFee, Constants.BURST_SEND_DEADLINE, msg);
+								null, selectedFee, Constants.BURST_SEND_DEADLINE, msg);
 					}
 					else if(type == TYPE_JOIN_POOL  || type == TYPE_GO_SOLO){
 						utx = g.getNS().generateTransactionSetRewardRecipient(recAddress, g.getPubKey(),

@@ -42,12 +42,12 @@ public class TestTimeLock {
         contract = BT.findContract(maker, sc.getName());
 
         SignumValue send = SignumValue.fromSigna(100);
-        BT.sendAmount(makerPass, contract.getId(), send, SignumValue.fromSigna(0.1)).blockingGet();
+        BT.sendAmount(makerPass, contract.getId(), send, SignumValue.fromSigna(0.1));
         BT.forgeBlock();
         BT.forgeBlock();
 
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
-                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000);
         BT.forgeBlock(); //1
         BT.forgeBlock(); //2
 
@@ -61,7 +61,7 @@ public class TestTimeLock {
     public void withdrawSignalToEarly() {
         long SCbalanceBefore = BT.getContractBalance(contract).longValue();
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
-                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000);
         BT.forgeBlock(); //3
         BT.forgeBlock(); //4
 
@@ -80,7 +80,7 @@ public class TestTimeLock {
         }
         long SCbalanceBefore = BT.getContractBalance(contract).longValue();
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
-                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000);
         BT.forgeBlock();
         BT.forgeBlock();
 
@@ -99,7 +99,7 @@ public class TestTimeLock {
         }
 
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("withdraw"),
-                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000).blockingGet();
+                SignumValue.fromNQT(SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000);
         BT.forgeBlock();
         BT.forgeBlock();
 

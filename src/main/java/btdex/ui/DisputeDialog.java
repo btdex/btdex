@@ -434,7 +434,7 @@ public class DisputeDialog extends JDialog implements ActionListener, ChangeList
 				}
 
 				// we are sending the dispute message with our amounts
-				byte[] message = BT.callMethodMessage(contract.getMethod("dispute"), amountToCreator, amountToTaker);
+				byte[] message = BT.callMethodMessage(contract.getMethod("dispute"), null, amountToCreator, amountToTaker);
 				SignumValue amountToSend = SignumValue.fromNQT(contract.getActivationFee());
 
 				Single<byte[]> utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),

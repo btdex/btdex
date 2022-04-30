@@ -17,6 +17,7 @@ import btdex.sc.BuyContract;
 import signumj.entity.SignumAddress;
 import signumj.entity.SignumValue;
 import signumj.entity.response.AT;
+import signumj.entity.response.TransactionBroadcast;
 import signumj.service.NodeService;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -82,9 +83,9 @@ public class TestCreateUpdateTakeReopen {
 
         wantsToBuyInPlanks = Contract.ONE_BURST * 100L; //100 Burst
         security = Contract.ONE_BURST * 10L; //10 Burst
-        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                SignumValue.fromNQT(security + BuyContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000, wantsToBuyInPlanks).blockingGet();
-        BT.forgeBlock();
+        TransactionBroadcast tb = BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
+                SignumValue.fromNQT(security + BuyContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000, wantsToBuyInPlanks);
+        BT.forgeBlock(tb);
         BT.forgeBlock();
         // should now be open
         state = BuyContract.STATE_OPEN;
@@ -118,10 +119,10 @@ public class TestCreateUpdateTakeReopen {
     @Order(6)
     public void testOfferTake() {
         // Take the offer
-        BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
+    	TransactionBroadcast tb = BT.callMethod(takerPass, contract.getId(), compiled.getMethod("take"),
                 SignumValue.fromNQT(security_chain + BuyContract.ACTIVATION_FEE + wantsToBuyInPlanks), SignumValue.fromSigna(0.1), 100,
-                security_chain, amount_chain).blockingGet();
-        BT.forgeBlock();
+                security_chain, amount_chain);
+        BT.forgeBlock(tb);
         BT.forgeBlock();
 
         // order should be taken, waiting for payment
@@ -137,9 +138,9 @@ public class TestCreateUpdateTakeReopen {
     @Order(7)
     public void testTakerSignal() {
         // Taker signals the payment was received (off-chain)
-        BT.callMethod(takerPass, contract.getId(), compiled.getMethod("reportComplete"),
-                SignumValue.fromNQT(BuyContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100).blockingGet();
-        BT.forgeBlock();
+    	TransactionBroadcast tb = BT.callMethod(takerPass, contract.getId(), compiled.getMethod("reportComplete"),
+                SignumValue.fromNQT(BuyContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100);
+        BT.forgeBlock(tb);
         BT.forgeBlock();
 
         // order should be finished
@@ -156,9 +157,9 @@ public class TestCreateUpdateTakeReopen {
     public void testReopen(){
         wantsToBuyInPlanks = 100_000_000L * 1000L; //1000 Burst
         security = 100_000_000L * 150L; //10 Burst
-        BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
-                SignumValue.fromNQT(security + BuyContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000, wantsToBuyInPlanks).blockingGet();
-        BT.forgeBlock();
+        TransactionBroadcast tb = BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
+                SignumValue.fromNQT(security + BuyContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 1000, wantsToBuyInPlanks);
+        BT.forgeBlock(tb);
         BT.forgeBlock();
         // should now be open
         state = BuyContract.STATE_OPEN;

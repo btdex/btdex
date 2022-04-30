@@ -60,7 +60,7 @@ public class TestTakeTakeSameBlock {
         }
         BT.callMethod(makerPass, contract.getId(), compiled.getMethod("update"),
                 SignumValue.fromNQT(sent), SignumValue.fromSigna(0.1), 1000,
-                security).blockingGet();
+                security);
         BT.forgeBlock();
         BT.forgeBlock();
 
@@ -105,10 +105,10 @@ public class TestTakeTakeSameBlock {
         // Take the offer
         BT.callMethod(takerPassOne, contract.getId(), compiled.getMethod("take"),
                 SignumValue.fromNQT(security + SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100,
-                security, amount_chain).blockingGet();
+                security, amount_chain);
         BT.callMethod(takerPassTwo, contract.getId(), compiled.getMethod("take"),
                 SignumValue.fromNQT(security + SellContract.ACTIVATION_FEE), SignumValue.fromSigna(0.1), 100,
-                security, amount_chain).blockingGet();
+                security, amount_chain);
         BT.forgeBlock();
         BT.forgeBlock();
 

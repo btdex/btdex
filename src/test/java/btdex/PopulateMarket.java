@@ -7,6 +7,7 @@ import btdex.sc.SellContract;
 import signumj.entity.SignumID;
 import signumj.entity.SignumValue;
 import signumj.entity.response.AT;
+import signumj.entity.response.TransactionBroadcast;
 
 
 /**
@@ -49,7 +50,7 @@ public class PopulateMarket extends BT {
 			System.out.println("Contract found on chain! It's id " + contract.getId().getID());
 
 			// Initialize the offer
-			BT.callMethod(
+			TransactionBroadcast tb = BT.callMethod(
 					BT.PASSPHRASE2,
 					contract.getId(),
 					compiled.getMethod("update"),
@@ -57,8 +58,8 @@ public class PopulateMarket extends BT {
 					SignumValue.fromSigna(0.1),
 					100,
 					security
-					).blockingGet();
-			BT.forgeBlock();
+					);
+			BT.forgeBlock(tb);
 			BT.forgeBlock();
 
 			amount *= 2;

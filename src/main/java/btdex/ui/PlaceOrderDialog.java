@@ -441,7 +441,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 					// send the update transaction
 					long securityAmount = amountValue.longValue() * security.getValue() / 100L;
-					byte[] message = BT.callMethodMessage(contract.getMethod("update"), isBuy? amountValue.longValue() : securityAmount);
+					byte[] message = BT.callMethodMessage(contract.getMethod("update"), null, isBuy? amountValue.longValue() : securityAmount);
 
 					SignumValue amountToSend = SignumValue.fromNQT(securityAmount + contract.getNewOfferFee());
 					if(!isBuy)
@@ -471,7 +471,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 
 				if(isTaken && isSignal) {
 					// we are signaling that we have received
-					byte[] message = BT.callMethodMessage(contract.getMethod("reportComplete"));
+					byte[] message = BT.callMethodMessage(contract.getMethod("reportComplete"), null);
 					SignumValue amountToSend = SignumValue.fromNQT(contract.getActivationFee());
 
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),
@@ -510,7 +510,7 @@ public class PlaceOrderDialog extends JDialog implements ActionListener, Documen
 						configureFee = configureFee.add(SignumValue.fromNQT(Constants.FEE_QUANT));
 					}
 
-					byte[] message = BT.callMethodMessage(contract.getMethod("take"),
+					byte[] message = BT.callMethodMessage(contract.getMethod("take"), null,
 							contract.getSecurityNQT(), contract.getAmountNQT());
 
 					utx = g.getNS().generateTransactionWithMessage(contract.getAddress(), g.getPubKey(),

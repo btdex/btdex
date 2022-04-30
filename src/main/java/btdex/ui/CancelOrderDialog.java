@@ -181,7 +181,7 @@ public class CancelOrderDialog extends JDialog implements ActionListener, SignCa
 				}
 				else {
 					// update the security to zero to withdraw all funds
-					byte[] message = BT.callMethodMessage(state.getMethod("update"), 0L);
+					byte[] message = BT.callMethodMessage(state.getMethod("update"), null, 0L);
 					
 					SignumValue amountToSend = SignumValue.fromNQT(state.getActivationFee());
 
