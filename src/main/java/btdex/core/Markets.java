@@ -17,6 +17,8 @@ import btdex.markets.MarketWSIGNA;
 import btdex.markets.MarketXCH;
 import btdex.markets.MarketXMR;
 import btdex.markets.MarketXLA;
+import btdex.markets.MarketHIVE;
+import btdex.markets.MarketSSIGNA;
 import signumj.service.NodeService;
 
 import org.apache.logging.log4j.LogManager;
@@ -49,6 +51,8 @@ public class Markets {
         markets.add(new MarketXLA());
         markets.add(new MarketWBNB());
         markets.add(new MarketWSIGNA());
+		markets.add(new MarketHIVE());
+		markets.add(new MarketSSIGNA());
     }
 
     public static void addUserMarket(Market m) {
