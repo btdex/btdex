@@ -6,7 +6,7 @@ import btdex.locale.Translation;
 
 public class MarketHIVE extends MarketCrypto {
 	
-	static final String REGEX = "^@[a-zA-Z0-9\-]*$";
+	static final String REGEX = "^@[a-zA-Z0-9\\-]*$";
 
 	public String getTicker() {
 		return "HIVE";
