@@ -93,6 +93,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 	private static final String PROP_MINE_ONLY_BEST = "mineOnlyBest";
 	private static final String PROP_MINER_POOL = "minerPool";
 	private static final String PROP_MINER_AUTO_START = "minerAutoStart";
+        private static final String PROP_MINER_USE_DIRECT_IO = "minerUseDirectIO";
 	
 	private static final String PLOT_APP = "[PLOTTER]";
 	private static final String MINER_APP = "[MINER]";
@@ -387,8 +388,8 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		
                 mineUseDirectIO = new JCheckBox(tr("mine_use_direct_io"));
                 mineUseDirectIO.setToolTipText(tr("mine_use_direct_io_details"));
-                mineUseDirectIO.setSelected(true);
-                mineSubmitOnlyBest.addActionListener(this);
+		mineUseDirectIO.setSelected(!"false".equals(g.getProperty(PROP_MINER_USE_DIRECT_IO)));
+                mineUseDirectIO.addActionListener(this);
 
                 cpusToMineComboBox = new JComboBox<String>();
 		for (int i = 1; i <= coresAvailable; i++) {
@@ -927,6 +928,11 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			saveConfs(g);
 			return;
 		}
+                if(mineUseDirectIO == e.getSource()) {
+			g.setProperty(PROP_MINER_USE_DIRECT_IO, Boolean.toString(mineUseDirectIO.isSelected()));
+			saveConfs(g);
+			return;
+		}
 		if(cpusToPlotComboBox == e.getSource()) {
 			g.setProperty(PROP_PLOT_CPU_CORES, Integer.toString(cpusToPlotComboBox.getSelectedIndex()+1));
 			saveConfs(g);
@@ -1396,9 +1402,9 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			minerConfig.append("  \"x-miner\" : \"btdex-" + Globals.getInstance().getVersion() + "\" \n");
 
                         if(mineUseDirectIO.isSelected()) {
-                            minerConfig.append("hdd_use_direct_io: true               # default true");
+                            minerConfig.append("hdd_use_direct_io: true               # default true\n");
                         } else {
-                            minerConfig.append("hdd_use_direct_io: false              # default true");
+                            minerConfig.append("hdd_use_direct_io: false              # default true\n");
                         }
                         
 			logger.info("Copying miner config to {}", minerConfigFile.getAbsolutePath());
