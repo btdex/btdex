@@ -9,7 +9,6 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.LinkedHashMap;
@@ -41,6 +40,7 @@ import btdex.ledger.BurstLedger;
 import btdex.ledger.LedgerService;
 import btdex.ledger.LedgerService.SignCallBack;
 import signumj.entity.SignumAddress;
+import signumj.entity.SignumID;
 import signumj.entity.SignumValue;
 import signumj.entity.response.Account;
 import signumj.entity.response.AssetBalance;
@@ -64,7 +64,7 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 	private JButton okButton;
 	private JButton cancelButton;
 
-	private SignumValue suggestedFee, totalFees;
+	private SignumValue totalFees;
 	private SignumValue amountValue;
 	
 	List<AssetBalance> holders;
@@ -72,6 +72,8 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 	private LinkedHashMap<SignumAddress, SignumValue> recipients;
 
 	private int nPaid;
+
+	private long minHoldingLong;
 
 	public DistributionToHoldersDialog(JFrame owner, Market market) {
 		super(owner, ModalityType.APPLICATION_MODAL);
@@ -86,7 +88,7 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 		amountField.setText("10");
 		amountField.getDocument().addDocumentListener(this);
 
-		minHoldings = new JFormattedTextField(NumberFormatting.BURST.getFormat());
+		minHoldings = new JFormattedTextField(market.getNumberFormat().getFormat());
 		minHoldings.setText("1");
 		minHoldings.getDocument().addDocumentListener(this);
 
@@ -148,8 +150,6 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 		content.add(centerPanel, BorderLayout.CENTER);
 		content.add(buttonPane, BorderLayout.PAGE_END);
 
-		suggestedFee = BurstNode.getInstance().getSuggestedFee().getStandardFee();
-		
 		// Get all token holders
 		holders = BurstNode.getInstance().getAssetBalanceAllAccounts(market);
 		somethingChanged();
@@ -174,6 +174,11 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 			
 			if(error == null && (amountValue == null || amountValue.longValue() <= 0)) {
 				error = tr("send_invalid_amount");
+			}
+			
+			if(error == null && (recipients == null || recipients.size() == 0)) {
+				error = tr("dlg_accept_first");
+				acceptBox.requestFocus();
 			}
 			
 			Account ac = BurstNode.getInstance().getAccount();
@@ -210,34 +215,15 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				pinField.setEnabled(false);
 				okButton.setEnabled(false);
-				nPaid = 0;
 
-				LinkedHashMap<SignumAddress, SignumValue> batch = new LinkedHashMap<>();
-				for(SignumAddress a : recipients.keySet()) {
-					batch.put(a, recipients.get(a));
-					nPaid++;
-					if(batch.size()==64) {
-						byte[] utx = g.getNS().generateMultiOutTransaction(g.getPubKey(), suggestedFee.multiply(BigInteger.valueOf(5)), Constants.BURST_EXCHANGE_DEADLINE, batch).blockingGet();
-						byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), utx);
-						reportSigned(signedTransactionBytes, null);
-						
-						batch.clear();
-					}
-				}
+				byte[] utx = g.getNS().generateDistributeToAssetHolders(g.getPubKey(), market.getTokenID(),
+						SignumValue.fromNQT(minHoldingLong), amountValue, SignumID.fromLong(0), SignumValue.fromNQT(0),
+						totalFees, Constants.BURST_EXCHANGE_DEADLINE).blockingGet();
+	
+				byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), utx);
+				reportSigned(signedTransactionBytes, null);
 				
-				if(batch.size() > 0) {
-					byte[] utx;
-					if(batch.size() == 1) {
-						SignumAddress receiver = batch.keySet().iterator().next();
-						utx = g.getNS().generateTransaction(receiver, g.getPubKey(), batch.get(receiver), suggestedFee, Constants.BURST_EXCHANGE_DEADLINE, null).blockingGet();
-					}
-					else
-						utx = g.getNS().generateMultiOutTransaction(g.getPubKey(), suggestedFee.multiply(BigInteger.valueOf(5)),
-								Constants.BURST_EXCHANGE_DEADLINE, batch).blockingGet();
-					
-					byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), utx);
-					reportSigned(signedTransactionBytes, null);
-				}
+				setVisible(false);
 			}
 			catch (Exception ex) {
 				Toast.makeText((JFrame) this.getOwner(), ex.getCause().getMessage(), Toast.Style.ERROR).display(okButton);
@@ -256,7 +242,7 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 
 		amountValue = null;
 
-		if(amountField.getText().length()==0)
+		if(amountField.getText().length()==0 || minHoldings.getText().length()==0)
 			return;
 		
 		String holdersText = "<table>";
@@ -273,7 +259,7 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 			// For token, price is in BURST, others price is on the selected market
 			Number amountN = NumberFormatting.parse(amountField.getText());
 			Number minHoldingN = NumberFormatting.parse(minHoldings.getText());
-			long minHoldingLong = (long)(minHoldingN.doubleValue()*market.getFactor());
+			minHoldingLong = (long)(minHoldingN.doubleValue()*market.getFactor());
 			long circulatingTokens = 0;
 			
 			for(AssetBalance h : holders) {
@@ -303,7 +289,7 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 			e.printStackTrace();
 		}
 
-		totalFees = SignumValue.fromNQT(Constants.FEE_QUANT * Math.max(1,  recipients.size()/10));
+		totalFees = SignumValue.fromNQT(Math.max(Constants.FEE_QUANT, (Constants.FEE_QUANT * recipients.size())/10));
 		
 		StringBuilder terms = new StringBuilder();
 		terms.append(PlaceOrderDialog.HTML_STYLE);
