@@ -35,6 +35,7 @@ public class Icons {
     public static IconCode COPY = FontAwesome.CLONE;
     public static IconCode EXPLORER = FontAwesome.EXTERNAL_LINK;
     public static IconCode DISTRIBUTE = FontAwesome.SHARE_ALT;
+    public static IconCode TREASURY = FontAwesome.BUILDING;
     public static IconCode SETTINGS = FontAwesome.COG;
     public static IconCode LANGUAGE = FontAwesome.LANGUAGE;
     public static IconCode SEND = FontAwesome.PAPER_PLANE;

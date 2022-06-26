@@ -87,6 +87,7 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 	private JLabel balanceLabelTokenPending;
 	private JButton sendButtonToken;
 	private JButton distributeButton;
+	private JButton addTreasuryButton;
 
 	private Market market = null, newMarket;
 	
@@ -228,10 +229,15 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 		distributeButton = new JButton(icons.get(Icons.DISTRIBUTE));
 		distributeButton.setToolTipText(tr("token_distribution", token.toString()));
 		distributeButton.addActionListener(this);
-		
+
+		addTreasuryButton = new JButton(icons.get(Icons.TREASURY));
+		addTreasuryButton.setToolTipText(tr("token_add_treasury"));
+		addTreasuryButton.addActionListener(this);
+
 		JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		top.add(topRight, BorderLayout.LINE_END);
 		topRight.add(new Desc(tr(" "), distributeButton));
+		topRight.add(new Desc(tr(" "), addTreasuryButton));
 		topRight.add(new Desc(tr("main_token_id"), tokenIdButton));
 		topRight.add(new Desc(" ", new SocialButton(SocialButton.Type.TWITTER, tableBid.getForeground())));
 //		topRight.add(new SocialButton(SocialButton.Type.INSTAGRAM, table.getForeground()));
@@ -557,6 +563,22 @@ public class TokenMarketPanel extends JPanel implements ActionListener {
 		else if (e.getSource() == distributeButton) {
 			DistributionToHoldersDialog dlg = new DistributionToHoldersDialog((JFrame) SwingUtilities.getWindowAncestor(this), m);
 			
+			dlg.setLocationRelativeTo(this);
+			dlg.setVisible(true);
+		}
+		else if (e.getSource() == addTreasuryButton) {
+			
+			Globals g = Globals.getInstance();
+			Transaction issueTx = g.getNS().getTransaction(m.getTokenID()).blockingGet();
+			if(issueTx.getSender().getSignedLongId() != g.getAddress().getSignedLongId()) {
+				Toast.makeText((JFrame) SwingUtilities.getWindowAncestor(this),
+						tr("token_add_treasury_not_issuer"), Toast.Style.ERROR).display();
+				return;
+			}
+			
+			SendDialog dlg = new SendDialog((JFrame) SwingUtilities.getWindowAncestor(this),
+					m, SendDialog.TYPE_ADD_TREASURY, null);
+
 			dlg.setLocationRelativeTo(this);
 			dlg.setVisible(true);
 		}

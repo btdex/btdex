@@ -24,6 +24,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.spongycastle.util.encoders.Hex;
+
 import btdex.core.BurstNode;
 import btdex.core.Constants;
 import btdex.core.Globals;
@@ -34,6 +36,7 @@ import btdex.ledger.LedgerService.SignCallBack;
 import signumj.entity.SignumAddress;
 import signumj.entity.SignumValue;
 import signumj.entity.response.FeeSuggestion;
+import signumj.entity.response.Transaction;
 import signumj.entity.response.TransactionBroadcast;
 import io.reactivex.Single;
 
@@ -61,6 +64,8 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 	public static final int TYPE_GO_SOLO = 2;
 	public static final int TYPE_ADD_COMMITMENT = 3;
 	public static final int TYPE_REMOVE_COMMITMENT = 4;
+	public static final int TYPE_ADD_TREASURY = 5;
+
 
 	public SendDialog(JFrame owner, Market token) {
 		this(owner, token, TYPE_SEND, null);
@@ -85,6 +90,9 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 		else if(type == TYPE_REMOVE_COMMITMENT) {
 			setTitle(tr("send_remove_commitment"));
 		}
+		else if(type == TYPE_ADD_TREASURY) {
+			setTitle(tr("token_add_treasury"));
+		}
 		else
 			setTitle(tr("main_send", token==null ? Constants.BURST_TICKER : token));
 
@@ -108,12 +116,15 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 				recipient.setText(pool.getFullAddress());
 			}
 		}
+		if(type == TYPE_ADD_TREASURY) {
+			topPanel.add(new Desc(tr("token_treasury_account"), recipient));
+		}
 		if(type == TYPE_SEND) {
 			topPanel.add(new Desc(tr("send_message"), message));
 			message.setToolTipText(tr("send_empty_for_no_message"));
 		}
 
-		if(type != TYPE_JOIN_POOL && type != TYPE_GO_SOLO) {
+		if(type != TYPE_JOIN_POOL && type != TYPE_GO_SOLO && type != TYPE_ADD_TREASURY) {
 			panel.add(new Desc(tr("send_amount", token==null ? Constants.BURST_TICKER : token), amount));
 		}
 		if(type == TYPE_JOIN_POOL || type == TYPE_GO_SOLO) {
@@ -121,7 +132,7 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 			amount.setText("0");
 		}
 		Desc feeDesc = new Desc("", feeSlider);
-		if(type == TYPE_JOIN_POOL || type == TYPE_GO_SOLO) {
+		if(type == TYPE_JOIN_POOL || type == TYPE_GO_SOLO || type == TYPE_ADD_TREASURY) {
 			// Avoid cropping the slider ball
 			feeSlider.setPreferredSize(new Dimension(20, 40));
 		}
@@ -198,10 +209,16 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 			String error = null;
 			String sadd = recipient.getText();
 			SignumAddress recAddress = null;
-			if(type == TYPE_SEND || type == TYPE_JOIN_POOL || type == TYPE_GO_SOLO) {
+			if(type == TYPE_SEND || type == TYPE_JOIN_POOL || type == TYPE_GO_SOLO || type == TYPE_ADD_TREASURY) {
 				recAddress = SignumAddress.fromEither(sadd);
 				if(recAddress == null && type == TYPE_SEND)
 					error = tr("send_invalid_recipient");
+			}
+			
+			String tokenCreationFullHash = null;
+			if(type == TYPE_ADD_TREASURY) {
+				Transaction tokenCreationTx = g.getNS().getTransaction(token.getTokenID()).blockingGet();
+				tokenCreationFullHash = Hex.toHexString(tokenCreationTx.getFullHash());
 			}
 
 			if(error == null && !g.usingLedger() && !g.checkPIN(pin.getPassword())) {
@@ -241,9 +258,14 @@ public class SendDialog extends JDialog implements ActionListener, SignCallBack 
 					// all set, lets make the transfer
 					Single<byte[]> utx = null;
 					if(token!=null) {
-						utx = g.getNS().generateTransferAssetTransactionWithMessage(g.getPubKey(), recAddress,
-								token.getTokenID(), SignumValue.fromNQT((long)(amountNumber.doubleValue()*token.getFactor())),
-								null, selectedFee, Constants.BURST_SEND_DEADLINE, msg);
+						if (type == TYPE_ADD_TREASURY) {
+							utx = g.getNS().generateAddAssetTreasuryAccountTransaction(recAddress, g.getPubKey(), tokenCreationFullHash, selectedFee, Constants.BURST_SEND_DEADLINE);
+						}
+						else {
+							utx = g.getNS().generateTransferAssetTransactionWithMessage(g.getPubKey(), recAddress,
+									token.getTokenID(), SignumValue.fromNQT((long)(amountNumber.doubleValue()*token.getFactor())),
+									null, selectedFee, Constants.BURST_SEND_DEADLINE, msg);
+						}
 					}
 					else if(type == TYPE_JOIN_POOL  || type == TYPE_GO_SOLO){
 						utx = g.getNS().generateTransactionSetRewardRecipient(recAddress, g.getPubKey(),
