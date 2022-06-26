@@ -9,7 +9,6 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -44,7 +43,6 @@ import btdex.ledger.LedgerService.SignCallBack;
 import signumj.entity.SignumAddress;
 import signumj.entity.SignumValue;
 import signumj.entity.response.Account;
-import signumj.entity.response.Asset;
 import signumj.entity.response.AssetBalance;
 import signumj.entity.response.TransactionBroadcast;
 
@@ -55,7 +53,7 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 	
 	Market market;
 
-	JTextField amountField, ignoredAccounts;
+	JTextField amountField, minHoldings;
 
 	JTextPane conditions;
 	JCheckBox acceptBox;
@@ -87,16 +85,15 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 		amountField = new JFormattedTextField(NumberFormatting.BURST.getFormat());
 		amountField.setText("10");
 		amountField.getDocument().addDocumentListener(this);
-		ignoredAccounts = new JTextField(20);
-		ignoredAccounts.getDocument().addDocumentListener(this);
-		
-		Asset asset = Globals.getInstance().getNS().getAsset(market.getTokenID()).blockingGet();
-		ignoredAccounts.setText(asset.getAssetAddress().getFullAddress());
+
+		minHoldings = new JFormattedTextField(NumberFormatting.BURST.getFormat());
+		minHoldings.setText("1");
+		minHoldings.getDocument().addDocumentListener(this);
 
 		fieldPanel.setBorder(BorderFactory.createTitledBorder(tr("token_distribution_config")));
 
 		fieldPanel.add(new Desc(tr("send_amount", Constants.BURST_TICKER), amountField));
-		fieldPanel.add(new Desc(tr("token_distribution_ignored"), ignoredAccounts));
+		fieldPanel.add(new Desc(tr("token_distribution_min_holdings", market.getTicker()), minHoldings));
 
 		conditions = new JTextPane();
 		conditions.setContentType("text/html");
@@ -262,7 +259,6 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 		if(amountField.getText().length()==0)
 			return;
 		
-		String ignored = ignoredAccounts.getText().toUpperCase();
 		String holdersText = "<table>";
 
 		holdersText += "<tr><th>" + tr("main_accounts") + "</th>";
@@ -276,28 +272,28 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 		try {
 			// For token, price is in BURST, others price is on the selected market
 			Number amountN = NumberFormatting.parse(amountField.getText());
+			Number minHoldingN = NumberFormatting.parse(minHoldings.getText());
+			long minHoldingLong = (long)(minHoldingN.doubleValue()*market.getFactor());
 			long circulatingTokens = 0;
 			
 			for(AssetBalance h : holders) {
-				if(!ignored.contains(h.getAccountAddress().getFullAddress())) {
+				if(h.getBalance().longValue() >= minHoldingLong) {
 					circulatingTokens += h.getBalance().longValue();
 				}
 			}
 			
 			for(AssetBalance h : holders) {
+				if(h.getBalance().longValue() < minHoldingLong)
+					continue;
+					
 				String address = h.getAccountAddress().getFullAddress();
 				holdersText += "<tr>";
 				holdersText += "<td>" + address + "</td><td>" + market.format(h.getBalance().longValue()) + "</td><td>";
-				if(ignored.contains(address)) {
-					holdersText += "--</td><td>--";
-				}
-				else {
-					SignumValue value = SignumValue.fromSigna(amountN.doubleValue()*h.getBalance().longValue()/circulatingTokens);
-					holdersText += " " + PERC_FORMAT.format(h.getBalance().longValue() / (double)circulatingTokens * 100D)
-					+ "</td><td>" + NumberFormatting.BURST.format(value.longValue());
-					
-					recipients.put(h.getAccountAddress(), value);
-				}
+				SignumValue value = SignumValue.fromSigna(amountN.doubleValue()*h.getBalance().longValue()/circulatingTokens);
+				holdersText += " " + PERC_FORMAT.format(h.getBalance().longValue() / (double)circulatingTokens * 100D)
+				+ "</td><td>" + NumberFormatting.BURST.format(value.longValue());
+
+				recipients.put(h.getAccountAddress(), value);
 				holdersText += "</td></tr>";
 			}
 			holdersText += "</table>";
@@ -307,15 +303,14 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 			e.printStackTrace();
 		}
 
-		int nTransactions = recipients.size()/64 + (recipients.size() % 64 == 0 ? 0 : 1);
-		totalFees = suggestedFee.multiply(BigDecimal.valueOf(nTransactions*5));
+		totalFees = SignumValue.fromNQT(Constants.FEE_QUANT * Math.max(1,  recipients.size()/10));
 		
 		StringBuilder terms = new StringBuilder();
 		terms.append(PlaceOrderDialog.HTML_STYLE);
 		
 		terms.append("<h3>").append(tr("token_distribution_brief", amountField.getText(), Constants.BURST_TICKER, recipients.size(), market.getTicker())).append("</h3>");
 		terms.append("<p>").append(tr("token_distribution_details",
-				nTransactions,
+				1,
 				NumberFormatting.BURST.format(totalFees.longValue()), Constants.BURST_TICKER)).append("</p>");
 		
 		terms.append(holdersText);
