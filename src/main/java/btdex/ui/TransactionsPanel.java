@@ -25,6 +25,7 @@ import btdex.core.NumberFormatting;
 import btdex.ui.orderbook.BookTable;
 import signumj.entity.SignumAddress;
 import signumj.entity.response.Block;
+import signumj.entity.response.IndirectIncoming;
 import signumj.entity.response.Transaction;
 import signumj.entity.response.http.BRSError;
 import signumj.response.attachment.AskOrderPlacementAttachment;
@@ -219,7 +220,7 @@ public class TransactionsPanel extends JPanel {
 					amountFormatted = "";
 				}
 				break;
-			case 2: // TYPE_MESSAGING
+			case 2: // TYPE_COLORED_COINS
 				switch (tx.getSubtype()) {
 				case 0:
 					type = tr("txs_token_issue");
@@ -272,6 +273,13 @@ public class TransactionsPanel extends JPanel {
 				case 5:
 					type = tr("txs_cancel_bid");
 					amountFormatted = "";
+					break;
+				case 8:
+					type = tr("txs_distribution");
+					{
+						IndirectIncoming indirect = g.getNS().getIndirectIncoming(g.getAddress(), tx.getId()).blockingGet();
+						amountFormatted = NumberFormatting.BURST.format(indirect.getAmount().longValue()) + " " + Constants.BURST_TICKER;
+					}
 					break;
 				default:
 					break;
