@@ -1,6 +1,5 @@
 
 hdd_reader_thread_count: 0            # default 0 (=auto: number of disks)
-hdd_use_direct_io: true               # default true
 hdd_wakeup_after: 120                 # default 240s
 
 cpu_nonces_per_cache: 65536           # default 65536
