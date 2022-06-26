@@ -123,14 +123,13 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			"http://signa.voiplanparty.com:8124",
 			"http://signumpool.de:8080",
 			"http://spacepool.lmsi.club",
-			"https://fomplopool.com",
 			"http://burst.e4pool.com",
 			"http://signum.land",
 			"http://opensignumpool.ddns.net:8126",
 	};
 	
 	private static final String[] POOL_LIST_TESTNET = {
-			"http://nivbox.co.uk:9000",
+			"http://testnet.btfg.space:9000",
 			"http://localhost:8000"
 	};
 	
