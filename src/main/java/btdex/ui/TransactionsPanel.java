@@ -276,7 +276,7 @@ public class TransactionsPanel extends JPanel {
 					break;
 				case 8:
 					type = tr("txs_distribution");
-					{
+					if(tx.getSender().getSignedLongId() != g.getAddress().getSignedLongId()){
 						IndirectIncoming indirect = g.getNS().getIndirectIncoming(g.getAddress(), tx.getId()).blockingGet();
 						amountFormatted = NumberFormatting.BURST.format(indirect.getAmount().longValue()) + " " + Constants.BURST_TICKER;
 					}
