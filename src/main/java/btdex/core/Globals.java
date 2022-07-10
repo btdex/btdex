@@ -128,7 +128,6 @@ public class Globals {
 
 			setNodeList(nodeList);
 			BT.activateCIP20(true);
-			BT.activateSIP37(true);
 
 			SignumUtils.setAddressPrefix(isTestnet() ? "TS" : "S");
 			SignumUtils.addAddressPrefix("BURST");

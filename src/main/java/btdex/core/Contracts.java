@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 
+import bt.BT;
 import bt.compiler.Compiler;
 import bt.compiler.Method;
 import btdex.sc.BuyContract;
@@ -76,6 +77,9 @@ public class Contracts {
 
     static {
         try {
+        	// compile contracts with the old version
+        	BT.activateSIP37(false);
+        	
             compilerSell = new Compiler[2];
             contractTakeHash = new String[2];
             compilerSell[0] = new Compiler(SellContract2.class);
@@ -111,6 +115,7 @@ public class Contracts {
                 b.putLong(c.getMethod("take").getHash());
                 contractBuyTakeHash[i++] = Hex.toHexString(b.array());
             }
+        	BT.activateSIP37(true);
 
            	// start the update thread
            	new UpdateThread().start();
