@@ -45,13 +45,15 @@ public class Mediators {
         SignumID[] randomMediators = new SignumID[2];
 
         randomMediators[0] = mediators[rand.nextInt(mediators.length)];
-        while(randomMediators[0].getSignedLongId() == g.getAddress().getSignedLongId()) {
+        while(randomMediators[0].getSignedLongId() == g.getAddress().getSignedLongId()
+        		|| !this.isMediatorAccepted(null, randomMediators[0].getSignedLongId())) {
             // make sure we don't mediate our own contract
-            randomMediators[1] = mediators[rand.nextInt(mediators.length)];
+            randomMediators[0] = mediators[rand.nextInt(mediators.length)];
         }
         randomMediators[1] = mediators[rand.nextInt(mediators.length)];
         while(randomMediators[1] == randomMediators[0] ||
-        		randomMediators[1].getSignedLongId() == g.getAddress().getSignedLongId()) {
+        		randomMediators[1].getSignedLongId() == g.getAddress().getSignedLongId()
+        		|| !this.isMediatorAccepted(null, randomMediators[1].getSignedLongId()) ){
             // make sure we have 2 different mediators and that we do not mediate our own contract
             randomMediators[1] = mediators[rand.nextInt(mediators.length)];
         }
@@ -62,11 +64,11 @@ public class Mediators {
     private boolean isMediatorAccepted(ContractState contract, long mediator) {
     	for (int i = 0; i < mediators.length; i++) {
     		if(mediators[i].getSignedLongId() == mediator && mediatorBalances[i]!=null && mediatorBalances[i].compareTo(MIN_TRT) >= 0){
-				logger.trace("Mediator {} accepted for contract {}", mediator, contract.getAddress().toString());
+				logger.trace("Mediator {} accepted for contract {}", mediator, contract == null ? "null" : contract.getAddress().toString());
 				return true;
 			}
 		}
-		logger.debug("Mediator {} not accepted for contract {}", mediator, contract.getAddress().toString());
+		logger.debug("Mediator {} not accepted for contract {}", mediator, contract == null ? "null" : contract.getAddress().toString());
         return false;
     }
 
