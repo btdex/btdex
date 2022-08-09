@@ -119,15 +119,16 @@ public class TRTDAO extends Contract {
 	 */
 	private long doVote(Address member, long id, long type) {
 		if(getMapValue(KEY_TYPE, id) != type || getMapValue(KEY_IS_MEMBER, member.getId()) == ZERO
-				|| getMapValue(type + id, member.getId()) != ZERO) {
-			// cannot vote
+				|| getMapValue(id, member.getId()) != ZERO) {
+			// wrong type, not a member, or already voted
 			return ZERO;
 		}
 		
 		votes = getMapValue(KEY_VOTES, id);
 		votes = votes + 1;
 		setMapValue(KEY_VOTES, id, votes);
-		setMapValue(type + id, member.getId(), id);	
+		// store we have already voted
+		setMapValue(id, member.getId(), id);
 		return votes;
 	}
 	
