@@ -27,7 +27,7 @@ repositories {
 
 dependencies {
     implementation 'com.github.signum-network:signumj:abd8563d73'
-    implementation 'com.github.signum-network:signum-smartj:89e2f28bb3'
+    implementation 'com.github.signum-network:signum-smartj:9d3fcf3629'
 
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.15'
