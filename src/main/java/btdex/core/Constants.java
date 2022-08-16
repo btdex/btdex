@@ -81,7 +81,7 @@ public class Constants {
     // Number of confirmations needed for SC update to be taken into account
     public static final int PRICE_NCONF = 1;
 
-	public static final int FEE_QUANT = 1000000;
+	public static final long FEE_QUANT = 1000000L;
 
 	// Deadline in minutes to be used on transactions
 	public static final int BURST_SEND_DEADLINE = 1440;

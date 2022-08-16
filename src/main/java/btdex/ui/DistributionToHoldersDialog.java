@@ -281,7 +281,7 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 						batch.put(a, recipients.get(a));
 						nPaid++;
 						if(batch.size()==64) {
-							byte[] utx = g.getNS().generateMultiOutTransaction(g.getPubKey(), suggestedFee.multiply(BigInteger.valueOf(5)), Constants.BURST_EXCHANGE_DEADLINE, batch).blockingGet();
+							byte[] utx = g.getNS().generateMultiOutTransaction(g.getPubKey(), suggestedFee.multiply(BigInteger.valueOf(6)), Constants.BURST_EXCHANGE_DEADLINE, batch).blockingGet();
 							byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), utx);
 							reportSigned(signedTransactionBytes, null);
 							
@@ -296,7 +296,7 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 							utx = g.getNS().generateTransaction(receiver, g.getPubKey(), batch.get(receiver), suggestedFee, Constants.BURST_EXCHANGE_DEADLINE, null).blockingGet();
 						}
 						else
-							utx = g.getNS().generateMultiOutTransaction(g.getPubKey(), suggestedFee.multiply(BigInteger.valueOf(5)),
+							utx = g.getNS().generateMultiOutTransaction(g.getPubKey(), suggestedFee.multiply(BigInteger.valueOf(6)),
 									Constants.BURST_EXCHANGE_DEADLINE, batch).blockingGet();
 						
 						byte[] signedTransactionBytes = g.signTransaction(pinField.getPassword(), utx);
@@ -356,7 +356,7 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 				if(useMultiout && (h.getBalance().longValue() < minHoldingLong || ignored.contains(h.getAccountAddress().getFullAddress()))) {
 					continue;
 				}
-				if(!useMultiout && (h.getUnconfirmedBalance().longValue() < minHoldingLong || treasuryAccounts.contains(h.getAccountAddress()))){
+				if(!useMultiout && (h.getBalance().longValue() < minHoldingLong || treasuryAccounts.contains(h.getAccountAddress()))){
 					continue;
 				}
 
@@ -364,7 +364,7 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 					circulatingTokens += h.getBalance().longValue();
 				}
 				else {
-					circulatingTokens += h.getUnconfirmedBalance().longValue();
+					circulatingTokens += h.getBalance().longValue();
 				}
 			}
 			
@@ -373,14 +373,14 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 				if(useMultiout && (h.getBalance().longValue() < minHoldingLong || ignored.contains(address))) {
 					continue;
 				}
-				if(!useMultiout && (h.getUnconfirmedBalance().longValue() < minHoldingLong || treasuryAccounts.contains(h.getAccountAddress()))){
+				if(!useMultiout && (h.getBalance().longValue() < minHoldingLong || treasuryAccounts.contains(h.getAccountAddress()))){
 					continue;
 				}
 					
 				holdersText += "<tr>";
 				holdersText += "<td>" + address + "</td><td>" + market.format(h.getBalance().longValue()) + "</td><td>";
 				
-				long tokenBalance = useMultiout ? h.getBalance().longValue() : h.getUnconfirmedBalance().longValue();
+				long tokenBalance = useMultiout ? h.getBalance().longValue() : h.getBalance().longValue();
 					
 				SignumValue value = SignumValue.fromSigna(amountN.doubleValue()*tokenBalance/circulatingTokens);
 				holdersText += " " + PERC_FORMAT.format(h.getBalance().longValue() / (double)circulatingTokens * 100D)
@@ -400,7 +400,7 @@ public class DistributionToHoldersDialog extends JDialog implements ActionListen
 		totalFees = SignumValue.fromNQT(Math.max(Constants.FEE_QUANT, (Constants.FEE_QUANT * recipients.size())/10));
 		if(useMultiout) {
 			nTransactions = recipients.size()/64 + (recipients.size() % 64 == 0 ? 0 : 1);
-			totalFees = suggestedFee.multiply(BigDecimal.valueOf(nTransactions*5));
+			totalFees = suggestedFee.multiply(BigDecimal.valueOf(nTransactions*6));
 		}
 		
 		StringBuilder terms = new StringBuilder();
