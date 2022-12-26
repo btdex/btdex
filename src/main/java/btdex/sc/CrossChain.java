@@ -113,7 +113,7 @@ public class CrossChain extends Contract {
 	 * Create a new sell SIGNA offer.
 	 * 
 	 * The amount sent along with the transaction is the sum of security deposit and trade amount.
-	 * If {@link #security} is higher than the amount sent in the transaction, then the offer is
+	 * If {@link #security} is negative or higher than the amount sent in the transaction, then the offer is
 	 * invalid (as the trade amount would be negative) and it is not recorded.
 	 * 
 	 * @param security the amount to be taken as security deposit in SIGNA.
@@ -121,8 +121,9 @@ public class CrossChain extends Contract {
 	public void createSellOffer(long security) {
 		// Amount sent is the trade amount plus the security
 		tradeAmount = getCurrentTxAmount() - security;
-		if(tradeAmount < 0) {
-			// invalid offer
+		if(tradeAmount < 0 || security < 0) {
+			// invalid offer, refund
+		    sendAmount(getCurrentTxAmount(), getCurrentTxSender());
 			return;
 		}
 		offer = getCurrentTx().getId();
