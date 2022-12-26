@@ -207,11 +207,15 @@ public class ContractState {
 
 	private long getContractFieldValue(String field) {
 		int address = compiler.getFieldAddress(field);
-		byte[] data = at.getMachineData();
-		ByteBuffer b = ByteBuffer.wrap(data);
-		b.order(ByteOrder.LITTLE_ENDIAN);
+		return getContractFieldValue(address);
+	}
 
-		return b.getLong(address * 8);
+	private long getContractFieldValue(int address) {
+	    byte[] data = at.getMachineData();
+	    ByteBuffer b = ByteBuffer.wrap(data);
+	    b.order(ByteOrder.LITTLE_ENDIAN);
+
+	    return b.getLong(address * 8);
 	}
 
 	private void updateState(AT at, Transaction[] utxs, boolean onlyUnconf) {
@@ -228,6 +232,12 @@ public class ContractState {
 
 		if(at.isDead())
 			type = ContractType.INVALID;
+		
+		if(getContractFieldValue(68) != 0L || getContractFieldValue(69) != 0L || getContractFieldValue(70) != 0L) {
+            // fixing the bug on reuse contracts up to filling the user stack
+            type = ContractType.INVALID;
+            logger.debug("invalid contract, user stack filled {}", at.getId().getFullAddress());
+        }
 
 		// update variables that can change over time
 		if(type == ContractType.SELL || type == ContractType.BUY) {
