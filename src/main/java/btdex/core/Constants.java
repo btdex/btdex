@@ -11,7 +11,7 @@ import okhttp3.MediaType;
 public class Constants {
 
     public static final String NODE_LIST_TESTNET[] = {
-    		"http://lmsi.club:6876",
+    		"https://europe3.testnet.signum.network",
     		"http://localhost:6876",
     };
 
@@ -24,7 +24,6 @@ public class Constants {
     		"https://europe3.signum.network",
     		"https://brazil.signum.network",
     		"https://latam.signum.network",
-    		"https://uk.signum.network",
 			"https://singapore.signum.network",
     		BT.NODE_BURSTCOIN_RO,
     		"https://canada.signum.network",
