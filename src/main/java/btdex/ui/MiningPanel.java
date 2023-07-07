@@ -125,6 +125,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 			"http://signumpool.de:8080",
 			"http://burst.e4pool.com",
 			"http://opensignumpool.ddns.net:8126",
+			"https://pool.ravefusions.com",
 	};
 	
 	private static final String[] POOL_LIST_TESTNET = {
