@@ -116,22 +116,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 					pathname.getName().split("_").length == 3;
 		}
 	};
-
-	private static final String[] POOL_LIST = {
-			"https://pool.signumcoin.ro",
-			"https://signapool.notallmine.net",
-			"http://pool.btfg.space",
-			"http://signa.voiplanparty.com:8124",
-			"http://signumpool.de:8080",
-			"http://burst.e4pool.com",
-			"http://opensignumpool.ddns.net:8126",
-	};
-
-	private static final String[] POOL_LIST_TESTNET = {
-			"https://t-pool.notallmine.net",
-			"http://localhost:8000"
-	};
-
+	
 	private LinkedHashMap<String, SignumAddress> poolAddresses = new LinkedHashMap<>();
 	private HashMap<String, String> poolMaxDeadlines = new HashMap<>();
 
