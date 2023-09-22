@@ -41,6 +41,8 @@ public class Globals {
 	private NodeService NS;
 	public static final SignumCrypto BC = SignumCrypto.getInstance();
 
+	public static final RemoteSignumResources SIGNUM_RESOURCES = RemoteSignumResources.getInstance();
+
 	static String confFile = Constants.DEF_CONF_FILE;
 	private Properties conf = new Properties();
 
@@ -118,12 +120,18 @@ public class Globals {
 			String nodeAutomatic = conf.getProperty(Constants.PROP_NODE_AUTO, "true");
 			String nodeAddress = conf.getProperty(Constants.PROP_NODE, "");
 			ArrayList<String> nodeList = new ArrayList<>();
-			if(nodeAddress.length() > 0) {
+			if(!nodeAddress.isEmpty()) {
 				// the stored node always goes to the list as first
 				nodeList.add(nodeAddress);
 			}
-			if("true".equals(nodeAutomatic)) {
-				nodeList.addAll(Arrays.asList(isTestnet() ? Constants.NODE_LIST_TESTNET : Constants.NODE_LIST));
+
+			RemoteSignumResources remoteResources = RemoteSignumResources
+				.getInstance()
+				.loadNodeLists()
+				.loadPoolLists();
+
+			if ("true".equals(nodeAutomatic)) {
+				nodeList.addAll(isTestnet() ? remoteResources.testNetNodes() : remoteResources.mainNetNodes());
 			}
 
 			setNodeList(nodeList);

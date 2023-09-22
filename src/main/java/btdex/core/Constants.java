@@ -10,26 +10,44 @@ import okhttp3.MediaType;
 
 public class Constants {
 
-    public static final String NODE_LIST_TESTNET[] = {
-    		"https://europe3.testnet.signum.network",
-    		"http://localhost:6876",
-    };
+	public static final String REMOTE_NODE_RESOURCES_URL = "https://signum-network.github.io/public-resources";
 
-    public static final String NODE_LIST[] = {
-    		"https://us-east.signum.network",
-    		"https://europe.signum.network",
-    		"https://us-central.signum.network",
-    		"https://europe1.signum.network",
-    		"https://europe2.signum.network",
-    		"https://europe3.signum.network",
-    		"https://brazil.signum.network",
-    		"https://latam.signum.network",
-			"https://singapore.signum.network",
-    		BT.NODE_BURSTCOIN_RO,
-    		"https://canada.signum.network",
-    		"https://australia.signum.network",
-    		"http://localhost:8125",
-    };
+	public static final String[] NODE_LIST_TESTNET = {
+		"https://europe3.testnet.signum.network",
+		"http://localhost:6876",
+	};
+
+	public static final String[] NODE_LIST = {
+		"https://us-east.signum.network",
+		"https://europe.signum.network",
+		"https://us-central.signum.network",
+		"https://europe1.signum.network",
+		"https://europe2.signum.network",
+		"https://europe3.signum.network",
+		"https://brazil.signum.network",
+		"https://latam.signum.network",
+		"https://singapore.signum.network",
+		"https://ru.signum.network",
+		BT.NODE_BURSTCOIN_RO,
+		"https://canada.signum.network",
+		"https://australia.signum.network",
+		"http://localhost:8125",
+	};
+
+	public static final String[] POOL_LIST = {
+		"https://pool.signumcoin.ro",
+		"https://signapool.notallmine.net",
+		"http://pool.btfg.space",
+		"http://signa.voiplanparty.com:8124",
+		"http://signumpool.de:8080",
+		"http://burst.e4pool.com",
+		"http://opensignumpool.ddns.net:8126",
+	};
+
+	public static final String[] POOL_LIST_TESTNET = {
+		"https://t-pool.notallmine.net",
+		"http://localhost:8000"
+	};
 
     public static final String PROP_LANG = "lang";
     public static final String PROP_NODE = "node";
