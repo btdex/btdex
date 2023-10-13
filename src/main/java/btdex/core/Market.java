@@ -39,6 +39,8 @@ public abstract class Market {
 
 	public static long MARKET_XLM            = 0x000000016;
 
+	public static long MARKET_BHD            = 0x000000014;
+
 	public static long MARKET_XCH            = 0x000000060;
 
 	// TODO: fill with other cryptos here
