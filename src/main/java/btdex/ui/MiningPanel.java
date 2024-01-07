@@ -1069,7 +1069,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		if(plotting)
 			return;
 
-		logger.info("Starded plotting");
+		logger.info("Started plotting");
 		noncesPlotted.set(0L);
 		plotting = true;
 
@@ -1341,7 +1341,7 @@ public class MiningPanel extends JPanel implements ActionListener, ChangeListene
 		if(mining)
 			return;
 
-		logger.info("Starded mining");
+		logger.info("Started mining");
 		mining = true;
 
 		startMiningButton.setEnabled(false);
