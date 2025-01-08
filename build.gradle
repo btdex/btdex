@@ -1,26 +1,25 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '4.0.4'
-    id 'java'
-    id 'application'
-    id 'edu.sc.seis.launch4j' version '2.4.6'
-    id 'edu.sc.seis.macAppBundle' version '2.3.0'
-    id "nebula.ospackage" version "8.2.0"
-    id 'org.gradle.crypto.checksum' version '1.2.0'
-    id 'com.palantir.git-version' version '0.12.2'
-	id 'io.spring.dependency-management' version '1.0.1.RELEASE' //for logging - log4j
-
-	id "de.undercouch.download" version "1.2"
+	id 'com.github.johnrengelman.shadow' version '7.0.0' // Updated from 4.0.4
+	id 'java'
+	id 'application'
+	id 'edu.sc.seis.launch4j' version '2.5.3' // Updated from 2.4.6
+	id 'edu.sc.seis.macAppBundle' version '2.3.0'
+	id "nebula.ospackage" version "9.0.0" // Updated from 8.2.0
+	id 'org.gradle.crypto.checksum' version '1.4.0' // Updated from 1.2.0
+	id 'com.palantir.git-version' version '0.15.0' // Updated from 0.12.2
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE' // Updated from 1.0.1.RELEASE
+	id "de.undercouch.download" version "4.1.2" // Updated from 1.2
 }
 
+
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(11)
+	}
 }
 
 // In this section you declare where to find the dependencies of your project
 repositories {
-    // Use jcenter for resolving your dependencies.
-    // You can declare any Maven/Ivy/file repository here.
     mavenCentral()
     maven { url 'https://jitpack.io' }
 }
@@ -75,10 +74,14 @@ dependencies {
 	implementation 'org.apache.logging.log4j:log4j-core:2.15.0'
 
     // Use JUnit test framework
-    testImplementation("org.junit.platform:junit-platform-engine:1.6.1")
-    testImplementation("org.junit.platform:junit-platform-launcher:1.6.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.1")
+	testImplementation("org.junit.platform:junit-platform-engine:1.8.0")
+	testImplementation("org.junit.platform:junit-platform-launcher:1.8.0")
+	testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.0")
+	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.0")
+//    testImplementation("org.junit.platform:junit-platform-engine:1.6.1")
+//    testImplementation("org.junit.platform:junit-platform-launcher:1.6.1")
+//    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.1")
+//    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.1")
 }
 test {
     useJUnitPlatform()
@@ -89,8 +92,9 @@ configurations.all {
 }
 
 // Define the main class for the application
-mainClassName = 'BTDEX'
-
+application {
+	mainClass.set('BTDEX')
+}
 description = 'A decentralized exchange system running on the Signum blockchain.'
 
 def details = versionDetails()
@@ -108,13 +112,12 @@ jar {
     }
 }
 
-shadowJar{
-    archiveName = "${baseName}-${classifier}.${extension}"
+shadowJar {
+	archiveFileName = "${baseName}-${classifier}.${extension}"  // archiveName is deprecated
 }
 shadowJar.dependsOn versionProp
 
-
-def jdkVersion = 'zulu8.54.0.21-ca-jdk8.0.292'
+def jdkVersion = 'zulu11.56.19-ca-jdk11.0.15'  // Updated from zulu8.54.0.21
 import de.undercouch.gradle.tasks.download.Download
 
 task downloadWindowsJDK(type: Download) {
@@ -129,7 +132,7 @@ task unzipWindowsJDK(type: Copy, dependsOn: downloadWindowsJDK) {
 createExe {
     outfile = 'btdex.exe'
     icon = "${projectDir}/dist/btdex.ico"
-    jreMinVersion = '1.8.0'
+    jreMinVersion = '11.0.0'
     copyright = 'BTDEX'
     companyName = 'https://btdex.trade'
     textVersion = details.lastTag
@@ -170,7 +173,7 @@ task unzipMacJDK(type: Copy, dependsOn: downloadMacJDK) {
 }
 createDmg.enabled = false
 macAppBundle {
-    mainClassName = project.mainClassName
+	mainClassName = project.mainClassName
     version = details.lastTag
     icon = "${projectDir}/dist/btdex.icns"
     appStyle = 'Oracle'
@@ -178,7 +181,7 @@ macAppBundle {
     dmgName = "${->project.name}-macosx_x64"
     runtimeConfigurationName = 'shadow'
     jarTask = 'shadowJar'
-    jvmVersion = "1.8+"
+    jvmVersion = "11+"
     bundleJRE = true
     jreHome = "${projectDir}/dist/jdk/${jdkVersion}-macosx_x64/zulu-8.jdk/Contents/Home"
 }
